@@ -1,7 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { editionState, registrationEvents, registrations } from "@/db/schema";
+import {
+  editionState,
+  registrationEvents,
+  registrations,
+  captains,
+} from "@/db/schema";
 import { getPublicEdition } from "./content";
 import { enrollmentState, type Edition } from "./editions";
 import type { User } from "./auth/sessions";
@@ -128,6 +133,17 @@ export async function withdrawRegistration(
       .where(eq(registrations.id, id))
       .for("update");
     const edition = getPublicEdition(own.editionSlug);
+    const [captain] = await tx
+      .select()
+      .from(captains)
+      .where(
+        and(
+          eq(captains.editionSlug, own.editionSlug),
+          eq(captains.userId, user.osuId),
+        ),
+      );
+    if (captain)
+      throw new HttpError(409, "Captain withdrawal requires staff review.");
     if (!canWithdraw(edition, current, Boolean(state.lockedAt)))
       throw new HttpError(
         409,
@@ -149,7 +165,17 @@ export async function withdrawRegistration(
 }
 export async function ownRegistrations(userId: number) {
   return db()
-    .select()
+    .select({
+      id: registrations.id,
+      userId: registrations.userId,
+      editionSlug: registrations.editionSlug,
+      status: registrations.status,
+      rulesVersion: registrations.rulesVersion,
+      answers: registrations.answers,
+      statusReason: registrations.statusReason,
+      createdAt: registrations.createdAt,
+      updatedAt: registrations.updatedAt,
+    })
     .from(registrations)
     .where(eq(registrations.userId, userId))
     .orderBy(registrations.createdAt);

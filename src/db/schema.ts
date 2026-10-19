@@ -1,5 +1,8 @@
 import {
   pgEnum,
+  integer,
+  boolean,
+  primaryKey,
   jsonb,
   uuid,
   unique,
@@ -48,6 +51,8 @@ export const registrationStatus = pgEnum("registration_status", [
 export const editionState = pgTable("edition_state", {
   slug: text("slug").primaryKey(),
   lockedAt: timestamp("locked_at", { withTimezone: true }),
+  setupVersion: integer("setup_version").notNull().default(0),
+  poolPublished: boolean("pool_published").notNull().default(false),
 });
 export const registrations = pgTable(
   "registrations",
@@ -63,6 +68,7 @@ export const registrations = pgTable(
     rulesVersion: text("rules_version").notNull(),
     answers: jsonb("answers").$type<Record<string, string>>().notNull(),
     statusReason: text("status_reason"),
+    draftUnavailableReason: text("draft_unavailable_reason"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -99,4 +105,45 @@ export const registrationEvents = pgTable(
   (table) => [
     index("registration_events_registration_idx").on(table.registrationId),
   ],
+);
+
+export const captains = pgTable(
+  "captains",
+  {
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    position: integer("position").notNull(),
+    published: boolean("published").notNull().default(false),
+  },
+  (table) => [
+    primaryKey({ columns: [table.editionSlug, table.userId] }),
+    unique("captains_edition_position_unique").on(
+      table.editionSlug,
+      table.position,
+    ),
+  ],
+);
+export const editionEvents = pgTable(
+  "edition_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    actorId: bigint("actor_id", { mode: "number" }).references(
+      () => users.osuId,
+      { onDelete: "set null" },
+    ),
+    kind: text("kind").notNull(),
+    reason: text("reason").notNull(),
+    detail: jsonb("detail").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("edition_events_edition_idx").on(table.editionSlug)],
 );

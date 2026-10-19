@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/user";
+import { getEditions } from "@/lib/content";
 import { isStaff } from "@/lib/auth/staff";
 export const metadata = {
   title: "Staff workspace",
@@ -22,6 +23,11 @@ export default async function StaffLayout({
         <nav aria-label="Staff navigation">
           <Link href="/admin">Registrations</Link>
           <Link href="/dashboard">Player dashboard</Link>
+          {getEditions().map((e) => (
+            <Link key={e.slug} href={`/admin/tournaments/${e.slug}/captains`}>
+              {e.name}: Captains
+            </Link>
+          ))}
         </nav>
         <p className="muted small spaced">Signed in as {user.username}</p>
       </aside>

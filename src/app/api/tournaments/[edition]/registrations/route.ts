@@ -15,10 +15,13 @@ export async function POST(
       edition,
       await readJson(request),
     );
-    return NextResponse.json(saved, {
-      status: 201,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return NextResponse.json(
+      { id: saved.id, status: saved.status },
+      {
+        status: 201,
+        headers: { "Cache-Control": "no-store" },
+      },
+    );
   } catch (error) {
     return apiError(error);
   }

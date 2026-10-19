@@ -47,3 +47,7 @@ Staff access `/admin`; all page queries, APIs, reviews and exports also enforce 
 ## Release operations
 
 [Deployment and recovery](docs/deployment.md) covers environments, migrations, HTTPS/Host routing, privacy operations, backups/rollback, logging, ingress limits and the unresolved external launch gates. `npm run release:check` is an explicit configuration/database preflight; it is not a claim that deployment or live osu! verification succeeded. `npm run db:cleanup` removes expired sessions/state. CI provisions isolated PostgreSQL, applies migrations and runs static checks, database tests, production build, desktop/mobile browser workflows, accessibility checks and the production dependency audit.
+
+## Captains and eligible pool
+
+Staff use `/admin/tournaments/[edition]/captains` to appoint/revoke/replace accepted, available individual players, save a complete captain order, mark a noncaptain unavailable with a reason, and lock reviewed setup. There are no assumed captain counts, roster sizes, clocks or snake rounds. Every command requires confirmation, reason and current setup revision; edition locks and database uniqueness protect concurrent actions. Captains cannot withdraw themselves or gain staff powers. Captain/pool identities remain private until an explicit staff publication approval. Locked setup rejects normal changes; supervised recovery must be handled through the draft controls rather than silent edits.

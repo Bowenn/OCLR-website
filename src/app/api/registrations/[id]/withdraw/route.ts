@@ -10,8 +10,9 @@ export async function POST(
     requireSameOrigin(request);
     const user = await requireUser();
     const { id } = await context.params;
+    const saved = await withdrawRegistration(user, id, await readJson(request));
     return NextResponse.json(
-      await withdrawRegistration(user, id, await readJson(request)),
+      { id: saved.id, status: saved.status },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

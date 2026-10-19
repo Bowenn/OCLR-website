@@ -15,6 +15,13 @@
       "when": 1792442791793,
       "tag": "0001_dazzling_sersi",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792443567068,
+      "tag": "0002_living_pestilence",
+      "breakpoints": true
     }
   ]
 }
