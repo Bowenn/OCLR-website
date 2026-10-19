@@ -34,6 +34,7 @@ export default defineConfig({
     env: process.env.TEST_DATABASE_URL
       ? {
           DATABASE_URL: process.env.TEST_DATABASE_URL,
+          STAFF_OSU_IDS: "60001,70001",
           APP_URL: "http://127.0.0.1:3100",
           OCLR_EDITIONS_FILE: fixturePath,
           PRIVACY_CONTACT_EMAIL: "privacy@example.test",

@@ -1,0 +1,17 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireStaff } from "@/lib/auth/staff";
+import { listApplications } from "@/lib/staff";
+import { apiError } from "@/lib/http";
+export async function GET(request: NextRequest) {
+  try {
+    return NextResponse.json(
+      await listApplications(
+        await requireStaff(),
+        Object.fromEntries(request.nextUrl.searchParams),
+      ),
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    return apiError(error);
+  }
+}
