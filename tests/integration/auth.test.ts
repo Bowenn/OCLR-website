@@ -8,14 +8,14 @@ import {
   vi,
 } from "vitest";
 import { NextRequest } from "next/server";
-import { db, getPool } from "../../src/db";
+import { db, closeDb } from "../../src/db";
 import { users, sessions, oauthStates } from "../../src/db/schema";
 import { GET as start } from "../../src/app/auth/osu/route";
 import { GET as callback } from "../../src/app/auth/osu/callback/route";
 import { POST as logout } from "../../src/app/auth/logout/route";
 import { createSession, readSession } from "../../src/lib/auth/sessions";
 import { hashToken, randomToken } from "../../src/lib/auth/tokens";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 const testUrl = process.env.TEST_DATABASE_URL;
 describe.skipIf(!testUrl)(
   "OAuth and session boundaries (real PostgreSQL; provider transport mocked)",
@@ -33,10 +33,10 @@ describe.skipIf(!testUrl)(
     beforeEach(async () => {
       await db().delete(sessions);
       await db().delete(oauthStates);
-      await db().delete(users);
+      await db().execute(sql`TRUNCATE users CASCADE`);
     });
     afterAll(async () => {
-      await getPool().end();
+      await closeDb();
       vi.unstubAllGlobals();
       vi.unstubAllEnvs();
     });

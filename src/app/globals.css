@@ -836,3 +836,42 @@ button:hover {
 .small {
   font-size: 0.8rem;
 }
+.form-stack {
+  display: grid;
+  gap: 1.4rem;
+  margin-top: 1.5rem;
+}
+.field {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+input:not([type="checkbox"]),
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  color: #f4f3fc;
+  border: 1px solid #3c3b53;
+  border-radius: 0.4rem;
+  background: #0e1221;
+  padding: 0.75rem;
+  font-weight: 400;
+}
+.check-field {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+}
+.check-field input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+  accent-color: #b65de0;
+}
+.error-text {
+  color: #ffb8c6;
+}

@@ -13,6 +13,11 @@ export function EditionCard({ edition }: { edition: Edition }) {
         <Badge>Registration: {state}</Badge>
         <h3>{edition.name}</h3>
         <p className="muted">{edition.summary}</p>
+        {state === "open" && (
+          <Action href={`/tournaments/${edition.slug}/register`}>
+            Register individually →
+          </Action>
+        )}
         <Action href={`/tournaments/${edition.slug}`}>View tournament →</Action>
       </div>
       <dl className="edition-facts">

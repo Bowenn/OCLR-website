@@ -55,6 +55,11 @@ export default async function Overview({
           </div>
         </dl>
         <div className="actions">
+          {enrollmentState(edition) === "open" && (
+            <Action href={`/tournaments/${slug}/register`}>
+              Register individually →
+            </Action>
+          )}
           <Action href={`/tournaments/${slug}/rules`} secondary>
             Read the rules
           </Action>

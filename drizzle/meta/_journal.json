@@ -8,6 +8,13 @@
       "when": 1792442656981,
       "tag": "0000_early_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792442791793,
+      "tag": "0001_dazzling_sersi",
+      "breakpoints": true
     }
   ]
 }

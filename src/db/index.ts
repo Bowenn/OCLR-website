@@ -14,3 +14,10 @@ export function getPool() {
 export function db() {
   return drizzle(getPool());
 }
+
+export async function closeDb() {
+  if (globalDb.oclrPool) {
+    await globalDb.oclrPool.end();
+    delete globalDb.oclrPool;
+  }
+}
