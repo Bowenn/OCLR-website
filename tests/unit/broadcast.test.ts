@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest";
+import {
+  acceptBroadcastSnapshot,
+  shouldRevealPick,
+} from "../../src/components/broadcast-draft";
+import type { DraftBoard } from "../../src/lib/draft-types";
+
+function snapshot(
+  version: number,
+  ids: string[] = [],
+  sessionId = "test-session",
+): DraftBoard {
+  const team = {
+    id: "test-team",
+    name: "Synthetic team",
+    captain: { osuId: 1, username: "Synthetic captain" },
+  };
+  return {
+    sessionId,
+    version,
+    state: "live",
+    turnIndex: ids.length,
+    turnCount: 4,
+    activeTeam: team,
+    picks: ids.map((id, turnIndex) => ({
+      id,
+      turnIndex,
+      team,
+      player: { osuId: turnIndex + 2, username: "Synthetic player" },
+    })),
+    rosters: [],
+    pool: null,
+  };
+}
+describe("published broadcast reconciliation", () => {
+  it("rejects stale revisions but accepts privacy retractions, visibility changes and new sessions", () => {
+    expect(acceptBroadcastSnapshot(snapshot(3, ["a"]), snapshot(2))).toBe(
+      false,
+    );
+    expect(acceptBroadcastSnapshot(snapshot(3), snapshot(3))).toBe(true);
+    expect(acceptBroadcastSnapshot(snapshot(3), null)).toBe(true);
+    expect(acceptBroadcastSnapshot(null, snapshot(1))).toBe(true);
+    expect(
+      acceptBroadcastSnapshot(snapshot(3), snapshot(1, [], "new-session")),
+    ).toBe(true);
+  });
+  it("reveals only a newly published selection in the same session", () => {
+    expect(shouldRevealPick(snapshot(1), snapshot(2, ["a"]))).toBe(true);
+    expect(shouldRevealPick(snapshot(2, ["a"]), snapshot(3, ["a", "b"]))).toBe(
+      true,
+    );
+    expect(shouldRevealPick(null, snapshot(2, ["a"]))).toBe(false);
+    expect(shouldRevealPick(snapshot(2, ["a"]), snapshot(2, ["a"]))).toBe(
+      false,
+    );
+    expect(shouldRevealPick(snapshot(2, ["a"]), snapshot(3, ["a"]))).toBe(
+      false,
+    );
+    expect(shouldRevealPick(snapshot(3, ["a", "b"]), snapshot(4, ["a"]))).toBe(
+      false,
+    );
+    expect(shouldRevealPick(snapshot(3, ["a"]), snapshot(2, ["b"]))).toBe(
+      false,
+    );
+    expect(
+      shouldRevealPick(snapshot(3, ["a"]), snapshot(1, ["b"], "new-session")),
+    ).toBe(false);
+    expect(shouldRevealPick(snapshot(3, ["a"]), null)).toBe(false);
+  });
+});

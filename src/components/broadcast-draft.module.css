@@ -1,0 +1,283 @@
+.broadcast {
+  height: 100svh;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(230px, 0.9fr) minmax(0, 1fr) auto;
+  gap: clamp(20px, 2vw, 36px);
+  padding: clamp(24px, 3vw, 58px);
+  color: #f4f3fc;
+  background: #090c17;
+  font-size: clamp(16px, 1.05vw, 22px);
+}
+.broadcast[data-background="transparent"] {
+  background: transparent;
+}
+.header {
+  background: #111625f5;
+  padding: 20px 24px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 3vw;
+  min-width: 0;
+}
+.brand {
+  font-size: clamp(38px, 3.4vw, 66px);
+  font-weight: 900;
+  letter-spacing: -0.065em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.brand span {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.035em;
+  margin-top: 12px;
+  font-weight: 400;
+}
+.heading {
+  min-width: 0;
+}
+.heading p {
+  margin-bottom: 8px;
+}
+.heading h1 {
+  font-size: clamp(20px, 1.5vw, 30px);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.status {
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+}
+.status strong {
+  font-size: 18px;
+  color: #f0cb83;
+}
+.status strong[data-state="live"] {
+  color: #92e9ce;
+}
+.status p {
+  font-size: 14px;
+  color: #bdc2d8;
+  margin: 6px 0 0;
+}
+.stage,
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  gap: clamp(20px, 2vw, 36px);
+  min-height: 0;
+}
+.selection,
+.turn,
+.rosters,
+.history {
+  min-width: 0;
+  background: #111625f5;
+  border: 1px solid #3a304d;
+  border-radius: 10px;
+  padding: clamp(22px, 2vw, 38px);
+}
+.selection {
+  box-shadow: inset 4px 0 #a55bcc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+}
+.selection h2 {
+  font-size: clamp(36px, 4.2vw, 80px);
+  margin: 14px 0 20px;
+  overflow-wrap: anywhere;
+}
+.destination {
+  color: #e9b8fc;
+  font-weight: 700;
+  font-size: clamp(22px, 1.6vw, 32px);
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.caption {
+  color: #bdc2d8;
+  font-size: 0.9em;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.turn {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.turn h2 {
+  font-size: clamp(26px, 2.4vw, 46px);
+  margin: 8px 0 18px;
+  overflow-wrap: anywhere;
+}
+.progress {
+  display: flex;
+  align-items: end;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.progress span {
+  font-size: clamp(26px, 2.8vw, 54px);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+.progress p {
+  color: #bdc2d8;
+  font-size: 14px;
+  margin: 0;
+}
+.rosters,
+.history {
+  padding: clamp(20px, 1.5vw, 28px);
+  overflow: auto;
+  scrollbar-color: #9252b3 #151a29;
+}
+.rosters h2,
+.history h2 {
+  font-size: 22px;
+  margin: 0 0 24px;
+}
+.rosters h2 span {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #bdc2d8;
+  margin-left: 18px;
+}
+.rosterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
+}
+.rosterGrid article {
+  border-top: 2px solid #675175;
+  padding-top: 16px;
+  min-width: 0;
+}
+.rosterGrid article[data-active="true"] {
+  border-color: #df97fc;
+}
+.rosterGrid h3 {
+  font-size: 20px;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.rosterGrid .caption {
+  font-size: 14px;
+}
+.count {
+  color: #e2b1f9;
+  font-size: 13px;
+  margin: 12px 0;
+}
+.rosterGrid ul,
+.history ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rosterGrid li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border-top: 1px solid #303348;
+  padding: 8px 0;
+  font-size: 18px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.rosterGrid li span {
+  min-width: 0;
+}
+.rosterGrid small {
+  color: #bdc2d8;
+  font-size: 12px;
+  margin-left: auto;
+}
+.history li {
+  display: flex;
+  gap: 20px;
+  border-top: 1px solid #303348;
+  padding: 8px 0;
+}
+.history li > div {
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.25;
+}
+.pickNumber {
+  color: #e2b1f9;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.history strong {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.history li p {
+  font-size: 13px;
+  margin: 4px 0 0;
+  color: #bdc2d8;
+  overflow-wrap: anywhere;
+}
+.footer {
+  background: #111625f5;
+  padding: 12px 18px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #bdc2d8;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 1000px), (max-height: 650px) {
+  .broadcast {
+    height: auto;
+    min-height: 100svh;
+    display: block;
+    padding: 24px;
+  }
+  .header {
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  .status {
+    margin-left: 0;
+    text-align: left;
+  }
+  .stage,
+  .details {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .stage,
+  .details {
+    display: grid;
+  }
+  .selection,
+  .turn {
+    min-height: 230px;
+  }
+  .rosters,
+  .history {
+    max-height: none;
+    overflow: visible;
+  }
+  .rosterGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

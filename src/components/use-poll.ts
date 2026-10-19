@@ -1,9 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 // One request at a time, complete snapshot replacement, no optimistic events.
-export function usePoll<T>(endpoint: string, initial: T | null) {
+export function usePoll<T>(
+  endpoint: string,
+  initial: T | null,
+  options?: {
+    accept?: (current: T | null, next: T | null) => boolean;
+    credentials?: RequestCredentials;
+    initiallyConnected?: boolean;
+  },
+) {
+  const { accept, credentials } = options ?? {};
   const [value, setValue] = useState<T | null>(initial);
-  const [connected, setConnected] = useState(true);
+  const [connected, setConnected] = useState(
+    options?.initiallyConnected ?? true,
+  );
   const [authorizationLost, setAuthorizationLost] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
@@ -13,6 +24,7 @@ export function usePoll<T>(endpoint: string, initial: T | null) {
       try {
         const response = await fetch(endpoint, {
           cache: "no-store",
+          credentials,
           signal: AbortSignal.any([
             controller.signal,
             AbortSignal.timeout(8000),
@@ -30,7 +42,9 @@ export function usePoll<T>(endpoint: string, initial: T | null) {
         const next: T | null = await response.json();
         if (active) {
           setAuthorizationLost(false);
-          setValue(next);
+          setValue((current) =>
+            accept && !accept(current, next) ? current : next,
+          );
           setConnected(true);
         }
       } catch {
@@ -45,6 +59,6 @@ export function usePoll<T>(endpoint: string, initial: T | null) {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [endpoint]);
+  }, [endpoint, accept, credentials]);
   return { value, connected, authorizationLost };
 }

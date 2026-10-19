@@ -28,6 +28,12 @@ export default async function Draft({
           >
             Open presenter view ↗
           </Link>
+          <Link
+            href={`/tournaments/${edition}/draft/overlay`}
+            className="text-link broadcast-link"
+          >
+            Open broadcast overlay ↗
+          </Link>
         </>
       )}
       <LiveDraft

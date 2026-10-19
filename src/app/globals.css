@@ -16,6 +16,27 @@
 :root {
   color-scheme: dark;
 }
+html:has([data-broadcast]) {
+  color-scheme: normal;
+}
+html:has([data-broadcast]),
+body:has([data-broadcast]) {
+  background: transparent;
+}
+body:has([data-broadcast]) > .site-header,
+body:has([data-broadcast]) > .site-footer,
+body:has([data-broadcast]) > .container,
+.workspace:has([data-broadcast]) > .sidebar,
+.workspace:has([data-broadcast]) > .workspace-main > .notice {
+  display: none;
+}
+.workspace:has([data-broadcast]) {
+  display: block;
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  min-height: 0;
+}
 * {
   box-sizing: border-box;
 }
@@ -1412,4 +1433,8 @@ body:has(.presenter-view) .site-footer,
   .brand {
     font-size: 1.35rem;
   }
+}
+
+.broadcast-link {
+  margin-left: 1.5rem;
 }
