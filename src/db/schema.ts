@@ -201,3 +201,76 @@ export const memberships = pgTable(
     index("membership_team_idx").on(table.teamId),
   ],
 );
+
+export const draftState = pgEnum("draft_state", [
+  "setup",
+  "ready",
+  "live",
+  "paused",
+  "completed",
+  "finalized",
+  "aborted",
+]);
+export const draftSessions = pgTable("draft_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  editionSlug: text("edition_slug")
+    .notNull()
+    .unique()
+    .references(() => editionState.slug),
+  state: draftState("state").notNull().default("setup"),
+  version: integer("version").notNull().default(0),
+  turnIndex: integer("turn_index").notNull().default(0),
+  turnSequence: jsonb("turn_sequence").$type<string[]>().notNull().default([]),
+  pool: jsonb("pool").$type<number[]>().notNull().default([]),
+  publicVersion: integer("public_version").notNull().default(0),
+  publishedRevision: integer("published_revision").notNull().default(-1),
+  publicSnapshot:
+    jsonb("public_snapshot").$type<import("../lib/draft-types").DraftBoard>(),
+  captainSnapshot:
+    jsonb("captain_snapshot").$type<
+      import("../lib/draft-types").CaptainBoard
+    >(),
+});
+export const draftPicks = pgTable(
+  "draft_picks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => draftSessions.id),
+    turnIndex: integer("turn_index").notNull(),
+    teamId: uuid("team_id")
+      .notNull()
+      .references(() => teams.id),
+    captainId: bigint("captain_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    playerId: bigint("player_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    actorId: bigint("actor_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    mode: text("mode").$type<"captain_direct" | "staff_on_behalf">().notNull(),
+    requestKey: uuid("request_key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    revision: integer("revision").notNull(),
+    voidedAt: timestamp("voided_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("draft_active_turn_unique")
+      .on(table.sessionId, table.turnIndex)
+      .where(sql`${table.voidedAt} IS NULL`),
+    uniqueIndex("draft_active_player_unique")
+      .on(table.sessionId, table.playerId)
+      .where(sql`${table.voidedAt} IS NULL`),
+    unique("draft_actor_request_unique").on(
+      table.sessionId,
+      table.actorId,
+      table.requestKey,
+    ),
+  ],
+);

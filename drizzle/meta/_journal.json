@@ -29,6 +29,13 @@
       "when": 1792443789159,
       "tag": "0003_nostalgic_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792444151322,
+      "tag": "0004_kind_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }
