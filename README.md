@@ -22,7 +22,7 @@ Edit `src/content/editions.json`, validated by `src/lib/editions.ts`, or mount a
 
 `npm test` runs configuration/business tests. `npm run test:e2e` runs Playwright against the production build (install Chromium using `npx playwright install chromium`; set `PLAYWRIGHT_CHANNEL=chrome` to use installed Chrome). Test data must never be copied into production configuration.
 
-The full development dependency audit currently reports an upstream, unpatched `braces` stack-exhaustion advisory through Next.js lint tooling. Lint patterns are repository-controlled. `npm audit --omit=dev` is clean; review upstream patches regularly without downgrading the application or forcing unrelated dependency changes.
+The full development dependency audit also reports an esbuild development-server advisory through Drizzle Kit’s legacy loader (no esbuild server or Drizzle Studio is used). The full development dependency audit currently reports an upstream, unpatched `braces` stack-exhaustion advisory through Next.js lint tooling. Lint patterns are repository-controlled. `npm audit --omit=dev` is clean; review upstream patches regularly without downgrading the application or forcing unrelated dependency changes.
 
 ## osu! authentication and PostgreSQL
 
@@ -43,3 +43,7 @@ Applications are **individual**, with one database-enforced record per stable os
 There are no seeded administrators. The organizer must verify each person's numeric osu! profile ID out of band, add only those IDs to the server-only `STAFF_OSU_IDS` comma-separated allowlist, deploy/restart and have them authenticate normally. An empty list denies everyone. Remove IDs and restart to revoke staff access immediately, including existing sessions. A captain is never implicitly staff. Never grant access from usernames, request fields or client cookies.
 
 Staff access `/admin`; all page queries, APIs, reviews and exports also enforce authorization on the server. Pending applications may be accepted/rejected with explicit confirmation; rejection requires a player-visible explanation. Reviews use transaction locks and a version check, so stale or concurrent decisions are rejected. Locked editions cannot be reviewed. Audit events include actor, before/after status, timestamp and reason. CSV exports contain only ID, username, edition, status and submitted time; formulas/control-prefixed cells are neutralized and quotes escaped. Approved question answers and internal audit data are excluded from CSV. Exports are limited to 10,000 filtered rows and should be handled as private staff data.
+
+## Release operations
+
+[Deployment and recovery](docs/deployment.md) covers environments, migrations, HTTPS/Host routing, privacy operations, backups/rollback, logging, ingress limits and the unresolved external launch gates. `npm run release:check` is an explicit configuration/database preflight; it is not a claim that deployment or live osu! verification succeeded. `npm run db:cleanup` removes expired sessions/state. CI provisions isolated PostgreSQL, applies migrations and runs static checks, database tests, production build, desktop/mobile browser workflows, accessibility checks and the production dependency audit.

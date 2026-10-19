@@ -155,15 +155,13 @@ export async function reviewApplication(
       })
       .where(eq(registrations.id, id))
       .returning();
-    await tx
-      .insert(registrationEvents)
-      .values({
-        registrationId: id,
-        actorId: actor.osuId,
-        fromStatus: current.status,
-        toStatus: result.data.status,
-        reason: result.data.reason || null,
-      });
+    await tx.insert(registrationEvents).values({
+      registrationId: id,
+      actorId: actor.osuId,
+      fromStatus: current.status,
+      toStatus: result.data.status,
+      reason: result.data.reason || null,
+    });
     return updated;
   });
 }

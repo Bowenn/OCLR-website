@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { seedSession } from "./session";
 import { closeDb } from "../../src/db";
@@ -29,13 +30,60 @@ test.describe("player registration with persistent sessions", () => {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBeTruthy();
+    const saved = (
+      await (await context.request.get("/api/registrations")).json()
+    )[0];
+    const apiUrl = "/api/tournaments/test-cup/registrations";
+    const valid = {
+      rulesAcknowledged: true,
+      eligibilityAcknowledged: true,
+      rulesVersion: "test-v1",
+      answers: {},
+    };
+    expect((await context.request.post(apiUrl, { data: valid })).status()).toBe(
+      403,
+    );
+    expect(
+      (
+        await context.request.post(apiUrl, {
+          headers: { origin: "http://127.0.0.1:3100" },
+          data: { ...valid, userId: id + 1 },
+        })
+      ).status(),
+    ).toBe(400);
+    expect(
+      (
+        await context.request.post(apiUrl, {
+          headers: { origin: "http://127.0.0.1:3100" },
+          data: valid,
+        })
+      ).status(),
+    ).toBe(409);
     const other = await browser.newContext();
     await other.addCookies([await seedSession(id + 1)]);
     const privateResponse = await other.request.get(
       "http://127.0.0.1:3100/api/registrations",
     );
     expect(await privateResponse.json()).toEqual([]);
+    expect(
+      (
+        await other.request.post(
+          `http://127.0.0.1:3100/api/registrations/${saved.id}/withdraw`,
+          {
+            headers: { origin: "http://127.0.0.1:3100" },
+            data: { confirmed: true },
+          },
+        )
+      ).status(),
+    ).toBe(404);
     await other.close();
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
     await page.screenshot({
       path: `/private/tmp/oclr-dashboard-${testInfo.project.name}.png`,
       fullPage: true,

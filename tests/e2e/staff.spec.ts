@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { seedSession } from "./session";
 import { db, closeDb } from "../../src/db";
@@ -65,6 +66,13 @@ test.describe("staff registration review", () => {
           window.innerWidth <= window.screen.width,
       ),
     ).toBeTruthy();
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
     await page.screenshot({
       path: `/private/tmp/oclr-admin-${testInfo.project.name}.png`,
       fullPage: true,

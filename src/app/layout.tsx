@@ -3,6 +3,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
 import "./globals.css";
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {
     default: "OCLR — osu! Chinese League Rookie",

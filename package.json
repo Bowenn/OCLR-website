@@ -17,7 +17,9 @@
     "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "test:integration": "vitest run tests/integration"
+    "test:integration": "vitest run tests/integration",
+    "db:cleanup": "tsx scripts/cleanup.ts",
+    "release:check": "tsx scripts/check-release.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
@@ -28,6 +30,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^24",
