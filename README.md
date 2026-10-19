@@ -51,3 +51,9 @@ Staff access `/admin`; all page queries, APIs, reviews and exports also enforce 
 ## Captains and eligible pool
 
 Staff use `/admin/tournaments/[edition]/captains` to appoint/revoke/replace accepted, available individual players, save a complete captain order, mark a noncaptain unavailable with a reason, and lock reviewed setup. There are no assumed captain counts, roster sizes, clocks or snake rounds. Every command requires confirmation, reason and current setup revision; edition locks and database uniqueness protect concurrent actions. Captains cannot withdraw themselves or gain staff powers. Captain/pool identities remain private until an explicit staff publication approval. Locked setup rejects normal changes; supervised recovery must be handled through the draft controls rather than silent edits.
+
+## Teams
+
+Staff configure exactly one approved team identity per captain at `/admin/tournaments/[edition]/teams` **before locking setup**. Optional capacity is a maximum including the captain, not an invented required roster size. Captain membership is created transactionally. A partial unique PostgreSQL index enforces one active membership per player per edition; composite foreign keys prevent cross-edition assignments. Revoking an unstarted captain archives their team and ends membership without erasing history. Assigned draft rosters require supervised correction.
+
+Captains view only their own team at `/tournaments/[edition]/team`; no self-service team creation, invitations, roster edits or unapproved branding edits exist. Public `/teams` routes project approved identities only. Rosters require finalization by the draft engine and separate staff publication. Private memberships, capacity, internal operations and unpublished identities are excluded. The bracket will consume these finalized, published team IDs directly.

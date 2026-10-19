@@ -1,8 +1,11 @@
+import { sql } from "drizzle-orm";
 import {
   pgEnum,
   integer,
   boolean,
   primaryKey,
+  foreignKey,
+  uniqueIndex,
   jsonb,
   uuid,
   unique,
@@ -146,4 +149,55 @@ export const editionEvents = pgTable(
       .defaultNow(),
   },
   (table) => [index("edition_events_edition_idx").on(table.editionSlug)],
+);
+
+export const teams = pgTable(
+  "teams",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    captainId: bigint("captain_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    name: text("name").notNull(),
+    capacity: integer("capacity"),
+    identityPublished: boolean("identity_published").notNull().default(false),
+    rosterPublished: boolean("roster_published").notNull().default(false),
+    finalizedAt: timestamp("finalized_at", { withTimezone: true }),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+  },
+  (table) => [
+    unique("teams_id_edition_unique").on(table.id, table.editionSlug),
+    uniqueIndex("teams_active_captain_unique")
+      .on(table.editionSlug, table.captainId)
+      .where(sql`${table.archivedAt} IS NULL`),
+  ],
+);
+export const memberships = pgTable(
+  "memberships",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug").notNull(),
+    teamId: uuid("team_id").notNull(),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    origin: text("origin").notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    leftAt: timestamp("left_at", { withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.teamId, table.editionSlug],
+      foreignColumns: [teams.id, teams.editionSlug],
+    }),
+    uniqueIndex("membership_active_edition_user_unique")
+      .on(table.editionSlug, table.userId)
+      .where(sql`${table.leftAt} IS NULL`),
+    index("membership_team_idx").on(table.teamId),
+  ],
 );

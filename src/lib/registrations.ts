@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -6,6 +6,7 @@ import {
   registrationEvents,
   registrations,
   captains,
+  memberships,
 } from "@/db/schema";
 import { getPublicEdition } from "./content";
 import { enrollmentState, type Edition } from "./editions";
@@ -142,6 +143,18 @@ export async function withdrawRegistration(
           eq(captains.userId, user.osuId),
         ),
       );
+    const [membership] = await tx
+      .select()
+      .from(memberships)
+      .where(
+        and(
+          eq(memberships.editionSlug, own.editionSlug),
+          eq(memberships.userId, user.osuId),
+          isNull(memberships.leftAt),
+        ),
+      );
+    if (membership)
+      throw new HttpError(409, "Roster withdrawal requires staff review.");
     if (captain)
       throw new HttpError(409, "Captain withdrawal requires staff review.");
     if (!canWithdraw(edition, current, Boolean(state.lockedAt)))

@@ -29,7 +29,7 @@ export default async function Captains({
                 <h2>{c.username}</h2>
                 <p className="muted small">
                   osu! ID {c.userId} · {c.published ? "published" : "private"} ·
-                  team setup follows appointment
+                  {c.teamName ?? "team not configured"}
                 </p>
               </div>
             </li>

@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -7,6 +7,8 @@ import {
   editionState,
   registrations,
   users,
+  teams,
+  memberships,
 } from "@/db/schema";
 import { getEditions, getPublicEdition } from "./content";
 import { assertStaff } from "./auth/staff";
@@ -85,16 +87,33 @@ export async function captainSetup(actor: User, slug: string) {
           ),
         )
         .orderBy(users.username);
+      const roster = await tx
+        .select({ userId: memberships.userId })
+        .from(memberships)
+        .where(
+          and(eq(memberships.editionSlug, slug), isNull(memberships.leftAt)),
+        );
+      const assignedTeams = await tx
+        .select()
+        .from(teams)
+        .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
       return {
         version: state?.setupVersion ?? 0,
         locked: Boolean(state?.lockedAt),
         poolPublished: state?.poolPublished ?? false,
-        captains: appointed,
+        captains: appointed.map((c) => ({
+          ...c,
+          teamId:
+            assignedTeams.find((t) => t.captainId === c.userId)?.id ?? null,
+          teamName:
+            assignedTeams.find((t) => t.captainId === c.userId)?.name ?? null,
+        })),
         candidates,
         pool: candidates.filter(
           (c) =>
             !c.unavailableReason &&
-            !appointed.some((a) => a.userId === c.userId),
+            !appointed.some((a) => a.userId === c.userId) &&
+            !roster.some((m) => m.userId === c.userId),
         ),
       };
     },
@@ -135,6 +154,56 @@ export async function updateCaptains(
       .from(captains)
       .where(eq(captains.editionSlug, slug))
       .orderBy(captains.position);
+    if (command.action === "revoke" || command.action === "replace") {
+      const previousId =
+        command.action === "revoke" ? command.userId : command.previousUserId;
+      const [assigned] = await tx
+        .select()
+        .from(teams)
+        .where(
+          and(
+            eq(teams.editionSlug, slug),
+            eq(teams.captainId, previousId),
+            isNull(teams.archivedAt),
+          ),
+        );
+      if (assigned) {
+        const members = await tx
+          .select()
+          .from(memberships)
+          .where(
+            and(
+              eq(memberships.teamId, assigned.id),
+              isNull(memberships.leftAt),
+            ),
+          );
+        if (
+          assigned.finalizedAt ||
+          members.some((m) => m.userId !== previousId)
+        )
+          throw new HttpError(
+            409,
+            "Assigned rosters require supervised draft correction.",
+          );
+        await tx
+          .update(memberships)
+          .set({ leftAt: new Date() })
+          .where(
+            and(
+              eq(memberships.teamId, assigned.id),
+              isNull(memberships.leftAt),
+            ),
+          );
+        await tx
+          .update(teams)
+          .set({
+            archivedAt: new Date(),
+            identityPublished: false,
+            rosterPublished: false,
+          })
+          .where(eq(teams.id, assigned.id));
+      }
+    }
     if (command.action === "appoint" || command.action === "replace") {
       const [eligible] = await tx
         .select()
@@ -231,6 +300,15 @@ export async function updateCaptains(
       if (!rows.length)
         throw new HttpError(409, "Accepted application not found.");
     } else if (command.action === "lock") {
+      const configured = await tx
+        .select()
+        .from(teams)
+        .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
+      if (before.some((c) => !configured.some((t) => t.captainId === c.userId)))
+        throw new HttpError(
+          409,
+          "Configure one team for every captain before locking.",
+        );
       if (!before.length)
         throw new HttpError(
           409,

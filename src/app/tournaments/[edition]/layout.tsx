@@ -25,6 +25,7 @@ export default async function EditionLayout({
             ["/rules", "Rules"],
             ["/schedule", "Schedule"],
             ["/participants", "Participants"],
+            ["/teams", "Teams"],
           ].map(([path, name]) => (
             <Link key={path} href={`/tournaments/${slug}${path}`}>
               {name}

@@ -1,3 +1,4 @@
+import { updateTeams } from "../../src/lib/teams";
 import {
   afterAll,
   beforeAll,
@@ -51,15 +52,13 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
     await db().insert(users).values([staff, a, b, player]);
     await db().insert(editionState).values({ slug: edition.slug });
     for (const p of [a, b, player])
-      await db()
-        .insert(registrations)
-        .values({
-          userId: p.osuId,
-          editionSlug: edition.slug,
-          status: "accepted",
-          rulesVersion: "test-v1",
-          answers: {},
-        });
+      await db().insert(registrations).values({
+        userId: p.osuId,
+        editionSlug: edition.slug,
+        status: "accepted",
+        rulesVersion: "test-v1",
+        answers: {},
+      });
   });
   afterAll(async () => {
     await closeDb();
@@ -148,12 +147,23 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
       command(2, { action: "order", userIds: [b.osuId, a.osuId] }),
     );
     expect(ordered.captains.map((c) => c.userId)).toEqual([b.osuId, a.osuId]);
-    await updateCaptains(staff, edition.slug, command(3, { action: "lock" }));
+    await updateTeams(
+      staff,
+      edition.slug,
+      command(3, {
+        action: "configure",
+        teams: [
+          { captainId: a.osuId, name: "Synthetic A", capacity: null },
+          { captainId: b.osuId, name: "Synthetic B", capacity: null },
+        ],
+      }),
+    );
+    await updateCaptains(staff, edition.slug, command(4, { action: "lock" }));
     await expect(
       updateCaptains(
         staff,
         edition.slug,
-        command(4, { action: "revoke", userId: a.osuId }),
+        command(5, { action: "revoke", userId: a.osuId }),
       ),
     ).rejects.toMatchObject({ status: 409 });
   });

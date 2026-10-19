@@ -1,0 +1,218 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { eq, sql } from "drizzle-orm";
+import { db, closeDb } from "../../src/db";
+import {
+  editionState,
+  registrations,
+  users,
+  memberships,
+  teams,
+} from "../../src/db/schema";
+import { captainSetup, updateCaptains } from "../../src/lib/captains";
+import {
+  staffTeams,
+  updateTeams,
+  ownTeam,
+  publishedTeams,
+} from "../../src/lib/teams";
+import { edition } from "../fixtures/edition";
+const url = process.env.TEST_DATABASE_URL;
+const staff = { osuId: 90001, username: "Synthetic Staff" };
+const a = { osuId: 90002, username: "Synthetic Captain A" };
+const b = { osuId: 90003, username: "Synthetic Captain B" };
+const player = { osuId: 90004, username: "Synthetic Pool Player" };
+const command = (expectedVersion: number, value: Record<string, unknown>) => ({
+  command: value,
+  expectedVersion,
+  reason: "Synthetic approved test change.",
+  confirmed: true,
+});
+describe.skipIf(!url)(
+  "team ownership, membership uniqueness and publication",
+  () => {
+    let scratch: string;
+    beforeAll(() => {
+      if (!new URL(url!).pathname.includes("test"))
+        throw new Error("Use a test database");
+      scratch = mkdtempSync(join(tmpdir(), "oclr-teams-"));
+      const path = join(scratch, "editions.json");
+      writeFileSync(path, JSON.stringify([edition]));
+      vi.stubEnv("DATABASE_URL", url!);
+      vi.stubEnv("STAFF_OSU_IDS", String(staff.osuId));
+      vi.stubEnv("OCLR_EDITIONS_FILE", path);
+    });
+    beforeEach(async () => {
+      await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+      await db().insert(users).values([staff, a, b, player]);
+      await db().insert(editionState).values({ slug: edition.slug });
+      for (const p of [a, b, player])
+        await db()
+          .insert(registrations)
+          .values({
+            userId: p.osuId,
+            editionSlug: edition.slug,
+            status: "accepted",
+            rulesVersion: "test-v1",
+            answers: {},
+          });
+      await updateCaptains(
+        staff,
+        edition.slug,
+        command(0, { action: "appoint", userId: a.osuId }),
+      );
+      await updateCaptains(
+        staff,
+        edition.slug,
+        command(1, { action: "appoint", userId: b.osuId }),
+      );
+    });
+    afterAll(async () => {
+      await closeDb();
+      vi.unstubAllEnvs();
+      rmSync(scratch, { recursive: true, force: true });
+    });
+    async function configure() {
+      return updateTeams(
+        staff,
+        edition.slug,
+        command(2, {
+          action: "configure",
+          teams: [
+            { captainId: a.osuId, name: "Synthetic Team A", capacity: 2 },
+            { captainId: b.osuId, name: "Synthetic Team B", capacity: 2 },
+          ],
+        }),
+      );
+    }
+    it("creates exactly one team per captain and prevents captain access to staff mutations", async () => {
+      const data = await configure();
+      expect(data.teams).toHaveLength(2);
+      expect(data.teams.every((t) => t.members.length === 1)).toBe(true);
+      expect((await ownTeam(a.osuId, edition.slug))?.captainId).toBe(a.osuId);
+      expect(await ownTeam(player.osuId, edition.slug)).toBeNull();
+      await expect(staffTeams(a, edition.slug)).rejects.toMatchObject({
+        status: 403,
+      });
+      await expect(updateTeams(a, edition.slug, {})).rejects.toMatchObject({
+        status: 403,
+      });
+    });
+    it("enforces one active membership per edition at the database level under concurrency", async () => {
+      const data = await configure();
+      const results = await Promise.allSettled(
+        data.teams.map((t) =>
+          db()
+            .insert(memberships)
+            .values({
+              editionSlug: edition.slug,
+              teamId: t.id,
+              userId: player.osuId,
+              origin: "synthetic_test",
+            }),
+        ),
+      );
+      expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      expect((await captainSetup(staff, edition.slug)).pool).toHaveLength(0);
+      await expect(
+        db()
+          .insert(memberships)
+          .values({
+            editionSlug: "wrong-edition",
+            teamId: data.teams[0].id,
+            userId: player.osuId,
+            origin: "synthetic_test",
+          }),
+      ).rejects.toThrow();
+    });
+    it("keeps identity/roster private until separately approved and finalized", async () => {
+      const data = await configure();
+      const team = data.teams[0];
+      expect(await publishedTeams(edition.slug)).toEqual([]);
+      await expect(
+        updateTeams(
+          staff,
+          edition.slug,
+          command(3, {
+            action: "publish",
+            teamId: team.id,
+            identityPublished: true,
+            rosterPublished: false,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 409 });
+      await updateCaptains(
+        staff,
+        edition.slug,
+        command(3, {
+          action: "publish",
+          published: true,
+          poolPublished: false,
+        }),
+      );
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(4, {
+          action: "publish",
+          teamId: team.id,
+          identityPublished: true,
+          rosterPublished: false,
+        }),
+      );
+      expect((await publishedTeams(edition.slug))[0].members).toBeNull();
+      await expect(
+        updateTeams(
+          staff,
+          edition.slug,
+          command(5, {
+            action: "publish",
+            teamId: team.id,
+            identityPublished: true,
+            rosterPublished: true,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 409 });
+      // Synthetic finalization fixture; production finalization is exclusively the draft command.
+      await db()
+        .update(teams)
+        .set({ finalizedAt: new Date() })
+        .where(eq(teams.id, team.id));
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(5, {
+          action: "publish",
+          teamId: team.id,
+          identityPublished: true,
+          rosterPublished: true,
+        }),
+      );
+      expect((await publishedTeams(edition.slug))[0].members).toHaveLength(1);
+    });
+    it("archives a revoked captain team and preserves historical membership", async () => {
+      await configure();
+      await updateCaptains(
+        staff,
+        edition.slug,
+        command(3, { action: "revoke", userId: a.osuId }),
+      );
+      expect(await ownTeam(a.osuId, edition.slug)).toBeNull();
+      const historical = await db()
+        .select()
+        .from(memberships)
+        .where(eq(memberships.userId, a.osuId));
+      expect(historical[0].leftAt).not.toBeNull();
+    });
+  },
+);
