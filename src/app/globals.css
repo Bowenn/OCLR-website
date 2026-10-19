@@ -830,3 +830,9 @@ button:hover {
     gap: 0.3rem;
   }
 }
+.auth-page {
+  max-width: 750px;
+}
+.small {
+  font-size: 0.8rem;
+}

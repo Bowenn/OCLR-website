@@ -9,7 +9,7 @@ const links = [
   ["/news", "News"],
   ["/about", "About"],
 ] as const;
-export function Header() {
+export function Header({ user }: { user: { username: string } | null }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
@@ -51,8 +51,12 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <Link href="/login" className="button nav-login">
-          Login with osu! <span aria-hidden="true">↗</span>
+        <Link
+          href={user ? "/dashboard" : "/login"}
+          className="button nav-login"
+        >
+          {user ? "Player dashboard" : "Login with osu!"}{" "}
+          <span aria-hidden="true">↗</span>
         </Link>
       </div>
     </header>

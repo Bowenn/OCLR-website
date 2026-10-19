@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
 import "./globals.css";
 export const metadata: Metadata = {
@@ -10,16 +11,17 @@ export const metadata: Metadata = {
   description:
     "The home of osu! Chinese League Rookie. Tournament information, individual player registration and the OCLR community.",
 };
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const user = await currentUser();
   return (
     <html lang="en">
       <body>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Header />
+        <Header user={user} />
         <main id="main">{children}</main>
         <footer className="site-footer">
           <div>
