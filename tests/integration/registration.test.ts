@@ -19,6 +19,7 @@ import {
   registrationEvents,
 } from "../../src/db/schema";
 import {
+  registrationAvailability,
   submitRegistration,
   withdrawRegistration,
   ownRegistrations,
@@ -162,11 +163,13 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
     expect(await db().select().from(registrationEvents)).toHaveLength(2);
   });
   it("blocks withdrawal and new applications when the edition is locked", async () => {
+    expect(await registrationAvailability(edition)).toBe("open");
     const saved = await submitRegistration(a, edition.slug, valid);
     await db()
       .update(editionState)
       .set({ lockedAt: new Date() })
       .where(eq(editionState.slug, edition.slug));
+    expect(await registrationAvailability(edition)).toBe("closed");
     await expect(
       withdrawRegistration(a, saved.id, { confirmed: true }),
     ).rejects.toMatchObject({ status: 409 });

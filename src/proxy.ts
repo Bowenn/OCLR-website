@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { appUrl } from "@/lib/http";
 export function proxy(request: NextRequest) {
-  const canonical = process.env.APP_URL ? new URL(process.env.APP_URL) : null;
+  let canonical: URL | null = null;
+  try {
+    canonical = process.env.APP_URL ? new URL(appUrl()) : null;
+  } catch {
+    return NextResponse.json(
+      { error: "The site origin is not configured correctly." },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   if (
     canonical &&
     request.headers.get("host") !== canonical.host &&

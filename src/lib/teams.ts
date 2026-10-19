@@ -233,17 +233,20 @@ export async function ownTeam(userId: number, slug: string) {
     .select({ snapshot: draftSessions.captainSnapshot })
     .from(draftSessions)
     .where(eq(draftSessions.editionSlug, slug));
-  const published =
-    session?.snapshot?.rosters.find((r) => r.team.id === team.id)?.players ??
-    [];
+  const published = session?.snapshot?.rosters.find(
+    (r) => r.team.id === team.id,
+  )?.players;
   return {
     ...team,
-    members: members
-      .filter(
-        (m) =>
-          m.origin === "captain" || published.some((p) => p.osuId === m.osuId),
-      )
-      .map(({ osuId, username }) => ({ osuId, username })),
+    finalizedAt:
+      session && session.snapshot?.state !== "finalized"
+        ? null
+        : team.finalizedAt,
+    members:
+      published ??
+      members
+        .filter((m) => m.origin === "captain")
+        .map(({ osuId, username }) => ({ osuId, username })),
   };
 }
 export async function publishedTeams(slug: string) {

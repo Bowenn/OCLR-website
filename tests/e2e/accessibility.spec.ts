@@ -38,3 +38,15 @@ test("public pages meet automated WCAG A/AA checks and expose security headers",
     ).toBeVisible();
   }
 });
+test("public shell reflows at narrow and intermediate viewport widths", async ({
+  page,
+}) => {
+  for (const width of [320, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width);
+    await expect(page.getByRole("link", { name: "OCLR home" })).toBeVisible();
+  }
+});

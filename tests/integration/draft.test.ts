@@ -1,3 +1,4 @@
+import { updateCaptains } from "../../src/lib/captains";
 import { ownTeam } from "../../src/lib/teams";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -212,6 +213,23 @@ describe.skipIf(!url)(
       ])
         expect(text).not.toContain(secret);
     });
+    it("honors revoked pool visibility without exposing the last published candidate list", async () => {
+      const setup = (await staffDraft(fixture.staff, edition.slug)).edition!;
+      const change = (expectedVersion: number, poolPublished: boolean) =>
+        updateCaptains(fixture.staff, edition.slug, {
+          command: { action: "publish", published: true, poolPublished },
+          expectedVersion,
+          reason: "Synthetic pool publication approval change.",
+          confirmed: true,
+        });
+      await change(setup.setupVersion, true);
+      await command("publish");
+      expect((await publicDraft(edition.slug))?.pool).toHaveLength(
+        fixture.players.length,
+      );
+      await change(setup.setupVersion + 1, false);
+      expect((await publicDraft(edition.slug))?.pool).toBeNull();
+    });
     it("rejects paused, stale, unavailable, forged team/actor and cross-edition requests", async () => {
       const value = await input();
       await expect(
@@ -254,8 +272,14 @@ describe.skipIf(!url)(
         state.members.filter((m) => m.membership.origin === "draft"),
       ).toHaveLength(0);
       expect((await publicDraft(edition.slug))?.picks).toHaveLength(1);
+      expect(
+        (await ownTeam(fixture.a.osuId, edition.slug))?.members,
+      ).toHaveLength(2);
       await command("publish");
       expect((await publicDraft(edition.slug))?.picks).toHaveLength(0);
+      expect(
+        (await ownTeam(fixture.a.osuId, edition.slug))?.members,
+      ).toHaveLength(1);
       await command("resume");
       await command("publish");
       const next = await pickPlayer(fixture.a, edition.slug, await input());

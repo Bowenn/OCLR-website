@@ -15,6 +15,8 @@ See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` pr
 | `PRIVACY_CONTACT_EMAIL`              | Approved operational privacy contact                                                                                                     |
 | `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                               |
 | `OCLR_EDITIONS_FILE`                 | Optional absolute path to mounted, approved edition JSON; default is bundled `src/content/editions.json`                                 |
+| `OCLR_BRACKETS_FILE`                 | Optional absolute path to approved bracket/result JSON; default is bundled `src/content/brackets.json`                                   |
+| `OCLR_ANNOUNCEMENTS_FILE`            | Optional absolute path to approved announcement JSON; default is bundled `src/content/announcements.json`                                |
 | `PORT`                               | Optional listening port (Next.js default 3000)                                                                                           |
 | `TEST_DATABASE_URL`                  | Isolated destructive-test database whose name contains `test`; never set it on production                                                |
 
@@ -47,7 +49,7 @@ The approved `PRIVACY_RETENTION_NOTICE` must define application/identity/audit a
 
 Registration code is locally verified against PostgreSQL and browser tests. Actual organizer rules, edition dates/questions, privacy contact/retention policy, authorized staff identities, osu! credentials/callback, hosting/TLS, backups and deployed login verification remain external requirements. No DNS changes or production deployment have been performed.
 
-The live draft gate in #10 additionally requires #12–#15, mixed captain-direct/staff-on-behalf concurrency and replay tests, separate publication boundaries, reconnect/restart recovery and an isolated multi-captain rehearsal before streaming. Do not close #10 based only on registration tests.
+Issues #12–#15 are implemented and covered by mixed captain-direct/staff-on-behalf concurrency/replay tests, publication isolation, process reconstruction and a synthetic multi-browser rehearsal. The live draft gate in #10 still requires organizer rehearsal with actual approved rules, hosting ingress and event scale before streaming. Do not close #10 on automated fixtures alone.
 
 ## Draft operator runbook and rehearsal
 
@@ -62,3 +64,11 @@ Confirm actual captain/team counts, eligibility, maximum roster capacity (includ
 7. Disconnect/reconnect spectators and reload all roles. Restart a staging app process during an ongoing draft and verify persisted revision/order/rosters before enabling writes again. Exercise backup restoration separately in a disposable database. Test the actual hosting ingress and organizer-approved event scale before a real broadcast.
 
 `TEST_DATABASE_URL=... npm run test:e2e` performs the isolated multi-browser rehearsal with synthetic accounts/session hashes only (no production authentication bypass). `npm test` additionally checks database races, idempotency, audited correction/finalization and reconstruction of an ongoing draft in a fresh Node.js process. Browser artifacts are saved under Playwright's portable test-results directory. Tests are serialized around the shared isolated database; individual race scenarios still send concurrent server requests. Automated fixtures demonstrate two captains/two planned picks, not a claim of capacity at an unconfirmed real event scale. Live OAuth/staging hosting and organizer rehearsal remain external launch gates.
+
+## Availability and publication safeguards
+
+Registration links check the configured window, required privacy configuration and persisted draft lock. Temporary database failures hide submission controls; server mutations always recheck independently. Static tournament rules/dates remain readable during database outages, while private queries fail closed. An idle database connection failure is handled without terminating the process; subsequent requests reconnect. Polling has a bounded timeout, retains the last published snapshot on network errors and clears protected data after a 401/403.
+
+Committed roster corrections remain private until a corrected snapshot is published. Revoking public pool approval removes the published pool immediately, including an older stored snapshot. Browser caches must never override these publication checks.
+
+A local recovery rehearsal also stopped and restarted the scratch PostgreSQL process during an ongoing synthetic draft: the public homepage remained readable, private API access returned a generic failure during the outage, the existing session recovered, and persisted revision/picks/memberships were unchanged. This verifies local recovery only; it does not replace a hosting failover or backup-restore drill.

@@ -92,6 +92,20 @@ test.describe("isolated multi-captain rehearsal", () => {
     await b.page.goto(`/tournaments/${slug}/draft/captain`);
     await staff.page.goto(`/admin/tournaments/${slug}/draft`);
     await spectator.page.goto(`/tournaments/${slug}/draft`);
+    const closedRegistration = await spectator.context.newPage();
+    await closedRegistration.goto(`/tournaments/${slug}/register`);
+    await expect(
+      closedRegistration.getByRole("heading", {
+        name: "Registration is not open",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      closedRegistration.getByRole("button", {
+        name: /Submit individual application/,
+      }),
+    ).toHaveCount(0);
+    await closedRegistration.close();
     await expect(
       a.page.getByRole("button", { name: "Confirm Pick", exact: true }),
     ).toBeVisible();
@@ -370,6 +384,19 @@ test.describe("isolated multi-captain rehearsal", () => {
       fixture.staff.username,
     ])
       expect(payload).not.toContain(forbidden);
+    await a.context.clearCookies();
+    await staff.context.clearCookies();
+    await expect(
+      a.page.getByRole("heading", {
+        name: "Sign-in or captain access changed.",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(a.page.locator(".draft-picks > li")).toHaveCount(0);
+    await expect(staff.page.getByRole("main").getByRole("alert")).toHaveText(
+      "Staff access is unavailable. Sign in again or contact the organizer.",
+    );
+    await expect(staff.page.locator(".draft-picks > li")).toHaveCount(0);
   });
   test("competing UI confirmations commit once and clear stale selections", async ({
     browser,

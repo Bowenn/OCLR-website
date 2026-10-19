@@ -4,7 +4,7 @@ import type { CaptainBoard, DraftBoard } from "@/lib/draft-types";
 import { usePoll } from "./use-poll";
 import { DraftBoardView } from "./draft-board";
 import { DraftPick } from "./draft-pick";
-import { EmptyState } from "./ui";
+import { Action, EmptyState } from "./ui";
 export function LiveDraft({
   slug,
   initial,
@@ -21,10 +21,11 @@ export function LiveDraft({
     version: number;
   } | null>(null);
   const endpoint = `/api/tournaments/${slug}/draft${captainId ? "/captain" : ""}`;
-  const { value: board, connected } = usePoll<DraftBoard | CaptainBoard>(
-    endpoint,
-    initial,
-  );
+  const {
+    value: board,
+    connected,
+    authorizationLost,
+  } = usePoll<DraftBoard | CaptainBoard>(endpoint, initial);
   const canPick = Boolean(
     captainId &&
     board?.state === "live" &&
@@ -32,6 +33,17 @@ export function LiveDraft({
     connected &&
     "eligiblePool" in board,
   );
+  if (authorizationLost)
+    return (
+      <section className="panel" role="alert">
+        <h2>Sign-in or captain access changed.</h2>
+        <p className="muted">
+          Your session may have expired. Sign in again; captain appointments are
+          managed by the organizer.
+        </p>
+        <Action href="/login">Sign in again</Action>
+      </section>
+    );
   return (
     <div className={presenter ? "presenter-view" : ""}>
       <div className="section-title">

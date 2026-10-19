@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
-import { enrollmentState } from "@/lib/editions";
 import { currentUser } from "@/lib/auth/user";
-import { ownRegistrations } from "@/lib/registrations";
+import {
+  ownRegistrations,
+  registrationAvailability,
+} from "@/lib/registrations";
 import { Action, EmptyState, PageHeading } from "@/components/ui";
 import { ApplicationForm } from "@/components/application-form";
 export const metadata = { title: "Individual registration" };
@@ -14,6 +16,7 @@ export default async function Register({
   const { edition: slug } = await params;
   const edition = getPublicEdition(slug);
   if (!edition) notFound();
+  const availability = await registrationAvailability(edition);
   const user = await currentUser();
   const existing = user
     ? (await ownRegistrations(user.osuId)).find((r) => r.editionSlug === slug)
@@ -29,8 +32,14 @@ export default async function Register({
           <p className="muted">Current status: {existing.status}.</p>
           <Action href="/dashboard">View my application →</Action>
         </div>
-      ) : enrollmentState(edition) !== "open" ? (
-        <EmptyState title="Registration is not open">
+      ) : availability !== "open" ? (
+        <EmptyState
+          title={
+            availability === "unavailable"
+              ? "Registration temporarily unavailable"
+              : "Registration is not open"
+          }
+        >
           Check the tournament overview for confirmed dates and rules.
         </EmptyState>
       ) : !user ? (

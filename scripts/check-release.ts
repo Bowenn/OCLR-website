@@ -33,6 +33,9 @@ try {
   z.email().parse(process.env.PRIVACY_CONTACT_EMAIL);
   await db().execute(sql`SELECT 1 FROM users LIMIT 0`);
   await db().execute(sql`SELECT 1 FROM registrations LIMIT 0`);
+  await db().execute(
+    sql`SELECT 1 FROM captains, teams, memberships, draft_sessions, draft_picks, edition_events LIMIT 0`,
+  );
   console.log(
     "Configuration and database preflight passed. Live OAuth, deployment and organizer approval must still be verified.",
   );

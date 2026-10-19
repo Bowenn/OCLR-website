@@ -1,7 +1,8 @@
+import { registrationAvailability } from "@/lib/registrations";
 import { Action, Badge } from "./ui";
-import { enrollmentState, formatDate, type Edition } from "@/lib/editions";
-export function EditionCard({ edition }: { edition: Edition }) {
-  const state = enrollmentState(edition);
+import { formatDate, type Edition } from "@/lib/editions";
+export async function EditionCard({ edition }: { edition: Edition }) {
+  const state = await registrationAvailability(edition);
   return (
     <article className="featured-edition">
       <div className="edition-art" aria-hidden="true">
@@ -13,12 +14,16 @@ export function EditionCard({ edition }: { edition: Edition }) {
         <Badge>Registration: {state}</Badge>
         <h3>{edition.name}</h3>
         <p className="muted">{edition.summary}</p>
-        {state === "open" && (
-          <Action href={`/tournaments/${edition.slug}/register`}>
-            Register individually →
+        <div className="actions">
+          {state === "open" && (
+            <Action href={`/tournaments/${edition.slug}/register`}>
+              Register individually →
+            </Action>
+          )}
+          <Action href={`/tournaments/${edition.slug}`} secondary>
+            View tournament →
           </Action>
-        )}
-        <Action href={`/tournaments/${edition.slug}`}>View tournament →</Action>
+        </div>
       </div>
       <dl className="edition-facts">
         <div>

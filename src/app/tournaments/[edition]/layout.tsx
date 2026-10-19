@@ -14,8 +14,15 @@ export default async function EditionLayout({
   const { edition: slug } = await params;
   const edition = getPublicEdition(slug);
   if (!edition) notFound();
-  const draft = await publicDraft(slug);
-  const bracket = await publicBracket(slug);
+  const [draftResult, bracketResult] = await Promise.allSettled([
+    publicDraft(slug),
+    publicBracket(slug),
+  ]);
+  const draft = draftResult.status === "fulfilled" ? draftResult.value : null;
+  const bracket =
+    bracketResult.status === "fulfilled" ? bracketResult.value : null;
+  const liveUnavailable =
+    draftResult.status === "rejected" || bracketResult.status === "rejected";
   return (
     <div className="container page workspace">
       <aside className="sidebar">
@@ -41,7 +48,15 @@ export default async function EditionLayout({
           {draft && <Link href={`/tournaments/${slug}/draft`}>Live draft</Link>}
         </nav>
       </aside>
-      <div className="workspace-main">{children}</div>
+      <div className="workspace-main">
+        {liveUnavailable && (
+          <p className="notice" role="status">
+            Live tournament information is temporarily unavailable. Confirmed
+            rules and dates remain accessible.
+          </p>
+        )}
+        {children}
+      </div>
     </div>
   );
 }

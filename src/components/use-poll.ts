@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 export function usePoll<T>(endpoint: string, initial: T | null) {
   const [value, setValue] = useState<T | null>(initial);
   const [connected, setConnected] = useState(true);
+  const [authorizationLost, setAuthorizationLost] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
@@ -12,11 +13,15 @@ export function usePoll<T>(endpoint: string, initial: T | null) {
       try {
         const response = await fetch(endpoint, {
           cache: "no-store",
-          signal: controller.signal,
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(8000),
+          ]),
         });
         if ([401, 403].includes(response.status)) {
           if (active) {
             setValue(null);
+            setAuthorizationLost(true);
             setConnected(false);
           }
           return;
@@ -24,6 +29,7 @@ export function usePoll<T>(endpoint: string, initial: T | null) {
         if (!response.ok) throw new Error("snapshot");
         const next: T | null = await response.json();
         if (active) {
+          setAuthorizationLost(false);
           setValue(next);
           setConnected(true);
         }
@@ -40,5 +46,5 @@ export function usePoll<T>(endpoint: string, initial: T | null) {
       clearTimeout(timer);
     };
   }, [endpoint]);
-  return { value, connected };
+  return { value, connected, authorizationLost };
 }

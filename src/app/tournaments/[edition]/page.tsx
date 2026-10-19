@@ -1,6 +1,7 @@
+import { registrationAvailability } from "@/lib/registrations";
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
-import { enrollmentState, formatDate } from "@/lib/editions";
+import { formatDate } from "@/lib/editions";
 import { Action, Badge, PageHeading } from "@/components/ui";
 export async function generateMetadata({
   params,
@@ -18,6 +19,7 @@ export default async function Overview({
   const { edition: slug } = await params;
   const edition = getPublicEdition(slug);
   if (!edition) notFound();
+  const state = await registrationAvailability(edition);
   return (
     <>
       <PageHeading eyebrow="TOURNAMENT OVERVIEW" title={edition.name}>
@@ -33,7 +35,7 @@ export default async function Overview({
         <dl className="detail-list">
           <div>
             <dt>Registration</dt>
-            <dd>{enrollmentState(edition)}</dd>
+            <dd>{state}</dd>
           </div>
           <div>
             <dt>Opens</dt>
@@ -55,7 +57,7 @@ export default async function Overview({
           </div>
         </dl>
         <div className="actions">
-          {enrollmentState(edition) === "open" && (
+          {state === "open" && (
             <Action href={`/tournaments/${slug}/register`}>
               Register individually →
             </Action>

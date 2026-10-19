@@ -13,6 +13,22 @@ import { enrollmentState, type Edition } from "./editions";
 import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
 import { HttpError } from "./http";
+export async function registrationAvailability(
+  edition: Edition,
+): Promise<ReturnType<typeof enrollmentState> | "unavailable"> {
+  const state = enrollmentState(edition);
+  if (state !== "open") return state;
+  if (!privacyReady() || !process.env.DATABASE_URL) return "unavailable";
+  try {
+    const [saved] = await db()
+      .select({ lockedAt: editionState.lockedAt })
+      .from(editionState)
+      .where(eq(editionState.slug, edition.slug));
+    return saved?.lockedAt ? "closed" : "open";
+  } catch {
+    return "unavailable";
+  }
+}
 const applicationInput = z
   .object({
     rulesAcknowledged: z.literal(true),

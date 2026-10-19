@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/content/site";
+import { isStaff } from "@/lib/auth/staff";
 import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
 import "./globals.css";
@@ -29,14 +30,30 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const user = await currentUser();
+  let user: Awaited<ReturnType<typeof currentUser>> = null;
+  let authUnavailable = false;
+  try {
+    user = await currentUser();
+  } catch {
+    authUnavailable = true;
+  }
   return (
     <html lang="en">
       <body>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Header user={user} />
+        <Header
+          user={user ? { username: user.username, staff: isStaff(user) } : null}
+        />
+        {authUnavailable && (
+          <div className="container">
+            <p className="notice" role="status">
+              Sign-in is temporarily unavailable. Public tournament information
+              remains accessible.
+            </p>
+          </div>
+        )}
         <main id="main">{children}</main>
         <footer className="site-footer">
           <div>

@@ -6,7 +6,7 @@ Official community tournament website. OCLR is not affiliated with or endorsed b
 
 Use Node.js 24 LTS (minimum 22.13) and npm. Run `npm ci`, then `npm run dev` and open http://localhost:3000. Copy `.env.example` to `.env.local` when configuration is needed; never commit secrets.
 
-One Next.js App Router application uses strict TypeScript, React and Tailwind CSS. Shared tokens and responsive patterns live in `src/app/globals.css`. Public content requires no external services. Unimplemented destinations explicitly report availability and expose no private data.
+One Next.js App Router application uses strict TypeScript, React and Tailwind CSS. Shared tokens and responsive patterns live in `src/app/globals.css`. Static tournament information works without external services; authentication, registration, teams and live draft data require PostgreSQL. Empty production content stays unpublished until approved by organizers.
 
 ## Checks and hosting
 
@@ -22,7 +22,7 @@ Edit `src/content/editions.json`, validated by `src/lib/editions.ts`, or mount a
 
 `npm test` runs configuration/business tests. `npm run test:e2e` runs Playwright against the production build (install Chromium using `npx playwright install chromium`; set `PLAYWRIGHT_CHANNEL=chrome` to use installed Chrome). Test data must never be copied into production configuration.
 
-The full development dependency audit also reports an esbuild development-server advisory through Drizzle Kit’s legacy loader (no esbuild server or Drizzle Studio is used). The full development dependency audit currently reports an upstream, unpatched `braces` stack-exhaustion advisory through Next.js lint tooling. Lint patterns are repository-controlled. `npm audit --omit=dev` is clean; review upstream patches regularly without downgrading the application or forcing unrelated dependency changes.
+The development dependency audit reports an esbuild development-server advisory through Drizzle Kit’s legacy loader and an upstream, unpatched `braces` stack-exhaustion advisory through Next.js lint tooling. No esbuild server or Drizzle Studio is exposed, and lint patterns are repository-controlled. `npm audit --omit=dev` is clean; review upstream patches regularly without downgrading the application or forcing unrelated dependency changes.
 
 ## osu! authentication and PostgreSQL
 
@@ -56,7 +56,7 @@ Staff use `/admin/tournaments/[edition]/captains` to appoint/revoke/replace acce
 
 Staff configure exactly one approved team identity per captain at `/admin/tournaments/[edition]/teams` **before locking setup**. Optional capacity is a maximum including the captain, not an invented required roster size. Captain membership is created transactionally. A partial unique PostgreSQL index enforces one active membership per player per edition; composite foreign keys prevent cross-edition assignments. Revoking an unstarted captain archives their team and ends membership without erasing history. Assigned draft rosters require supervised correction.
 
-Captains view only their own team at `/tournaments/[edition]/team`; no self-service team creation, invitations, roster edits or unapproved branding edits exist. Public `/teams` routes project approved identities only. Rosters require finalization by the draft engine and separate staff publication. Private memberships, capacity, internal operations and unpublished identities are excluded. The bracket will consume these finalized, published team IDs directly.
+Captains view only their own team at `/tournaments/[edition]/team`; no self-service team creation, invitations, roster edits or unapproved branding edits exist. Public `/teams` routes project approved identities only. Rosters require finalization by the draft engine and separate staff publication. Private memberships, capacity, internal operations and unpublished identities are excluded. The bracket consumes these finalized, published team IDs directly.
 
 ## Authoritative draft engine
 

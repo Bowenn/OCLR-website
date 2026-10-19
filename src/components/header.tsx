@@ -9,7 +9,11 @@ const links = [
   ["/news", "News"],
   ["/about", "About"],
 ] as const;
-export function Header({ user }: { user: { username: string } | null }) {
+export function Header({
+  user,
+}: {
+  user: { username: string; staff?: boolean } | null;
+}) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
@@ -50,6 +54,15 @@ export function Header({ user }: { user: { username: string } | null }) {
               {label}
             </Link>
           ))}
+          {user?.staff && (
+            <Link
+              href="/admin"
+              aria-current={path.startsWith("/admin") ? "page" : undefined}
+              onClick={() => setOpen(false)}
+            >
+              Staff
+            </Link>
+          )}
         </nav>
         <Link
           href={user ? "/dashboard" : "/login"}

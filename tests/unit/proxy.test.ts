@@ -34,3 +34,16 @@ it("generates fresh strict script nonces, HSTS and no-store API responses", () =
   expect(a.headers.get("strict-transport-security")).toContain("31536000");
   expect(a.headers.get("cache-control")).toBe("no-store");
 });
+it("rejects invalid canonical URLs without exposing userinfo or issuing a redirect", () => {
+  vi.stubEnv(
+    "APP_URL",
+    "https://username:synthetic-private-value@oclr.example.test",
+  );
+  const response = proxy(
+    new NextRequest("https://oclr.example.test/", {
+      headers: { host: "oclr.example.test" },
+    }),
+  );
+  expect(response.status).toBe(503);
+  expect(response.headers.get("location")).toBeNull();
+});

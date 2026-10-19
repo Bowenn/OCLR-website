@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { editionState, registrations } from "@/db/schema";
 import { getPublicEdition } from "./content";
@@ -9,7 +9,7 @@ export async function playerApplications(userId: number) {
     .select({ registration: registrations, lockedAt: editionState.lockedAt })
     .from(registrations)
     .innerJoin(editionState, eq(registrations.editionSlug, editionState.slug))
-    .where(and(eq(registrations.userId, userId)))
+    .where(eq(registrations.userId, userId))
     .orderBy(registrations.createdAt);
   return Promise.all(
     rows.map(async ({ registration, lockedAt }) => {

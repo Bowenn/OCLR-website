@@ -51,6 +51,22 @@ test.describe("staff registration review", () => {
     ).toBe(403);
     await context.addCookies([staffCookie]);
     await page.goto("/admin");
+    if (!isMobile)
+      await expect(
+        page
+          .getByRole("navigation", { name: "Main navigation" })
+          .getByRole("link", { name: "Staff", exact: true }),
+      ).toBeVisible();
+    if (!isMobile) {
+      const original = page.viewportSize()!;
+      for (const width of [320, 768, 1024]) {
+        await page.setViewportSize({ width, height: 900 });
+        expect(
+          await page.evaluate(() => document.documentElement.scrollWidth),
+        ).toBeLessThanOrEqual(width);
+      }
+      await page.setViewportSize(original);
+    }
     await page.getByLabel("Search player or osu! ID").fill(String(playerId));
     await page.getByRole("button", { name: "Filter", exact: true }).click();
     await expect(

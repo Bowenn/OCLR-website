@@ -1401,3 +1401,15 @@ body:has(.presenter-view) .site-footer,
   margin-inline: auto;
   min-height: 35vh;
 }
+@media (max-width: 380px) {
+  .nav-wrap {
+    padding-inline: 0.9rem;
+    gap: 0.65rem;
+  }
+  .brand-mark {
+    display: none;
+  }
+  .brand {
+    font-size: 1.35rem;
+  }
+}

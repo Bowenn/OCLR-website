@@ -179,11 +179,19 @@ export async function publicDraft(slug: string) {
             eq(captains.published, true),
           ),
         );
-      return row.snapshot.rosters.every((r) =>
-        approved.some((t) => t.id === r.team.id),
+      if (
+        !row.snapshot.rosters.every((r) =>
+          approved.some((t) => t.id === r.team.id),
+        )
       )
+        return null;
+      const [visibility] = await tx
+        .select({ poolPublished: editionState.poolPublished })
+        .from(editionState)
+        .where(eq(editionState.slug, slug));
+      return visibility?.poolPublished
         ? row.snapshot
-        : null;
+        : { ...row.snapshot, pool: null };
     },
     { isolationLevel: "repeatable read" },
   );
