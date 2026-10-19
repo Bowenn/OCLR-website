@@ -1,0 +1,2 @@
+import { Action, PageHeading } from '@/components/ui';
+export default function Home() { return <div className="container page"><PageHeading eyebrow="The rookie stage" title="OCLR">osu! Chinese League Rookie</PageHeading><p className="muted">Individual players. A shared stage. Discover the OCLR tournament.</p><div className="actions"><Action href="/tournaments">View tournaments →</Action><Action href="/about" secondary>About OCLR</Action></div></div>; }
