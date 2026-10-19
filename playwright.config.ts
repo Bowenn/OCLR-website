@@ -1,7 +1,12 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { announcements } from "./tests/fixtures/announcements";
 import { edition } from "./tests/fixtures/edition";
+const announcementsPath = join(
+  tmpdir(),
+  `oclr-e2e-announcements-${process.pid}.json`,
+);
 const fixturePath = join(tmpdir(), `oclr-e2e-editions-${process.pid}.json`);
 const bracketsPath =
   process.env.OCLR_TEST_BRACKETS_FILE ||
@@ -11,6 +16,7 @@ if (process.env.TEST_DATABASE_URL) {
   process.env.OCLR_BRACKETS_FILE = bracketsPath;
   if (!existsSync(bracketsPath)) writeFileSync(bracketsPath, "[]");
   process.env.OCLR_EDITIONS_FILE = fixturePath;
+  writeFileSync(announcementsPath, JSON.stringify(announcements));
   writeFileSync(
     fixturePath,
     JSON.stringify([
@@ -62,6 +68,7 @@ export default defineConfig({
           APP_URL: "http://127.0.0.1:3100",
           OCLR_EDITIONS_FILE: fixturePath,
           OCLR_BRACKETS_FILE: bracketsPath,
+          OCLR_ANNOUNCEMENTS_FILE: announcementsPath,
           PRIVACY_CONTACT_EMAIL: "privacy@example.test",
           PRIVACY_RETENTION_NOTICE: "Synthetic isolated browser-test policy.",
         }

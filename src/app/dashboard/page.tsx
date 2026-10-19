@@ -6,7 +6,10 @@ import { formatDate } from "@/lib/editions";
 import { Action, EmptyState, PageHeading } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { ConfirmMutation } from "@/components/confirm-mutation";
-export const metadata = { title: "Player dashboard" };
+export const metadata = {
+  title: "Player dashboard",
+  robots: { index: false, follow: false },
+};
 export default async function Dashboard({
   searchParams,
 }: {

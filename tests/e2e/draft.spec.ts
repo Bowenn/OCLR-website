@@ -231,14 +231,12 @@ test.describe("isolated multi-captain rehearsal", () => {
     ).toBeVisible();
     for (const team of fixture.teamRows) {
       await staff.page.goto(`/admin/tournaments/${slug}/teams`);
-      const card = staff.page
-        .getByRole("article")
-        .filter({
-          has: staff.page.getByRole("heading", {
-            name: team.name,
-            exact: true,
-          }),
-        });
+      const card = staff.page.getByRole("article").filter({
+        has: staff.page.getByRole("heading", {
+          name: team.name,
+          exact: true,
+        }),
+      });
       await card
         .getByRole("button", { name: "Publish finalized roster", exact: true })
         .click();
@@ -302,6 +300,31 @@ test.describe("isolated multi-captain rehearsal", () => {
       fullPage: true,
       animations: "disabled",
     });
+    await bracketPage.goto(`/tournaments/${slug}/participants`);
+    await expect(
+      bracketPage.getByRole("heading", {
+        name: "Published captains",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      bracketPage.getByRole("heading", {
+        name: "Teams & finalized rosters",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      bracketPage.getByRole("link", {
+        name: fixture.players[0].username,
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      bracketPage.getByRole("link", {
+        name: fixture.players[7].username,
+        exact: true,
+      }),
+    ).toHaveCount(0);
     await bracketPage.close();
     await staff.page.goto(`/admin/tournaments/${slug}/draft`);
     for (const [page, name] of [

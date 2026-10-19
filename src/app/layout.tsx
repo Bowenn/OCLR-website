@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { site } from "@/content/site";
 import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
 import "./globals.css";
@@ -8,6 +9,19 @@ export const metadata: Metadata = {
   title: {
     default: "OCLR — osu! Chinese League Rookie",
     template: "%s | OCLR",
+  },
+  openGraph: {
+    title: "OCLR — osu! Chinese League Rookie",
+    description:
+      "Tournament information, individual registration and the OCLR community.",
+    siteName: "OCLR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "OCLR — osu! Chinese League Rookie",
+    description:
+      "The rookie stage. Individual entry, captain draft and team competition.",
   },
   description:
     "The home of osu! Chinese League Rookie. Tournament information, individual player registration and the OCLR community.",
@@ -38,6 +52,9 @@ export default async function RootLayout({
             <Link href="/tournaments">Tournaments</Link>
             <Link href="/about">About OCLR</Link>
             <Link href="/privacy">Privacy</Link>
+            {site.contact && (
+              <a href={site.contact.url}>{site.contact.label}</a>
+            )}
           </nav>
           <span className="footer-note">PLAY. CONNECT. GROW.</span>
         </footer>

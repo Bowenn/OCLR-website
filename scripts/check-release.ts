@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { appUrl } from "../src/lib/http";
 import { authReady, oauthConfig } from "../src/lib/auth/config";
+import { getAnnouncements } from "../src/lib/announcements";
 import { getBrackets } from "../src/lib/brackets";
 import { getEditions } from "../src/lib/content";
 import { db, closeDb } from "../src/db";
@@ -28,6 +29,7 @@ try {
       );
   }
   getBrackets();
+  getAnnouncements();
   z.email().parse(process.env.PRIVACY_CONTACT_EMAIL);
   await db().execute(sql`SELECT 1 FROM users LIMIT 0`);
   await db().execute(sql`SELECT 1 FROM registrations LIMIT 0`);

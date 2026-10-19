@@ -52,3 +52,27 @@ test("landing page has honest CTAs and readable original artwork", async ({
     .click();
   await expect(page).toHaveURL(/\/tournaments$/);
 });
+test("news is approved content only and about uses the official identity", async ({
+  page,
+}) => {
+  await page.goto("/about");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "osu! Chinese League Rookie",
+  );
+  await page.goto("/news");
+  if (process.env.TEST_DATABASE_URL) {
+    await page
+      .getByRole("link", { name: /Synthetic test announcement/ })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Synthetic fixture section" }),
+    ).toBeVisible();
+    await expect(page.getByText(/Plain text is escaped/)).toContainText(
+      "<script>",
+    );
+    expect((await page.goto("/news/private-announcement"))?.status()).toBe(404);
+  } else
+    await expect(
+      page.getByRole("heading", { name: "No announcements yet" }),
+    ).toBeVisible();
+});
