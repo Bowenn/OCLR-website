@@ -32,8 +32,10 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   let user: Awaited<ReturnType<typeof currentUser>> = null;
   let authUnavailable = false;
+  let staff = false;
   try {
     user = await currentUser();
+    staff = user ? await isStaff(user) : false;
   } catch {
     authUnavailable = true;
   }
@@ -43,9 +45,7 @@ export default async function RootLayout({
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Header
-          user={user ? { username: user.username, staff: isStaff(user) } : null}
-        />
+        <Header user={user ? { username: user.username, staff } : null} />
         {authUnavailable && (
           <div className="container">
             <p className="notice" role="status">

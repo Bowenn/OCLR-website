@@ -12,7 +12,7 @@ import {
   teams,
   users,
 } from "@/db/schema";
-import { assertStaff, isStaff } from "./auth/staff";
+import { assertCapability, hasCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { hashToken } from "./auth/tokens";
 import { getEditions, getPublicEdition } from "./content";
@@ -135,7 +135,7 @@ function board(data: Data): DraftBoard {
   };
 }
 export async function staffDraft(actor: User, slug: string) {
-  assertStaff(actor);
+  await assertCapability(actor, "manage_draft", slug);
   if (!getEditions().some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   return db().transaction(
@@ -245,7 +245,7 @@ const commandSchema = z
   })
   .strict();
 export async function draftCommand(actor: User, slug: string, input: unknown) {
-  assertStaff(actor);
+  await assertCapability(actor, "manage_draft", slug);
   if (!getEditions().some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
@@ -608,7 +608,7 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       .where(
         and(eq(captains.editionSlug, slug), eq(captains.userId, actor.osuId)),
       );
-    const staff = isStaff(actor);
+    const staff = await hasCapability(actor, "manage_draft", slug);
     if (!staff && !appointment)
       throw new HttpError(
         403,

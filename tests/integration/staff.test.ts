@@ -28,7 +28,7 @@ describe.skipIf(!url)("staff review boundaries and concurrency", () => {
     if (!new URL(url!).pathname.includes("test"))
       throw new Error("Use a test database");
     vi.stubEnv("DATABASE_URL", url!);
-    vi.stubEnv("STAFF_OSU_IDS", String(staff.osuId));
+    vi.stubEnv("ADMIN_OSU_IDS", String(staff.osuId));
   });
   beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);

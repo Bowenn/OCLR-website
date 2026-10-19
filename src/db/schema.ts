@@ -274,3 +274,53 @@ export const draftPicks = pgTable(
     ),
   ],
 );
+
+export const staffRole = pgEnum("staff_role", [
+  "admin",
+  "mappooler",
+  "referee",
+]);
+export const staffRoles = pgTable(
+  "staff_roles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId, { onDelete: "cascade" }),
+    editionSlug: text("edition_slug").references(() => editionState.slug),
+    role: staffRole("role").notNull(),
+    grantedBy: bigint("granted_by", { mode: "number" }).notNull(),
+    grantedAt: timestamp("granted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("staff_global_role_unique")
+      .on(t.userId, t.role)
+      .where(sql`${t.editionSlug} IS NULL AND ${t.revokedAt} IS NULL`),
+    uniqueIndex("staff_scoped_role_unique")
+      .on(t.userId, t.role, t.editionSlug)
+      .where(sql`${t.editionSlug} IS NOT NULL AND ${t.revokedAt} IS NULL`),
+    index("staff_roles_user_idx").on(t.userId),
+  ],
+);
+export const staffRoleEvents = pgTable(
+  "staff_role_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    grantId: uuid("grant_id")
+      .notNull()
+      .references(() => staffRoles.id, { onDelete: "cascade" }),
+    actorId: bigint("actor_id", { mode: "number" }).notNull(),
+    targetId: bigint("target_id", { mode: "number" }).notNull(),
+    role: staffRole("role").notNull(),
+    editionSlug: text("edition_slug"),
+    action: text("action").$type<"grant" | "revoke">().notNull(),
+    reason: text("reason").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("staff_role_events_grant_idx").on(t.grantId)],
+);

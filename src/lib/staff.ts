@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -8,7 +8,7 @@ import {
   users,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
-import { assertStaff } from "./auth/staff";
+import { assertCapability, capabilityScope } from "./auth/staff";
 import { HttpError } from "./http";
 const filterSchema = z
   .object({
@@ -60,9 +60,12 @@ export async function listApplications(
   input: unknown,
   exporting = false,
 ) {
-  assertStaff(actor);
+  const scopes = await capabilityScope(actor, "manage_registrations");
   const filters = parseFilters(input);
-  const where = conditions(filters);
+  const where = and(
+    conditions(filters),
+    scopes ? inArray(registrations.editionSlug, scopes) : undefined,
+  );
   const [rows, totals] = await Promise.all([
     db()
       .select(listFields)
@@ -86,7 +89,7 @@ export async function listApplications(
   return { rows, total: totals[0].count, filters };
 }
 export async function applicationDetails(actor: User, id: string) {
-  assertStaff(actor);
+  await capabilityScope(actor, "manage_registrations");
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Application not found.");
   const [row] = await db()
@@ -95,6 +98,11 @@ export async function applicationDetails(actor: User, id: string) {
     .innerJoin(users, eq(registrations.userId, users.osuId))
     .where(eq(registrations.id, id));
   if (!row) throw new HttpError(404, "Application not found.");
+  await assertCapability(
+    actor,
+    "manage_registrations",
+    row.registration.editionSlug,
+  );
   const events = await db()
     .select()
     .from(registrationEvents)
@@ -107,7 +115,7 @@ export async function reviewApplication(
   id: string,
   input: unknown,
 ) {
-  assertStaff(actor);
+  await capabilityScope(actor, "manage_registrations");
   const result = z
     .object({
       status: z.enum(["accepted", "rejected"]),
@@ -127,6 +135,7 @@ export async function reviewApplication(
       .from(registrations)
       .where(eq(registrations.id, id));
     if (!record) throw new HttpError(404, "Application not found.");
+    await assertCapability(actor, "manage_registrations", record.editionSlug);
     const [edition] = await tx
       .select()
       .from(editionState)

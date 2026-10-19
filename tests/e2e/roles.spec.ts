@@ -1,0 +1,151 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { seedSession } from "./session";
+import { closeDb } from "../../src/db";
+test.describe("scoped staff roles through real HTTP sessions", () => {
+  test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
+  test.afterAll(async () => closeDb());
+  test("grants and revokes limited access without refreshing the operator session", async ({
+    page,
+    context,
+    browser,
+    isMobile,
+  }, info) => {
+    const adminId = isMobile ? 70001 : 60001;
+    const operatorId = isMobile ? 180101 : 180001;
+    const cookie = await seedSession(operatorId);
+    await context.addCookies([await seedSession(adminId)]);
+    const operator = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    const guest = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    await operator.addCookies([cookie]);
+    const origin = { origin: "http://127.0.0.1:3100" };
+    try {
+      expect((await guest.request.get("/api/admin/staff")).status()).toBe(401);
+      expect(
+        (
+          await guest.request.post("/api/admin/staff", {
+            headers: origin,
+            data: {},
+          })
+        ).status(),
+      ).toBe(401);
+      expect((await operator.request.get("/api/admin/staff")).status()).toBe(
+        403,
+      );
+      await page.goto("/admin/staff");
+      await page.getByLabel("Verified osu! user ID").fill(String(operatorId));
+      await page
+        .getByRole("combobox", { name: /^Role/ })
+        .selectOption("mappooler");
+      await page
+        .getByRole("combobox", { name: /^Scope/ })
+        .selectOption("test-cup");
+      await page
+        .getByLabel("Reason for grant")
+        .fill("Synthetic browser role rehearsal");
+      await page.getByRole("button", { name: "Review role grant" }).click();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: "Revoke role" }),
+      ).toBeVisible();
+      const listing = await (
+        await context.request.get("/api/admin/staff")
+      ).json();
+      const grant = listing.grants.find(
+        (g: { grant: { userId: number; revokedAt: string | null } }) =>
+          g.grant.userId === operatorId && !g.grant.revokedAt,
+      ).grant;
+      const operatorPage = await operator.newPage();
+      await operatorPage.goto("/admin");
+      await expect(
+        operatorPage.getByRole("heading", {
+          name: "OCLR operations",
+          level: 1,
+        }),
+      ).toBeVisible();
+      await expect(
+        operatorPage.getByRole("link", { name: "Staff assignments" }),
+      ).toHaveCount(0);
+      await expect(
+        operatorPage.getByRole("link", { name: /Captains$/ }),
+      ).toHaveCount(0);
+      for (const path of [
+        "/api/admin/staff",
+        "/api/admin/registrations",
+        "/api/admin/registrations/export",
+        "/api/admin/tournaments/test-cup/captains",
+        "/api/admin/tournaments/test-cup/teams",
+        "/api/admin/tournaments/test-cup/draft",
+      ]) {
+        expect((await operator.request.get(path)).status(), path).toBe(403);
+        expect((await guest.request.get(path)).status(), path).toBe(401);
+      }
+      for (const path of [
+        "/api/admin/staff",
+        "/api/admin/tournaments/test-cup/captains",
+        "/api/admin/tournaments/test-cup/teams",
+        "/api/admin/tournaments/test-cup/draft",
+      ])
+        expect(
+          (
+            await operator.request.post(path, {
+              headers: origin,
+              data: { confirmed: true },
+            })
+          ).status(),
+          path,
+        ).toBe(403);
+      expect(
+        (
+          await context.request.post("/api/admin/staff", {
+            data: {
+              action: "revoke",
+              grantId: grant.id,
+              confirmed: true,
+              reason: "No origin",
+            },
+          })
+        ).status(),
+      ).toBe(403);
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: info.outputPath("staff-roles.png"),
+        fullPage: true,
+        animations: "disabled",
+      });
+      await page
+        .getByLabel(/Revocation reason/)
+        .fill("Synthetic browser immediate revocation");
+      await page.getByRole("button", { name: "Revoke role" }).click();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: "Revoke role" }),
+      ).toHaveCount(0);
+      expect(
+        (
+          await operator.request.get("/api/admin/tournaments/test-cup/draft")
+        ).status(),
+      ).toBe(403);
+      const response = await operatorPage.goto("/admin");
+      expect(response?.status()).toBe(404);
+    } finally {
+      await operator.close();
+      await guest.close();
+    }
+  });
+});

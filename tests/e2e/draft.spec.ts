@@ -22,7 +22,7 @@ test.describe("isolated multi-captain rehearsal", () => {
     if (!new URL(testUrl!).pathname.includes("test"))
       throw new Error("Isolated database required");
     process.env.DATABASE_URL = testUrl;
-    process.env.STAFF_OSU_IDS = "110001,120001";
+    process.env.ADMIN_OSU_IDS = "110001,120001";
   });
   test.beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);

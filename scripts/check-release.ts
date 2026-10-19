@@ -14,14 +14,21 @@ try {
   if (!appUrl().startsWith("https://"))
     throw new Error("Release requires HTTPS.");
   oauthConfig();
-  const ids = (process.env.STAFF_OSU_IDS ?? "").split(",").map((v) => v.trim());
+  const ids = (process.env.ADMIN_OSU_IDS ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
   if (
-    !ids.length ||
     ids.some(
       (id) => !/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id)),
     )
   )
-    throw new Error("Configure verified staff osu! IDs.");
+    throw new Error("Configure valid verified bootstrap Admin osu! IDs.");
+  const globalAdmins = await db().execute(
+    sql`SELECT 1 FROM staff_roles WHERE role = 'admin' AND edition_slug IS NULL AND revoked_at IS NULL LIMIT 1`,
+  );
+  if (!ids.length && !globalAdmins.rows.length)
+    throw new Error("Provision a verified global Admin before release.");
   for (const e of getEditions()) {
     if (e.published && e.registration && (!e.rules || !e.eligibility))
       throw new Error(

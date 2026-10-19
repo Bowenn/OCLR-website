@@ -44,7 +44,7 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
       JSON.stringify([edition, { ...edition, slug: "second-test-cup" }]),
     );
     vi.stubEnv("DATABASE_URL", url!);
-    vi.stubEnv("STAFF_OSU_IDS", String(staff.osuId));
+    vi.stubEnv("ADMIN_OSU_IDS", String(staff.osuId));
     vi.stubEnv("OCLR_EDITIONS_FILE", path);
   });
   beforeEach(async () => {

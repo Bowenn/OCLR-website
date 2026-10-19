@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireStaff } from "@/lib/auth/staff";
+import { requireStaff, staffAccess, permits } from "@/lib/auth/staff";
 import { listApplications } from "@/lib/staff";
 import { getEditions } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
@@ -10,6 +10,27 @@ export default async function Admin({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const actor = await requireStaff();
+  const access = await staffAccess(actor);
+  if (!access.some((g) => g.role === "admin"))
+    return (
+      <>
+        <PageHeading eyebrow="STAFF WORKSPACE" title="OCLR operations">
+          Your assignments grant access to specific operational tools.
+        </PageHeading>
+        <div className="panel">
+          <h2>Your role assignments</h2>
+          {access.map((g, i) => (
+            <p key={i}>
+              {g.role} · {g.editionSlug ?? "All editions"}
+            </p>
+          ))}
+          <p className="muted">
+            Tools appear in the workspace navigation as they become available.
+            Captain draft access remains separate.
+          </p>
+        </div>
+      </>
+    );
   const result = await listApplications(actor, await searchParams);
   const { rows, total, filters } = result;
   const query = new URLSearchParams({
@@ -17,7 +38,9 @@ export default async function Admin({
     edition: filters.edition,
     status: filters.status,
   });
-  const editions = getEditions();
+  const editions = getEditions().filter((e) =>
+    permits(access, "manage_registrations", e.slug),
+  );
   return (
     <>
       <PageHeading eyebrow="REGISTRATION REVIEW" title="Registrations">

@@ -11,7 +11,7 @@ See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` pr
 | `APP_URL`                            | Confirmed canonical origin, HTTPS in staging/production, no path or credentials                                                          |
 | `DATABASE_URL`                       | PostgreSQL connection; use verified TLS for remote servers, a least-privilege runtime role and a separate migration role where supported |
 | `OSU_CLIENT_ID`, `OSU_CLIENT_SECRET` | Organizer-owned OAuth application, exact callback `APP_URL/auth/osu/callback`                                                            |
-| `STAFF_OSU_IDS`                      | Verified numeric osu! IDs, comma-separated; empty denies all staff                                                                       |
+| `ADMIN_OSU_IDS`                      | Explicitly verified bootstrap global Admin IDs; legacy STAFF_OSU_IDS grants no access. Persistent grants are managed at /admin/staff     |
 | `PRIVACY_CONTACT_EMAIL`              | Approved operational privacy contact                                                                                                     |
 | `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                               |
 | `OCLR_EDITIONS_FILE`                 | Optional absolute path to mounted, approved edition JSON; default is bundled `src/content/editions.json`                                 |

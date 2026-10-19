@@ -11,7 +11,7 @@ import {
   draftSessions,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
-import { assertStaff } from "./auth/staff";
+import { assertCapability } from "./auth/staff";
 import { getEditions, getPublicEdition } from "./content";
 import { HttpError } from "./http";
 const teamInput = z
@@ -45,7 +45,7 @@ const commandSchema = z
   })
   .strict();
 export async function staffTeams(actor: User, slug: string) {
-  assertStaff(actor);
+  await assertCapability(actor, "manage_teams", slug);
   if (!getEditions().some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   return db().transaction(
@@ -85,7 +85,7 @@ export async function staffTeams(actor: User, slug: string) {
   );
 }
 export async function updateTeams(actor: User, slug: string, input: unknown) {
-  assertStaff(actor);
+  await assertCapability(actor, "manage_teams", slug);
   if (!getEditions().some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
