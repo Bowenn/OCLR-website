@@ -14,14 +14,18 @@ export async function playerApplications(userId: number) {
   return Promise.all(
     rows.map(async ({ registration, lockedAt }) => {
       const edition = getPublicEdition(registration.editionSlug);
+      const appointment = await captainAppointment(
+        userId,
+        registration.editionSlug,
+      );
       return {
+        captainAssigned: Boolean(appointment),
         registration,
         edition,
         withdrawable: canWithdraw(
           edition,
           registration,
-          Boolean(lockedAt) ||
-            Boolean(await captainAppointment(userId, registration.editionSlug)),
+          Boolean(lockedAt) || Boolean(appointment),
         ),
       };
     }),

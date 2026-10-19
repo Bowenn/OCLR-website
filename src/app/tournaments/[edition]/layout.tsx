@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { publicDraft } from "@/lib/draft";
 import { getPublicEdition } from "@/lib/content";
 export const dynamic = "force-dynamic";
 export default async function EditionLayout({
@@ -12,6 +13,7 @@ export default async function EditionLayout({
   const { edition: slug } = await params;
   const edition = getPublicEdition(slug);
   if (!edition) notFound();
+  const draft = await publicDraft(slug);
   return (
     <div className="container page workspace">
       <aside className="sidebar">
@@ -31,6 +33,7 @@ export default async function EditionLayout({
               {name}
             </Link>
           ))}
+          {draft && <Link href={`/tournaments/${slug}/draft`}>Live draft</Link>}
         </nav>
       </aside>
       <div className="workspace-main">{children}</div>

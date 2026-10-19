@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies } from "next/headers.js";
 import { readSession } from "./sessions";
 import { sessionCookie } from "./config";
 import { HttpError } from "../http";

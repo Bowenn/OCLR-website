@@ -8,6 +8,7 @@ import {
   memberships,
   teams,
   users,
+  draftSessions,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
 import { assertStaff } from "./auth/staff";
@@ -219,12 +220,31 @@ export async function ownTeam(userId: number, slug: string) {
     );
   if (!team) return null;
   const members = await db()
-    .select({ osuId: memberships.userId, username: users.username })
+    .select({
+      osuId: memberships.userId,
+      username: users.username,
+      origin: memberships.origin,
+    })
     .from(memberships)
     .innerJoin(users, eq(memberships.userId, users.osuId))
     .where(and(eq(memberships.teamId, team.id), isNull(memberships.leftAt)))
     .orderBy(memberships.joinedAt);
-  return { ...team, members };
+  const [session] = await db()
+    .select({ snapshot: draftSessions.captainSnapshot })
+    .from(draftSessions)
+    .where(eq(draftSessions.editionSlug, slug));
+  const published =
+    session?.snapshot?.rosters.find((r) => r.team.id === team.id)?.players ??
+    [];
+  return {
+    ...team,
+    members: members
+      .filter(
+        (m) =>
+          m.origin === "captain" || published.some((p) => p.osuId === m.osuId),
+      )
+      .map(({ osuId, username }) => ({ osuId, username })),
+  };
 }
 export async function publishedTeams(slug: string) {
   if (!getPublicEdition(slug) || !process.env.DATABASE_URL) return [];

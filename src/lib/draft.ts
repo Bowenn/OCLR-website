@@ -280,6 +280,7 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       const captainSnapshot: CaptainBoard = {
         ...snapshot,
         engineRevision: session.version,
+        turnSequence: session.turnSequence,
         eligiblePool: availablePool(data),
       };
       await tx
@@ -643,8 +644,6 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
           isNull(teams.archivedAt),
         ),
       );
-    if (!staff && team?.captainId !== actor.osuId)
-      throw new HttpError(403, "It is another captain’s turn.");
     if (
       session.state !== "live" ||
       session.version !== value.expectedVersion ||
@@ -656,6 +655,8 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
         409,
         "Draft state changed or is awaiting publication. Refresh the authoritative snapshot.",
       );
+    if (!staff && team?.captainId !== actor.osuId)
+      throw new HttpError(403, "It is another captain’s turn.");
     const [assigned] = await tx
       .select()
       .from(memberships)

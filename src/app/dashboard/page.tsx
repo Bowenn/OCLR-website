@@ -77,7 +77,12 @@ export default async function Dashboard({
           {applications.length ? (
             <div className="stack">
               {applications.map(
-                ({ registration: r, edition, withdrawable }) => (
+                ({
+                  registration: r,
+                  edition,
+                  withdrawable,
+                  captainAssigned,
+                }) => (
                   <article className="panel registration-card" key={r.id}>
                     <div className="registration-cover" aria-hidden="true">
                       OCLR
@@ -100,6 +105,21 @@ export default async function Dashboard({
                         </p>
                       )}
                       <div className="actions">
+                        {edition && captainAssigned && (
+                          <>
+                            <Action
+                              href={`/tournaments/${edition.slug}/team`}
+                              secondary
+                            >
+                              My captain team
+                            </Action>
+                            <Action
+                              href={`/tournaments/${edition.slug}/draft/captain`}
+                            >
+                              Captain draft room
+                            </Action>
+                          </>
+                        )}
                         {edition && (
                           <Action
                             href={`/tournaments/${edition.slug}`}

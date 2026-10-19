@@ -20,5 +20,6 @@ export type DraftBoard = {
 };
 export type CaptainBoard = DraftBoard & {
   engineRevision: number;
+  turnSequence: string[];
   eligiblePool: DraftIdentity[];
 };

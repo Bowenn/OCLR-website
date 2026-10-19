@@ -1,3 +1,4 @@
+import { ownTeam } from "../../src/lib/teams";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -185,6 +186,9 @@ describe.skipIf(!url)(
     it("does not expose committed unpublished picks or internal actor/audit data through public/captain snapshots", async () => {
       const original = await publicDraft(edition.slug);
       await pickPlayer(fixture.staff, edition.slug, await input());
+      expect(
+        (await ownTeam(fixture.a.osuId, edition.slug))?.members,
+      ).toHaveLength(1);
       expect(await publicDraft(edition.slug)).toEqual(original);
       expect((await captainDraft(fixture.b, edition.slug))?.picks).toHaveLength(
         0,
@@ -192,6 +196,9 @@ describe.skipIf(!url)(
       await command("publish");
       const publicData = await publicDraft(edition.slug);
       expect(publicData?.picks).toHaveLength(1);
+      expect(
+        (await ownTeam(fixture.a.osuId, edition.slug))?.members,
+      ).toHaveLength(2);
       expect(publicData?.picks[0].team.captain.osuId).toBe(fixture.a.osuId);
       expect(publicData?.pool).toBeNull();
       const text = JSON.stringify(publicData);

@@ -36,6 +36,14 @@ export default async function StaffLayout({
               {e.name}: Teams
             </Link>
           ))}
+          {getEditions().map((e) => (
+            <Link
+              key={`draft-${e.slug}`}
+              href={`/admin/tournaments/${e.slug}/draft`}
+            >
+              {e.name}: Draft
+            </Link>
+          ))}
         </nav>
         <p className="muted small spaced">Signed in as {user.username}</p>
       </aside>

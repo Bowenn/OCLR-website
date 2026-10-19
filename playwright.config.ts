@@ -3,13 +3,31 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { edition } from "./tests/fixtures/edition";
 const fixturePath = join(tmpdir(), `oclr-e2e-editions-${process.pid}.json`);
-if (process.env.TEST_DATABASE_URL)
-  writeFileSync(fixturePath, JSON.stringify([edition]));
+if (process.env.TEST_DATABASE_URL) {
+  process.env.OCLR_EDITIONS_FILE = fixturePath;
+  writeFileSync(
+    fixturePath,
+    JSON.stringify([
+      edition,
+      {
+        ...edition,
+        slug: "draft-desktop-test",
+        name: "Synthetic desktop draft",
+      },
+      { ...edition, slug: "draft-mobile-test", name: "Synthetic mobile draft" },
+    ]),
+  );
+}
 import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
-  use: { baseURL: "http://127.0.0.1:3100", trace: "retain-on-failure" },
+  workers: 1,
+  use: {
+    baseURL: "http://127.0.0.1:3100",
+    trace: "retain-on-failure",
+    actionTimeout: 10000,
+  },
   projects: [
     {
       name: "desktop",
@@ -34,7 +52,7 @@ export default defineConfig({
     env: process.env.TEST_DATABASE_URL
       ? {
           DATABASE_URL: process.env.TEST_DATABASE_URL,
-          STAFF_OSU_IDS: "60001,70001",
+          STAFF_OSU_IDS: "60001,70001,110001,120001",
           APP_URL: "http://127.0.0.1:3100",
           OCLR_EDITIONS_FILE: fixturePath,
           PRIVACY_CONTACT_EMAIL: "privacy@example.test",

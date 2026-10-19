@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server.js";
 export class HttpError extends Error {
   constructor(
     public status: number,

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import defaultEditions from "@/content/editions.json";
+import defaultEditions from "@/content/editions.json" with { type: "json" };
 import { editionsSchema } from "./editions";
 // Operations may mount approved content outside the application bundle.
 export function getEditions() {

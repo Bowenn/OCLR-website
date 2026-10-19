@@ -1,0 +1,280 @@
+"use client";
+import { useState } from "react";
+import type { StaffDraft } from "@/lib/draft";
+import type { DraftBoard, DraftTeam } from "@/lib/draft-types";
+import { usePoll } from "./use-poll";
+import { DraftPick } from "./draft-pick";
+import { ConfirmMutation } from "./confirm-mutation";
+import { DraftBoardView } from "./draft-board";
+import { formatDate } from "@/lib/editions";
+function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
+  const [reason, setReason] = useState("");
+  const [sequence, setSequence] = useState<string[]>(
+    data.session?.turnSequence ?? [],
+  );
+  const state = data.session?.state ?? "setup";
+  const version = data.session?.version ?? 0;
+  const allowed = [
+    ...(state === "setup" && data.session ? ["ready"] : []),
+    ...(state === "ready" ? ["start"] : []),
+    ...(state === "live" ? ["pause"] : []),
+    ...(state === "paused"
+      ? ["resume", ...(data.session?.turnIndex ? ["undo"] : [])]
+      : []),
+    ...(state === "completed" ? ["finalize", "undo"] : []),
+    ...(["setup", "ready", "paused", "completed"].includes(state) &&
+    data.session
+      ? ["abort"]
+      : []),
+    ...(state === "aborted" ? ["recover"] : []),
+    ...(state !== "setup" ? ["publish"] : []),
+  ];
+  const labels: Record<string, string> = {
+    ready: "Freeze draft setup",
+    start: "Start draft",
+    pause: "Pause draft",
+    resume: "Resume draft",
+    undo: "Void last pick",
+    finalize: "Finalize rosters",
+    abort: "Abort draft",
+    recover: "Reopen setup",
+    publish: "Publish current state",
+  };
+  function actionPayload(action: string) {
+    return {
+      command: { action },
+      expectedVersion: version,
+      reason,
+      confirmed: true,
+    };
+  }
+  return (
+    <section className="panel form-stack">
+      <h2>Staff controls</h2>
+      <label className="field">
+        <span>Operator reason / publication approval</span>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          maxLength={1000}
+          rows={2}
+        />
+      </label>
+      {state === "setup" && (
+        <>
+          <h3>Explicit full turn sequence</h3>
+          <p className="muted small">
+            Append the reviewed captain order as many times as approved, or
+            select each turn individually. No rounds, snake order, pick clocks
+            or roster sizes are assumed.
+          </p>
+          <ol className="turn-editor">
+            {sequence.map((teamId, i) => (
+              <li key={i}>
+                <label className="field">
+                  <span>Turn {i + 1}</span>
+                  <select
+                    value={teamId}
+                    onChange={(e) =>
+                      setSequence(
+                        sequence.map((id, n) =>
+                          n === i ? e.target.value : id,
+                        ),
+                      )
+                    }
+                  >
+                    {data.teams.map((t) => (
+                      <option key={t.team.id} value={t.team.id}>
+                        {t.team.name} — {t.captainName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  className="secondary"
+                  aria-label={`Remove turn ${i + 1}`}
+                  onClick={() =>
+                    setSequence(sequence.filter((_, n) => n !== i))
+                  }
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ol>
+          <button
+            className="secondary"
+            onClick={() =>
+              setSequence([...sequence, ...data.teams.map((t) => t.team.id)])
+            }
+          >
+            Append captain order
+          </button>
+          <ConfirmMutation
+            label="Save turn sequence"
+            title="Save the full draft turn sequence?"
+            description="This is the complete planned order. Review team capacities and eligible pool before freezing."
+            url={`/api/admin/tournaments/${slug}/draft`}
+            payload={{
+              ...actionPayload("configure"),
+              command: { action: "configure", turnSequence: sequence },
+            }}
+          />
+        </>
+      )}
+      <div className="actions">
+        {allowed.map((action) => (
+          <ConfirmMutation
+            key={action}
+            label={labels[action]}
+            title={`${labels[action]}?`}
+            description={
+              action === "publish"
+                ? "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick."
+                : "This staff action is revision-checked and audited with your reason. Review the current state before confirming."
+            }
+            url={`/api/admin/tournaments/${slug}/draft`}
+            payload={actionPayload(action)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+export function StaffDraftRoom({
+  slug,
+  initial,
+}: {
+  slug: string;
+  initial: StaffDraft;
+}) {
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    version: number;
+  } | null>(null);
+  const { value: data, connected } = usePoll<StaffDraft>(
+    `/api/admin/tournaments/${slug}/draft`,
+    initial,
+  );
+  if (!data)
+    return (
+      <p className="notice" role="alert">
+        Staff access is unavailable. Sign in again or contact the organizer.
+      </p>
+    );
+  const session = data.session;
+  const teamMap = new Map<string, DraftTeam>(
+    data.teams.map((t) => [
+      t.team.id,
+      {
+        id: t.team.id,
+        name: t.team.name,
+        captain: { osuId: t.team.captainId, username: t.captainName },
+      },
+    ]),
+  );
+  const currentTeam = session
+    ? teamMap.get(session.turnSequence[session.turnIndex])
+    : undefined;
+  const preview: DraftBoard | null = session
+    ? {
+        sessionId: session.id,
+        version: session.version,
+        state: session.state,
+        turnIndex: session.turnIndex,
+        turnCount: session.turnSequence.length,
+        activeTeam: currentTeam ?? null,
+        picks: data.picks
+          .filter((p) => !p.voidedAt)
+          .map((p) => ({
+            id: p.id,
+            turnIndex: p.turnIndex,
+            team: teamMap.get(p.teamId)!,
+            player: data.identities.find((u) => u.osuId === p.playerId)!,
+          })),
+        rosters: data.teams.map((t) => ({
+          team: teamMap.get(t.team.id)!,
+          players: data.members
+            .filter((m) => m.membership.teamId === t.team.id)
+            .map((m) => ({ osuId: m.membership.userId, username: m.username })),
+        })),
+        pool: null,
+      }
+    : null;
+  const canPick = Boolean(
+    connected &&
+    session?.state === "live" &&
+    session.version === session.publishedRevision,
+  );
+  return (
+    <>
+      <p role="status" className="connection-state small">
+        {connected
+          ? "Connected · updates every 2s"
+          : "Reconnecting · actions may be stale"}
+      </p>
+      {feedback && feedback.version === session?.publicVersion && (
+        <p className="notice" role="status">
+          {feedback.message}
+        </p>
+      )}
+      {session && session.version !== session.publishedRevision && (
+        <p className="notice">
+          Committed changes await publication. The spectator board still shows
+          the last approved snapshot.
+        </p>
+      )}
+      <h2 className="section-space">Staff preview</h2>
+      <p className="muted small">
+        Private operational state. This preview is not the public broadcast.
+      </p>
+      {preview && <DraftBoardView board={preview} privatePreview />}
+      {currentTeam && session && (
+        <DraftPick
+          key={`pick:${session.id}:${session.version}`}
+          slug={slug}
+          sessionId={session.id}
+          revision={session.version}
+          turnIndex={session.turnIndex}
+          team={currentTeam}
+          pool={data.availablePool}
+          staff
+          enabled={canPick}
+          onFeedback={(message) =>
+            setFeedback({ message, version: session.publicVersion })
+          }
+        />
+      )}
+      <Controls
+        key={`controls:${session?.id ?? "new"}:${session?.version ?? 0}`}
+        slug={slug}
+        data={data}
+      />
+      <section className="section-space">
+        <h2>Operator audit</h2>
+        <ol className="schedule-list">
+          {data.events
+            .filter((e) => e.kind.startsWith("draft_"))
+            .map((e) => (
+              <li key={e.id}>
+                <div>
+                  <h3>{e.kind.replaceAll("_", " ")}</h3>
+                  <p className="small muted">
+                    Actor osu! ID {e.actorId ?? "removed"} ·{" "}
+                    {formatDate(e.createdAt, "UTC")}
+                  </p>
+                  <p className="small">{e.reason}</p>
+                  <details>
+                    <summary>Before/after record</summary>
+                    <pre className="audit-json">
+                      {JSON.stringify(e.detail, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              </li>
+            ))}
+        </ol>
+      </section>
+    </>
+  );
+}
