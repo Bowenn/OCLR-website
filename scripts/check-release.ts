@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { appUrl } from "../src/lib/http";
 import { authReady, oauthConfig } from "../src/lib/auth/config";
+import { getBrackets } from "../src/lib/brackets";
 import { getEditions } from "../src/lib/content";
 import { db, closeDb } from "../src/db";
 import { sql } from "drizzle-orm";
@@ -26,6 +27,7 @@ try {
         "Published registration requires approved rules and eligibility disclosure.",
       );
   }
+  getBrackets();
   z.email().parse(process.env.PRIVACY_CONTACT_EMAIL);
   await db().execute(sql`SELECT 1 FROM users LIMIT 0`);
   await db().execute(sql`SELECT 1 FROM registrations LIMIT 0`);

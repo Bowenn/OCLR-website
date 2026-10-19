@@ -1,0 +1,178 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import type { ResolvedBracket } from "@/lib/bracket-model";
+export function BracketView({ bracket }: { bracket: ResolvedBracket }) {
+  const [groupId, setGroup] = useState(bracket.groups[0].id);
+  const frame = useRef<HTMLDivElement>(null);
+  const [lines, setLines] = useState<{
+    width: number;
+    height: number;
+    paths: string[];
+  }>({ width: 0, height: 0, paths: [] });
+  const group =
+    bracket.groups.find((g) => g.id === groupId) ?? bracket.groups[0];
+  useEffect(() => {
+    const node = frame.current;
+    if (!node) return;
+    const observer = new ResizeObserver(() => {
+      const origin = node.getBoundingClientRect();
+      const cards = new Map(
+        [...node.querySelectorAll<HTMLElement>("[data-match-id]")].map((el) => [
+          el.dataset.matchId!,
+          el,
+        ]),
+      );
+      const paths: string[] = [];
+      for (const round of group.rounds)
+        for (const match of round.matches)
+          for (const [index, slot] of match.slots.entries()) {
+            const source = slot.sourceMatchId
+              ? cards.get(slot.sourceMatchId)
+              : null;
+            const target = cards
+              .get(match.id)
+              ?.querySelectorAll("[data-bracket-slot]")[index];
+            if (!source || !target) continue;
+            const a = source.getBoundingClientRect();
+            const b = target.getBoundingClientRect();
+            const x1 = a.right - origin.left;
+            const y1 = a.top + a.height / 2 - origin.top;
+            const x2 = b.left - origin.left;
+            const y2 = b.top + b.height / 2 - origin.top;
+            const middle = (x1 + x2) / 2;
+            paths.push(`M${x1},${y1} H${middle} V${y2} H${x2}`);
+          }
+      setLines({ width: node.scrollWidth, height: node.scrollHeight, paths });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [group]);
+  return (
+    <>
+      <div className="bracket-tabs" role="group" aria-label="Bracket sections">
+        {bracket.groups.map((g) => (
+          <button
+            key={g.id}
+            type="button"
+            className={g.id === group.id ? "" : "secondary"}
+            aria-pressed={g.id === group.id}
+            onClick={() => setGroup(g.id)}
+          >
+            {g.label}
+          </button>
+        ))}
+      </div>
+      <p className="muted small">
+        Scroll across rounds. A complete match list is available below.
+      </p>
+      <div
+        className="bracket-scroll"
+        role="region"
+        aria-label={`${group.label} bracket; scroll horizontally`}
+        tabIndex={0}
+      >
+        <div className="bracket-frame" ref={frame}>
+          <svg
+            className="bracket-connectors"
+            width={lines.width}
+            height={lines.height}
+            aria-hidden="true"
+          >
+            {lines.paths.map((path, i) => (
+              <path key={i} d={path} />
+            ))}
+          </svg>
+          {group.rounds.map((round) => (
+            <section
+              className="bracket-round"
+              key={round.id}
+              aria-labelledby={`round-${group.id}-${round.id}`}
+            >
+              <h2 id={`round-${group.id}-${round.id}`}>{round.label}</h2>
+              <div className="round-matches">
+                {round.matches.map((match) => (
+                  <article
+                    data-match-id={match.id}
+                    className="match-card"
+                    key={match.id}
+                    aria-labelledby={`match-${match.id}`}
+                  >
+                    <div className="match-meta">
+                      <h3 id={`match-${match.id}`}>{match.label}</h3>
+                      <span>
+                        {match.status === "completed" ? "Completed" : "Pending"}
+                      </span>
+                    </div>
+                    {match.slots.map((slot, index) => (
+                      <div
+                        key={index}
+                        data-bracket-slot
+                        className={`match-slot ${match.winnerSlot === index ? "match-winner" : ""}`}
+                      >
+                        <span>
+                          {slot.teamId ? (
+                            <Link
+                              href={`/tournaments/${bracket.editionSlug}/teams/${slot.teamId}`}
+                            >
+                              {slot.label}
+                            </Link>
+                          ) : (
+                            slot.label
+                          )}
+                          {match.winnerSlot === index && (
+                            <span className="sr-only"> (winner)</span>
+                          )}
+                        </span>
+                        <strong
+                          aria-label={`Score ${match.scores[index] ?? "unreported"}`}
+                        >
+                          {match.scores[index] ?? "—"}
+                        </strong>
+                      </div>
+                    ))}
+                    {match.note && <p className="match-note">{match.note}</p>}
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+      <details className="section-space match-alternative">
+        <summary>Accessible match list — all sections and rounds</summary>
+        {bracket.groups.map((g) => (
+          <section key={g.id}>
+            <h2>{g.label}</h2>
+            {g.rounds.map((r) => (
+              <section key={r.id}>
+                <h3>{r.label}</h3>
+                <ul className="schedule-list">
+                  {r.matches.map((m) => (
+                    <li key={m.id}>
+                      <div>
+                        <h4>
+                          {m.label} · {m.status}
+                        </h4>
+                        <p>
+                          {m.slots.map((s) => s.label).join(" vs ")}. Scores:{" "}
+                          {m.scores.map((s) => s ?? "unreported").join(" – ")}.
+                        </p>
+                        <p className="muted small">
+                          {m.winnerSlot !== null
+                            ? `Winner: ${m.slots[m.winnerSlot].label}.`
+                            : "Winner not announced."}
+                          {m.note && ` ${m.note}`}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </section>
+        ))}
+      </details>
+    </>
+  );
+}

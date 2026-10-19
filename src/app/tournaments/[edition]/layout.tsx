@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { publicBracket } from "@/lib/brackets";
 import { publicDraft } from "@/lib/draft";
 import { getPublicEdition } from "@/lib/content";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export default async function EditionLayout({
   const edition = getPublicEdition(slug);
   if (!edition) notFound();
   const draft = await publicDraft(slug);
+  const bracket = await publicBracket(slug);
   return (
     <div className="container page workspace">
       <aside className="sidebar">
@@ -33,6 +35,9 @@ export default async function EditionLayout({
               {name}
             </Link>
           ))}
+          {bracket && (
+            <Link href={`/tournaments/${slug}/bracket`}>Bracket & results</Link>
+          )}
           {draft && <Link href={`/tournaments/${slug}/draft`}>Live draft</Link>}
         </nav>
       </aside>

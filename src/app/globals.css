@@ -1202,3 +1202,145 @@ body:has(.presenter-view) .site-footer,
   background: #0c1020;
   padding: 1rem;
 }
+.bracket-tabs {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-block: 2rem 1rem;
+}
+.bracket-scroll {
+  overflow: auto;
+  position: relative;
+  border: 1px solid #292d43;
+  border-radius: 0.6rem;
+  background: #0d1120;
+  padding: 1.5rem;
+}
+.bracket-frame {
+  display: flex;
+  gap: 3.5rem;
+  width: max-content;
+  min-height: 360px;
+  position: relative;
+  padding-bottom: 1rem;
+}
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  position: relative;
+  z-index: 1;
+}
+.bracket-round > h2 {
+  font-size: 0.8rem;
+  color: #c9bfdb;
+  padding-bottom: 1.5rem;
+  text-align: center;
+}
+.round-matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 2rem;
+  flex: 1;
+}
+.match-card {
+  border: 1px solid #3d3553;
+  border-radius: 0.5rem;
+  background: #171a2b;
+  overflow: hidden;
+  box-shadow: 0 6px 20px #0002;
+}
+.match-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid #2c3045;
+}
+.match-meta h3 {
+  font-size: 0.7rem;
+  margin: 0;
+  letter-spacing: 0;
+}
+.match-meta > span {
+  font-size: 0.6rem;
+  color: #a4aac4;
+}
+.match-slot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  font-size: 0.8rem;
+}
+.match-slot + .match-slot {
+  border-top: 1px solid #292d43;
+}
+.match-slot > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.match-slot strong {
+  color: #b7bfd6;
+}
+.match-winner {
+  background: #75409926;
+  box-shadow: inset 3px 0 #ca83f1;
+  color: #f3d7ff;
+}
+.match-winner strong {
+  color: #f0c4ff;
+}
+.match-note {
+  padding: 0.5rem 0.8rem;
+  margin: 0;
+  font-size: 0.68rem;
+  color: #b5bad1;
+  border-top: 1px solid #292d43;
+}
+.bracket-connectors {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.bracket-connectors path {
+  stroke: #b16bd3;
+  stroke-width: 1.5;
+  fill: none;
+  opacity: 0.7;
+}
+.match-alternative {
+  border: 1px solid #363348;
+  border-radius: 0.5rem;
+  padding: 1.2rem;
+}
+.match-alternative summary {
+  cursor: pointer;
+  color: #dfb2f7;
+}
+.match-alternative h2 {
+  margin-top: 2rem;
+  font-size: 1.4rem;
+}
+.match-alternative h3 {
+  margin-top: 1.5rem;
+}
+.match-alternative h4 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+@media (max-width: 760px) {
+  .bracket-scroll {
+    padding: 1rem;
+  }
+  .bracket-round {
+    width: 220px;
+  }
+  .bracket-frame {
+    gap: 2.5rem;
+  }
+}

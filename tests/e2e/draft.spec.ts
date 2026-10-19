@@ -1,3 +1,5 @@
+import { writeFileSync } from "node:fs";
+import { bracketFixture } from "../fixtures/bracket";
 import {
   expect,
   test,
@@ -28,6 +30,7 @@ test.describe("isolated multi-captain rehearsal", () => {
   test.afterEach(async () => {
     for (const context of contexts.splice(0)) await context.close();
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    writeFileSync(process.env.OCLR_TEST_BRACKETS_FILE!, "[]");
   });
   test.afterAll(async () => closeDb());
   async function actor(browser: Browser, id: number | null, mobile: boolean) {
@@ -209,6 +212,98 @@ test.describe("isolated multi-captain rehearsal", () => {
     await expect(
       spectator.page.getByText("Rosters finalized", { exact: true }),
     ).toBeVisible();
+    const teamA = fixture.teamRows.find(
+      (t) => t.captainId === fixture.a.osuId,
+    )!;
+    const teamB = fixture.teamRows.find(
+      (t) => t.captainId === fixture.b.osuId,
+    )!;
+    writeFileSync(
+      process.env.OCLR_TEST_BRACKETS_FILE!,
+      JSON.stringify([bracketFixture(slug, teamA.id, teamB.id)]),
+    );
+    const bracketPage = await spectator.context.newPage();
+    await bracketPage.goto(`/tournaments/${slug}/bracket`);
+    await expect(
+      bracketPage.getByRole("heading", {
+        name: "Bracket awaiting publication",
+      }),
+    ).toBeVisible();
+    for (const team of fixture.teamRows) {
+      await staff.page.goto(`/admin/tournaments/${slug}/teams`);
+      const card = staff.page
+        .getByRole("article")
+        .filter({
+          has: staff.page.getByRole("heading", {
+            name: team.name,
+            exact: true,
+          }),
+        });
+      await card
+        .getByRole("button", { name: "Publish finalized roster", exact: true })
+        .click();
+      await staff.page
+        .getByRole("dialog")
+        .getByRole("button", { name: "Confirm", exact: true })
+        .click();
+      await expect(
+        card.getByRole("button", { name: "Hide roster", exact: true }),
+      ).toBeVisible();
+    }
+    await bracketPage.reload();
+    await expect(bracketPage.locator(".match-card")).toHaveCount(2);
+    await expect(bracketPage.locator(".bracket-connectors path")).toHaveCount(
+      2,
+    );
+    await expect(
+      bracketPage.locator(".match-card").first().locator(".match-winner"),
+    ).toContainText(teamA.name);
+    await expect(bracketPage.locator(".match-card").last()).toContainText(
+      "Pending",
+    );
+    await bracketPage
+      .getByText("Accessible match list — all sections and rounds", {
+        exact: true,
+      })
+      .click();
+    await expect(
+      bracketPage.getByRole("heading", { level: 4 }).first(),
+    ).toBeVisible();
+    expect(
+      (
+        await new AxeBuilder({ page: bracketPage })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    await bracketPage
+      .getByText("Accessible match list — all sections and rounds", {
+        exact: true,
+      })
+      .click();
+    if (isMobile) {
+      const region = bracketPage.getByRole("region", {
+        name: /bracket; scroll horizontally/,
+      });
+      await region.focus();
+      await region.press("ArrowRight");
+      await expect
+        .poll(() => region.evaluate((node) => node.scrollLeft))
+        .toBeGreaterThan(0);
+    }
+    expect(
+      await bracketPage.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await bracketPage.evaluate(() => window.scrollTo(0, 0));
+    await bracketPage.screenshot({
+      path: testInfo.outputPath("bracket.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+    await bracketPage.close();
+    await staff.page.goto(`/admin/tournaments/${slug}/draft`);
     for (const [page, name] of [
       [a.page, "captain"],
       [staff.page, "draft-control"],
