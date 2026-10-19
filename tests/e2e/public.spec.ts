@@ -42,7 +42,7 @@ test("landing page has honest CTAs and readable original artwork", async ({
   ).toBeVisible();
   await page.goto("/");
   await page.screenshot({
-    path: `/private/tmp/oclr-home-${testInfo.project.name}.png`,
+    path: testInfo.outputPath("home.png"),
     fullPage: true,
     animations: "disabled",
   });

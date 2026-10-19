@@ -74,7 +74,7 @@ test.describe("staff registration review", () => {
       ).violations,
     ).toEqual([]);
     await page.screenshot({
-      path: `/private/tmp/oclr-admin-${testInfo.project.name}.png`,
+      path: testInfo.outputPath("admin.png"),
       fullPage: true,
       animations: "disabled",
     });

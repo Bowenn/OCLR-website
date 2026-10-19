@@ -85,7 +85,7 @@ test.describe("player registration with persistent sessions", () => {
       ).violations,
     ).toEqual([]);
     await page.screenshot({
-      path: `/private/tmp/oclr-dashboard-${testInfo.project.name}.png`,
+      path: testInfo.outputPath("dashboard.png"),
       fullPage: true,
       animations: "disabled",
     });
