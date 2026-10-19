@@ -74,13 +74,11 @@ export async function submitRegistration(
         409,
         "You already have an application for this edition. View it in your dashboard.",
       );
-    await tx
-      .insert(registrationEvents)
-      .values({
-        registrationId: registration.id,
-        actorId: user.osuId,
-        toStatus: "pending",
-      });
+    await tx.insert(registrationEvents).values({
+      registrationId: registration.id,
+      actorId: user.osuId,
+      toStatus: "pending",
+    });
     return registration;
   });
 }
@@ -140,14 +138,12 @@ export async function withdrawRegistration(
       .set({ status: "withdrawn", statusReason: null, updatedAt: new Date() })
       .where(eq(registrations.id, id))
       .returning();
-    await tx
-      .insert(registrationEvents)
-      .values({
-        registrationId: id,
-        actorId: user.osuId,
-        fromStatus: current.status,
-        toStatus: "withdrawn",
-      });
+    await tx.insert(registrationEvents).values({
+      registrationId: id,
+      actorId: user.osuId,
+      fromStatus: current.status,
+      toStatus: "withdrawn",
+    });
     return updated;
   });
 }

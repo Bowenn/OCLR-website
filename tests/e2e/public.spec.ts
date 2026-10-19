@@ -29,7 +29,13 @@ test("landing page has honest CTAs and readable original artwork", async ({
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "osu! Chinese League Rookie",
   );
-  await expect(page.getByText("Awaiting announcement")).toBeVisible();
+  await expect(
+    page.getByText(
+      process.env.TEST_DATABASE_URL
+        ? "Synthetic test edition"
+        : "Awaiting announcement",
+    ),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Learn more", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: /Find your rhythm/ }),

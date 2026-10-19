@@ -875,3 +875,123 @@ textarea {
 .error-text {
   color: #ffb8c6;
 }
+.identity-panel {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.identity-panel h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.7rem;
+  overflow-wrap: anywhere;
+}
+.identity-panel p {
+  margin-bottom: 0.4rem;
+}
+.identity-panel > .badge {
+  margin-left: auto;
+}
+.avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #663f80;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.registration-card {
+  display: flex;
+  gap: 1.7rem;
+  align-items: stretch;
+}
+.registration-cover {
+  min-width: 145px;
+  border-radius: 0.5rem;
+  background:
+    linear-gradient(#261b4411, #0d142640),
+    url("/rookie-stage.svg") 67% center / cover;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+}
+.registration-details {
+  flex: 1;
+  min-width: 0;
+}
+.registration-details h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.registration-details .section-title {
+  margin-bottom: 1rem;
+  align-items: start;
+}
+.status-accepted {
+  color: #93edcb;
+  background: #39826824;
+  border-color: #4cba9166;
+}
+.status-pending {
+  color: #f1d39b;
+  background: #98742c20;
+  border-color: #b1915066;
+}
+.status-rejected {
+  color: #ffb5c4;
+  background: #9b355021;
+  border-color: #b75d7666;
+}
+.status-withdrawn {
+  color: #b7bbd1;
+  background: #7b809b22;
+  border-color: #73799866;
+}
+dialog {
+  color: #f4f3fc;
+  background: #161a2c;
+  border: 1px solid #635073;
+  border-radius: 1rem;
+  padding: 2rem;
+  width: min(520px, calc(100% - 2rem));
+  box-shadow: 0 20px 100px #0008;
+}
+dialog::backdrop {
+  background: #040711cc;
+  backdrop-filter: blur(4px);
+}
+#identity,
+#registrations {
+  scroll-margin-top: 110px;
+}
+@media (max-width: 760px) {
+  .identity-panel {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .identity-panel > .badge {
+    margin: 0;
+  }
+  .identity-panel h2 {
+    font-size: 1.4rem;
+  }
+  .avatar {
+    width: 64px;
+    height: 64px;
+  }
+  .registration-card {
+    flex-direction: column;
+  }
+  .registration-cover {
+    min-height: 130px;
+  }
+}

@@ -66,14 +66,12 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
     expect(await ownRegistrations(a.osuId)).toHaveLength(1);
     expect(await ownRegistrations(b.osuId)).toHaveLength(0);
     await expect(
-      db()
-        .insert(registrations)
-        .values({
-          editionSlug: edition.slug,
-          userId: a.osuId,
-          rulesVersion: "test-v1",
-          answers: {},
-        }),
+      db().insert(registrations).values({
+        editionSlug: edition.slug,
+        userId: a.osuId,
+        rulesVersion: "test-v1",
+        answers: {},
+      }),
     ).rejects.toThrow();
     expect(await db().select().from(registrationEvents)).toHaveLength(1);
   });
