@@ -2169,7 +2169,7 @@ body:has(.presenter-view) .site-footer,
   font-size: 0.8rem;
   min-height: 2.5rem;
 }
-.mappool-tabs {
+.workspace-tabs {
   display: flex;
   gap: 0.25rem;
   min-width: 0;
@@ -2177,7 +2177,7 @@ body:has(.presenter-view) .site-footer,
   overflow-x: auto;
   border-bottom: 1px solid var(--color-border);
 }
-.mappool-tabs button {
+.workspace-tabs button {
   flex-shrink: 0;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -2186,14 +2186,14 @@ body:has(.presenter-view) .site-footer,
   box-shadow: none;
   color: var(--color-muted);
 }
-.mappool-tabs button:hover,
-.mappool-tabs button[aria-selected="true"] {
+.workspace-tabs button:hover,
+.workspace-tabs button[aria-selected="true"] {
   color: #efc3ff;
   border-bottom-color: #c879ec;
   background: #b666df0c;
   transform: none;
 }
-.mappool-tabs button:focus-visible {
+.workspace-tabs button:focus-visible {
   outline-offset: -4px;
 }
 .mappool-round-bar {
@@ -2302,7 +2302,7 @@ body:has(.presenter-view) .site-footer,
   .mappool-context > .mappool-toolbar {
     align-items: stretch;
   }
-  .mappool-context > .mappool-toolbar .mappool-tabs {
+  .mappool-context > .mappool-toolbar .workspace-tabs {
     flex: 1 1 100%;
   }
   .mappool-rounds {
@@ -2556,4 +2556,20 @@ body:has(.presenter-view) .site-footer,
 }
 .draft-room-connection p {
   margin: 0;
+}
+
+/* Settings use the same compact tab strip as the mappool workspace. */
+.tournament-settings > .workspace-tabs {
+  margin-bottom: 1.25rem;
+}
+.tournament-settings .workspace-tabs button {
+  padding: 0.65rem 1rem;
+  min-height: 2.75rem;
+  font-size: 0.85rem;
+}
+.tournament-settings > [role="tabpanel"] > .panel {
+  margin-top: 0;
+}
+.tournament-settings .form-stack {
+  gap: 1rem;
 }

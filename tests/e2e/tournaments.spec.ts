@@ -34,8 +34,8 @@ test.describe("browser-managed authoritative tournament editions", () => {
     const current = async () => (await context.request.get(endpoint)).json();
     const tab = (name: string) =>
       page
-        .getByRole("navigation", { name: "Tournament settings", exact: true })
-        .getByRole("button", { name, exact: true })
+        .getByRole("tablist", { name: "Tournament settings", exact: true })
+        .getByRole("tab", { name, exact: true })
         .click();
     try {
       expect((await guest.request.get("/api/admin/tournaments")).status()).toBe(
@@ -375,7 +375,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
         limitedPage.getByRole("link", { name: /^Open mappools/ }),
       ).toBeVisible();
       await expect(
-        limitedPage.getByRole("navigation", {
+        limitedPage.getByRole("tablist", {
           name: "Tournament settings",
           exact: true,
         }),

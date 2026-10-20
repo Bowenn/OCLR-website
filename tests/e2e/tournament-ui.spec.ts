@@ -45,7 +45,89 @@ test.describe("registration readiness and confirmation layout", () => {
       });
       expect(result.ok()).toBe(true);
     };
-    await page.goto(`/admin/tournaments/${slug}/settings?section=publication`);
+    await page.goto(`/admin/tournaments/${slug}/settings`);
+    const tabs = page.getByRole("tablist", {
+      name: "Tournament settings",
+      exact: true,
+    });
+    const general = tabs.getByRole("tab", { name: "General", exact: true });
+    await expect(general).toHaveAttribute("aria-selected", "true");
+    await expect(tabs.locator('[aria-selected="true"]')).toHaveCount(1);
+    await expect(page.getByRole("tabpanel")).toHaveCount(1);
+    await general.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(
+      tabs.getByRole("tab", { name: "Registration", exact: true }),
+    ).toBeFocused();
+    await expect(
+      page.getByRole("tabpanel", { name: "Registration", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("textbox", { name: "Tournament name", exact: true }),
+    ).toHaveCount(0);
+    await page.keyboard.press("End");
+    await expect(
+      tabs.getByRole("tab", { name: "Publication", exact: true }),
+    ).toBeFocused();
+    await expect(page).toHaveURL(/section=publication$/);
+    await page.keyboard.press("Home");
+    await expect(general).toBeFocused();
+    await expect(
+      page.getByRole("tabpanel", { name: "General", exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press("ArrowLeft");
+    await expect(
+      tabs.getByRole("tab", { name: "Publication", exact: true }),
+    ).toBeFocused();
+    await tabs.getByRole("tab", { name: "Milestones", exact: true }).click();
+    await expect(page).toHaveURL(/section=schedule$/);
+    await page.reload();
+    await expect(
+      tabs.getByRole("tab", { name: "Milestones", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByRole("tabpanel", { name: "Milestones", exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(async () => {
+        const selected = await tabs
+          .getByRole("tab", { name: "Milestones", exact: true })
+          .boundingBox();
+        const strip = await tabs.boundingBox();
+        return Boolean(
+          selected &&
+          strip &&
+          selected.x >= strip.x - 1 &&
+          selected.x + selected.width <= strip.x + strip.width + 1,
+        );
+      })
+      .toBe(true);
+    await page.goto(`/admin/tournaments/${slug}/settings?section=invalid`);
+    await expect(general).toHaveAttribute("aria-selected", "true");
+    await expect(tabs.locator('[aria-selected="true"]')).toHaveCount(1);
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+      if (document.activeElement instanceof HTMLElement)
+        document.activeElement.blur();
+    });
+    await page.screenshot({
+      path: info.outputPath("tournament-settings-tabs.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+    await tabs.getByRole("tab", { name: "Publication", exact: true }).click();
     await page
       .getByRole("button", { name: "Publish tournament", exact: true })
       .click();

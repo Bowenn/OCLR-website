@@ -78,8 +78,8 @@ test.describe("tournament-centered administration", () => {
       .click();
     await expect(page).toHaveURL(/\/s11\/settings$/);
     await page
-      .getByRole("navigation", { name: "Tournament settings", exact: true })
-      .getByRole("button", { name: "Publication", exact: true })
+      .getByRole("tablist", { name: "Tournament settings", exact: true })
+      .getByRole("tab", { name: "Publication", exact: true })
       .click();
     await expect(page).toHaveURL(/section=publication$/);
     await page.reload();

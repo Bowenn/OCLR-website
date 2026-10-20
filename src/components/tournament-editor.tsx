@@ -1,9 +1,10 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { registrationBlockers, type Edition } from "@/lib/editions";
 import type { tournamentForAdmin } from "@/lib/tournaments";
 import { ConfirmMutation } from "./confirm-mutation";
+import { WorkspaceTabs } from "./workspace-tabs";
 import { ZonedDateInput } from "./zoned-date-input";
 type Workspace = Pick<
   Awaited<ReturnType<typeof tournamentForAdmin>>,
@@ -706,6 +707,7 @@ function Publication({ data, saved }: EditorProps) {
   );
 }
 export function TournamentEditor({ data }: { data: Workspace }) {
+  const id = useId();
   const router = useRouter();
   const requested = useSearchParams().get("section");
   const section =
@@ -718,75 +720,76 @@ export function TournamentEditor({ data }: { data: Workspace }) {
   const [message, setMessage] = useState("");
   const props = { data, saved: setMessage };
   return (
-    <div className="stack">
-      <nav className="actions" aria-label="Tournament settings">
-        {[
-          ["general", "General"],
-          ["registration", "Registration"],
-          ["rules", "Rules & eligibility"],
-          ["schedule", "Milestones"],
-          ["publication", "Publication"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            className="secondary"
-            aria-pressed={section === id}
-            onClick={() => {
-              router.replace(
-                `/admin/tournaments/${data.edition.slug}/settings?section=${id}`,
-                { scroll: false },
-              );
-              setMessage("");
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {message && (
-        <p role="status" className="notice">
-          {message}
-        </p>
-      )}
-      {data.frozen &&
-        ["rules", "registration", "schedule"].includes(section) && (
-          <p className="notice">
-            These settings are frozen after setup locks or drafting begins.
-            Existing registrations and competition history are retained.
+    <div className="tournament-settings">
+      <WorkspaceTabs
+        id={id}
+        label="Tournament settings"
+        value={section}
+        items={[
+          { value: "general", label: "General" },
+          { value: "registration", label: "Registration" },
+          { value: "rules", label: "Rules & eligibility" },
+          { value: "schedule", label: "Milestones" },
+          { value: "publication", label: "Publication" },
+        ]}
+        onChange={(next) => {
+          router.replace(
+            `/admin/tournaments/${data.edition.slug}/settings?section=${next}`,
+            { scroll: false },
+          );
+          setMessage("");
+        }}
+      />
+      <div
+        role="tabpanel"
+        id={`${id}-panel`}
+        aria-labelledby={`${id}-${section}`}
+        tabIndex={0}
+      >
+        {message && (
+          <p role="status" className="notice">
+            {message}
           </p>
         )}
-      {section === "general" && (
-        <General
-          key={JSON.stringify({
-            name: data.edition.name,
-            summary: data.edition.summary,
-            status: data.edition.status,
-            season: data.edition.season,
-            timeZone: data.edition.timeZone,
-            branding: data.edition.branding,
-          })}
-          {...props}
-        />
-      )}
-      {!data.frozen && section === "registration" && (
-        <Registration
-          key={JSON.stringify(data.edition.registration)}
-          {...props}
-        />
-      )}
-      {!data.frozen && section === "rules" && (
-        <Rules
-          key={JSON.stringify([data.edition.rules, data.edition.eligibility])}
-          {...props}
-        />
-      )}
-      {!data.frozen && section === "schedule" && (
-        <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
-      )}
-      {section === "publication" && (
-        <Publication key={String(data.edition.published)} {...props} />
-      )}
+        {data.frozen &&
+          ["rules", "registration", "schedule"].includes(section) && (
+            <p className="notice">
+              These settings are frozen after setup locks or drafting begins.
+              Existing registrations and competition history are retained.
+            </p>
+          )}
+        {section === "general" && (
+          <General
+            key={JSON.stringify({
+              name: data.edition.name,
+              summary: data.edition.summary,
+              status: data.edition.status,
+              season: data.edition.season,
+              timeZone: data.edition.timeZone,
+              branding: data.edition.branding,
+            })}
+            {...props}
+          />
+        )}
+        {!data.frozen && section === "registration" && (
+          <Registration
+            key={JSON.stringify(data.edition.registration)}
+            {...props}
+          />
+        )}
+        {!data.frozen && section === "rules" && (
+          <Rules
+            key={JSON.stringify([data.edition.rules, data.edition.eligibility])}
+            {...props}
+          />
+        )}
+        {!data.frozen && section === "schedule" && (
+          <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
+        )}
+        {section === "publication" && (
+          <Publication key={String(data.edition.published)} {...props} />
+        )}
+      </div>
     </div>
   );
 }
