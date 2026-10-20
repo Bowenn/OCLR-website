@@ -45,7 +45,7 @@ const commandSchema = z
   .strict();
 export async function staffTeams(actor: User, slug: string) {
   await assertCapability(actor, "manage_teams", slug);
-  if (!getEditions().some((e) => e.slug === slug))
+  if (!(await getEditions()).some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
@@ -85,7 +85,7 @@ export async function staffTeams(actor: User, slug: string) {
 }
 export async function updateTeams(actor: User, slug: string, input: unknown) {
   await assertCapability(actor, "manage_teams", slug);
-  if (!getEditions().some((e) => e.slug === slug))
+  if (!(await getEditions()).some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
@@ -249,7 +249,7 @@ export async function ownTeam(userId: number, slug: string) {
   };
 }
 export async function publishedTeams(slug: string) {
-  if (!getPublicEdition(slug) || !process.env.DATABASE_URL) return [];
+  if (!(await getPublicEdition(slug)) || !process.env.DATABASE_URL) return [];
   return db().transaction(
     async (tx) => {
       const rows = await tx

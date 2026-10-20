@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import { updateCaptains } from "../../src/lib/captains";
 import { ownTeam } from "../../src/lib/teams";
@@ -13,9 +15,6 @@ import {
   vi,
 } from "vitest";
 import { randomUUID } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { isNull, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
@@ -37,25 +36,21 @@ const url = process.env.TEST_DATABASE_URL;
 describe.skipIf(!url)(
   "authoritative two-mode draft transactions and publication",
   () => {
-    let scratch: string;
     let fixture: Awaited<ReturnType<typeof prepareDraft>>;
     beforeAll(() => {
       assertTestDatabase(url);
-      scratch = mkdtempSync(join(tmpdir(), "oclr-draft-"));
-      const path = join(scratch, "editions.json");
-      writeFileSync(path, JSON.stringify([edition]));
+      fixtureEditions = [edition];
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", "100001");
-      vi.stubEnv("OCLR_EDITIONS_FILE", path);
     });
     beforeEach(async () => {
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+      await seedEditions(fixtureEditions);
       fixture = await prepareDraft(edition.slug, 100001);
     });
     afterAll(async () => {
       await closeDb();
       vi.unstubAllEnvs();
-      rmSync(scratch, { recursive: true, force: true });
     });
     async function input(candidate = fixture.players[0].osuId) {
       const session = (await staffDraft(fixture.staff, edition.slug)).session!;

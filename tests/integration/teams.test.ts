@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import {
   afterAll,
@@ -8,9 +10,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
@@ -42,20 +41,20 @@ const command = (expectedVersion: number, value: Record<string, unknown>) => ({
 describe.skipIf(!url)(
   "team ownership, membership uniqueness and publication",
   () => {
-    let scratch: string;
     beforeAll(() => {
       assertTestDatabase(url);
-      scratch = mkdtempSync(join(tmpdir(), "oclr-teams-"));
-      const path = join(scratch, "editions.json");
-      writeFileSync(path, JSON.stringify([edition]));
+      fixtureEditions = [edition];
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", String(staff.osuId));
-      vi.stubEnv("OCLR_EDITIONS_FILE", path);
     });
     beforeEach(async () => {
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+      await seedEditions(fixtureEditions);
       await db().insert(users).values([staff, a, b, player]);
-      await db().insert(editionState).values({ slug: edition.slug });
+      await db()
+        .insert(editionState)
+        .values({ slug: edition.slug })
+        .onConflictDoNothing();
       for (const p of [a, b, player])
         await db().insert(registrations).values({
           userId: p.osuId,
@@ -78,7 +77,6 @@ describe.skipIf(!url)(
     afterAll(async () => {
       await closeDb();
       vi.unstubAllEnvs();
-      rmSync(scratch, { recursive: true, force: true });
     });
     async function configure() {
       return updateTeams(

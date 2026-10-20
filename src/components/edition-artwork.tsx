@@ -1,14 +1,22 @@
 import Image from "next/image";
 /** Artwork is presentation only; it never publishes an edition or opens entry. */
-export function EditionArtwork({ slug }: { slug: string }) {
+export function EditionArtwork({
+  slug,
+  logo,
+}: {
+  slug: string;
+  logo?: string | null;
+}) {
+  const image =
+    logo === undefined && slug === "s11" ? "/oclr-s11-square-logo.webp" : logo;
   return (
     <div
-      className={`edition-art${slug === "s11" ? " edition-art-s11" : ""}`}
+      className={`edition-art${image ? " edition-art-s11" : ""}`}
       aria-hidden="true"
     >
-      {slug === "s11" ? (
+      {image ? (
         <Image
-          src="/oclr-s11-square-logo.webp"
+          src={image}
           alt=""
           width={1200}
           height={1200}

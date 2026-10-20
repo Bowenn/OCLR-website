@@ -14,7 +14,7 @@ export default async function Register({
   params: Promise<{ edition: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = getPublicEdition(slug);
+  const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const availability = await registrationAvailability(edition);
   const user = await currentUser();

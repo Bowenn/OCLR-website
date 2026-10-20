@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "s11",
+    "name": "OCLR Season 11",
+    "published": false,
+    "status": "upcoming",
+    "summary": "osu! Chinese League Rookie — Season 11. Tournament information is awaiting organizer approval.",
+    "timeZone": "UTC",
+    "rules": null,
+    "eligibility": null,
+    "registration": null,
+    "schedule": [],
+    "season": "11",
+    "branding": {
+      "logo": "/oclr-s11-square-logo.webp",
+      "background": "/oclr-s11-website-background.webp",
+      "keyVisual": "/oclr-s11-key-visual.webp"
+    }
+  }
+]

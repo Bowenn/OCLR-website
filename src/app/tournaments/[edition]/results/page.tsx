@@ -10,7 +10,7 @@ export default async function Results({
   params: Promise<{ edition: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = getPublicEdition(slug);
+  const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const data = await publicCompetition(slug);
   return (

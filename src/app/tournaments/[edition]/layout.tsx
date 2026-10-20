@@ -11,7 +11,7 @@ export default async function EditionLayout({
   params: Promise<{ edition: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = getPublicEdition(slug);
+  const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const [draftResult] = await Promise.allSettled([publicDraft(slug)]);
   const draft = draftResult.status === "fulfilled" ? draftResult.value : null;

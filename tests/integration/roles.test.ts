@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import {
   afterAll,
@@ -8,9 +10,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
@@ -47,31 +46,25 @@ const grant = (
   confirmed: true,
 });
 describe.skipIf(!url)("persistent role authorization", () => {
-  let scratch: string;
   beforeAll(() => {
     assertTestDatabase(url);
-    scratch = mkdtempSync(join(tmpdir(), "oclr-roles-"));
-    const path = join(scratch, "editions.json");
-    writeFileSync(
-      path,
-      JSON.stringify([edition, { ...edition, slug: "other-test-cup" }]),
-    );
-    vi.stubEnv("OCLR_EDITIONS_FILE", path);
+    fixtureEditions = [edition, { ...edition, slug: "other-test-cup" }];
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
     vi.stubEnv("STAFF_OSU_IDS", String(operator.osuId));
   });
   beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await seedEditions(fixtureEditions);
     await db().insert(users).values([admin, operator, player]);
     await db()
       .insert(editionState)
-      .values([{ slug: edition.slug }, { slug: "other-test-cup" }]);
+      .values([{ slug: edition.slug }, { slug: "other-test-cup" }])
+      .onConflictDoNothing();
   });
   afterAll(async () => {
     await closeDb();
     vi.unstubAllEnvs();
-    rmSync(scratch, { recursive: true, force: true });
   });
   it("does not promote legacy staff and grants Admin the full capability set", async () => {
     expect(await isStaff(operator)).toBe(false);

@@ -60,7 +60,10 @@ export async function changeStaffRole(actor: User, input: unknown) {
         c.editionSlug ?? undefined,
         tx,
       );
-      if (c.editionSlug && !getEditions().some((e) => e.slug === c.editionSlug))
+      if (
+        c.editionSlug &&
+        !(await getEditions()).some((e) => e.slug === c.editionSlug)
+      )
         throw new HttpError(404, "Edition not found.");
       const [user] = await tx
         .select()

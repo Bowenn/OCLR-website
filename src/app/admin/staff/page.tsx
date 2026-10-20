@@ -16,7 +16,7 @@ export default async function StaffPage() {
           confirmation and are audited.
         </PageHeading>
         <StaffRoleForm
-          editions={getEditions()
+          editions={(await getEditions())
             .filter((e) => !scopes || scopes.includes(e.slug))
             .map((e) => ({ slug: e.slug, name: e.name }))}
           scopes={scopes}

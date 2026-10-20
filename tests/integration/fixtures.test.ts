@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import {
   afterAll,
@@ -8,9 +10,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
@@ -57,25 +56,19 @@ const rules = {
 describe.skipIf(!url)(
   "competition fixture integrity and assigned-referee boundaries",
   () => {
-    let scratch: string;
     let homeId: string;
     let awayId: string;
     let roundId: string;
     let poolId: string;
     beforeAll(() => {
       assertTestDatabase(url);
-      scratch = mkdtempSync(join(tmpdir(), "oclr-fixtures-"));
-      const path = join(scratch, "editions.json");
-      writeFileSync(
-        path,
-        JSON.stringify([edition, { ...edition, slug: "other-test-cup" }]),
-      );
-      vi.stubEnv("OCLR_EDITIONS_FILE", path);
+      fixtureEditions = [edition, { ...edition, slug: "other-test-cup" }];
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
     });
     beforeEach(async () => {
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+      await seedEditions(fixtureEditions);
       homeId = (await seedPublicDirectory(260001)).teamId;
       awayId = (await seedPublicDirectory(260101)).teamId;
       await db()
@@ -122,7 +115,6 @@ describe.skipIf(!url)(
     afterAll(async () => {
       await closeDb();
       vi.unstubAllEnvs();
-      rmSync(scratch, { recursive: true, force: true });
     });
     function body() {
       return {
@@ -218,7 +210,10 @@ describe.skipIf(!url)(
       await expect(
         fixtureCommand(admin, "test-cup", { ...body(), roundId: ko.id }),
       ).rejects.toMatchObject({ status: 400 });
-      await db().insert(editionState).values({ slug: "other-test-cup" });
+      await db()
+        .insert(editionState)
+        .values({ slug: "other-test-cup" })
+        .onConflictDoNothing();
       await expect(
         fixtureCommand(admin, "other-test-cup", body()),
       ).rejects.toMatchObject({ status: 400 });

@@ -15,7 +15,7 @@ export default async function Application({
     const { id } = await params;
     const data = await applicationDetails(actor, id);
     const { registration: r, username, events } = data;
-    const edition = getEditions().find((e) => e.slug === r.editionSlug);
+    const edition = (await getEditions()).find((e) => e.slug === r.editionSlug);
     return (
       <>
         <PageHeading eyebrow={edition?.name ?? r.editionSlug} title={username}>
@@ -35,8 +35,15 @@ export default async function Application({
             {Object.entries(r.answers).map(([key, value]) => (
               <div key={key}>
                 <dt>
-                  {edition?.registration?.questions.find((q) => q.id === key)
-                    ?.label ?? key}
+                  {data.acknowledgedConfiguration?.registration?.questions.find(
+                    (q) => q.id === key,
+                  )?.label ??
+                    (edition?.rules?.version === r.rulesVersion
+                      ? edition.registration?.questions.find(
+                          (q) => q.id === key,
+                        )?.label
+                      : null) ??
+                    key}
                 </dt>
                 <dd className="preserve-lines">{value || "No answer"}</dd>
               </div>

@@ -18,7 +18,7 @@ export default async function StaffLayout({
   if (!grants.length) notFound();
   const can = (cap: Parameters<typeof permits>[1], slug?: string) =>
     permits(grants, cap, slug);
-  const editions = getEditions()
+  const editions = (await getEditions())
     .map((e) => ({
       slug: e.slug,
       name: e.name,

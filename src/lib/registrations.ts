@@ -8,7 +8,7 @@ import {
   captains,
   memberships,
 } from "@/db/schema";
-import { getPublicEdition } from "./content";
+import { storedEdition } from "./tournaments";
 import { enrollmentState, type Edition } from "./editions";
 import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
@@ -70,23 +70,27 @@ export async function submitRegistration(
   slug: string,
   input: unknown,
 ) {
-  const edition = getPublicEdition(slug);
-  if (!edition) throw new HttpError(404, "Tournament not found.");
   if (!privacyReady())
     throw new HttpError(503, "Registration is awaiting privacy configuration.");
-  const values = validateApplication(edition, input);
   return db().transaction(async (tx) => {
-    await tx.insert(editionState).values({ slug }).onConflictDoNothing();
     const [state] = await tx
       .select()
       .from(editionState)
       .where(eq(editionState.slug, slug))
       .for("update");
+    const edition = state && storedEdition(state)?.edition;
+    if (!edition?.published) throw new HttpError(404, "Tournament not found.");
+    const values = validateApplication(edition, input);
     if (state.lockedAt || enrollmentState(edition) !== "open")
       throw new HttpError(409, "Registration is not open.");
     const [registration] = await tx
       .insert(registrations)
-      .values({ editionSlug: slug, userId: user.osuId, ...values })
+      .values({
+        editionSlug: slug,
+        userId: user.osuId,
+        configurationVersion: state.configurationVersion,
+        ...values,
+      })
       .onConflictDoNothing({
         target: [registrations.editionSlug, registrations.userId],
       })
@@ -149,7 +153,7 @@ export async function withdrawRegistration(
       .from(registrations)
       .where(eq(registrations.id, id))
       .for("update");
-    const edition = getPublicEdition(own.editionSlug);
+    const edition = storedEdition(state)?.edition;
     const [captain] = await tx
       .select()
       .from(captains)
@@ -200,6 +204,7 @@ export async function ownRegistrations(userId: number) {
       editionSlug: registrations.editionSlug,
       status: registrations.status,
       rulesVersion: registrations.rulesVersion,
+      configurationVersion: registrations.configurationVersion,
       answers: registrations.answers,
       statusReason: registrations.statusReason,
       createdAt: registrations.createdAt,

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import {
   editionState,
+  editionRevisions,
   registrationEvents,
   registrations,
   users,
@@ -93,9 +94,20 @@ export async function applicationDetails(actor: User, id: string) {
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Application not found.");
   const [row] = await db()
-    .select({ registration: registrations, username: users.username })
+    .select({
+      registration: registrations,
+      username: users.username,
+      acknowledgedConfiguration: editionRevisions.configuration,
+    })
     .from(registrations)
     .innerJoin(users, eq(registrations.userId, users.osuId))
+    .leftJoin(
+      editionRevisions,
+      and(
+        eq(editionRevisions.editionSlug, registrations.editionSlug),
+        eq(editionRevisions.version, registrations.configurationVersion),
+      ),
+    )
     .where(eq(registrations.id, id));
   if (!row) throw new HttpError(404, "Application not found.");
   await assertCapability(

@@ -1,18 +1,14 @@
-import { readFileSync } from "node:fs";
-import defaultEditions from "@/content/editions.json" with { type: "json" };
-import { editionsSchema } from "./editions";
-// Operations may mount approved content outside the application bundle.
-export function getEditions() {
-  const filename = process.env.OCLR_EDITIONS_FILE;
-  return editionsSchema.parse(
-    filename
-      ? JSON.parse(readFileSync(/* turbopackIgnore: true */ filename, "utf8"))
-      : defaultEditions,
-  );
+import { db } from "@/db";
+import { readTournament, readTournaments } from "./tournaments";
+// PostgreSQL is authoritative. No JSON fallback, process cache or automatic seed.
+// Fresh reads also allow publication rechecks after slow provider I/O.
+export async function getEditions() {
+  return (await readTournaments()).map((row) => row.edition);
 }
-export function getPublicEditions() {
-  return getEditions().filter((e) => e.published);
+export async function getPublicEditions() {
+  return (await readTournaments(true)).map((row) => row.edition);
 }
-export function getPublicEdition(slug: string) {
-  return getPublicEditions().find((e) => e.slug === slug);
+export async function getPublicEdition(slug: string) {
+  if (!process.env.DATABASE_URL) return undefined;
+  return (await readTournament(slug, db(), true))?.edition;
 }

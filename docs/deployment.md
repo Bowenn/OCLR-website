@@ -14,13 +14,24 @@ See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` pr
 | `ADMIN_OSU_IDS`                      | Explicitly verified bootstrap global Admin IDs; legacy STAFF_OSU_IDS grants no access. Persistent grants are managed at /admin/staff     |
 | `PRIVACY_CONTACT_EMAIL`              | Approved operational privacy contact                                                                                                     |
 | `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                               |
-| `OCLR_EDITIONS_FILE`                 | Optional absolute path to mounted, approved edition JSON; default is bundled `src/content/editions.json`                                 |
 | `OCLR_BRACKETS_FILE`                 | Optional absolute path to legacy bracket JSON (ignored for editions with DB fixtures); default is bundled `src/content/brackets.json`    |
 | `OCLR_ANNOUNCEMENTS_FILE`            | Optional absolute path to approved announcement JSON; default is bundled `src/content/announcements.json`                                |
 | `PORT`                               | Optional listening port (Next.js default 3000)                                                                                           |
 | `TEST_DATABASE_URL`                  | Isolated destructive-test database with a separate `test` name segment, e.g. `oclr_test`; never set it on production                     |
 
 Next.js reads `.env.local` for local development. CLI scripts expect exported environment variables or a secret manager injecting them. Do not place real secrets in command history, checked-in compose files or CI logs. A secret manager is preferred in production.
+
+## Tournament configuration cutover
+
+Migration `0013` extends the existing `edition_state` anchor rather than replacing its foreign keys. Configuration revisions are separate from draft/setup versions. The migration preserves S11 as unpublished, with no registration/rules/eligibility/dates and its approved local artwork. Existing registration rules-version strings, answers, captains, teams, picks, pools, fixtures and results remain untouched. Historical applications are not assigned invented acknowledgment snapshots; new applications reference an immutable saved configuration revision.
+
+For a fresh installation, run committed migrations before starting the app; S11 is the only prepared edition. An installation without a database shows no public editions. There is no JSON fallback or per-start seeding. Configured database failures remain errors rather than loading stale file content.
+
+For an upgrade, stop mutations and back up the target database before migrating. If the old installation used an external `OCLR_EDITIONS_FILE`, preserve that approved file securely, apply migrations, then run `npm run db:import-editions -- /absolute/path/approved-legacy.json`. The import is transactional and idempotent: identical imported content is a no-op, unknown existing anchors receive their supplied configuration, and differing configured DB content is rejected. To replace the untouched bundled S11 bootstrap once, explicitly add `--replace-bootstrap-s11`; this is accepted only for the exact revision-zero bootstrap and never overwrites a newer Admin revision. S11 stays private and imported registration windows are paused for deliberate review. Missing legacy content is left unconfigured, never fabricated; `release:check` blocks release until those anchors are imported. Remove the obsolete environment variable after cutover.
+
+Verify the Admin list and each existing edition's identity, rules, links and publication before restoring traffic. Publish approved information deliberately and enable registration separately. Global Admins can create editions; scoped Admins can edit only their assigned editions. Mappooler and Referee assignments grant operational tools without general settings access. Existing URLs and stable slugs remain valid.
+
+Before any post-cutover writes, rollback may restore the verified pre-migration backup with its matching old application release. After new writes, preserve the database and roll back only to a compatible DB-aware application release; do not drop new columns/tables, restore an old backup over new registrations, or resume a stale JSON writer. Review prior configuration snapshots in the private audit history and apply a forward correction with a new revision/rules version. Competition locks remain enforced; configuration rollback must not rewrite draft or result history.
 
 ## Deploy a reviewed commit
 

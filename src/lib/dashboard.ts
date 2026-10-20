@@ -1,19 +1,31 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { editionState, registrations } from "@/db/schema";
-import { getPublicEdition } from "./content";
+import { editionState, editionRevisions, registrations } from "@/db/schema";
+import { getPublicEditions } from "./content";
 import { captainAppointment } from "./captains";
 import { canWithdraw } from "./registrations";
 export async function playerApplications(userId: number) {
   const rows = await db()
-    .select({ registration: registrations, lockedAt: editionState.lockedAt })
+    .select({
+      registration: registrations,
+      lockedAt: editionState.lockedAt,
+      acknowledgedConfiguration: editionRevisions.configuration,
+    })
     .from(registrations)
     .innerJoin(editionState, eq(registrations.editionSlug, editionState.slug))
+    .leftJoin(
+      editionRevisions,
+      and(
+        eq(editionRevisions.editionSlug, registrations.editionSlug),
+        eq(editionRevisions.version, registrations.configurationVersion),
+      ),
+    )
     .where(eq(registrations.userId, userId))
     .orderBy(registrations.createdAt);
+  const editions = await getPublicEditions();
   return Promise.all(
-    rows.map(async ({ registration, lockedAt }) => {
-      const edition = getPublicEdition(registration.editionSlug);
+    rows.map(async ({ registration, lockedAt, acknowledgedConfiguration }) => {
+      const edition = editions.find((e) => e.slug === registration.editionSlug);
       const appointment = await captainAppointment(
         userId,
         registration.editionSlug,
@@ -21,6 +33,7 @@ export async function playerApplications(userId: number) {
       return {
         captainAssigned: Boolean(appointment),
         registration,
+        acknowledgedConfiguration,
         edition,
         withdrawable: canWithdraw(
           edition,

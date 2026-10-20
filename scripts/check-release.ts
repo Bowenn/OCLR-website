@@ -29,12 +29,22 @@ try {
   );
   if (!ids.length && !globalAdmins.rows.length)
     throw new Error("Provision a verified global Admin before release.");
-  for (const e of getEditions()) {
+  for (const e of await getEditions()) {
     if (e.published && e.registration && (!e.rules || !e.eligibility))
       throw new Error(
         "Published registration requires approved rules and eligibility disclosure.",
       );
   }
+  await db().execute(
+    sql`SELECT configuration, configuration_version FROM edition_state LIMIT 0`,
+  );
+  const missing = await db().execute(
+    sql`SELECT slug FROM edition_state WHERE configuration IS NULL LIMIT 1`,
+  );
+  if (missing.rows.length)
+    throw new Error(
+      "Legacy edition anchors need an approved one-time configuration import before release.",
+    );
   getBrackets();
   getAnnouncements();
   z.email().parse(process.env.PRIVACY_CONTACT_EMAIL);

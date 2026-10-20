@@ -85,6 +85,7 @@ export default async function Dashboard({
                   edition,
                   withdrawable,
                   captainAssigned,
+                  acknowledgedConfiguration,
                 }) => (
                   <article className="panel registration-card" key={r.id}>
                     <div className="registration-cover" aria-hidden="true">
@@ -106,6 +107,43 @@ export default async function Dashboard({
                         <p className="notice small">
                           Staff explanation: {r.statusReason}
                         </p>
+                      )}
+                      <p className="muted small">
+                        Acknowledged rules: {r.rulesVersion}. Existing
+                        acknowledgments remain associated with their saved
+                        version.
+                      </p>
+                      {acknowledgedConfiguration?.rules && (
+                        <details className="spaced">
+                          <summary>
+                            My acknowledged rules and application
+                          </summary>
+                          {acknowledgedConfiguration.rules.sections.map(
+                            (s, i) => (
+                              <section key={i}>
+                                <h4>{s.heading}</h4>
+                                <p className="preserve-lines small">{s.body}</p>
+                              </section>
+                            ),
+                          )}
+                          <p className="preserve-lines small">
+                            {acknowledgedConfiguration.eligibility}
+                          </p>
+                          <dl className="detail-list">
+                            {Object.entries(r.answers).map(([key, value]) => (
+                              <div key={key}>
+                                <dt>
+                                  {acknowledgedConfiguration.registration?.questions.find(
+                                    (q) => q.id === key,
+                                  )?.label ?? key}
+                                </dt>
+                                <dd className="preserve-lines">
+                                  {value || "No answer"}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </details>
                       )}
                       <div className="actions">
                         {edition && captainAssigned && (

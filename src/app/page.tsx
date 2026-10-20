@@ -18,8 +18,10 @@ const highlights = [
     "Captains choose their rosters in a live player draft.",
   ],
 ];
-export default function Home() {
-  const featured = getPublicEditions().find((e) => e.status !== "completed");
+export default async function Home() {
+  const featured = (await getPublicEditions()).find(
+    (e) => e.status !== "completed",
+  );
   return (
     <>
       <section className="hero" aria-labelledby="hero-title">

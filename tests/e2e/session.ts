@@ -1,3 +1,4 @@
+import { seedBrowserEditions } from "./setup";
 import { assertTestDatabase } from "../database";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db";
@@ -7,6 +8,7 @@ export async function seedSession(id: number) {
   const url = process.env.TEST_DATABASE_URL;
   assertTestDatabase(url);
   process.env.DATABASE_URL = url;
+  await seedBrowserEditions();
   await db().delete(users).where(eq(users.osuId, id));
   await db()
     .insert(users)

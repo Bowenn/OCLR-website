@@ -157,8 +157,8 @@ async function officialTeams(reader: Reader, slug: string) {
       .map(({ osuId, username }) => ({ osuId, username })),
   }));
 }
-function configuredEdition(slug: string) {
-  const edition = getEditions().find((e) => e.slug === slug);
+async function configuredEdition(slug: string) {
+  const edition = (await getEditions()).find((e) => e.slug === slug);
   if (!edition) throw new HttpError(404, "Edition not found.");
   return edition;
 }
@@ -167,7 +167,7 @@ export async function staffFixtures(actor: User, slug: string) {
   const canManage = permits(access, "manage_fixtures", slug);
   if (!canManage && !permits(access, "record_results", slug))
     throw new HttpError(403, "Fixture access is required.");
-  const edition = configuredEdition(slug);
+  const edition = await configuredEdition(slug);
   return db().transaction(
     async (tx) => {
       const assigned = await tx
@@ -280,7 +280,7 @@ export async function fixtureForReview(
   reader?: Reader,
 ) {
   await assertCapability(actor, "record_results", slug, reader);
-  configuredEdition(slug);
+  await configuredEdition(slug);
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Fixture not found.");
   const admin = await hasCapability(actor, "manage_fixtures", slug, reader);
@@ -421,7 +421,7 @@ export async function fixtureCommand(
   input: unknown,
 ) {
   await assertCapability(actor, "manage_fixtures", slug);
-  configuredEdition(slug);
+  await configuredEdition(slug);
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Confirm valid fixture fields and rules.");

@@ -11,7 +11,7 @@ export default async function Schedule({
   params: Promise<{ edition: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = getPublicEdition(slug);
+  const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const competition = await publicCompetition(slug);
   const fixtures = [...(competition?.fixtures ?? [])].sort((a, b) =>

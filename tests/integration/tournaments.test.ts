@@ -7,24 +7,81 @@ import {
   it,
   vi,
 } from "vitest";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { assertTestDatabase } from "../database";
 import { db, closeDb } from "../../src/db";
-import { readTournament, readTournaments } from "../../src/lib/tournaments";
+import {
+  createTournament,
+  tournamentCommand,
+  tournamentForAdmin,
+  tournamentList,
+  readTournament,
+  readTournaments,
+} from "../../src/lib/tournaments";
+import {
+  users,
+  staffRoles,
+  editionState,
+  editionRevisions,
+  registrations,
+} from "../../src/db/schema";
+import { submitRegistration } from "../../src/lib/registrations";
+import { getPublicEdition } from "../../src/lib/content";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 const url = process.env.TEST_DATABASE_URL;
+const admin = { osuId: 330001, username: "Synthetic Tournament Admin" };
+const mapper = { osuId: 330002, username: "Synthetic Mappooler" };
+const referee = { osuId: 330003, username: "Synthetic Referee" };
+const player = { osuId: 330004, username: "Synthetic Player" };
+const fields = {
+  name: "Synthetic Season 12",
+  season: "12",
+  summary: "Synthetic tournament configuration only.",
+  timeZone: "Asia/Taipei",
+  branding: { logo: null, background: null, keyVisual: null },
+};
+const create = () =>
+  createTournament(admin, { ...fields, slug: "s12", confirmed: true });
+const change = (revision: number, action: string, data: object) =>
+  tournamentCommand(admin, "s12", {
+    expectedRevision: revision,
+    confirmed: true,
+    action,
+    ...data,
+  });
 describe.skipIf(!url)("authoritative tournament edition storage", () => {
   beforeAll(() => {
     assertTestDatabase(url);
     vi.stubEnv("DATABASE_URL", url!);
+    vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
+    vi.stubEnv("PRIVACY_CONTACT_EMAIL", "privacy@example.test");
+    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic test policy.");
   });
   beforeEach(async () => {
-    await db().execute(sql`TRUNCATE edition_state CASCADE`);
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await db().insert(users).values([admin, mapper, referee, player]);
     await seedEditions([
       edition,
       { ...edition, slug: "private-test-cup", published: false },
     ]);
+
+    await db()
+      .insert(staffRoles)
+      .values([
+        {
+          userId: mapper.osuId,
+          role: "mappooler",
+          editionSlug: "test-cup",
+          grantedBy: admin.osuId,
+        },
+        {
+          userId: referee.osuId,
+          role: "referee",
+          editionSlug: "test-cup",
+          grantedBy: admin.osuId,
+        },
+      ]);
   });
   afterAll(async () => {
     await closeDb();
@@ -56,5 +113,266 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       ),
     ).rejects.toThrow();
     expect((await readTournament("test-cup"))?.edition.name).toBe(edition.name);
+  });
+  it("creates only an unpublished configuration, audits its actor and rejects duplicate or mutable slugs", async () => {
+    const saved = await create();
+    expect(saved.edition).toMatchObject({
+      slug: "s12",
+      published: false,
+      rules: null,
+      eligibility: null,
+      registration: null,
+      schedule: [],
+    });
+    expect(saved.events[0]).toMatchObject({
+      actorId: admin.osuId,
+      reason: null,
+      kind: "tournament_create",
+      detail: { before: null, after: { revision: 0 } },
+    });
+    expect(await getPublicEdition("s12")).toBeUndefined();
+    await expect(create()).rejects.toMatchObject({ status: 409 });
+    await expect(
+      change(0, "general", { ...fields, status: "upcoming", slug: "renamed" }),
+    ).rejects.toMatchObject({ status: 400 });
+    expect(await db().select().from(registrations)).toEqual([]);
+  });
+  it("enforces Admin scopes, current roles and a single winning configuration revision", async () => {
+    await create();
+    for (const actor of [mapper, referee, player]) {
+      await expect(
+        createTournament(actor, {
+          ...fields,
+          slug: "unowned",
+          confirmed: true,
+        }),
+      ).rejects.toMatchObject({ status: 403 });
+      await expect(tournamentForAdmin(actor, "s12")).rejects.toMatchObject({
+        status: 403,
+      });
+      await expect(
+        tournamentCommand(actor, "s12", {
+          action: "publication",
+          published: true,
+          expectedRevision: 0,
+          confirmed: true,
+          contentApproved: true,
+        }),
+      ).rejects.toMatchObject({ status: 403 });
+    }
+    expect((await tournamentList(mapper)).rows.map((r) => r.slug)).toEqual([
+      "test-cup",
+    ]);
+    const writes = await Promise.allSettled(
+      ["First", "Second"].map((name) =>
+        change(0, "general", { ...fields, name, status: "upcoming" }),
+      ),
+    );
+    expect(writes.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(writes.find((r) => r.status === "rejected")).toMatchObject({
+      reason: { status: 409 },
+    });
+    expect((await tournamentForAdmin(admin, "s12")).events).toHaveLength(2);
+    await db().insert(staffRoles).values({
+      userId: player.osuId,
+      role: "admin",
+      editionSlug: "s12",
+      grantedBy: admin.osuId,
+    });
+    await expect(tournamentForAdmin(player, "s12")).resolves.toMatchObject({
+      revision: 1,
+    });
+    await expect(tournamentForAdmin(player, "test-cup")).rejects.toMatchObject({
+      status: 403,
+    });
+    await db()
+      .update(staffRoles)
+      .set({ revokedAt: new Date() })
+      .where(eq(staffRoles.userId, player.osuId));
+    await expect(tournamentForAdmin(player, "s12")).rejects.toMatchObject({
+      status: 403,
+    });
+  });
+  it("separates publication from registration and preserves the application rules/question snapshot", async () => {
+    let current = await create();
+    current = await change(current.revision, "rules", {
+      rules: {
+        version: "s12-v1",
+        sections: [
+          { heading: "Synthetic rules", body: "Approved synthetic policy." },
+        ],
+      },
+      eligibility: "Synthetic eligibility disclosure.",
+    });
+    const registration = {
+      ...edition.registration!,
+      enabled: false,
+      questions: [
+        {
+          id: "answer",
+          label: "Original question",
+          required: true,
+          maxLength: 10,
+        },
+      ],
+    };
+    current = await change(current.revision, "registration", { registration });
+    current = await change(current.revision, "publication", {
+      published: true,
+      contentApproved: true,
+    });
+    expect(current.edition.registration?.enabled).toBe(false);
+    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "");
+    await expect(
+      change(current.revision, "registration", {
+        registration: { ...registration, enabled: true },
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic test policy.");
+    current = await change(current.revision, "registration", {
+      registration: { ...registration, enabled: true },
+    });
+    const saved = await submitRegistration(player, "s12", {
+      rulesAcknowledged: true,
+      eligibilityAcknowledged: true,
+      rulesVersion: "s12-v1",
+      answers: { answer: "accepted" },
+    });
+    expect(saved.configurationVersion).toBe(current.revision);
+    const rules = {
+      ...current.edition.rules!,
+      sections: [
+        { heading: "Revised rules", body: "New approved synthetic policy." },
+      ],
+    };
+    await expect(
+      change(current.revision, "rules", {
+        rules: { ...rules, version: "s12-v2" },
+        eligibility: current.edition.eligibility,
+        existingApplicationsPolicy: "retain_existing",
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    current = await change(current.revision, "registration", { registration });
+    await expect(
+      change(current.revision, "rules", {
+        rules,
+        eligibility: current.edition.eligibility,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      change(current.revision, "rules", {
+        rules: { ...rules, version: "s12-v2" },
+        eligibility: current.edition.eligibility,
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    current = await change(current.revision, "rules", {
+      rules: { ...rules, version: "s12-v2" },
+      eligibility: current.edition.eligibility,
+      existingApplicationsPolicy: "retain_existing",
+    });
+    current = await change(current.revision, "registration", {
+      registration: {
+        ...registration,
+        questions: [
+          { ...registration.questions[0], label: "Revised question" },
+        ],
+      },
+      existingApplicationsPolicy: "retain_existing",
+    });
+    const [snapshot] = await db()
+      .select()
+      .from(editionRevisions)
+      .where(
+        and(
+          eq(editionRevisions.editionSlug, "s12"),
+          eq(editionRevisions.version, saved.configurationVersion!),
+        ),
+      );
+    expect(snapshot.configuration.rules?.version).toBe("s12-v1");
+    expect(snapshot.configuration.registration?.questions[0].label).toBe(
+      "Original question",
+    );
+    expect((await db().select().from(registrations))[0]).toMatchObject({
+      rulesVersion: "s12-v1",
+      answers: { answer: "accepted" },
+    });
+    current = await change(current.revision, "publication", {
+      published: false,
+      contentApproved: true,
+    });
+    expect(await getPublicEdition("s12")).toBeUndefined();
+    expect(current.edition.registration?.enabled).toBe(false);
+  });
+  it("rejects invalid dates, time zones, forged audit data and locked competition configuration", async () => {
+    await expect(
+      createTournament(admin, {
+        ...fields,
+        slug: "invalid",
+        timeZone: "invalid",
+        confirmed: true,
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    await create();
+    await expect(
+      change(0, "registration", {
+        registration: {
+          ...edition.registration!,
+          closesAt: "2020-01-01T00:00:00Z",
+        },
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      change(0, "general", {
+        ...fields,
+        status: "upcoming",
+        actorId: player.osuId,
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    await db()
+      .update(editionState)
+      .set({ lockedAt: new Date(), setupVersion: 9 })
+      .where(eq(editionState.slug, "s12"));
+    await expect(
+      change(0, "schedule", {
+        schedule: [{ label: "Synthetic milestone", at: null }],
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const saved = await change(0, "general", {
+      ...fields,
+      name: "Completed synthetic edition",
+      status: "completed",
+    });
+    expect(saved.events).toHaveLength(2);
+    expect(
+      (
+        await db()
+          .select()
+          .from(editionState)
+          .where(eq(editionState.slug, "s12"))
+      )[0].setupVersion,
+    ).toBe(9);
+  });
+  it("rolls back configuration and snapshots if automatic audit persistence fails", async () => {
+    await db().execute(
+      sql`CREATE FUNCTION oclr_test_reject_edition_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic audit failure'; END $$`,
+    );
+    await db().execute(
+      sql`CREATE TRIGGER oclr_test_reject_edition_event BEFORE INSERT ON edition_events FOR EACH ROW EXECUTE FUNCTION oclr_test_reject_edition_event()`,
+    );
+    try {
+      await expect(create()).rejects.toThrow();
+      expect(await readTournament("s12")).toBeUndefined();
+      expect(
+        await db()
+          .select()
+          .from(editionRevisions)
+          .where(eq(editionRevisions.editionSlug, "s12")),
+      ).toEqual([]);
+    } finally {
+      await db().execute(
+        sql`DROP TRIGGER oclr_test_reject_edition_event ON edition_events`,
+      );
+      await db().execute(sql`DROP FUNCTION oclr_test_reject_edition_event()`);
+    }
   });
 });

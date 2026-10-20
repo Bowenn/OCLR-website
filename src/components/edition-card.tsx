@@ -6,7 +6,7 @@ export async function EditionCard({ edition }: { edition: Edition }) {
   const state = await registrationAvailability(edition);
   return (
     <article className="featured-edition">
-      <EditionArtwork slug={edition.slug} />
+      <EditionArtwork slug={edition.slug} logo={edition.branding.logo} />
       <div className="edition-copy">
         <Badge>Registration: {state}</Badge>
         <h3>{edition.name}</h3>

@@ -32,7 +32,7 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
   const filters = parsed.data;
   if (filters.q.startsWith("https://"))
     filters.q = String(parseOsuProfile(filters.q).osuId);
-  const editions = getPublicEditions().filter(
+  const editions = (await getPublicEditions()).filter(
     (e) => !filters.edition || filters.edition === e.slug,
   );
   const empty = { rows: [] as PublishedPlayer[], total: 0, filters };

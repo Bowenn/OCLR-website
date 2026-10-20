@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import {
   afterAll,
@@ -8,9 +10,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
@@ -52,20 +51,13 @@ const referee = { osuId: 190003, username: "Synthetic Referee" };
 const player = { osuId: 190004, username: "Synthetic Player" };
 const confirm = { confirmed: true };
 describe.skipIf(!url)("edition mappool integrity and publication", () => {
-  let scratch: string;
   beforeAll(() => {
     assertTestDatabase(url);
-    scratch = mkdtempSync(join(tmpdir(), "oclr-mappools-"));
-    const path = join(scratch, "editions.json");
-    writeFileSync(
-      path,
-      JSON.stringify([
-        edition,
-        { ...edition, slug: "other-test-cup" },
-        { ...edition, slug: "private-test-cup", published: false },
-      ]),
-    );
-    vi.stubEnv("OCLR_EDITIONS_FILE", path);
+    fixtureEditions = [
+      edition,
+      { ...edition, slug: "other-test-cup" },
+      { ...edition, slug: "private-test-cup", published: false },
+    ];
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
   });
@@ -79,8 +71,12 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
         fingerprint: "a".repeat(64),
       }));
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await seedEditions(fixtureEditions);
     await db().insert(users).values([admin, mapper, referee, player]);
-    await db().insert(editionState).values({ slug: edition.slug });
+    await db()
+      .insert(editionState)
+      .values({ slug: edition.slug })
+      .onConflictDoNothing();
     await db()
       .insert(staffRoles)
       .values([
@@ -101,7 +97,6 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
   afterAll(async () => {
     await closeDb();
     vi.unstubAllEnvs();
-    rmSync(scratch, { recursive: true, force: true });
   });
   async function create(
     stage = "group",

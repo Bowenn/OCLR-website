@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import {
   afterAll,
   beforeAll,
@@ -7,9 +9,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { captains, userProfileCache, users } from "../../src/db/schema";
@@ -35,14 +34,10 @@ const base = 260001;
 describe.skipIf(!url)(
   "persistent profile cache and publication boundaries",
   () => {
-    let scratch: string;
     let fixture: Awaited<ReturnType<typeof seedPublicDirectory>>;
     beforeAll(() => {
       assertTestDatabase(url);
-      scratch = mkdtempSync(join(tmpdir(), "oclr-profiles-"));
-      const path = join(scratch, "editions.json");
-      writeFileSync(path, JSON.stringify([edition]));
-      vi.stubEnv("OCLR_EDITIONS_FILE", path);
+      fixtureEditions = [edition];
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", "269999");
     });
@@ -50,13 +45,13 @@ describe.skipIf(!url)(
       await db().execute(
         sql`TRUNCATE edition_state, users, user_profile_cache CASCADE`,
       );
+      await seedEditions(fixtureEditions);
       fixture = await seedPublicDirectory(base);
       provider.mockReset().mockResolvedValue(profileResponse);
     });
     afterAll(async () => {
       await closeDb();
       vi.unstubAllEnvs();
-      rmSync(scratch, { recursive: true, force: true });
     });
     const expire = async () => {
       await db().execute(
@@ -239,24 +234,20 @@ describe.skipIf(!url)(
         )[0].count,
       ).toBe(PROFILE_CACHE_LIMIT);
       await expect(
-        db()
-          .insert(userProfileCache)
-          .values({
-            osuId: base,
-            mode: "osu",
-            attemptedAt: new Date(),
-            retryAt: new Date(),
-          }),
+        db().insert(userProfileCache).values({
+          osuId: base,
+          mode: "osu",
+          attemptedAt: new Date(),
+          retryAt: new Date(),
+        }),
       ).rejects.toThrow();
       await expect(
-        db()
-          .insert(userProfileCache)
-          .values({
-            osuId: base,
-            mode: "invalid",
-            attemptedAt: new Date(),
-            retryAt: new Date(),
-          }),
+        db().insert(userProfileCache).values({
+          osuId: base,
+          mode: "invalid",
+          attemptedAt: new Date(),
+          retryAt: new Date(),
+        }),
       ).rejects.toThrow();
       expect(
         await db()

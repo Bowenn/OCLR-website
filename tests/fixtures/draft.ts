@@ -1,3 +1,5 @@
+import { seedEditions } from "./editions";
+import { edition } from "./edition";
 import { assertTestDatabase } from "../database";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db";
@@ -25,6 +27,7 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
     .insert(users)
     .values([staff, a, b, ...players])
     .onConflictDoNothing();
+  await seedEditions([{ ...edition, slug }], false);
   await db().insert(editionState).values({ slug }).onConflictDoNothing();
   await db()
     .insert(registrations)

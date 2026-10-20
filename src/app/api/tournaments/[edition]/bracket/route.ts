@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { edition } = await context.params;
-    if (!getPublicEdition(edition))
+    if (!(await getPublicEdition(edition)))
       throw new HttpError(404, "Edition not found.");
     return NextResponse.json(
       { bracket: await publicBracket(edition) },

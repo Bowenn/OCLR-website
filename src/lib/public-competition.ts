@@ -74,7 +74,7 @@ export type PublicFixture = {
   updatedAt: string;
 };
 export async function publicCompetition(slug: string) {
-  if (!getPublicEdition(slug)) return null;
+  if (!(await getPublicEdition(slug))) return null;
   if (!process.env.DATABASE_URL)
     return {
       fixtures: [] as PublicFixture[],

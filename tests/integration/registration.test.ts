@@ -1,3 +1,4 @@
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import {
   afterAll,
@@ -8,9 +9,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
@@ -36,26 +34,20 @@ const valid = {
   answers: {},
 };
 describe.skipIf(!testUrl)("individual registration transactions", () => {
-  let scratch: string;
-  let contentFile: string;
   beforeAll(() => {
     assertTestDatabase(testUrl);
-    scratch = mkdtempSync(join(tmpdir(), "oclr-registration-"));
-    contentFile = join(scratch, "editions.json");
     vi.stubEnv("DATABASE_URL", testUrl!);
-    vi.stubEnv("OCLR_EDITIONS_FILE", contentFile);
     vi.stubEnv("PRIVACY_CONTACT_EMAIL", "privacy@example.test");
     vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
   });
   beforeEach(async () => {
-    writeFileSync(contentFile, JSON.stringify([edition]));
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await seedEditions([edition]);
     await db().insert(users).values([a, b]);
   });
   afterAll(async () => {
     await closeDb();
     vi.unstubAllEnvs();
-    rmSync(scratch, { recursive: true, force: true });
   });
   it("commits exactly one concurrent application with a database unique constraint", async () => {
     const results = await Promise.allSettled(
@@ -92,44 +84,38 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
         answers: { invented: "x" },
       }),
     ).rejects.toMatchObject({ status: 400 });
-    writeFileSync(
-      contentFile,
-      JSON.stringify([
-        {
-          ...edition,
-          registration: {
-            ...edition.registration,
-            opensAt: "2020-01-01T00:00:00Z",
-            closesAt: "2021-01-01T00:00:00Z",
-          },
+    await seedEditions([
+      {
+        ...edition,
+        registration: {
+          ...edition.registration,
+          opensAt: "2020-01-01T00:00:00Z",
+          closesAt: "2021-01-01T00:00:00Z",
         },
-      ]),
-    );
+      },
+    ]);
     await expect(
       submitRegistration(a, edition.slug, valid),
     ).rejects.toMatchObject({ status: 409 });
     expect(await ownRegistrations(a.osuId)).toHaveLength(0);
   });
   it("keeps answers private and requires approved questions with bounded responses", async () => {
-    writeFileSync(
-      contentFile,
-      JSON.stringify([
-        {
-          ...edition,
-          registration: {
-            ...edition.registration,
-            questions: [
-              {
-                id: "approved",
-                label: "Synthetic question",
-                required: true,
-                maxLength: 5,
-              },
-            ],
-          },
+    await seedEditions([
+      {
+        ...edition,
+        registration: {
+          ...edition.registration,
+          questions: [
+            {
+              id: "approved",
+              label: "Synthetic question",
+              required: true,
+              maxLength: 5,
+            },
+          ],
         },
-      ]),
-    );
+      },
+    ]);
     await expect(
       submitRegistration(a, edition.slug, valid),
     ).rejects.toMatchObject({ status: 400 });

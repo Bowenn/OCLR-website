@@ -1,3 +1,5 @@
+import { seedEditions } from "./editions";
+import { edition } from "./edition";
 import { assertTestDatabase } from "../database";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../src/db";
@@ -14,6 +16,10 @@ export async function seedPublicDirectory(base: number) {
   const url = process.env.TEST_DATABASE_URL;
   assertTestDatabase(url);
   process.env.DATABASE_URL = url;
+  await seedEditions(
+    [edition, { ...edition, slug: "private-test-cup", published: false }],
+    false,
+  );
   const ids = [base, base + 1, base + 2, base + 3];
   await db().delete(memberships).where(inArray(memberships.userId, ids));
   await db().delete(teams).where(inArray(teams.captainId, ids));

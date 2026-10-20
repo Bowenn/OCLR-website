@@ -17,7 +17,7 @@ export default async function Overlay({
   searchParams: Promise<{ background?: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = getPublicEdition(slug);
+  const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   let initial: DraftBoard | null = null;
   let available = true;

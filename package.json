@@ -19,7 +19,8 @@
     "db:migrate": "drizzle-kit migrate",
     "test:integration": "vitest run tests/integration",
     "db:cleanup": "tsx scripts/cleanup.ts",
-    "release:check": "tsx scripts/check-release.ts"
+    "release:check": "tsx scripts/check-release.ts",
+    "db:import-editions": "tsx scripts/import-editions.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",

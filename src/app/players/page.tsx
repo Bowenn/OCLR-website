@@ -63,7 +63,7 @@ export default async function Players({
           <span>Tournament edition</span>
           <select name="edition" defaultValue={filters.edition}>
             <option value="">All published editions</option>
-            {getPublicEditions().map((e) => (
+            {(await getPublicEditions()).map((e) => (
               <option key={e.slug} value={e.slug}>
                 {e.name}
               </option>

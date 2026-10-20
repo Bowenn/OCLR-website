@@ -18,7 +18,7 @@ export function getBrackets() {
   );
 }
 export async function publicBracket(slug: string) {
-  if (!getPublicEdition(slug)) return null;
+  if (!(await getPublicEdition(slug))) return null;
   const competition = await publicCompetition(slug);
   if (competition?.databaseAuthority) {
     const fixtures = competition.fixtures.filter((f) => f.stage === "knockout");

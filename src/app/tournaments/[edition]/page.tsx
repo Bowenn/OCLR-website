@@ -10,7 +10,7 @@ export async function generateMetadata({
   params: Promise<{ edition: string }>;
 }) {
   const { edition } = await params;
-  return { title: getPublicEdition(edition)?.name ?? "Tournament" };
+  return { title: (await getPublicEdition(edition))?.name ?? "Tournament" };
 }
 export default async function Overview({
   params,
@@ -18,7 +18,7 @@ export default async function Overview({
   params: Promise<{ edition: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = getPublicEdition(slug);
+  const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const state = await registrationAvailability(edition);
   return (
@@ -26,11 +26,11 @@ export default async function Overview({
       <PageHeading eyebrow="TOURNAMENT OVERVIEW" title={edition.name}>
         {edition.summary}
       </PageHeading>
-      {edition.slug === "s11" && (
+      {edition.branding.keyVisual && (
         <Image
           className="edition-key-visual"
-          src="/oclr-s11-key-visual.webp"
-          alt="OCLR Season 11 key visual"
+          src={edition.branding.keyVisual}
+          alt={`${edition.name} key visual`}
           width={1672}
           height={941}
           sizes="(max-width: 760px) 100vw, 900px"

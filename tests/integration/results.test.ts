@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -81,9 +83,7 @@ describe.skipIf(!url)(
     beforeAll(async () => {
       assertTestDatabase(url);
       scratch = mkdtempSync(join(tmpdir(), "oclr-results-"));
-      const path = join(scratch, "editions.json");
-      writeFileSync(path, JSON.stringify([edition]));
-      vi.stubEnv("OCLR_EDITIONS_FILE", path);
+      fixtureEditions = [edition];
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
       actualFetch = (
@@ -113,6 +113,7 @@ describe.skipIf(!url)(
       vi.mocked(fetchMatchSource).mockReset();
       vi.mocked(osuApi).mockReset();
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+      await seedEditions(fixtureEditions);
       const home = await seedPublicDirectory(291001);
       const away = await seedPublicDirectory(292001);
       await db().insert(users).values([admin, referee, mapper, outsider]);

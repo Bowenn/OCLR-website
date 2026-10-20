@@ -40,7 +40,7 @@ export default async function Admin({
       edition: filters.edition,
       status: filters.status,
     });
-    const editions = getEditions().filter((e) =>
+    const editions = (await getEditions()).filter((e) =>
       permits(access, "manage_registrations", e.slug),
     );
     return (

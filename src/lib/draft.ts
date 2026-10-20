@@ -136,7 +136,7 @@ function board(data: Data): DraftBoard {
 }
 export async function staffDraft(actor: User, slug: string) {
   await assertCapability(actor, "manage_draft", slug);
-  if (!getEditions().some((e) => e.slug === slug))
+  if (!(await getEditions()).some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
@@ -153,7 +153,7 @@ export async function staffDraft(actor: User, slug: string) {
 }
 export type StaffDraft = Awaited<ReturnType<typeof staffDraft>>;
 export async function publicDraft(slug: string) {
-  if (!getPublicEdition(slug) || !process.env.DATABASE_URL) return null;
+  if (!(await getPublicEdition(slug)) || !process.env.DATABASE_URL) return null;
   return db().transaction(
     async (tx) => {
       const [row] = await tx
@@ -200,7 +200,8 @@ export async function captainDraft(
   actor: User,
   slug: string,
 ): Promise<CaptainBoard | null> {
-  if (!getPublicEdition(slug)) throw new HttpError(404, "Edition not found.");
+  if (!(await getPublicEdition(slug)))
+    throw new HttpError(404, "Edition not found.");
   const [appointment] = await db()
     .select()
     .from(captains)
@@ -245,7 +246,7 @@ const commandSchema = z
   .strict();
 export async function draftCommand(actor: User, slug: string, input: unknown) {
   await assertCapability(actor, "manage_draft", slug);
-  if (!getEditions().some((e) => e.slug === slug))
+  if (!(await getEditions()).some((e) => e.slug === slug))
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
@@ -582,7 +583,7 @@ const pickInput = z
   })
   .strict();
 export async function pickPlayer(actor: User, slug: string, input: unknown) {
-  if (!getPublicEdition(slug))
+  if (!(await getPublicEdition(slug)))
     throw new HttpError(404, "Tournament not found.");
   const parsed = pickInput.safeParse(input);
   if (!parsed.success)

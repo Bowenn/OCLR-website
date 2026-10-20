@@ -1,3 +1,5 @@
+let fixtureEditions: unknown[];
+import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
 import {
   afterAll,
@@ -8,9 +10,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { captains, teams } from "../../src/db/schema";
@@ -20,30 +19,23 @@ import { seedPublicDirectory } from "../fixtures/players";
 const url = process.env.TEST_DATABASE_URL;
 const base = 230001;
 describe.skipIf(!url)("public player directory publication boundaries", () => {
-  let scratch: string;
   let fixture: Awaited<ReturnType<typeof seedPublicDirectory>>;
   beforeAll(() => {
     assertTestDatabase(url);
-    scratch = mkdtempSync(join(tmpdir(), "oclr-players-"));
-    const path = join(scratch, "editions.json");
-    writeFileSync(
-      path,
-      JSON.stringify([
-        edition,
-        { ...edition, slug: "private-test-cup", published: false },
-      ]),
-    );
-    vi.stubEnv("OCLR_EDITIONS_FILE", path);
+    fixtureEditions = [
+      edition,
+      { ...edition, slug: "private-test-cup", published: false },
+    ];
     vi.stubEnv("DATABASE_URL", url!);
   });
   beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await seedEditions(fixtureEditions);
     fixture = await seedPublicDirectory(base);
   });
   afterAll(async () => {
     await closeDb();
     vi.unstubAllEnvs();
-    rmSync(scratch, { recursive: true, force: true });
   });
   it("exposes only published captain identities and finalized published roster members", async () => {
     const data = await publicPlayers({});
