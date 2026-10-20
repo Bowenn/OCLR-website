@@ -3,7 +3,7 @@ import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff, staffAccess, permits } from "@/lib/auth/staff";
 import { tournamentForAdmin, tournamentList } from "@/lib/tournaments";
 import { HttpError } from "@/lib/http";
-import { PageHeading } from "@/components/ui";
+import { formatDate } from "@/lib/editions";
 export const metadata = { title: "Tournament dashboard" };
 export default async function Tournament({
   params,
@@ -24,49 +24,105 @@ export default async function Tournament({
       : row.links.find((link) => link.group === "Competition");
     return (
       <>
-        <PageHeading eyebrow="TOURNAMENT DASHBOARD" title={row.name}>
-          {row.season ? `Season ${row.season} · ` : ""}
-          {row.published ? "Published" : "Draft"} · {row.status} ·{" "}
-          {row.timeZone}
-        </PageHeading>
-        <div className="actions">
-          {primary && (
-            <Link className="button" href={primary.href}>
-              {data
-                ? "Configure tournament"
-                : `Open ${primary.label.toLowerCase()}`}{" "}
-              →
-            </Link>
-          )}
-          {row.published && (
-            <Link className="text-link" href={`/tournaments/${slug}`}>
-              View public tournament ↗
-            </Link>
-          )}
-        </div>
-        <section className="panel spaced">
-          <h2>Registration</h2>
-          <p className="muted small">
-            {row.registration ? row.registrationState : "Not configured"}
-            {data
-              ? ` · ${data.applications} application${data.applications === 1 ? "" : "s"}`
-              : ""}
-          </p>
+        <header className="tournament-dashboard-heading">
+          <div>
+            <p className="eyebrow">TOURNAMENT DASHBOARD</p>
+            <h1>{row.name}</h1>
+          </div>
+          <div className="actions">
+            {primary && (
+              <Link
+                className={`button${data ? " secondary" : ""}`}
+                href={primary.href}
+              >
+                {data
+                  ? "Configure tournament"
+                  : `Open ${primary.label.toLowerCase()}`}{" "}
+                <span aria-hidden="true">→</span>
+              </Link>
+            )}
+            {row.published && (
+              <Link className="text-link" href={`/tournaments/${slug}`}>
+                View public tournament <span aria-hidden="true">↗</span>
+              </Link>
+            )}
+          </div>
+        </header>
+        <section
+          className="registration-readiness"
+          aria-labelledby="registration-heading"
+        >
+          <div className="registration-readiness-header">
+            <h2 id="registration-heading">Registration</h2>
+            <div className="registration-summary">
+              <span className="badge registration-state">
+                {row.registration ? row.registrationState : "Not configured"}
+              </span>
+              {data && (
+                <Link
+                  className="text-link"
+                  href={`/admin/tournaments/${slug}/registrations`}
+                >
+                  {data.applications} application
+                  {data.applications === 1 ? "" : "s"}
+                </Link>
+              )}
+            </div>
+          </div>
           {data && (
-            <>
-              <ul className="readiness-list">
-                {data.readiness.map((item) => (
+            <ul className="readiness-list">
+              {data.readiness.map((item) => {
+                const section =
+                  item.label === "Approved rules" ||
+                  item.label === "Eligibility disclosure"
+                    ? "rules"
+                    : item.label === "Registration dates"
+                      ? "registration"
+                      : null;
+                return (
                   <li key={item.label}>
-                    {item.ready ? "Ready" : "Pending"} · {item.label}
+                    <span>{item.label}</span>
+                    <span className="readiness-outcome">
+                      {!item.ready && section && (
+                        <Link
+                          href={`/admin/tournaments/${slug}/settings?section=${section}`}
+                        >
+                          Configure
+                          <span className="sr-only">
+                            {" "}
+                            {item.label.toLowerCase()}
+                          </span>
+                        </Link>
+                      )}
+                      <span
+                        className={
+                          item.ready ? "readiness-ready" : "readiness-pending"
+                        }
+                      >
+                        {item.ready ? "Ready" : "Pending"}
+                      </span>
+                    </span>
                   </li>
-                ))}
-              </ul>
-              <p className="muted small">
-                Publication and registration are separate. Registration remains
-                closed until its approved prerequisites and window are ready.
-              </p>
-            </>
+                );
+              })}
+            </ul>
           )}
+          {row.registration && (
+            <dl className="registration-window">
+              <div>
+                <dt>Opens</dt>
+                <dd>{formatDate(row.registration.opensAt, row.timeZone)}</dd>
+              </div>
+              <div>
+                <dt>Closes</dt>
+                <dd>{formatDate(row.registration.closesAt, row.timeZone)}</dd>
+              </div>
+            </dl>
+          )}
+          <p className="registration-guidance">
+            Applications are accepted only during the configured window when
+            registration is enabled and all requirements are ready.
+          </p>
         </section>
         {!data && (
           <p className="notice small spaced">

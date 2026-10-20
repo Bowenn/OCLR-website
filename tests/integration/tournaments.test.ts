@@ -457,6 +457,78 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       submitRegistration(player, "test-cup", submitted),
     ).rejects.toMatchObject({ status: 409 });
   });
+  it("allows advance enabling but rejects applications before opening and after closing", async () => {
+    const now = Date.now();
+    const iso = (hours: number) =>
+      new Date(now + hours * 3600000).toISOString();
+    const configure = async (revision: number, opens: number, closes: number) =>
+      tournamentCommand(admin, "test-cup", {
+        action: "registration",
+        confirmed: true,
+        expectedRevision: revision,
+        registration: {
+          ...edition.registration,
+          enabled: true,
+          opensAt: iso(opens),
+          closesAt: iso(closes),
+          withdrawUntil: null,
+        },
+      });
+    const application = (revision: number) => ({
+      configurationVersion: revision,
+      rulesVersion: edition.rules!.version,
+      rulesAcknowledged: true,
+      eligibilityAcknowledged: true,
+      answers: {},
+    });
+    const future = await configure(0, 1, 2);
+    expect(future.edition.registration?.enabled).toBe(true);
+    await expect(
+      submitRegistration(player, "test-cup", application(future.revision)),
+    ).rejects.toMatchObject({ status: 409 });
+    const current = await configure(future.revision, -1, 1);
+    const registered = await submitRegistration(
+      player,
+      "test-cup",
+      application(current.revision),
+    );
+    expect(registered.status).toBe("pending");
+    const expired = await configure(current.revision, -2, -1);
+    await expect(
+      submitRegistration(mapper, "test-cup", application(expired.revision)),
+    ).rejects.toMatchObject({ status: 409 });
+    expect((await db().select().from(registrations)).length).toBe(1);
+  });
+  it("identifies missing eligibility instead of returning a generic prerequisite error", async () => {
+    const paused = await tournamentCommand(admin, "test-cup", {
+      action: "registration",
+      expectedRevision: 0,
+      confirmed: true,
+      registration: { ...edition.registration, enabled: false },
+    });
+    const missing = await tournamentCommand(admin, "test-cup", {
+      action: "rules",
+      expectedRevision: paused.revision,
+      confirmed: true,
+      rules: { ...edition.rules, version: "missing-eligibility-test" },
+      eligibility: null,
+    });
+    const eventsBefore = missing.events.length;
+    await expect(
+      tournamentCommand(admin, "test-cup", {
+        action: "registration",
+        expectedRevision: missing.revision,
+        confirmed: true,
+        registration: { ...edition.registration, enabled: true },
+      }),
+    ).rejects.toMatchObject({
+      status: 409,
+      message: "Add an eligibility disclosure in Rules & eligibility.",
+    });
+    expect((await tournamentForAdmin(admin, "test-cup")).events.length).toBe(
+      eventsBefore,
+    );
+  });
   it("pauses registration on completion, so restoring Upcoming cannot reopen it implicitly", async () => {
     const command = {
       expectedRevision: 0,

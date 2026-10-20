@@ -985,13 +985,29 @@ textarea {
   border-color: #73799866;
 }
 dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   color: #f4f3fc;
   background: #161a2c;
   border: 1px solid #635073;
   border-radius: 1rem;
-  padding: 2rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
   width: min(520px, calc(100% - 2rem));
   box-shadow: 0 20px 100px #0008;
+}
+dialog > h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+dialog > p {
+  margin: 0.75rem 0 1.25rem;
+}
+dialog > .actions {
+  margin-top: 1.25rem;
 }
 dialog::backdrop {
   background: #040711cc;
@@ -1667,13 +1683,137 @@ body:has(.presenter-view) .site-footer,
   }
 }
 
+/* Compact registration overview: one readable row per requirement. */
+.tournament-dashboard-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.tournament-dashboard-heading h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+.tournament-dashboard-heading .actions {
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+.tournament-dashboard-heading .text-link {
+  font-size: 0.85rem;
+}
+.registration-readiness {
+  max-width: 760px;
+}
+.registration-readiness-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.registration-readiness-header h2 {
+  margin: 0;
+}
+.registration-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+.registration-state {
+  text-transform: capitalize;
+}
 .readiness-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.readiness-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+.readiness-outcome {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+.readiness-outcome a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.readiness-ready {
+  color: var(--color-success);
+}
+.readiness-pending {
+  color: var(--color-warning);
+}
+.registration-window {
+  margin: 1rem 0 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.65rem 1.5rem;
-  padding-left: 1.25rem;
-  margin-block: 1.25rem;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+.registration-window > div {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 1rem;
+}
+.registration-window dt {
   color: var(--color-muted);
+}
+.registration-window dd {
+  margin: 0;
+}
+.registration-guidance {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+.registration-blockers {
+  padding: 1rem;
+  border-left: 2px solid var(--color-warning);
+  background: #f0cb8308;
+  font-size: 0.85rem;
+}
+.registration-blockers ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+.registration-blockers a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+@media (max-width: 1000px) {
+  .tournament-dashboard-heading {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .tournament-dashboard-heading .actions {
+    justify-content: flex-start;
+    padding: 0;
+  }
+}
+@media (max-width: 480px) {
+  .registration-readiness-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .readiness-outcome {
+    gap: 0.5rem;
+  }
 }
 
 .tournament-slug {

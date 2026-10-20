@@ -27,6 +27,7 @@ export default async function Settings({
             revision: data.revision,
             applications: data.applications,
             frozen: data.frozen,
+            readiness: data.readiness,
           }}
         />
         <details className="panel section-space">

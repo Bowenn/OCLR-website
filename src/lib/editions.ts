@@ -104,6 +104,26 @@ export const editionsSchema = z
     (v) => new Set(v.map((e) => e.slug)).size === v.length,
     "Edition slugs must be unique",
   );
+export function registrationBlockers(
+  edition: Edition,
+  privacyConfigured: boolean,
+) {
+  return [
+    ...(!edition.published
+      ? ["Publish the tournament before enabling registration."]
+      : []),
+    ...(!edition.rules ? ["Add approved rules in Rules & eligibility."] : []),
+    ...(!edition.eligibility
+      ? ["Add an eligibility disclosure in Rules & eligibility."]
+      : []),
+    ...(!privacyConfigured
+      ? ["Complete the server privacy configuration."]
+      : []),
+    ...(edition.status === "completed"
+      ? ["Completed tournaments cannot accept registrations."]
+      : []),
+  ];
+}
 export function enrollmentState(
   edition: Edition,
   now = new Date(),

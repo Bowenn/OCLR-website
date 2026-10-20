@@ -1,13 +1,13 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { Edition } from "@/lib/editions";
+import { registrationBlockers, type Edition } from "@/lib/editions";
 import type { tournamentForAdmin } from "@/lib/tournaments";
 import { ConfirmMutation } from "./confirm-mutation";
 import { ZonedDateInput } from "./zoned-date-input";
 type Workspace = Pick<
   Awaited<ReturnType<typeof tournamentForAdmin>>,
-  "edition" | "revision" | "applications" | "frozen"
+  "edition" | "revision" | "applications" | "frozen" | "readiness"
 >;
 type Identity = Pick<
   Edition,
@@ -428,6 +428,13 @@ function Registration({ data, saved }: EditorProps) {
   );
   const [questions, setQuestions] = useState(e.registration?.questions ?? []);
   const [retain, setRetain] = useState(false);
+  const blockers = registrationBlockers(
+    e,
+    data.readiness.some(
+      (item) => item.label === "Privacy configuration" && item.ready,
+    ),
+  );
+
   return (
     <section className="panel form-stack">
       <h2>Registration settings</h2>
@@ -465,10 +472,30 @@ function Registration({ data, saved }: EditorProps) {
             onChange={setWithdraw}
             optional
           />
+          {blockers.length > 0 && (
+            <aside className="registration-blockers">
+              <strong>Before enabling registration</strong>
+              <ul>
+                {blockers.map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </ul>
+              {(!e.rules || !e.eligibility) && (
+                <a href={`/admin/tournaments/${e.slug}/settings?section=rules`}>
+                  Open Rules & eligibility →
+                </a>
+              )}
+            </aside>
+          )}
+          <p className="muted small">
+            Enable in advance to open automatically. Submissions are accepted
+            only between the opening and closing times, in {e.timeZone}.
+          </p>
           <label className="check-field">
             <input
               type="checkbox"
               checked={enabled}
+              disabled={!enabled && blockers.length > 0}
               onChange={(e) => setEnabled(e.target.checked)}
             />
             <span>Enable registration during this window</span>
@@ -596,7 +623,10 @@ function Registration({ data, saved }: EditorProps) {
         confirmation={
           enabled || Boolean(e.registration?.enabled) || data.applications > 0
         }
-        disabled={configured && (!opensAt || !closesAt)}
+        disabled={
+          configured &&
+          (!opensAt || !closesAt || (enabled && blockers.length > 0))
+        }
       />
     </section>
   );

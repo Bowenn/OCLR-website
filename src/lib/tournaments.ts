@@ -14,7 +14,11 @@ import { assertCapability, staffAccess, permits } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
 import { HttpError } from "./http";
-import { enrollmentState, type Edition } from "./editions";
+import {
+  enrollmentState,
+  registrationBlockers,
+  type Edition,
+} from "./editions";
 import { tournamentNavigation } from "./admin-navigation";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 export function storedEdition(row: typeof editionState.$inferSelect) {
@@ -419,18 +423,10 @@ export async function tournamentCommand(
           409,
           "A retired question ID cannot be reused. Choose a new stable ID.",
         );
-      if (
-        c.registration?.enabled &&
-        (!e.published ||
-          !e.rules ||
-          !e.eligibility ||
-          !privacyReady() ||
-          e.status === "completed")
-      )
-        throw new HttpError(
-          409,
-          "Publish approved rules and eligibility, configure privacy, and keep the tournament active before enabling registration.",
-        );
+      if (c.registration?.enabled) {
+        const blockers = registrationBlockers(e, privacyReady());
+        if (blockers.length) throw new HttpError(409, blockers.join(" "));
+      }
       next = { ...e, registration: c.registration };
     }
     if (c.action === "schedule") next = { ...e, schedule: c.schedule };

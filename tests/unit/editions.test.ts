@@ -4,6 +4,7 @@ import {
   editionsSchema,
   enrollmentState,
   formatDate,
+  registrationBlockers,
 } from "../../src/lib/editions";
 import { edition } from "../fixtures/edition";
 describe("edition configuration", () => {
@@ -67,6 +68,22 @@ describe("edition configuration", () => {
     expect(enrollmentState({ ...edition, registration: null })).toBe(
       "unannounced",
     );
+  });
+  it("reports only the prerequisites actually missing from registration setup", () => {
+    expect(registrationBlockers(edition, true)).toEqual([]);
+    expect(
+      registrationBlockers({ ...edition, eligibility: null }, true),
+    ).toEqual(["Add an eligibility disclosure in Rules & eligibility."]);
+    expect(
+      registrationBlockers(
+        { ...edition, published: false, status: "completed" },
+        false,
+      ),
+    ).toEqual([
+      "Publish the tournament before enabling registration.",
+      "Complete the server privacy configuration.",
+      "Completed tournaments cannot accept registrations.",
+    ]);
   });
   it("shows an explicit configured timezone and TBA", () => {
     expect(formatDate(null, "Asia/Taipei")).toBe("To be announced");
