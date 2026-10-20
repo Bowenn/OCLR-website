@@ -73,6 +73,16 @@ test.describe("central Admin audit browser", () => {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+    await page.goto("/admin/audit?from=2026-02-01&to=2026-01-01");
+    await expect(
+      page.getByRole("alert").filter({ hasText: "Check the audit filters" }),
+    ).toContainText("Check the audit filters");
+    await page
+      .getByRole("link", { name: "Reset audit filters", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Audit log", exact: true }),
+    ).toBeVisible();
     const guest = await browser.newContext({
       baseURL: "http://127.0.0.1:3100",
     });
@@ -84,14 +94,12 @@ test.describe("central Admin audit browser", () => {
         [admin + 402, "admin"],
       ] as const) {
         await guest.addCookies([await seedSession(id)]);
-        await db()
-          .insert(staffRoles)
-          .values({
-            userId: id,
-            role,
-            editionSlug: "test-cup",
-            grantedBy: admin,
-          });
+        await db().insert(staffRoles).values({
+          userId: id,
+          role,
+          editionSlug: "test-cup",
+          grantedBy: admin,
+        });
         expect(
           (await guest.request.get("/api/admin/audit?edition=s11")).status(),
         ).toBe(403);

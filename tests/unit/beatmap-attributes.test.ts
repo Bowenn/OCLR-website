@@ -20,7 +20,10 @@ const base = {
 };
 describe("explicit official difficulty attributes", () => {
   beforeEach(() => vi.resetModules());
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
   async function setup() {
     const { osuApi } = await import("../../src/lib/osu-api");
     vi.mocked(osuApi)
@@ -96,5 +99,21 @@ describe("explicit official difficulty attributes", () => {
       status: 502,
     });
     expect(map.metadata.attributes).toBeUndefined();
+  });
+  it("expires calculated snapshots and coalesces refreshes without mutating the last saved value", async () => {
+    vi.useFakeTimers();
+    const { fetchBeatmap, withBeatmapAttributes, api } = await setup();
+    const base = await fetchBeatmap(123),
+      first = await withBeatmapAttributes(base, "HR");
+    await vi.advanceTimersByTimeAsync(15 * 60000 + 1);
+    api.mockResolvedValueOnce({ attributes: { star_rating: 7.5 } });
+    const [updated, same] = await Promise.all([
+      withBeatmapAttributes(base, "HR"),
+      withBeatmapAttributes(base, "HR"),
+    ]);
+    expect(updated).toEqual(same);
+    expect(updated.metadata.attributes?.stars).toBe(7.5);
+    expect(first.metadata.attributes?.stars).toBe(6.75);
+    expect(api).toHaveBeenCalledTimes(3);
   });
 });

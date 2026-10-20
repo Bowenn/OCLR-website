@@ -3,6 +3,7 @@ import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
 import { auditLog, auditModules, auditChanges } from "@/lib/audit";
 import { tournamentList } from "@/lib/tournaments";
+import { HttpError } from "@/lib/http";
 import { PageHeading } from "@/components/ui";
 export const metadata = { title: "Audit log" };
 export default async function Audit({
@@ -12,7 +13,23 @@ export default async function Audit({
 }) {
   return authorizedPage(async () => {
     const actor = await requireStaff();
-    const data = await auditLog(actor, await searchParams);
+    let data;
+    try {
+      data = await auditLog(actor, await searchParams);
+    } catch (error) {
+      if (!(error instanceof HttpError) || error.status !== 400) throw error;
+      return (
+        <>
+          <PageHeading eyebrow="ADMINISTRATION" title="Audit log" />
+          <p role="alert" className="notice error-text">
+            {error.message}
+          </p>
+          <Link className="text-link" href="/admin/audit">
+            Reset audit filters
+          </Link>
+        </>
+      );
+    }
     const editions = (await tournamentList(actor)).rows;
     const f = data.filters;
     const query = new URLSearchParams(
@@ -109,8 +126,9 @@ export default async function Audit({
                 {changes.length > 0 && (
                   <details>
                     <summary>
-                      {changes.length} changed field
-                      {changes.length === 1 ? "" : "s"}
+                      {changes.length === 20
+                        ? "Up to 20 changed fields"
+                        : `${changes.length} changed field${changes.length === 1 ? "" : "s"}`}
                     </summary>
                     <dl className="detail-list">
                       {changes.map((change) => (

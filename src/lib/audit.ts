@@ -89,17 +89,34 @@ export function auditChanges(before: unknown, after: unknown) {
           : String(v).slice(0, 160);
   function diff(a: unknown, b: unknown, path: string, depth: number) {
     if (changes.length >= 20 || JSON.stringify(a) === JSON.stringify(b)) return;
-    if (
+    if (depth < 5 && (Array.isArray(a) || Array.isArray(b))) {
+      const left = Array.isArray(a) ? a : [],
+        right = Array.isArray(b) ? b : [];
+      const identity = (item: unknown, index: number) =>
+        item && typeof item === "object" && "id" in item
+          ? String(item.id)
+          : String(index + 1);
+      const oldItems = new Map(
+        left.map((item, index) => [identity(item, index), item]),
+      );
+      const newItems = new Map(
+        right.map((item, index) => [identity(item, index), item]),
+      );
+      for (const key of new Set([...oldItems.keys(), ...newItems.keys()]))
+        diff(
+          oldItems.get(key),
+          newItems.get(key),
+          `${path} / ${key}`,
+          depth + 1,
+        );
+    } else if (
       depth < 5 &&
-      a &&
-      b &&
-      typeof a === "object" &&
-      typeof b === "object" &&
-      !Array.isArray(a) &&
-      !Array.isArray(b)
+      (a == null || (typeof a === "object" && !Array.isArray(a))) &&
+      (b == null || (typeof b === "object" && !Array.isArray(b))) &&
+      (a != null || b != null)
     ) {
-      const left = a as Record<string, unknown>,
-        right = b as Record<string, unknown>;
+      const left = (a ?? {}) as Record<string, unknown>,
+        right = (b ?? {}) as Record<string, unknown>;
       for (const key of new Set([...Object.keys(left), ...Object.keys(right)]))
         diff(left[key], right[key], path ? `${path} / ${key}` : key, depth + 1);
     } else

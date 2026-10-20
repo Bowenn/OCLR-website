@@ -14,6 +14,7 @@ import {
   staffRoles,
   staffRoleEvents,
   editionEvents,
+  captains,
   registrations,
   registrationEvents,
   mappoolEvents,
@@ -97,13 +98,11 @@ describe.skipIf(!url)("central audit projections and scope", () => {
         rulesVersion: null,
       })
       .returning();
-    await db()
-      .insert(registrationEvents)
-      .values({
-        registrationId: registration.id,
-        actorId: admin.osuId,
-        toStatus: "accepted",
-      });
+    await db().insert(registrationEvents).values({
+      registrationId: registration.id,
+      actorId: admin.osuId,
+      toStatus: "accepted",
+    });
     await db()
       .insert(mappoolEvents)
       .values({
@@ -116,16 +115,14 @@ describe.skipIf(!url)("central audit projections and scope", () => {
       .select()
       .from(staffRoles)
       .where(eq(staffRoles.userId, mapper.osuId));
-    await db()
-      .insert(staffRoleEvents)
-      .values({
-        grantId: grant.id,
-        actorId: admin.osuId,
-        targetId: mapper.osuId,
-        role: "mappooler",
-        editionSlug: edition.slug,
-        action: "grant",
-      });
+    await db().insert(staffRoleEvents).values({
+      grantId: grant.id,
+      actorId: admin.osuId,
+      targetId: mapper.osuId,
+      role: "mappooler",
+      editionSlug: edition.slug,
+      action: "grant",
+    });
     const all = await auditLog(admin, {});
     expect(all.total).toBe(5);
     expect(all.rows.map((e) => e.module)).toEqual(
@@ -174,6 +171,33 @@ describe.skipIf(!url)("central audit projections and scope", () => {
           detail: { playerId: captain.osuId },
         })),
       );
+    await db()
+      .insert(captains)
+      .values({
+        editionSlug: edition.slug,
+        userId: captain.osuId,
+        position: 0,
+      });
+    const [globalGrant] = await db()
+      .insert(staffRoles)
+      .values({
+        userId: mapper.osuId,
+        role: "mappooler",
+        editionSlug: null,
+        grantedBy: admin.osuId,
+      })
+      .returning();
+    await db()
+      .insert(staffRoleEvents)
+      .values({
+        grantId: globalGrant.id,
+        actorId: admin.osuId,
+        targetId: mapper.osuId,
+        role: "mappooler",
+        editionSlug: null,
+        action: "grant",
+      });
+    expect((await auditLog(admin, {})).total).toBe(3);
     for (const actor of [mapper, referee, captain])
       await expect(auditLog(actor, {})).rejects.toMatchObject({ status: 403 });
     expect((await auditLog(scoped, {})).rows.map((e) => e.edition)).toEqual([
@@ -236,5 +260,32 @@ describe("bounded readable audit output", () => {
       { field: "version", before: "1", after: "2" },
       { field: "name", before: "Old", after: "New" },
     ]);
+  });
+  it("shows actual map replacements and creation fields, matching array records by stable ID", () => {
+    expect(
+      auditChanges(
+        {
+          entries: [
+            { id: "map-a", beatmapId: 123 },
+            { id: "map-b", beatmapId: 456 },
+          ],
+        },
+        {
+          entries: [
+            { id: "map-b", beatmapId: 456 },
+            { id: "map-a", beatmapId: 789 },
+          ],
+        },
+      ),
+    ).toEqual([
+      { field: "entries / map-a / beatmapId", before: "123", after: "789" },
+    ]);
+    expect(
+      auditChanges(null, { name: "Synthetic new tournament", version: 0 }),
+    ).toContainEqual({
+      field: "name",
+      before: "—",
+      after: "Synthetic new tournament",
+    });
   });
 });
