@@ -52,9 +52,9 @@ export function validTimeZone(value: string) {
   }
 }
 
-export const groupConfigurationSchema = z
+export const groupConfigurationInputSchema = z
   .object({
-    version: z.string().trim().min(1).max(80),
+    version: z.string().trim().min(1).max(80).optional(),
     groups: z
       .array(
         z
@@ -82,4 +82,8 @@ export const groupConfigurationSchema = z
       new Set(c.groups.flatMap((g) => g.teamIds)).size ===
         c.groups.flatMap((g) => g.teamIds).length,
   );
+export const groupConfigurationSchema =
+  groupConfigurationInputSchema.safeExtend({
+    version: z.string().trim().min(1).max(80),
+  });
 export type GroupConfiguration = z.infer<typeof groupConfigurationSchema>;

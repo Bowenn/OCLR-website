@@ -281,14 +281,22 @@ function Rules({ data, saved }: EditorProps) {
       }
       {configured && (
         <>
-          <label className="field">
-            <span>Rules version</span>
-            <input
-              value={version}
-              maxLength={80}
-              onChange={(e) => setVersion(e.target.value)}
-            />
-          </label>
+          <details open={!data.edition.rules}>
+            <summary>Rules release</summary>
+            <p className="small muted">
+              This is the published identifier players acknowledge. Use a new
+              identifier when rules change; past acknowledgments remain attached
+              to the original release.
+            </p>
+            <label className="field">
+              <span>Rules version</span>
+              <input
+                value={version}
+                maxLength={80}
+                onChange={(e) => setVersion(e.target.value)}
+              />
+            </label>
+          </details>
           {sections.map((s, i) => (
             <fieldset className="form-stack" key={i}>
               <legend>Rules section {i + 1}</legend>

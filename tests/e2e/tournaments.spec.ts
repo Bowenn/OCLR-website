@@ -300,6 +300,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
         .click();
       await expect(page.getByRole("status")).toContainText("saved");
       await tab("Rules & eligibility");
+      await page.getByText("Rules release", { exact: true }).click();
       await page
         .getByLabel("Rules version", { exact: true })
         .fill("synthetic-v2");

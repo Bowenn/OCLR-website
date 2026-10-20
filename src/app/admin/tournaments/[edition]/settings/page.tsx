@@ -18,7 +18,7 @@ export default async function Settings({
           eyebrow="TOURNAMENT CONFIGURATION"
           title="Tournament settings"
         >
-          Revision {data.revision}. Each section saves independently.
+          Each section saves independently.
         </PageHeading>
         <TournamentEditor
           data={{

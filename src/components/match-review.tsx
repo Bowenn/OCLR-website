@@ -461,8 +461,7 @@ export function MatchReviewPanel({
           onError={setNotice}
         />
         <p className="muted">
-          Report version {state?.version ?? 0} · {state?.state ?? "No report"} ·
-          Fixture version {context.fixture.version}
+          {state ? state.state.replaceAll("_", " ") : "No report yet"}
         </p>
         {data.sourceError && <p className="notice">{data.sourceError}</p>}
         {data.source && (
@@ -484,7 +483,7 @@ export function MatchReviewPanel({
                 : "Incomplete / ongoing source"}
             </p>
             <details>
-              <summary>Source provenance</summary>
+              <summary>Advanced source details</summary>
               <p className="break-anywhere">
                 Fingerprint: {data.source.fingerprint}
               </p>
@@ -533,8 +532,14 @@ export function MatchReviewPanel({
       <section className="panel stack">
         <h2>Approval and publication</h2>
         <p>
-          Current revision: {data.current?.revision ?? "None"} · Published
-          revision: {data.published?.revision ?? "None"}
+          {state?.state === "submitted"
+            ? "Pending approval"
+            : state?.state === "approved" && data.current?.approvedAt
+              ? "Approved result"
+              : data.current
+                ? "Draft result"
+                : "No proposed result"}{" "}
+          · {data.published ? "Published result" : "Not published"}
         </p>
         {data.current?.proposal && (
           <p>
@@ -654,23 +659,33 @@ export function MatchReviewPanel({
           {data.revisions.map((r) => (
             <details className="panel" key={r.revision}>
               <summary>
-                Revision {r.revision} · osu! ID {r.createdBy} ·{" "}
-                {r.approvedAt ? "Approved" : "Unapproved"}
+                {r.revision === state?.publishedRevision
+                  ? "Published result"
+                  : r.approvedAt
+                    ? "Approved result"
+                    : "Submitted result"}{" "}
+                · {new Date(r.createdAt).toISOString()}
               </summary>
               {r.reason && <p>{r.reason}</p>}
-              <p>{new Date(r.createdAt).toISOString()}</p>
+              <p>Submitted by osu! ID {r.createdBy}</p>
               {r.proposal && (
                 <p>
                   Score {r.proposal.series.homeWins} :{" "}
-                  {r.proposal.series.awayWins} · Rules{" "}
-                  {r.proposal.rulesSnapshot.version}
+                  {r.proposal.series.awayWins}
                 </p>
               )}
               {r.approvedBy && <p>Approved by osu! ID {r.approvedBy}</p>}
+              <details>
+                <summary>Technical provenance</summary>
+                <p>
+                  Result reference: {r.revision} · Scoring release:{" "}
+                  {r.proposal?.rulesSnapshot.version ?? "Unavailable"}
+                </p>
+              </details>
             </details>
           ))}
           {!data.revisions.length && (
-            <p className="muted">No result revisions submitted.</p>
+            <p className="muted">No results submitted.</p>
           )}
         </div>
       </section>

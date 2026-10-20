@@ -46,8 +46,7 @@ export default async function Captains({
           Appoint captains and arrange their selection order.
         </PageHeading>
         <p className="small muted">
-          Setup {setup.locked ? "locked" : "unlocked"} · revision{" "}
-          {setup.version}
+          Setup {setup.locked ? "locked" : "unlocked"}
         </p>
         <CaptainManager slug={edition} setup={setup} identities={identities} />
       </>

@@ -102,8 +102,7 @@ export default async function MatchPage({
               osu! multiplayer source #{result.mpId} ↗
             </a>
             <p className="muted small">
-              Published revision {result.revision} · Updated{" "}
-              {formatDate(result.updatedAt, f.timeZone)}
+              Published · Updated {formatDate(result.updatedAt, f.timeZone)}
             </p>
           </>
         ) : (

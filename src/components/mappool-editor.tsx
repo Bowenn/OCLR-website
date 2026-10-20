@@ -536,7 +536,7 @@ export function MappoolEditor({
               <h2>
                 {pool.name}{" "}
                 <span className="badge">
-                  {pool.publishedAt ? "Published" : "Draft"} · v{pool.version}
+                  {pool.publishedAt ? "Published" : "Draft"}
                 </span>
               </h2>
             </div>
@@ -546,7 +546,7 @@ export function MappoolEditor({
                 label={pool.publishedAt ? "Unpublish pool" : "Publish pool"}
                 description={
                   pool.publishedAt
-                    ? "Hide this pool from public queries. Recorded revisions are retained."
+                    ? "Hide this pool from public queries. History is retained."
                     : "Release this pool and its current maps publicly. Confirm that FM details and every map are approved."
                 }
                 payload={{
@@ -701,7 +701,7 @@ export function MappoolEditor({
                           <Save
                             change={change}
                             label={`Remove ${slotLabel(entry.category, entry.position)}`}
-                            description="Remove this map slot from the draft pool. The previous revision remains in the audit history."
+                            description="Remove this map slot from the draft pool. The previous map remains in the audit history."
                             payload={{
                               action: "entry_remove",
                               poolId: pool.id,

@@ -89,8 +89,16 @@ test.describe("published mappools and restricted editing", () => {
       await page
         .getByLabel("Approved FM restrictions")
         .fill("Synthetic test restrictions — not tournament rules");
-      await page.getByRole("button", { name: "Save pool settings" }).click();
-      await expect(page.getByText("Draft · v1", { exact: true })).toBeVisible();
+      const [savedSettings] = await Promise.all([
+        page.waitForResponse(
+          (r) => r.url().endsWith(url) && r.request().method() === "POST",
+        ),
+        page.getByRole("button", { name: "Save pool settings" }).click(),
+      ]);
+      expect(savedSettings.status()).toBe(200);
+      await expect(page.locator(".mappool-pool-heading")).not.toContainText(
+        /\bv\d+/,
+      );
       const data = await (await context.request.get(url)).json();
       const pool = data.pools[0];
       expect(
@@ -170,7 +178,9 @@ test.describe("published mappools and restricted editing", () => {
       await page
         .getByRole("button", { name: "Add beatmap", exact: true })
         .click();
-      await expect(page.getByText("Draft · v2", { exact: true })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "FM (1)", exact: true }),
+      ).toBeVisible();
       await expect(page.getByRole("dialog")).toHaveCount(0);
       const [entry] = await db()
         .select()
@@ -196,7 +206,9 @@ test.describe("published mappools and restricted editing", () => {
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByText("Published · v3", { exact: true }),
+        page
+          .getByRole("region", { name: "Selected mappool", exact: true })
+          .getByText("Published", { exact: true }),
       ).toBeVisible();
       expect(
         (
@@ -260,7 +272,11 @@ test.describe("published mappools and restricted editing", () => {
         .getByRole("button", { name: "Unpublish pool", exact: true })
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
-      await expect(page.getByText("Draft · v4", { exact: true })).toBeVisible();
+      await expect(
+        page
+          .getByRole("region", { name: "Selected mappool", exact: true })
+          .getByText("Draft", { exact: true }),
+      ).toBeVisible();
       expect(
         (
           await guest.request.get(
@@ -444,7 +460,9 @@ test.describe("published mappools and restricted editing", () => {
       .click();
     await page.getByRole("button", { name: "Confirm", exact: true }).click();
     await expect(
-      page.getByText("Published · v2", { exact: true }),
+      page
+        .getByRole("region", { name: "Selected mappool", exact: true })
+        .getByText("Published", { exact: true }),
     ).toBeVisible();
     await expect(maps).toHaveAttribute("aria-selected", "true");
     await expect(

@@ -277,9 +277,9 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         }),
       });
       await rules.getByLabel("Configure approved scoring rules").check();
-      await rules
-        .getByLabel("Approved scoring rules version")
-        .fill("synthetic-http-v1");
+      await expect(
+        rules.getByLabel("Approved scoring rules version"),
+      ).toHaveCount(0);
       await rules
         .getByRole("combobox", { name: /^Game mode/ })
         .selectOption("osu");
@@ -318,7 +318,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         await referee.request.get(`${endpoint}/${fixture.id}`)
       ).json();
       expect(review.round.scoringRules).toMatchObject({
-        version: "synthetic-http-v1",
+        version: expect.stringMatching(/^release-/),
         series: { type: "first_to", wins: 2 },
         playersPerTeam: 2,
       });

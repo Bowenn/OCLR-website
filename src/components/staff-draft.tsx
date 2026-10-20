@@ -57,7 +57,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
             description={
               action === "publish"
                 ? "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick."
-                : "Review the current state before confirming. This action is revision-checked and recorded automatically."
+                : "Review the current state before confirming. This action checks the current state and is recorded automatically."
             }
             url={`/api/admin/tournaments/${slug}/draft`}
             payload={actionPayload(action)}

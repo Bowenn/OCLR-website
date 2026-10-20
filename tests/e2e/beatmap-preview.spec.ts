@@ -154,7 +154,9 @@ test.describe("automatic beatmap preview boundaries", () => {
       ),
     ).toBe(true);
     await add.click();
-    await expect(page.getByText("Draft · v1", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "NM (1)", exact: true }),
+    ).toBeVisible();
     const [saved] = await db()
       .select()
       .from(mappoolEntries)

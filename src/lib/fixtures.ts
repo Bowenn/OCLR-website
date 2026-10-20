@@ -41,7 +41,7 @@ import {
 import type { User } from "./auth/sessions";
 import { getEdition } from "./content";
 import {
-  groupConfigurationSchema,
+  groupConfigurationInputSchema,
   scoringRulesSchema,
   standingsRulesSchema,
   validTimeZone,
@@ -76,7 +76,7 @@ const commandSchema = z.discriminatedUnion("action", [
       action: z.literal("stage_groups"),
       stageId: z.uuid(),
       expectedVersion: z.number().int().nonnegative(),
-      configuration: groupConfigurationSchema.nullable(),
+      configuration: groupConfigurationInputSchema.nullable(),
       published: z.boolean(),
     })
     .strict(),
@@ -112,12 +112,33 @@ const commandSchema = z.discriminatedUnion("action", [
       action: z.literal("round_rules"),
       roundId: z.uuid(),
       expectedVersion: z.number().int().nonnegative(),
-      scoringRules: scoringRulesSchema.nullable(),
-      standingsRules: standingsRulesSchema.nullable(),
+      scoringRules: scoringRulesSchema.partial({ version: true }).nullable(),
+      standingsRules: standingsRulesSchema
+        .partial({ version: true })
+        .nullable(),
     })
     .strict(),
 ]);
 type Reader = Pick<ReturnType<typeof db>, "select">;
+// Keep stable policy identities on unchanged saves; changed policies get a new
+// release without asking an organizer to invent a technical identifier.
+function policyRelease<T extends { version: string }>(
+  input: (Omit<T, "version"> & { version?: string }) | null,
+  previous: T | null,
+): T | null {
+  if (!input) return null;
+  const { version, ...fields } = input;
+  const { version: previousVersion, ...previousFields } = previous ?? {};
+  return {
+    ...fields,
+    version:
+      version ??
+      (isDeepStrictEqual(fields, previousFields)
+        ? previousVersion
+        : undefined) ??
+      `release-${randomUUID()}`,
+  } as T;
+}
 async function officialTeams(reader: Reader, slug: string) {
   const rows = await reader
     .select({ id: teams.id, name: teams.name, captainId: teams.captainId })
@@ -618,6 +639,10 @@ export async function fixtureCommand(
             409,
             "Group configuration changed. Refresh before continuing.",
           );
+        const configuration = policyRelease(
+          c.configuration,
+          stage.groupConfiguration,
+        );
         if (c.published && !c.configuration)
           throw new HttpError(
             400,
@@ -636,7 +661,7 @@ export async function fixtureCommand(
         const [after] = await tx
           .update(tournamentStages)
           .set({
-            groupConfiguration: c.configuration,
+            groupConfiguration: configuration,
             groupsPublishedAt: c.published ? new Date() : null,
             version: stage.version + 1,
           })
@@ -677,6 +702,11 @@ export async function fixtureCommand(
             409,
             "Round configuration changed. Refresh before continuing.",
           );
+        const scoringRules = policyRelease(c.scoringRules, round.scoringRules);
+        const standingsRules = policyRelease(
+          c.standingsRules,
+          round.standingsRules,
+        );
         if (round.stage !== "group" && c.standingsRules)
           throw new HttpError(
             400,
@@ -698,20 +728,20 @@ export async function fixtureCommand(
           .limit(1);
         if (
           completed.length &&
-          !isDeepStrictEqual(c.scoringRules, round.scoringRules) &&
-          (!c.scoringRules ||
-            c.scoringRules.version ===
+          !isDeepStrictEqual(scoringRules, round.scoringRules) &&
+          (!scoringRules ||
+            scoringRules.version ===
               (round.scoringRules as { version?: string } | null)?.version)
         )
           throw new HttpError(
             409,
-            "Use a new explicit scoring-rule version for a correction. Approved result snapshots remain unchanged until a fresh result is reviewed and published.",
+            "A changed scoring policy needs a new release. Approved result snapshots remain unchanged until a fresh result is reviewed and published.",
           );
         const [updated] = await tx
           .update(tournamentRounds)
           .set({
-            scoringRules: c.scoringRules,
-            standingsRules: c.standingsRules,
+            scoringRules,
+            standingsRules,
             version: round.version + 1,
           })
           .where(eq(tournamentRounds.id, round.id))

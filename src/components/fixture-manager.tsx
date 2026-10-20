@@ -249,7 +249,6 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
     rules ? String(rules.allowShortHanded ?? "") : "",
   );
   const [enabled, setEnabled] = useState(Boolean(rules));
-  const [version, setVersion] = useState(rules?.version ?? "");
   const [mode, setMode] = useState<string>(rules?.mode ?? "");
   const [scoreType, setScoreType] = useState<string>(rules?.scoringType ?? "");
   const [aggregation, setAggregation] = useState<string>(
@@ -271,9 +270,6 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
     rules ? String(rules.allowSubstitutions) : "",
   );
   const [ranked, setRanked] = useState(Boolean(standings));
-  const [standingsVersion, setStandingsVersion] = useState(
-    standings?.version ?? "",
-  );
   const [winPoints, setWinPoints] = useState(
     String(standings?.winPoints ?? ""),
   );
@@ -299,14 +295,6 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
       </label>
       {enabled && (
         <>
-          <label className="field">
-            <span>Approved scoring rules version</span>
-            <input
-              value={version}
-              maxLength={80}
-              onChange={(e) => setVersion(e.target.value)}
-            />
-          </label>
           <label className="field">
             <span>Game mode</span>
             <select
@@ -472,14 +460,6 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
           {ranked && (
             <>
               <label className="field">
-                <span>Approved standings rules version</span>
-                <input
-                  value={standingsVersion}
-                  onChange={(e) => setStandingsVersion(e.target.value)}
-                  maxLength={80}
-                />
-              </label>
-              <label className="field">
                 <span>Points for a win</span>
                 <input
                   type="number"
@@ -537,7 +517,6 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
           expectedVersion: round.version,
           scoringRules: enabled
             ? {
-                version,
                 mode,
                 teamType,
                 scoringType: scoreType,
@@ -562,7 +541,6 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
           standingsRules:
             stage === "group" && ranked
               ? {
-                  version: standingsVersion,
                   winPoints: winPoints.trim() ? Number(winPoints) : null,
                   lossPoints: lossPoints.trim() ? Number(lossPoints) : null,
                   drawPoints: drawPoints.trim() ? Number(drawPoints) : null,
@@ -585,9 +563,6 @@ function StageGroups({
   stage: FixtureWorkspace["stages"][number];
 }) {
   const [groups, setGroups] = useState(stage.groupConfiguration?.groups ?? []);
-  const [version, setVersion] = useState(
-    stage.groupConfiguration?.version ?? "",
-  );
   const [published, setPublished] = useState(Boolean(stage.groupsPublishedAt));
   return (
     <details className="form-stack">
@@ -597,14 +572,6 @@ function StageGroups({
         never appear in standings. Each team may belong to one group in this
         stage.
       </p>
-      <label className="field">
-        <span>Approved group configuration version</span>
-        <input
-          value={version}
-          maxLength={80}
-          onChange={(e) => setVersion(e.target.value)}
-        />
-      </label>
       {groups.map((group, index) => (
         <fieldset key={index}>
           <legend>Group {index + 1}</legend>
@@ -696,7 +663,7 @@ function StageGroups({
           action: "stage_groups",
           stageId: stage.id,
           expectedVersion: stage.version,
-          configuration: groups.length ? { version, groups } : null,
+          configuration: groups.length ? { groups } : null,
           published,
           confirmed: true,
         }}

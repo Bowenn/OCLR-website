@@ -158,7 +158,7 @@ test.describe("private referee review and Admin publication", () => {
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByText("Current revision: 1 · Published revision: None"),
+        page.getByText("Pending approval · Not published"),
       ).toBeVisible();
       await expect(
         page.getByRole("button", { name: "Approve proposed result" }),
@@ -202,11 +202,11 @@ test.describe("private referee review and Admin publication", () => {
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByText("Current revision: 1 · Published revision: 1"),
+        page.getByText("Approved result · Published result"),
       ).toBeVisible();
       await page.reload();
       await expect(
-        page.getByText("Current revision: 1 · Published revision: 1"),
+        page.getByText("Approved result · Published result"),
       ).toBeVisible();
       review = await (await context.request.get(endpoint)).json();
       const published = await (await guest.request.get(publicEndpoint)).json();

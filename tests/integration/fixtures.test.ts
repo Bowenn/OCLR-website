@@ -345,14 +345,12 @@ describe.skipIf(!url)(
           homeTeamId: awayId,
         }),
       ).rejects.toMatchObject({ status: 400 });
-      await db()
-        .insert(staffRoles)
-        .values({
-          userId: player.osuId,
-          role: "referee",
-          editionSlug: "other-test-cup",
-          grantedBy: admin.osuId,
-        });
+      await db().insert(staffRoles).values({
+        userId: player.osuId,
+        role: "referee",
+        editionSlug: "other-test-cup",
+        grantedBy: admin.osuId,
+      });
       expect(
         (await staffFixtures(admin, "test-cup")).eligibleReferees.some(
           (u) => u.osuId === player.osuId,
@@ -511,11 +509,13 @@ describe.skipIf(!url)(
         stageId: stage.id,
         expectedVersion: stage.version,
         configuration: {
-          version: "test-groups",
           groups: [{ key: "a", name: "Group A", teamIds: [homeId, awayId] }],
         },
         published: false,
       });
+      expect(
+        data.stages.find((s) => s.id === stage.id)?.groupConfiguration?.version,
+      ).toMatch(/^release-/);
       const maps = await mappoolCommand(admin, "test-cup", {
         ...confirm,
         action: "round_create",
@@ -786,6 +786,50 @@ describe.skipIf(!url)(
       ).toBeNull();
       expect(await db().select().from(fixtureReferees)).toHaveLength(1);
     });
+    it("generates policy releases on changed saves, keeps unchanged identities and rejects stale writes", async () => {
+      const command = {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        scoringRules: { ...rules, version: undefined },
+        standingsRules: {
+          winPoints: 2,
+          lossPoints: 0,
+          drawPoints: null,
+          tiebreakers: ["points"],
+        },
+      };
+      const first = await fixtureCommand(admin, "test-cup", {
+        ...command,
+        expectedVersion: 0,
+      });
+      const original = first.rounds.find((r) => r.round.id === roundId)!.round;
+      expect(original.scoringRules?.version).toMatch(/^release-/);
+      expect(original.standingsRules?.version).toMatch(/^release-/);
+      const unchanged = await fixtureCommand(admin, "test-cup", {
+        ...command,
+        expectedVersion: 1,
+      });
+      expect(
+        unchanged.rounds.find((r) => r.round.id === roundId)!.round
+          .scoringRules,
+      ).toEqual(original.scoringRules);
+      const changed = await fixtureCommand(admin, "test-cup", {
+        ...command,
+        expectedVersion: 2,
+        scoringRules: { ...command.scoringRules, playersPerTeam: 3 },
+      });
+      const updated = changed.rounds.find((r) => r.round.id === roundId)!.round;
+      expect(updated.scoringRules?.version).not.toBe(
+        original.scoringRules?.version,
+      );
+      expect(updated.standingsRules?.version).toBe(
+        original.standingsRules?.version,
+      );
+      await expect(
+        fixtureCommand(admin, "test-cup", { ...command, expectedVersion: 2 }),
+      ).rejects.toMatchObject({ status: 409 });
+    });
     it("requires a new scoring-rule version for corrections and preserves approved history", async () => {
       const [fixture] = (await fixtureCommand(admin, "test-cup", body()))
         .fixtures;
@@ -868,6 +912,14 @@ describe.skipIf(!url)(
           version: "synthetic-corrected-v2",
           playersPerTeam: 3,
         },
+        standingsRules: null,
+      });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        expectedVersion: 3,
+        scoringRules: { ...rules, version: undefined, playersPerTeam: 4 },
         standingsRules: null,
       });
       expect((await db().select().from(resultRevisions))[0].proposal).toEqual({

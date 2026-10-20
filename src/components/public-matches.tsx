@@ -204,9 +204,7 @@ export function GroupStandings({
             aria-label={`${g.name} standings; scroll horizontally`}
           >
             <table>
-              <caption>
-                {g.name} · {g.version}
-              </caption>
+              <caption>{g.name}</caption>
               <thead>
                 <tr>
                   <th scope="col">Rank</th>
@@ -249,8 +247,7 @@ export function GroupStandings({
           {g.criteria && (
             <p className="muted small">
               Approved order:{" "}
-              {g.criteria.map((c) => c.replaceAll("_", " ")).join(" → ")} ·
-              Rules {g.rulesVersions.join(", ")}
+              {g.criteria.map((c) => c.replaceAll("_", " ")).join(" → ")}
             </p>
           )}
         </article>
