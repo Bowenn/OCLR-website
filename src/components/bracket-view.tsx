@@ -1,8 +1,14 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import type { ResolvedBracket } from "@/lib/bracket-model";
-export function BracketView({ bracket }: { bracket: ResolvedBracket }) {
+import type { ResolvedBracket, ResolvedMatch } from "@/lib/bracket-model";
+export function BracketView({
+  bracket,
+  renderMatch,
+}: {
+  bracket: ResolvedBracket;
+  renderMatch?: (match: ResolvedMatch) => ReactNode;
+}) {
   const [groupId, setGroup] = useState(bracket.groups[0].id);
   const frame = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<{
@@ -50,21 +56,29 @@ export function BracketView({ bracket }: { bracket: ResolvedBracket }) {
   }, [group]);
   return (
     <>
-      <div className="bracket-tabs" role="group" aria-label="Bracket sections">
-        {bracket.groups.map((g) => (
-          <button
-            key={g.id}
-            type="button"
-            className={g.id === group.id ? "" : "secondary"}
-            aria-pressed={g.id === group.id}
-            onClick={() => setGroup(g.id)}
-          >
-            {g.label}
-          </button>
-        ))}
-      </div>
+      {!renderMatch && (
+        <div
+          className="bracket-tabs"
+          role="group"
+          aria-label="Bracket sections"
+        >
+          {bracket.groups.map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              className={g.id === group.id ? "" : "secondary"}
+              aria-pressed={g.id === group.id}
+              onClick={() => setGroup(g.id)}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+      )}
       <p className="muted small">
-        Scroll across rounds. A complete match list is available below.
+        {renderMatch
+          ? "Scroll across rounds. Switch to Schedule for a chronological list."
+          : "Scroll across rounds. A complete match list is available below."}
       </p>
       <div
         className="bracket-scroll"
@@ -98,46 +112,56 @@ export function BracketView({ bracket }: { bracket: ResolvedBracket }) {
                     key={match.id}
                     aria-labelledby={`match-${match.id}`}
                   >
-                    <div className="match-meta">
-                      <h3 id={`match-${match.id}`}>{match.label}</h3>
-                      <span>
-                        {match.status === "completed" ? "Completed" : "Pending"}
-                      </span>
-                    </div>
-                    {match.slots.map((slot, index) => (
-                      <div
-                        key={index}
-                        data-bracket-slot
-                        className={`match-slot ${match.winnerSlot === index ? "match-winner" : ""}`}
-                      >
-                        <span>
-                          {slot.teamId ? (
-                            <Link
-                              href={`/tournaments/${bracket.editionSlug}/teams/${slot.teamId}`}
+                    {renderMatch ? (
+                      renderMatch(match)
+                    ) : (
+                      <>
+                        <div className="match-meta">
+                          <h3 id={`match-${match.id}`}>{match.label}</h3>
+                          <span>
+                            {match.status === "completed"
+                              ? "Completed"
+                              : "Pending"}
+                          </span>
+                        </div>
+                        {match.slots.map((slot, index) => (
+                          <div
+                            key={index}
+                            data-bracket-slot
+                            className={`match-slot ${match.winnerSlot === index ? "match-winner" : ""}`}
+                          >
+                            <span>
+                              {slot.teamId ? (
+                                <Link
+                                  href={`/tournaments/${bracket.editionSlug}/teams/${slot.teamId}`}
+                                >
+                                  {slot.label}
+                                </Link>
+                              ) : (
+                                slot.label
+                              )}
+                              {match.winnerSlot === index && (
+                                <span className="sr-only"> (winner)</span>
+                              )}
+                            </span>
+                            <strong
+                              aria-label={`Score ${match.scores[index] ?? "unreported"}`}
                             >
-                              {slot.label}
+                              {match.scores[index] ?? "—"}
+                            </strong>
+                          </div>
+                        ))}
+                        {match.note && (
+                          <p className="match-note">{match.note}</p>
+                        )}
+                        {match.detailsUrl && (
+                          <p className="match-note">
+                            <Link className="text-link" href={match.detailsUrl}>
+                              Match details & source ↗
                             </Link>
-                          ) : (
-                            slot.label
-                          )}
-                          {match.winnerSlot === index && (
-                            <span className="sr-only"> (winner)</span>
-                          )}
-                        </span>
-                        <strong
-                          aria-label={`Score ${match.scores[index] ?? "unreported"}`}
-                        >
-                          {match.scores[index] ?? "—"}
-                        </strong>
-                      </div>
-                    ))}
-                    {match.note && <p className="match-note">{match.note}</p>}
-                    {match.detailsUrl && (
-                      <p className="match-note">
-                        <Link className="text-link" href={match.detailsUrl}>
-                          Match details & source ↗
-                        </Link>
-                      </p>
+                          </p>
+                        )}
+                      </>
                     )}
                   </article>
                 ))}
@@ -146,40 +170,43 @@ export function BracketView({ bracket }: { bracket: ResolvedBracket }) {
           ))}
         </div>
       </div>
-      <details className="section-space match-alternative">
-        <summary>Accessible match list — all sections and rounds</summary>
-        {bracket.groups.map((g) => (
-          <section key={g.id}>
-            <h2>{g.label}</h2>
-            {g.rounds.map((r) => (
-              <section key={r.id}>
-                <h3>{r.label}</h3>
-                <ul className="schedule-list">
-                  {r.matches.map((m) => (
-                    <li key={m.id}>
-                      <div>
-                        <h4>
-                          {m.label} · {m.status}
-                        </h4>
-                        <p>
-                          {m.slots.map((s) => s.label).join(" vs ")}. Scores:{" "}
-                          {m.scores.map((s) => s ?? "unreported").join(" – ")}.
-                        </p>
-                        <p className="muted small">
-                          {m.winnerSlot !== null
-                            ? `Winner: ${m.slots[m.winnerSlot].label}.`
-                            : "Winner not announced."}
-                          {m.note && ` ${m.note}`}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </section>
-        ))}
-      </details>
+      {!renderMatch && (
+        <details className="section-space match-alternative">
+          <summary>Accessible match list — all sections and rounds</summary>
+          {bracket.groups.map((g) => (
+            <section key={g.id}>
+              <h2>{g.label}</h2>
+              {g.rounds.map((r) => (
+                <section key={r.id}>
+                  <h3>{r.label}</h3>
+                  <ul className="schedule-list">
+                    {r.matches.map((m) => (
+                      <li key={m.id}>
+                        <div>
+                          <h4>
+                            {m.label} · {m.status}
+                          </h4>
+                          <p>
+                            {m.slots.map((s) => s.label).join(" vs ")}. Scores:{" "}
+                            {m.scores.map((s) => s ?? "unreported").join(" – ")}
+                            .
+                          </p>
+                          <p className="muted small">
+                            {m.winnerSlot !== null
+                              ? `Winner: ${m.slots[m.winnerSlot].label}.`
+                              : "Winner not announced."}
+                            {m.note && ` ${m.note}`}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </section>
+          ))}
+        </details>
+      )}
     </>
   );
 }

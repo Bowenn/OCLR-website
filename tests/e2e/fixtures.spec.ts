@@ -127,7 +127,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         .click();
       await expect(
         page.getByRole("heading", {
-          name: `Synthetic HTTP Fixture ${base} ↗`,
+          name: `Synthetic HTTP Fixture ${base}`,
           exact: true,
         }),
       ).toBeVisible();
@@ -150,6 +150,29 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
           exact: false,
         }),
       ).toBeVisible();
+      await page.getByRole("tab", { name: "Groups", exact: true }).click();
+      await expect(
+        page.getByRole("heading", { name: "Unassigned group", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: `Synthetic HTTP Fixture ${base}`,
+          exact: true,
+        }),
+      ).toBeVisible();
+      await page.getByRole("tab", { name: "Groups", exact: true }).focus();
+      await page.keyboard.press("ArrowRight");
+      await expect(
+        page.getByRole("tab", { name: "Bracket", exact: true }),
+      ).toHaveAttribute("aria-selected", "true");
+      await expect(
+        page.getByText("No knockout fixtures yet.", { exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await expect(
+        page.getByRole("tab", { name: "Bracket", exact: true }),
+      ).toHaveAttribute("aria-selected", "true");
+      await page.getByRole("tab", { name: "Schedule", exact: true }).click();
       const data = await (await context.request.get(endpoint)).json();
       const fixture = data.fixtures.find(
         (f: { label: string }) => f.label === `Synthetic HTTP Fixture ${base}`,
@@ -239,6 +262,9 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       expect(afterUnavailable.context.result).toBeNull();
       expect(afterUnavailable.source).toBeNull();
       await page
+        .getByText("Competition configuration", { exact: true })
+        .click();
+      await page
         .getByText(`${round.name}: approved competition rules`, { exact: true })
         .click();
       const rules = page.locator("details").filter({
@@ -311,6 +337,9 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         animations: "disabled",
       });
       await page
+        .getByRole("button", { name: "Manage fixture", exact: true })
+        .click();
+      await page
         .getByRole("button", { name: "Publish fixture", exact: true })
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
@@ -331,6 +360,115 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
           })
         ).status(),
       ).toBe(403);
+      const koRounds = [];
+      for (const [position, name] of [
+        [1, "Quarterfinal"],
+        [2, "Final"],
+      ] as const) {
+        const workspace = await mappoolCommand(
+          { osuId: adminId, username: "Synthetic Admin" },
+          "test-cup",
+          {
+            action: "round_create",
+            stage: "knockout",
+            name,
+            position,
+            confirmed: true,
+          },
+        );
+        koRounds.push(
+          workspace.rounds.find(
+            (r) => r.stage === "knockout" && r.position === position,
+          )!,
+        );
+      }
+      const makeFixture = async (
+        roundId: string,
+        label: string,
+        source: string | null,
+      ) => {
+        const response = await context.request.post(endpoint, {
+          headers,
+          data: {
+            action: "create",
+            label,
+            roundId,
+            homeTeamId: home.teamId,
+            awayTeamId: away.teamId,
+            mappoolId: null,
+            position: 1,
+            scheduledAt: null,
+            timeZone: "UTC",
+            status: "scheduled",
+            homeSourceId: source,
+            homeSourceOutcome: source ? "winner" : null,
+            awaySourceId: null,
+            awaySourceOutcome: null,
+            confirmed: true,
+          },
+        });
+        expect(response.status()).toBe(200);
+        return (await response.json()).fixtures.find(
+          (f: { label: string }) => f.label === label,
+        );
+      };
+      const qf = await makeFixture(koRounds[0].id, "QF1", null);
+      await makeFixture(koRounds[1].id, "F1", qf.id);
+      await page.reload();
+      await page.getByRole("tab", { name: "Bracket", exact: true }).click();
+      await expect(
+        page.getByRole("heading", { name: "QF1", exact: true }),
+      ).toBeVisible();
+      await expect(page.locator("[data-match-id]")).toHaveCount(2);
+      await expect(page.locator(".bracket-connectors path")).toHaveCount(1);
+      expect(
+        await page
+          .locator("#fixture-views-panel")
+          .evaluate((node) => node.getBoundingClientRect().right <= innerWidth),
+      ).toBe(true);
+      await expect(
+        page.getByRole("heading", {
+          name: `Synthetic HTTP Fixture ${base}`,
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+      await page.screenshot({
+        path: info.outputPath("fixture-bracket.png"),
+        fullPage: true,
+      });
+      const refPage = await referee.newPage();
+      await refPage.goto("/admin/tournaments/test-cup/matches");
+      await expect(
+        refPage.getByRole("heading", {
+          name: "My assigned matches",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        refPage.getByRole("heading", {
+          name: `Synthetic HTTP Fixture ${base}`,
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        refPage.getByRole("button", { name: "Assign Referee", exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        refPage.getByRole("heading", { name: "QF1", exact: true }),
+      ).toHaveCount(0);
+      await refPage.close();
       await db()
         .delete(fixtureReferees)
         .where(eq(fixtureReferees.fixtureId, fixture.id));

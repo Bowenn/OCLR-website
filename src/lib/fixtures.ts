@@ -257,15 +257,13 @@ export async function assignFixtureReferees(
       );
     const added = nextIds.filter((userId) => !previousIds.includes(userId));
     if (added.length)
-      await tx
-        .insert(fixtureReferees)
-        .values(
-          added.map((userId) => ({
-            fixtureId: id,
-            userId,
-            assignedBy: actor.osuId,
-          })),
-        );
+      await tx.insert(fixtureReferees).values(
+        added.map((userId) => ({
+          fixtureId: id,
+          userId,
+          assignedBy: actor.osuId,
+        })),
+      );
     await tx
       .update(fixtures)
       .set({ assignmentRevision: fixture.assignmentRevision + 1 })
@@ -369,12 +367,39 @@ export async function staffFixtures(actor: User, slug: string) {
               ),
             )
         : [];
+      const stageRows = await tx
+        .select()
+        .from(tournamentStages)
+        .where(
+          and(
+            eq(tournamentStages.editionSlug, slug),
+            canManage
+              ? undefined
+              : inArray(
+                  tournamentStages.id,
+                  rounds.map((r) => r.round.stageId),
+                ),
+          ),
+        );
+      const visibleTeams = new Set(
+        rows.flatMap((f) => [f.homeTeamId, f.awayTeamId]),
+      );
       const stages = canManage
-        ? await tx
-            .select()
-            .from(tournamentStages)
-            .where(eq(tournamentStages.editionSlug, slug))
-        : [];
+        ? stageRows
+        : stageRows.map((s) => ({
+            ...s,
+            groupConfiguration: s.groupConfiguration
+              ? {
+                  ...s.groupConfiguration,
+                  groups: s.groupConfiguration.groups
+                    .map((g) => ({
+                      ...g,
+                      teamIds: g.teamIds.filter((id) => visibleTeams.has(id)),
+                    }))
+                    .filter((g) => g.teamIds.length),
+                }
+              : null,
+          }));
       const refereeNames = assignments.length
         ? await tx
             .select({ osuId: users.osuId, username: users.username })
@@ -876,15 +901,13 @@ export async function fixtureCommand(
             .values({ ...values, id: candidateId, editionSlug: slug })
             .returning();
       if (c.action === "create" && c.refereeIds.length)
-        await tx
-          .insert(fixtureReferees)
-          .values(
-            c.refereeIds.map((userId) => ({
-              fixtureId: after.id,
-              userId,
-              assignedBy: actor.osuId,
-            })),
-          );
+        await tx.insert(fixtureReferees).values(
+          c.refereeIds.map((userId) => ({
+            fixtureId: after.id,
+            userId,
+            assignedBy: actor.osuId,
+          })),
+        );
       await tx.insert(resultAuditEvents).values({
         fixtureId: after.id,
         actorId: actor.osuId,

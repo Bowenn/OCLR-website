@@ -31,6 +31,11 @@ import {
   fixtureForReview,
   staffFixtures,
 } from "../../src/lib/fixtures";
+import {
+  chronologicalFixtures,
+  groupedFixtures,
+  fixtureBracket,
+} from "../../src/lib/fixture-views";
 import { mappoolCommand } from "../../src/lib/mappools";
 import { seedPublicDirectory } from "../fixtures/players";
 import { edition } from "../fixtures/edition";
@@ -458,6 +463,75 @@ describe.skipIf(!url)(
           homeSourceOutcome: null,
         }),
       ).rejects.toMatchObject({ status: 400 });
+    });
+    it("projects the same scoped fixtures into chronological, configured group and linked knockout views", async () => {
+      let data = await fixtureCommand(admin, "test-cup", {
+        ...body(),
+        scheduledAt: "2026-11-01T12:00:00Z",
+      });
+      const groupFixture = data.fixtures[0];
+      const stage = data.stages.find((s) => s.kind === "group")!;
+      data = await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "stage_groups",
+        stageId: stage.id,
+        expectedVersion: stage.version,
+        configuration: {
+          version: "test-groups",
+          groups: [{ key: "a", name: "Group A", teamIds: [homeId, awayId] }],
+        },
+        published: false,
+      });
+      const maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_create",
+        stage: "knockout",
+        name: "Knockout Round",
+        position: 1,
+      });
+      const ko = maps.rounds.find((r) => r.stage === "knockout")!;
+      data = await fixtureCommand(admin, "test-cup", {
+        ...body(),
+        roundId: ko.id,
+        mappoolId: null,
+        scheduledAt: "2026-10-31T10:00:00Z",
+        label: "QF1",
+      });
+      const first = data.fixtures.find((f) => f.roundId === ko.id)!;
+      data = await fixtureCommand(admin, "test-cup", {
+        ...body(),
+        roundId: ko.id,
+        mappoolId: null,
+        position: 2,
+        label: "SF1",
+        homeSourceId: first.id,
+        homeSourceOutcome: "winner",
+      });
+      expect(chronologicalFixtures(data.fixtures).map((f) => f.label)).toEqual([
+        "QF1",
+        groupFixture.label,
+        "SF1",
+      ]);
+      expect(groupedFixtures(data, "")).toMatchObject([
+        { name: "Group A", fixtures: [{ id: groupFixture.id }] },
+      ]);
+      expect(groupedFixtures(data, ko.id)).toEqual([]);
+      const bracket = fixtureBracket("test-cup", data)!;
+      const matches = bracket.groups.flatMap((g) =>
+        g.rounds.flatMap((r) => r.matches),
+      );
+      expect(matches.map((m) => m.label)).toEqual(["QF1", "SF1"]);
+      expect(matches[1].slots[0].sourceMatchId).toBe(first.id);
+      expect(new Set([groupFixture.id, ...matches.map((m) => m.id)])).toEqual(
+        new Set(data.fixtures.map((f) => f.id)),
+      );
+      const assigned = await staffFixtures(referee, "test-cup");
+      expect(groupedFixtures(assigned, "")[0].name).toBe("Group A");
+      expect(
+        assigned.stages.flatMap(
+          (s) => s.groupConfiguration?.groups.flatMap((g) => g.teamIds) ?? [],
+        ),
+      ).toEqual([homeId, awayId]);
     });
     it("database uniqueness keeps imports/games/revisions distinct and no source record creates an official result", async () => {
       const [fixture] = (await fixtureCommand(admin, "test-cup", body()))

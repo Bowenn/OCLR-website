@@ -1,6 +1,16 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { WorkspaceTabs } from "./workspace-tabs";
+import { BracketView } from "./bracket-view";
+import {
+  chronologicalFixtures,
+  fixtureBracket,
+  fixtureSlot,
+  groupedFixtures,
+} from "@/lib/fixture-views";
+import { formatDate } from "@/lib/editions";
 import type { FixtureWorkspace } from "@/lib/fixtures";
 import { RefereeAssignment } from "./referee-assignment";
 import { ConfirmMutation } from "./confirm-mutation";
@@ -10,10 +20,12 @@ function FixtureForm({
   slug,
   data,
   fixture,
+  onSaved,
 }: {
   slug: string;
   data: FixtureWorkspace;
   fixture?: Fixture;
+  onSaved?: () => void;
 }) {
   const [label, setLabel] = useState(fixture?.label ?? "");
   const [roundId, setRound] = useState(
@@ -128,16 +140,6 @@ function FixtureForm({
           {!data.rounds.length && (
             <option value="">No rounds configured</option>
           )}
-          {data.stages
-            .filter((s) => s.kind === "group")
-            .map((s) => (
-              <StageGroups
-                key={`${s.id}-${s.version}`}
-                stage={s}
-                slug={slug}
-                data={data}
-              />
-            ))}
           {data.rounds.map((r) => (
             <option key={r.round.id} value={r.round.id}>
               {r.stage === "group" ? "Group" : "Knockout"} / {r.round.name}
@@ -224,6 +226,7 @@ function FixtureForm({
       )}
       <ConfirmMutation
         requireConfirmation={false}
+        onSuccess={onSaved}
         label={fixture ? "Save fixture amendment" : "Create fixture"}
         title={fixture ? "Amend fixture?" : "Create fixture?"}
         description={`${fixture ? "Amend" : "Create"} ${label || "the fixture"}. Times are entered in UTC and displayed in ${timeZone || "the configured zone"}. Referee assignments and all changes are audited.`}
@@ -709,138 +712,284 @@ export function FixtureManager({
   slug: string;
   data: FixtureWorkspace;
 }) {
-  const [stage, setStage] = useState("");
-  const matches = data.fixtures.filter(
-    (f) =>
-      !stage ||
-      data.rounds.find((r) => r.round.id === f.roundId)?.stage === stage,
-  );
-  return (
-    <div className="stack">
-      {data.canManage && (
-        <div className="panel form-stack">
-          <h2>Fixture configuration</h2>
-
-          {data.rounds.length && data.teams.length >= 2 ? (
-            <details>
-              <summary>Create a fixture</summary>
-              <FixtureForm slug={slug} data={data} />
-            </details>
-          ) : (
-            <p className="notice">
-              Configure competition rounds and finalize/publish at least two
-              teams before scheduling.
-            </p>
-          )}
-          {data.stages
-            .filter((s) => s.kind === "group")
-            .map((s) => (
-              <StageGroups
-                key={`${s.id}-${s.version}`}
-                stage={s}
-                slug={slug}
-                data={data}
-              />
-            ))}
-          {data.rounds.map((r) => (
-            <details key={r.round.id}>
-              <summary>{r.round.name}: approved competition rules</summary>
-              <RoundRules
-                key={`${r.round.id}-${r.round.version}`}
-                slug={slug}
-                entry={r}
-              />
-            </details>
-          ))}
+  const router = useRouter(),
+    query = useSearchParams();
+  const requested = query.get("view");
+  const view =
+    requested === "groups" || requested === "bracket" ? requested : "schedule";
+  const [roundId, setRound] = useState("");
+  const [editing, setEditing] = useState<Fixture | "new" | null>(null);
+  const editor = useRef<HTMLDialogElement>(null),
+    id = useId();
+  const bracket = fixtureBracket(slug, data);
+  const groups = groupedFixtures(data, roundId);
+  function open(fixture: Fixture | "new") {
+    setEditing(fixture);
+    editor.current?.showModal();
+  }
+  function card(f: Fixture) {
+    const round = data.rounds.find((r) => r.round.id === f.roundId);
+    return (
+      <>
+        <div className="match-meta">
+          <h3 id={`match-${f.id}`}>{f.label}</h3>
+          <span>{f.status.replaceAll("_", " ")}</span>
         </div>
-      )}
-      <label className="field">
-        <span>Filter fixture stage</span>
-        <select value={stage} onChange={(e) => setStage(e.target.value)}>
-          <option value="">All stages</option>
-          <option value="group">Group Stage</option>
-          <option value="knockout">Knockout Stage</option>
-        </select>
-      </label>
-      {!matches.length && (
-        <p className="notice">
-          {data.canManage
-            ? "No matching fixtures configured."
-            : "No matching fixtures assigned to you."}
+        <p className="small muted">{round?.round.name}</p>
+        {(["home", "away"] as const).map((side) => {
+          const slot = fixtureSlot(data, f, side);
+          const source = data.fixtures.find((s) => s.id === slot.sourceMatchId);
+          return (
+            <div className="match-slot" data-bracket-slot key={side}>
+              <span>{slot.label}</span>
+              {source && slot.teamId && (
+                <small className="muted">
+                  {slot.kind === "loser" ? "Loser" : "Winner"} of {source.label}
+                </small>
+              )}
+            </div>
+          );
+        })}
+        <p className="small muted">
+          {f.scheduledAt
+            ? `${formatDate(f.scheduledAt, f.timeZone)} (${f.timeZone})`
+            : "Time TBA"}
         </p>
-      )}
-      {matches.map((f) => (
-        <article className="panel form-stack" key={f.id}>
-          <p className="eyebrow">
-            {data.rounds.find((r) => r.round.id === f.roundId)?.round.name}
-          </p>
-          <h2>
-            <Link
-              className="text-link"
-              href={`/admin/tournaments/${slug}/matches/${f.id}`}
-            >
-              {f.label} ↗
-            </Link>
-          </h2>
-          <p>
-            {data.teams.find((t) => t.id === f.homeTeamId)?.name ??
-              "Team publication unavailable"}{" "}
-            vs{" "}
-            {data.teams.find((t) => t.id === f.awayTeamId)?.name ??
-              "Team publication unavailable"}
-          </p>
-          <p className="muted">
-            {f.scheduledAt
-              ? `${f.scheduledAt.toISOString()} · display ${f.timeZone}`
-              : "Time TBA"}{" "}
-            · {f.status.replaceAll("_", " ")}
-          </p>
-          <p>
-            <span className="badge">
-              {f.publishedAt ? "Published fixture" : "Unpublished fixture"}
-            </span>{" "}
-            · {f.result ? `${f.result.state} report` : "No result submitted"}
-          </p>
-          <p className="small muted">
-            Assigned referees:{" "}
-            {f.referees.map((r) => r.username).join(", ") || "None"} · v
-            {f.version}
-          </p>
+        <p className="small">
+          <span className="badge">
+            {f.publishedAt ? "Published fixture" : "Unpublished fixture"}
+          </span>{" "}
+          · {f.result ? `${f.result.state} report` : "No result submitted"}
+        </p>
+        <p className="small muted">
+          Assigned referees:{" "}
+          {f.referees.map((r) => r.username).join(", ") || "None"}
+        </p>
+        <div className="actions fixture-actions">
+          <Link
+            className="text-link"
+            href={`/admin/tournaments/${slug}/matches/${f.id}`}
+          >
+            Open match ↗
+          </Link>
           {data.canManage && (
             <>
               <RefereeAssignment slug={slug} fixture={f} data={data} />
-              <ConfirmMutation
-                label={f.publishedAt ? "Unpublish fixture" : "Publish fixture"}
-                title={
-                  f.publishedAt
-                    ? "Withdraw fixture publication?"
-                    : "Publish fixture schedule?"
-                }
-                description="This controls fixture visibility. Scores still require a separately approved and published result."
-                url={`/api/admin/tournaments/${slug}/matches`}
-                payload={{
-                  action: "publish",
-                  fixtureId: f.id,
-                  expectedVersion: f.version,
-                  published: !f.publishedAt,
-                  confirmed: true,
-                }}
-              />
-              {!f.publishedAt && (
-                <details>
-                  <summary>Edit fixture</summary>
-                  <FixtureForm
-                    key={`${f.id}-${f.version}`}
-                    slug={slug}
-                    data={data}
-                    fixture={f}
-                  />
-                </details>
-              )}
+              <button
+                className="secondary"
+                type="button"
+                onClick={() => open(f)}
+              >
+                Manage fixture
+              </button>
             </>
           )}
-        </article>
-      ))}
+        </div>
+      </>
+    );
+  }
+  function cards(matches: Fixture[]) {
+    return (
+      <div className="fixture-grid">
+        {chronologicalFixtures(matches).map((f) => (
+          <article
+            className="match-card fixture-card"
+            key={f.id}
+            aria-labelledby={`match-${f.id}`}
+          >
+            {card(f)}
+          </article>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="fixture-workspace stack">
+      <div className="fixture-toolbar">
+        <WorkspaceTabs
+          id="fixture-views"
+          label="Fixture views"
+          value={view}
+          items={[
+            { value: "schedule", label: "Schedule" },
+            { value: "groups", label: "Groups" },
+            { value: "bracket", label: "Bracket" },
+          ]}
+          onChange={(value) => {
+            const next = new URLSearchParams(query.toString());
+            next.set("view", value);
+            router.replace(`?${next}`, { scroll: false });
+          }}
+        />
+        {data.canManage && (
+          <button
+            type="button"
+            className="secondary"
+            disabled={!data.rounds.length || data.teams.length < 2}
+            onClick={() => open("new")}
+          >
+            Create a fixture
+          </button>
+        )}
+      </div>
+      <div
+        id="fixture-views-panel"
+        role="tabpanel"
+        aria-labelledby={`fixture-views-${view}`}
+        tabIndex={0}
+      >
+        {view === "schedule" &&
+          (data.fixtures.length ? (
+            cards(data.fixtures)
+          ) : (
+            <p className="muted">
+              {data.canManage
+                ? "No fixtures yet."
+                : "No matches assigned to you."}
+            </p>
+          ))}
+        {view === "groups" && (
+          <div className="stack">
+            <label className="field fixture-round-filter">
+              <span>Group round</span>
+              <select
+                value={roundId}
+                onChange={(e) => setRound(e.target.value)}
+              >
+                <option value="">All rounds</option>
+                {data.rounds
+                  .filter((r) => r.stage === "group")
+                  .map((r) => (
+                    <option value={r.round.id} key={r.round.id}>
+                      {r.round.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            {groups.length ? (
+              groups.map((group) => (
+                <section key={group.id}>
+                  <h2>{group.name}</h2>
+                  {cards(group.fixtures)}
+                </section>
+              ))
+            ) : (
+              <p className="muted">No group fixtures in this round.</p>
+            )}
+          </div>
+        )}
+        {view === "bracket" &&
+          (bracket ? (
+            <BracketView
+              bracket={bracket}
+              renderMatch={(match) =>
+                card(data.fixtures.find((f) => f.id === match.id)!)
+              }
+            />
+          ) : (
+            <p className="muted">No knockout fixtures yet.</p>
+          ))}
+      </div>
+      {data.canManage && (
+        <>
+          <details className="fixture-configuration">
+            <summary>Competition configuration</summary>
+            <div className="form-stack">
+              {!data.rounds.length && (
+                <p className="muted">
+                  Create competition rounds in Mappools before scheduling.
+                </p>
+              )}
+              {data.stages
+                .filter((s) => s.kind === "group")
+                .map((s) => (
+                  <StageGroups
+                    key={`${s.id}-${s.version}`}
+                    stage={s}
+                    slug={slug}
+                    data={data}
+                  />
+                ))}
+              {data.rounds.map((r) => (
+                <details key={r.round.id}>
+                  <summary>{r.round.name}: approved competition rules</summary>
+                  <RoundRules
+                    key={`${r.round.id}-${r.round.version}`}
+                    slug={slug}
+                    entry={r}
+                  />
+                </details>
+              ))}
+            </div>
+          </details>
+          <dialog
+            className="fixture-editor-dialog"
+            ref={editor}
+            aria-labelledby={`${id}-editor`}
+          >
+            <div className="fixture-toolbar">
+              <h2 id={`${id}-editor`}>
+                {editing === "new" ? "Create a fixture" : editing?.label}
+              </h2>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => editor.current?.close()}
+              >
+                Close
+              </button>
+            </div>
+            {editing && editing !== "new" && (
+              <div className="form-stack">
+                <p className="small muted">
+                  {editing.publishedAt
+                    ? "Unpublish before editing fixture details."
+                    : "Changes are private until publication."}
+                </p>
+                <ConfirmMutation
+                  label={
+                    editing.publishedAt
+                      ? "Unpublish fixture"
+                      : "Publish fixture"
+                  }
+                  title={
+                    editing.publishedAt
+                      ? "Withdraw fixture publication?"
+                      : "Publish fixture schedule?"
+                  }
+                  description="This controls fixture visibility. Scores still require a separately approved and published result."
+                  url={`/api/admin/tournaments/${slug}/matches`}
+                  payload={{
+                    action: "publish",
+                    fixtureId: editing.id,
+                    expectedVersion: editing.version,
+                    published: !editing.publishedAt,
+                    confirmed: true,
+                  }}
+                  onSuccess={() => {
+                    editor.current?.close();
+                    setEditing(null);
+                  }}
+                />
+              </div>
+            )}
+            {editing && (editing === "new" || !editing.publishedAt) && (
+              <FixtureForm
+                key={
+                  editing === "new" ? "new" : `${editing.id}-${editing.version}`
+                }
+                slug={slug}
+                data={data}
+                fixture={editing === "new" ? undefined : editing}
+                onSaved={() => {
+                  editor.current?.close();
+                  setEditing(null);
+                }}
+              />
+            )}
+          </dialog>
+        </>
+      )}
     </div>
   );
 }

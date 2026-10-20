@@ -12,16 +12,14 @@ export default async function FixturesPage({
   return authorizedPage(async () => {
     const actor = await requireUser();
     const { edition } = await params;
+    const data = await staffFixtures(actor, edition);
     return (
       <>
-        <PageHeading eyebrow="COMPETITION OPERATIONS" title="Match fixtures">
-          Schedule official teams and assign referees. A scheduled fixture and
-          an approved result are separate records.
-        </PageHeading>
-        <FixtureManager
-          slug={edition}
-          data={await staffFixtures(actor, edition)}
+        <PageHeading
+          eyebrow="COMPETITION"
+          title={data.canManage ? "Fixtures & results" : "My assigned matches"}
         />
+        <FixtureManager slug={edition} data={data} />
       </>
     );
   });

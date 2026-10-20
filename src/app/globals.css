@@ -2590,3 +2590,97 @@ body:has(.presenter-view) .site-footer,
 .referee-choices small {
   display: block;
 }
+
+/* The fixture workspace keeps scheduling and match operations ahead of configuration. */
+.fixture-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.fixture-toolbar h2 {
+  margin: 0;
+}
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+}
+.fixture-card {
+  min-width: 0;
+}
+.fixture-card > p,
+.fixture-workspace .match-card > p {
+  margin-block: 0.65rem;
+}
+.fixture-workspace .match-slot {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.fixture-workspace .match-slot small {
+  font-size: 0.7rem;
+}
+.fixture-actions {
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.fixture-actions button,
+.fixture-actions a {
+  font-size: 0.8rem;
+}
+.fixture-actions button {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.65rem;
+}
+.fixture-round-filter {
+  max-width: 24rem;
+  margin-bottom: 1rem;
+}
+.fixture-configuration {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.fixture-configuration > .form-stack {
+  margin-top: 1rem;
+}
+.fixture-editor-dialog {
+  width: min(42rem, calc(100vw - 2rem));
+}
+.fixture-editor-dialog > .form-stack {
+  margin-top: 1.5rem;
+}
+.fixture-workspace .bracket-round {
+  width: 23rem;
+}
+@media (max-width: 600px) {
+  .fixture-toolbar {
+    align-items: stretch;
+  }
+  .fixture-toolbar .workspace-tabs {
+    flex: 1 0 100%;
+  }
+  .fixture-workspace .bracket-round {
+    width: min(22rem, calc(100vw - 4rem));
+  }
+}
+.fixture-workspace .match-card > p,
+.fixture-workspace .fixture-actions {
+  margin-inline: 0.85rem;
+}
+.fixture-workspace .fixture-actions {
+  margin-bottom: 0.85rem;
+}
+.fixture-workspace .match-meta h3 {
+  font-size: 0.95rem;
+}
+.fixture-workspace .match-meta > span {
+  font-size: 0.75rem;
+}
+.fixture-workspace {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.fixture-workspace > [role="tabpanel"] {
+  min-width: 0;
+}
