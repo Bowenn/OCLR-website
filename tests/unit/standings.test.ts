@@ -39,6 +39,7 @@ function fixture(
     pool: null,
     id: "f",
     label: "Synthetic match",
+    publishedAt: "2020-01-01T00:00:00Z",
     roundId: "r",
     roundName: "Synthetic round",
     roundPosition: 1,

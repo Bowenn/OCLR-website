@@ -43,16 +43,3 @@ export function getAnnouncements() {
       : defaultAnnouncements,
   );
 }
-export function publicAnnouncements(now = new Date()) {
-  return getAnnouncements()
-    .filter(
-      (a) =>
-        a.published &&
-        a.publishedAt &&
-        Date.parse(a.publishedAt) <= now.getTime(),
-    )
-    .sort((a, b) => Date.parse(b.publishedAt!) - Date.parse(a.publishedAt!));
-}
-export function publicAnnouncement(slug: string) {
-  return publicAnnouncements().find((a) => a.slug === slug);
-}

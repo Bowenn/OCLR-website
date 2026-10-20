@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { Action, Badge } from "@/components/ui";
-import { getPublicEditions } from "@/lib/content";
-import { publicAnnouncements } from "@/lib/announcements";
+import { publicNewsContext } from "@/lib/public-news";
 import { nextConfirmedMilestone } from "@/lib/public-milestones";
 import { registrationAvailability } from "@/lib/registrations";
 import { formatDate } from "@/lib/editions";
 export const dynamic = "force-dynamic";
 export default async function Home() {
   const now = new Date();
-  const editions = await getPublicEditions();
+  const { editions, items } = await publicNewsContext();
   const featured =
     editions.find((e) => e.status === "live") ??
     editions.find((e) => e.status === "upcoming") ??
@@ -16,7 +15,7 @@ export default async function Home() {
   const availability = featured
     ? await registrationAvailability(featured)
     : null;
-  const news = publicAnnouncements(now).slice(0, 3);
+  const news = items.slice(0, 3);
   const milestone = nextConfirmedMilestone(editions, now);
   return (
     <>
@@ -75,7 +74,8 @@ export default async function Home() {
               {news.map((item) => (
                 <li key={item.slug}>
                   <p className="muted small">
-                    {formatDate(item.publishedAt, "UTC")}
+                    {item.future ? "Scheduled for " : ""}
+                    {formatDate(item.at, item.timeZone)}
                   </p>
                   <h3>
                     <Link className="text-link" href={`/news/${item.slug}`}>

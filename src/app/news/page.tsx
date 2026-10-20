@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { publicAnnouncements } from "@/lib/announcements";
+import { publicNews } from "@/lib/public-news";
 import { formatDate } from "@/lib/editions";
 import { EmptyState, PageHeading } from "@/components/ui";
+export const dynamic = "force-dynamic";
 export const metadata = { title: "News & announcements" };
-export default function News() {
-  const announcements = publicAnnouncements();
+export default async function News() {
+  const announcements = await publicNews();
   return (
     <div className="container page">
       <PageHeading eyebrow="FROM THE OCLR STAGE" title="News & announcements">
@@ -15,9 +16,12 @@ export default function News() {
           {announcements.map((a) => (
             <article key={a.slug}>
               <div>
-                <p className="eyebrow">ANNOUNCEMENT</p>
+                <p className="eyebrow">
+                  {a.future ? "SCHEDULED" : a.kind.toUpperCase()}
+                </p>
                 <p className="muted small">
-                  {formatDate(a.publishedAt, "UTC")}
+                  {a.future ? "Scheduled for " : ""}
+                  {formatDate(a.at, a.timeZone)}
                 </p>
               </div>
               <div>

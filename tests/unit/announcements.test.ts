@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   announcementsSchema,
-  publicAnnouncements,
-  publicAnnouncement,
+  getAnnouncements,
 } from "../../src/lib/announcements";
+import { projectPublicNews } from "../../src/lib/public-news-model";
 import { announcements } from "../fixtures/announcements";
 let scratch: string | undefined;
 afterEach(() => {
@@ -28,10 +28,11 @@ it("publishes only approved, dated announcements and hides unpublished/future co
     ]),
   );
   vi.stubEnv("OCLR_ANNOUNCEMENTS_FILE", path);
-  expect(publicAnnouncements()).toHaveLength(1);
-  expect(publicAnnouncement("private-announcement")).toBeUndefined();
-  expect(publicAnnouncement("future")).toBeUndefined();
-  expect(publicAnnouncement("synthetic-announcement")?.title).toBe(
+  const items = projectPublicNews([], [], getAnnouncements(), true);
+  expect(items).toHaveLength(1);
+  expect(items.find((i) => i.slug === "private-announcement")).toBeUndefined();
+  expect(items.find((i) => i.slug === "future")).toBeUndefined();
+  expect(items.find((i) => i.slug === "synthetic-announcement")?.title).toBe(
     "Synthetic test announcement",
   );
 });

@@ -58,6 +58,7 @@ export type PublicFixture = {
   pool: { id: string; name: string } | null;
   id: string;
   label: string;
+  publishedAt: string;
   roundId: string;
   roundName: string;
   roundPosition: number;
@@ -276,6 +277,7 @@ export async function publicCompetition(slug: string) {
               : null,
           id,
           label: f.label,
+          publishedAt: f.publishedAt!.toISOString(),
           roundId: row.round.id,
           roundName: row.round.name,
           roundPosition: row.round.position,
