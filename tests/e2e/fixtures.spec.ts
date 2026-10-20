@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
@@ -149,6 +150,55 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       expect(
         (await guest.request.get(`${endpoint}/${fixture.id}`)).status(),
       ).toBe(401);
+      const operation = {
+        requestKey: randomUUID(),
+        expectedVersion: 0,
+        expectedFixtureVersion: fixture.version,
+        confirmed: true,
+        reason: "Synthetic direct API permission rehearsal",
+      };
+      const reportUrl = `${endpoint}/${fixture.id}/results`;
+      const importUrl = `${endpoint}/${fixture.id}/imports`;
+      expect((await guest.request.get(reportUrl)).status()).toBe(401);
+      expect((await mapper.request.get(reportUrl)).status()).toBe(403);
+      expect((await referee.request.get(reportUrl)).status()).toBe(200);
+      expect(
+        (
+          await guest.request.post(importUrl, {
+            headers,
+            data: { ...operation, match: "999001" },
+          })
+        ).status(),
+      ).toBe(401);
+      expect(
+        (
+          await mapper.request.post(importUrl, {
+            headers,
+            data: { ...operation, match: "999001" },
+          })
+        ).status(),
+      ).toBe(403);
+      expect(
+        (
+          await referee.request.post(reportUrl, {
+            headers,
+            data: { ...operation, action: "approve", revision: 1 },
+          })
+        ).status(),
+      ).toBe(403);
+      expect(
+        (
+          await referee.request.post(importUrl, {
+            headers,
+            data: { ...operation, match: "999001" },
+          })
+        ).status(),
+      ).toBe(503);
+      const afterUnavailable = await (
+        await referee.request.get(reportUrl)
+      ).json();
+      expect(afterUnavailable.context.result).toBeNull();
+      expect(afterUnavailable.source).toBeNull();
       await page
         .getByText(`${round.name}: approved competition rules`, { exact: true })
         .click();

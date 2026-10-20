@@ -7,12 +7,16 @@ export function ConfirmMutation({
   description,
   url,
   payload,
+  onSuccess,
+  onError,
 }: {
   label: string;
   title: string;
   description: string;
   url: string;
   payload: Record<string, unknown>;
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const id = useId();
@@ -30,16 +34,20 @@ export function ConfirmMutation({
       });
       if (!response.ok) {
         const result = await response.json();
-        setError(result.error ?? "The action could not be completed.");
+        const message = result.error ?? "The action could not be completed.";
+        setError(message);
+        onError?.(message);
         router.refresh();
         return;
       }
       dialog.current?.close();
+      onSuccess?.();
       router.refresh();
     } catch {
-      setError(
-        "Connection interrupted. Refresh to check the saved state before retrying.",
-      );
+      const message =
+        "Connection interrupted. Refresh to check the saved state before retrying.";
+      setError(message);
+      onError?.(message);
     } finally {
       setPending(false);
     }

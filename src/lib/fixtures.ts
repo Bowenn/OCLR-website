@@ -256,95 +256,101 @@ export async function staffFixtures(actor: User, slug: string) {
 }
 export type FixtureWorkspace = Awaited<ReturnType<typeof staffFixtures>>;
 /** Private typed contract used by the MP importer. No browser-provided identity is accepted. */
-export async function fixtureForReview(actor: User, slug: string, id: string) {
-  await assertCapability(actor, "record_results", slug);
+export async function fixtureForReview(
+  actor: User,
+  slug: string,
+  id: string,
+  reader?: Reader,
+) {
+  await assertCapability(actor, "record_results", slug, reader);
   configuredEdition(slug);
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Fixture not found.");
-  const admin = await hasCapability(actor, "manage_fixtures", slug);
-  return db().transaction(
-    async (tx) => {
-      const [fixture] = await tx
-        .select()
-        .from(fixtures)
-        .where(and(eq(fixtures.id, id), eq(fixtures.editionSlug, slug)));
-      if (!fixture) throw new HttpError(404, "Fixture not found.");
-      const [assignment] = await tx
-        .select()
-        .from(fixtureReferees)
-        .where(
-          and(
-            eq(fixtureReferees.fixtureId, id),
-            eq(fixtureReferees.userId, actor.osuId),
-          ),
-        );
-      if (!admin && !assignment)
-        throw new HttpError(403, "You are not assigned to this fixture.");
-      const [round] = await tx
-        .select({
-          ...getTableColumns(tournamentRounds),
-          stage: tournamentStages.kind,
-        })
-        .from(tournamentRounds)
-        .innerJoin(
-          tournamentStages,
-          eq(tournamentStages.id, tournamentRounds.stageId),
-        )
-        .where(eq(tournamentRounds.id, fixture.roundId));
-      const official = await officialTeams(tx, slug);
-      const home = official.find((t) => t.id === fixture.homeTeamId);
-      const away = official.find((t) => t.id === fixture.awayTeamId);
-      if (!home || !away)
-        throw new HttpError(
-          409,
-          "Both teams must have finalized published identities and rosters before reporting.",
-        );
-      const [pool] = fixture.mappoolId
-        ? await tx
-            .select()
-            .from(mappools)
-            .where(eq(mappools.id, fixture.mappoolId))
-        : [];
-      const maps = pool
-        ? await tx
-            .select({
-              beatmapId: mappoolEntries.beatmapId,
-              category: mappoolEntries.category,
-              position: mappoolEntries.position,
-            })
-            .from(mappoolEntries)
-            .where(eq(mappoolEntries.poolId, pool.id))
-        : [];
-      const [result] = await tx
-        .select()
-        .from(matchResults)
-        .where(eq(matchResults.fixtureId, id));
-      const events = await tx
-        .select()
-        .from(resultAuditEvents)
-        .where(eq(resultAuditEvents.fixtureId, id))
-        .orderBy(desc(resultAuditEvents.createdAt))
-        .limit(100);
-      return {
-        fixture,
-        round,
-        teams: [home, away] as const,
-        pool: pool
-          ? {
-              id: pool.id,
-              name: pool.name,
-              fmMode: pool.fmMode,
-              fmRestrictions: pool.fmRestrictions,
-              entries: maps,
-            }
-          : null,
-        result: result ?? null,
-        canApprove: admin,
-        events,
-      };
-    },
-    { isolationLevel: "repeatable read" },
-  );
+  const admin = await hasCapability(actor, "manage_fixtures", slug, reader);
+  const read = async (tx: Reader) => {
+    const [fixture] = await tx
+      .select()
+      .from(fixtures)
+      .where(and(eq(fixtures.id, id), eq(fixtures.editionSlug, slug)));
+    if (!fixture) throw new HttpError(404, "Fixture not found.");
+    const [assignment] = await tx
+      .select()
+      .from(fixtureReferees)
+      .where(
+        and(
+          eq(fixtureReferees.fixtureId, id),
+          eq(fixtureReferees.userId, actor.osuId),
+        ),
+      );
+    if (!admin && !assignment)
+      throw new HttpError(403, "You are not assigned to this fixture.");
+    const [round] = await tx
+      .select({
+        ...getTableColumns(tournamentRounds),
+        stage: tournamentStages.kind,
+      })
+      .from(tournamentRounds)
+      .innerJoin(
+        tournamentStages,
+        eq(tournamentStages.id, tournamentRounds.stageId),
+      )
+      .where(eq(tournamentRounds.id, fixture.roundId));
+    const official = await officialTeams(tx, slug);
+    const home = official.find((t) => t.id === fixture.homeTeamId);
+    const away = official.find((t) => t.id === fixture.awayTeamId);
+    if (!home || !away)
+      throw new HttpError(
+        409,
+        "Both teams must have finalized published identities and rosters before reporting.",
+      );
+    const [pool] = fixture.mappoolId
+      ? await tx
+          .select()
+          .from(mappools)
+          .where(eq(mappools.id, fixture.mappoolId))
+      : [];
+    const maps = pool
+      ? await tx
+          .select({
+            beatmapId: mappoolEntries.beatmapId,
+            category: mappoolEntries.category,
+            position: mappoolEntries.position,
+          })
+          .from(mappoolEntries)
+          .where(eq(mappoolEntries.poolId, pool.id))
+      : [];
+    const [result] = await tx
+      .select()
+      .from(matchResults)
+      .where(eq(matchResults.fixtureId, id));
+    const events = await tx
+      .select()
+      .from(resultAuditEvents)
+      .where(eq(resultAuditEvents.fixtureId, id))
+      .orderBy(desc(resultAuditEvents.createdAt))
+      .limit(100);
+    return {
+      fixture,
+      round,
+      teams: [home, away] as const,
+      pool: pool
+        ? {
+            id: pool.id,
+            version: pool.version,
+            name: pool.name,
+            fmMode: pool.fmMode,
+            fmRestrictions: pool.fmRestrictions,
+            entries: maps,
+          }
+        : null,
+      result: result ?? null,
+      canApprove: admin,
+      events,
+    };
+  };
+  return reader
+    ? read(reader)
+    : db().transaction(read, { isolationLevel: "repeatable read" });
 }
 export type FixtureReviewContext = Awaited<ReturnType<typeof fixtureForReview>>;
 function validateSources(
@@ -459,11 +465,14 @@ export async function fixtureCommand(
           .limit(1);
         if (
           completed.length &&
-          !isDeepStrictEqual(c.scoringRules, round.scoringRules)
+          !isDeepStrictEqual(c.scoringRules, round.scoringRules) &&
+          (!c.scoringRules ||
+            c.scoringRules.version ===
+              (round.scoringRules as { version?: string } | null)?.version)
         )
           throw new HttpError(
             409,
-            "Scoring rules used by approved results are immutable. Configure a new round for a different ruleset.",
+            "Use a new explicit scoring-rule version for a correction. Approved result snapshots remain unchanged until a fresh result is reviewed and published.",
           );
         const [updated] = await tx
           .update(tournamentRounds)
@@ -588,7 +597,7 @@ export async function fixtureCommand(
         : [];
       if (
         result &&
-        result.currentRevision > 0 &&
+        (result.state !== "draft" || result.publishedRevision !== null) &&
         before &&
         (before.homeTeamId !== c.homeTeamId ||
           before.awayTeamId !== c.awayTeamId ||
@@ -601,7 +610,7 @@ export async function fixtureCommand(
       )
         throw new HttpError(
           409,
-          "Reported fixture teams, round, pool and progression are immutable. Review/cancel the existing report instead of reassigning it.",
+          "Withdraw the active result and unpublish the fixture before amending teams, round, pool or progression. Saved review history is preserved.",
         );
       const values = {
         label: c.label,

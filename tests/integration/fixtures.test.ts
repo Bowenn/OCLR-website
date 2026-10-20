@@ -441,7 +441,7 @@ describe.skipIf(!url)(
       ).toBeNull();
       expect(await db().select().from(fixtureReferees)).toHaveLength(1);
     });
-    it("keeps approved scoring rules immutable while permitting explicit standings-rule changes", async () => {
+    it("requires a new scoring-rule version for corrections and preserves approved history", async () => {
       const [fixture] = (await fixtureCommand(admin, "test-cup", body()))
         .fixtures;
       await fixtureCommand(admin, "test-cup", {
@@ -513,6 +513,21 @@ describe.skipIf(!url)(
           position: 2,
         }),
       ).rejects.toMatchObject({ status: 409 });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        expectedVersion: 2,
+        scoringRules: {
+          ...rules,
+          version: "synthetic-corrected-v2",
+          playersPerTeam: 3,
+        },
+        standingsRules: null,
+      });
+      expect((await db().select().from(resultRevisions))[0].proposal).toEqual({
+        synthetic: true,
+      });
       const second = (
         await fixtureCommand(admin, "test-cup", { ...body(), position: 2 })
       ).fixtures.find((f) => f.position === 2)!;

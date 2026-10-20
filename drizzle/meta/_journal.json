@@ -64,6 +64,13 @@
       "when": 1792456800765,
       "tag": "0008_stale_lady_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792459924534,
+      "tag": "0009_sparkling_gideon",
+      "breakpoints": true
     }
   ]
 }

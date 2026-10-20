@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { scoringRulesSchema } from "./competition-model";
 const id = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const time = z.iso.datetime({ offset: true }).nullable();
@@ -166,3 +167,101 @@ export type MatchContext = {
     entries: readonly { beatmapId: number; category: string }[];
   } | null;
 };
+
+export const reviewedResultSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    fixtureVersion: integer,
+    roundId: z.uuid(),
+    poolVersion: integer.nullable(),
+    poolSnapshot: z
+      .object({
+        poolId: z.uuid(),
+        fmMode: z.enum(["free_mod", "force_mod"]).nullable(),
+        fmRestrictions: z.string().max(2000),
+        entries: z
+          .array(
+            z
+              .object({
+                beatmapId: id,
+                category: z.string().max(8),
+                position: integer,
+              })
+              .strict(),
+          )
+          .max(6000),
+      })
+      .strict()
+      .nullable(),
+    teamIds: z.tuple([z.uuid(), z.uuid()]).refine((ids) => ids[0] !== ids[1]),
+    rosterSnapshot: z
+      .array(
+        z.object({ teamId: z.uuid(), osuIds: z.array(id).max(1000) }).strict(),
+      )
+      .length(2),
+    rulesSnapshot: scoringRulesSchema,
+    sourceFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    decisions: z.array(gameDecisionSchema).max(3000),
+    publicNote: z.string().trim().max(1000),
+    games: z
+      .array(
+        z
+          .object({
+            gameId: id,
+            beatmapId: id.nullable(),
+            beatmap: matchGameSchema.shape.beatmap,
+            mods: z.array(z.string().max(16)).max(64),
+            scoringType: z.string().max(40).nullable(),
+            homeScore: z
+              .number()
+              .finite()
+              .nonnegative()
+              .max(Number.MAX_SAFE_INTEGER),
+            awayScore: z
+              .number()
+              .finite()
+              .nonnegative()
+              .max(Number.MAX_SAFE_INTEGER),
+            winnerTeamId: z.uuid().nullable(),
+            tied: z.boolean(),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(3000),
+    series: z
+      .object({
+        homeWins: integer,
+        awayWins: integer,
+        tiedMaps: integer,
+        includedGames: integer,
+        winnerTeamId: z.uuid().nullable(),
+        draw: z.boolean(),
+        complete: z.literal(true),
+      })
+      .strict(),
+  })
+  .strict()
+  .refine(
+    (r) =>
+      new Set(r.games.map((g) => g.gameId)).size === r.games.length &&
+      r.games.every((g) =>
+        g.tied
+          ? g.winnerTeamId === null
+          : r.teamIds.includes(g.winnerTeamId ?? ""),
+      ) &&
+      r.series.includedGames === r.games.length &&
+      r.series.homeWins ===
+        r.games.filter((g) => g.winnerTeamId === r.teamIds[0]).length &&
+      r.series.awayWins ===
+        r.games.filter((g) => g.winnerTeamId === r.teamIds[1]).length &&
+      r.series.tiedMaps === r.games.filter((g) => g.tied).length &&
+      (r.series.draw
+        ? r.series.winnerTeamId === null &&
+          r.series.homeWins === r.series.awayWins
+        : r.series.winnerTeamId ===
+            (r.series.homeWins > r.series.awayWins
+              ? r.teamIds[0]
+              : r.teamIds[1]) && r.series.homeWins !== r.series.awayWins),
+  );
+export type ReviewedResult = z.infer<typeof reviewedResultSchema>;

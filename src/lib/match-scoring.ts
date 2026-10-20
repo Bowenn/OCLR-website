@@ -140,9 +140,14 @@ function gamePreview(
     warnings.push(
       "This beatmap appears more than once. Review warmup, rematch and replay exclusions.",
     );
-  const slot = context.pool?.entries.find(
-    (e) => e.beatmapId === game.beatmapId,
-  );
+  const matchingSlots =
+    context.pool?.entries.filter((e) => e.beatmapId === game.beatmapId) ?? [];
+  const slot =
+    matchingSlots.find((e) => e.category === "FM") ?? matchingSlots[0];
+  if (matchingSlots.length > 1)
+    warnings.push(
+      "This beatmap occupies multiple pool slots. Document the played slot and verify its mod policy explicitly.",
+    );
   if (context.pool && !slot)
     warnings.push(
       "This beatmap is outside the associated pool. Explain any inclusion override.",

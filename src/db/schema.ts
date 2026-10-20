@@ -580,16 +580,26 @@ export const resultState = pgEnum("result_state", [
   "submitted",
   "approved",
 ]);
-export const matchResults = pgTable("match_results", {
-  fixtureId: uuid("fixture_id")
-    .primaryKey()
-    .references(() => fixtures.id),
-  state: resultState("state").notNull().default("draft"),
-  version: integer("version").notNull().default(0),
-  currentRevision: integer("current_revision").notNull().default(0),
-  publishedRevision: integer("published_revision"),
-  publishedAt: timestamp("published_at", { withTimezone: true }),
-});
+export const matchResults = pgTable(
+  "match_results",
+  {
+    fixtureId: uuid("fixture_id")
+      .primaryKey()
+      .references(() => fixtures.id),
+    state: resultState("state").notNull().default("draft"),
+    version: integer("version").notNull().default(0),
+    currentRevision: integer("current_revision").notNull().default(0),
+    latestImportId: uuid("latest_import_id"),
+    publishedRevision: integer("published_revision"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.latestImportId, t.fixtureId],
+      foreignColumns: [matchImports.id, matchImports.fixtureId],
+    }),
+  ],
+);
 export const resultRevisions = pgTable(
   "result_revisions",
   {
@@ -629,13 +639,20 @@ export const resultAuditEvents = pgTable(
       .references(() => fixtures.id),
     actorId: bigint("actor_id", { mode: "number" }).notNull(),
     action: text("action").notNull(),
+    requestKey: uuid("request_key"),
+    requestHash: text("request_hash"),
     reason: text("reason").notNull(),
     detail: jsonb("detail").$type<Record<string, unknown>>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
-  (t) => [index("result_audit_fixture_idx").on(t.fixtureId)],
+  (t) => [
+    index("result_audit_fixture_idx").on(t.fixtureId),
+    uniqueIndex("result_command_key_unique")
+      .on(t.fixtureId, t.actorId, t.requestKey)
+      .where(sql`${t.requestKey} IS NOT NULL`),
+  ],
 );
 export const resultGameClaims = pgTable(
   "result_game_claims",
