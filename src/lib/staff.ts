@@ -135,7 +135,12 @@ export async function reviewApplication(
       .from(registrations)
       .where(eq(registrations.id, id));
     if (!record) throw new HttpError(404, "Application not found.");
-    await assertCapability(actor, "manage_registrations", record.editionSlug);
+    await assertCapability(
+      actor,
+      "manage_registrations",
+      record.editionSlug,
+      tx,
+    );
     const [edition] = await tx
       .select()
       .from(editionState)

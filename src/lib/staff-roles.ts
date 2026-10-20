@@ -56,7 +56,12 @@ export async function changeStaffRole(actor: User, input: unknown) {
     // Serialize grants/revocations so duplicate requests cannot create competing active grants.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(17301)`);
     if (c.action === "grant") {
-      await assertCapability(actor, "manage_staff", c.editionSlug ?? undefined);
+      await assertCapability(
+        actor,
+        "manage_staff",
+        c.editionSlug ?? undefined,
+        tx,
+      );
       if (c.editionSlug && !getEditions().some((e) => e.slug === c.editionSlug))
         throw new HttpError(404, "Edition not found.");
       const [user] = await tx
@@ -100,17 +105,15 @@ export async function changeStaffRole(actor: User, input: unknown) {
           grantedBy: actor.osuId,
         })
         .returning();
-      await tx
-        .insert(staffRoleEvents)
-        .values({
-          grantId: grant.id,
-          actorId: actor.osuId,
-          targetId: grant.userId,
-          role: grant.role,
-          editionSlug: grant.editionSlug,
-          action: "grant",
-          reason: c.reason,
-        });
+      await tx.insert(staffRoleEvents).values({
+        grantId: grant.id,
+        actorId: actor.osuId,
+        targetId: grant.userId,
+        role: grant.role,
+        editionSlug: grant.editionSlug,
+        action: "grant",
+        reason: c.reason,
+      });
       return grant;
     }
     const [grant] = await tx
@@ -123,6 +126,7 @@ export async function changeStaffRole(actor: User, input: unknown) {
       actor,
       "manage_staff",
       grant.editionSlug ?? undefined,
+      tx,
     );
     if (grant.revokedAt)
       throw new HttpError(
@@ -134,17 +138,15 @@ export async function changeStaffRole(actor: User, input: unknown) {
       .set({ revokedAt: new Date() })
       .where(eq(staffRoles.id, grant.id))
       .returning();
-    await tx
-      .insert(staffRoleEvents)
-      .values({
-        grantId: grant.id,
-        actorId: actor.osuId,
-        targetId: grant.userId,
-        role: grant.role,
-        editionSlug: grant.editionSlug,
-        action: "revoke",
-        reason: c.reason,
-      });
+    await tx.insert(staffRoleEvents).values({
+      grantId: grant.id,
+      actorId: actor.osuId,
+      targetId: grant.userId,
+      role: grant.role,
+      editionSlug: grant.editionSlug,
+      action: "revoke",
+      reason: c.reason,
+    });
     return updated;
   });
 }

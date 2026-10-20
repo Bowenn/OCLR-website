@@ -414,7 +414,7 @@ export async function fixtureCommand(
         .from(editionState)
         .where(eq(editionState.slug, slug))
         .for("update");
-      await assertCapability(actor, "manage_fixtures", slug);
+      await assertCapability(actor, "manage_fixtures", slug, tx);
       if (c.action === "round_rules") {
         const [round] = await tx
           .select({
@@ -574,7 +574,7 @@ export async function fixtureCommand(
           .select()
           .from(users)
           .where(eq(users.osuId, userId));
-        if (!user || !(await hasCapability(user, "record_results", slug)))
+        if (!user || !(await hasCapability(user, "record_results", slug, tx)))
           throw new HttpError(
             400,
             "Every assigned referee must have an active result-reporting role for this edition.",

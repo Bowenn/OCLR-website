@@ -243,7 +243,7 @@ export async function mappoolCommand(
         .from(editionState)
         .where(eq(editionState.slug, slug))
         .for("update");
-      await assertCapability(actor, "manage_mappools", slug);
+      await assertCapability(actor, "manage_mappools", slug, tx);
       if (c.action === "round_create" || c.action === "round_edit") {
         let before = null;
         let round;

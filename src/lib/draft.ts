@@ -608,7 +608,7 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       .where(
         and(eq(captains.editionSlug, slug), eq(captains.userId, actor.osuId)),
       );
-    const staff = await hasCapability(actor, "manage_draft", slug);
+    const staff = await hasCapability(actor, "manage_draft", slug, tx);
     if (!staff && !appointment)
       throw new HttpError(
         403,

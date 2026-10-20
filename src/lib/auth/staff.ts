@@ -39,7 +39,11 @@ export function permits(
   );
 }
 /** No session claims or process cache: revocations apply to the next check. */
-export async function staffAccess(user: User): Promise<StaffGrant[]> {
+type StaffReader = Pick<ReturnType<typeof db>, "select">;
+export async function staffAccess(
+  user: User,
+  reader?: StaffReader,
+): Promise<StaffGrant[]> {
   const bootstrap = (process.env.ADMIN_OSU_IDS ?? "")
     .split(",")
     .map((v) => v.trim())
@@ -47,7 +51,7 @@ export async function staffAccess(user: User): Promise<StaffGrant[]> {
   if (bootstrap.includes(String(user.osuId)))
     return [{ role: "admin", editionSlug: null }];
   if (!process.env.DATABASE_URL) return [];
-  return db()
+  return (reader ?? db())
     .select({ role: staffRoles.role, editionSlug: staffRoles.editionSlug })
     .from(staffRoles)
     .where(
@@ -58,15 +62,17 @@ export async function hasCapability(
   user: User,
   capability: Capability,
   edition?: string,
+  reader?: StaffReader,
 ) {
-  return permits(await staffAccess(user), capability, edition);
+  return permits(await staffAccess(user, reader), capability, edition);
 }
 export async function assertCapability(
   user: User,
   capability: Capability,
   edition?: string,
+  reader?: StaffReader,
 ) {
-  if (!(await hasCapability(user, capability, edition)))
+  if (!(await hasCapability(user, capability, edition, reader)))
     throw new HttpError(403, "You do not have permission for this operation.");
 }
 export async function isStaff(user: User) {
