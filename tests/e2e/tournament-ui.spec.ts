@@ -145,10 +145,45 @@ test.describe("registration readiness and confirmation layout", () => {
           .analyze()
       ).violations,
     ).toEqual([]);
+    const heading = page.locator(".tournament-dashboard-heading");
+    const title = heading.getByRole("heading", { level: 1 });
+    expect(
+      await title.evaluate((element) =>
+        parseFloat(getComputedStyle(element).fontSize),
+      ),
+    ).toBeLessThanOrEqual(32);
+    const headingBox = (await heading.boundingBox())!,
+      readinessBox = (await readiness.boundingBox())!;
+    expect(Math.abs(headingBox.x - readinessBox.x)).toBeLessThan(2);
+    expect(Math.abs(headingBox.width - readinessBox.width)).toBeLessThan(2);
+    const dates = readiness.getByRole("heading", {
+      name: "Registration window",
+      exact: true,
+    });
+    const checks = readiness.getByRole("heading", {
+      name: "Registration checks",
+      exact: true,
+    });
+    const datesBox = (await dates.boundingBox())!,
+      checksBox = (await checks.boundingBox())!;
+    if (isMobile)
+      expect(checksBox.y).toBeGreaterThan(datesBox.y + datesBox.height);
+    else expect(Math.abs(checksBox.y - datesBox.y)).toBeLessThan(2);
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
       path: info.outputPath("compact-tournament-dashboard.png"),
       fullPage: true,
     });
+    if (!isMobile) {
+      await page.setViewportSize({ width: 900, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await expect(checks).toBeVisible();
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
     await command("registration", {
       registration: {
         enabled: true,

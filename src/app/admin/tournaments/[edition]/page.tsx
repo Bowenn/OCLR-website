@@ -55,7 +55,9 @@ export default async function Tournament({
           <div className="registration-readiness-header">
             <h2 id="registration-heading">Registration</h2>
             <div className="registration-summary">
-              <span className="badge registration-state">
+              <span
+                className={`badge registration-state state-${row.registrationState}`}
+              >
                 {row.registration ? row.registrationState : "Not configured"}
               </span>
               {data && (
@@ -69,59 +71,66 @@ export default async function Tournament({
               )}
             </div>
           </div>
-          {data && (
-            <ul className="readiness-list">
-              {data.readiness.map((item) => {
-                const section =
-                  item.label === "Approved rules" ||
-                  item.label === "Eligibility disclosure"
-                    ? "rules"
-                    : item.label === "Registration dates"
-                      ? "registration"
-                      : null;
-                return (
-                  <li key={item.label}>
-                    <span>{item.label}</span>
-                    <span className="readiness-outcome">
-                      {!item.ready && section && (
-                        <Link
-                          href={`/admin/tournaments/${slug}/settings?section=${section}`}
+          <div
+            className={`registration-overview-body${data ? "" : " is-single"}`}
+          >
+            <div>
+              <h3>Registration window</h3>
+              {row.registration ? (
+                <dl className="registration-window">
+                  <div>
+                    <dt>Opens</dt>
+                    <dd>
+                      {formatDate(row.registration.opensAt, row.timeZone)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Closes</dt>
+                    <dd>
+                      {formatDate(row.registration.closesAt, row.timeZone)}
+                    </dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="muted small">
+                  Registration dates have not been configured.
+                </p>
+              )}
+              <p className="registration-timezone">Time zone: {row.timeZone}</p>
+            </div>
+            {data && (
+              <div>
+                <h3>Registration checks</h3>
+                <ul className="readiness-list">
+                  {data.readiness.map((item) => (
+                    <li key={item.label}>
+                      <span>{item.label}</span>
+                      <span className="readiness-outcome">
+                        {!item.ready && item.label === "Registration dates" && (
+                          <Link
+                            href={`/admin/tournaments/${slug}/settings?section=registration`}
+                          >
+                            Configure
+                            <span className="sr-only"> registration dates</span>
+                          </Link>
+                        )}
+                        <span
+                          className={
+                            item.ready ? "readiness-ready" : "readiness-pending"
+                          }
                         >
-                          Configure
-                          <span className="sr-only">
-                            {" "}
-                            {item.label.toLowerCase()}
-                          </span>
-                        </Link>
-                      )}
-                      <span
-                        className={
-                          item.ready ? "readiness-ready" : "readiness-pending"
-                        }
-                      >
-                        {item.ready ? "Ready" : "Pending"}
+                          {item.ready ? "Ready" : "Pending"}
+                        </span>
                       </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {row.registration && (
-            <dl className="registration-window">
-              <div>
-                <dt>Opens</dt>
-                <dd>{formatDate(row.registration.opensAt, row.timeZone)}</dd>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                <dt>Closes</dt>
-                <dd>{formatDate(row.registration.closesAt, row.timeZone)}</dd>
-              </div>
-            </dl>
-          )}
+            )}
+          </div>
           <p className="registration-guidance">
-            Applications are accepted only during the configured window when
-            registration is enabled and all requirements are ready.
+            Applications are accepted during this window when registration is
+            enabled.
           </p>
         </section>
         {!data && (
