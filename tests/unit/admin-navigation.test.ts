@@ -59,4 +59,11 @@ describe("administration location", () => {
       "Staff management",
     ]);
   });
+  it("keeps standalone lookup utilities out of the administration destinations", () => {
+    expect(
+      globalNavigation.some(
+        (item) => item.href === "/admin/profiles" || item.group === "Tools",
+      ),
+    ).toBe(false);
+  });
 });

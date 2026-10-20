@@ -27,12 +27,6 @@ export const globalNavigation: readonly (AdminLink & {
     group: "Administration",
     capability: "manage_staff",
   },
-  {
-    href: "/admin/profiles",
-    label: "osu! profile lookup",
-    group: "Tools",
-    capability: "configure_tournament",
-  },
 ];
 export const tournamentNavigation: readonly {
   label: string;

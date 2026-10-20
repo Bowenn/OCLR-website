@@ -169,14 +169,17 @@ test.describe("published osu! profiles", () => {
         ).status(),
       ).toBe(403);
       const staffPage = await operator.newPage();
-      await staffPage.goto("/admin/profiles");
-      await staffPage
-        .getByLabel("osu! ID or profile URL")
-        .fill(`https://osu.ppy.sh/users/${base}/osu`);
-      await staffPage.getByRole("button", { name: "Look up profile" }).click();
+      expect((await staffPage.goto("/admin/profiles"))?.status()).toBe(404);
       await expect(
-        staffPage.getByRole("heading", { name: `Synthetic Profile ${base}` }),
-      ).toBeVisible();
+        staffPage.getByRole("button", { name: "Look up profile", exact: true }),
+      ).toHaveCount(0);
+      await staffPage.goto("/admin");
+      await expect(
+        staffPage.getByRole("link", {
+          name: "osu! profile lookup",
+          exact: true,
+        }),
+      ).toHaveCount(0);
       await staffPage.close();
     } finally {
       await operator.close();
