@@ -1483,3 +1483,51 @@ body:has(.presenter-view) .site-footer,
     max-height: 160px;
   }
 }
+
+.player-directory {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.directory-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+.directory-identity > div {
+  min-width: 0;
+}
+.directory-identity h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.directory-identity p {
+  margin-bottom: 0;
+}
+.directory-identity .avatar {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.directory-details {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+}
+.directory-details dt {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+.directory-details dd {
+  margin: 0.1rem 0 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .player-directory {
+    grid-template-columns: 1fr;
+  }
+}
