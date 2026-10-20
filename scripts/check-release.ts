@@ -58,6 +58,14 @@ try {
   await db().execute(
     sql`SELECT 1 FROM fixtures, fixture_referees, match_imports, match_games, match_results, result_revisions, result_audit_events, result_game_claims LIMIT 0`,
   );
+  await db().execute(sql`SELECT assignment_revision FROM fixtures LIMIT 0`);
+  const plannedColumns = await db().execute(
+    sql`SELECT count(*)::integer AS count FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'fixtures' AND column_name IN ('home_team_id', 'away_team_id') AND is_nullable = 'YES'`,
+  );
+  if (plannedColumns.rows[0]?.count !== 2)
+    throw new Error(
+      "Apply the planned-fixture participant migration before release.",
+    );
   await db().execute(sql`SELECT latest_import_id FROM match_results LIMIT 0`);
   await db().execute(
     sql`SELECT request_key, request_hash FROM result_audit_events LIMIT 0`,

@@ -48,6 +48,8 @@ export function groupedFixtures(data: FixtureWorkspace, roundId: string) {
           (f) =>
             data.rounds.find((r) => r.round.id === f.roundId)?.round.stageId ===
               stage.id &&
+            f.homeTeamId !== null &&
+            f.awayTeamId !== null &&
             group.teamIds.includes(f.homeTeamId) &&
             group.teamIds.includes(f.awayTeamId),
         ),
@@ -96,7 +98,10 @@ export function fixtureBracket(
         published: false,
         formatLabel: "Knockout fixtures",
         source: { label: "Authoritative fixtures", url: null },
-        updatedAt: "",
+        updatedAt: data.fixtures
+          .map((f) => f.updatedAt.toISOString())
+          .sort()
+          .at(-1)!,
         groups: [{ id: "knockout", label: "Knockout Stage", rounds }],
       }
     : null;

@@ -5,7 +5,11 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { fixtureReferees, staffRoles } from "../../src/db/schema";
+import {
+  fixtureReferees,
+  staffRoles,
+  resultAuditEvents,
+} from "../../src/db/schema";
 import { seedSession } from "./session";
 import { seedPublicDirectory } from "../fixtures/players";
 import { mappoolCommand } from "../../src/lib/mappools";
@@ -482,6 +486,246 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       await referee.close();
       await guest.close();
       await mapper.close();
+    }
+  });
+  test("plans TBD matches and assigns multiple referees before teams exist, without enabling result imports", async ({
+    page,
+    context,
+    browser,
+    isMobile,
+  }, info) => {
+    assertTestDatabase(process.env.TEST_DATABASE_URL);
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    const adminId = isMobile ? 70001 : 60001;
+    const refId = isMobile ? 278102 : 278002;
+    await context.addCookies([await seedSession(adminId)]);
+    const firstCookie = await seedSession(refId);
+    const secondCookie = await seedSession(refId + 1);
+    await db()
+      .insert(staffRoles)
+      .values(
+        [refId, refId + 1].map((userId) => ({
+          userId,
+          role: "referee" as const,
+          editionSlug: "test-cup",
+          grantedBy: adminId,
+        })),
+      );
+    process.env.ADMIN_OSU_IDS = String(adminId);
+    await mappoolCommand(
+      { osuId: adminId, username: "Synthetic Admin" },
+      "test-cup",
+      {
+        action: "round_create",
+        stage: "knockout",
+        name: "Planned final",
+        position: 1,
+        confirmed: true,
+      },
+    );
+    const referee = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    const second = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    const guest = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    await referee.addCookies([firstCookie]);
+    await second.addCookies([secondCookie]);
+    const endpoint = "/api/admin/tournaments/test-cup/matches";
+    const headers = { origin: "http://127.0.0.1:3100" };
+    try {
+      await page.goto("/admin/tournaments/test-cup/matches");
+      await page
+        .getByRole("button", { name: "Create a fixture", exact: true })
+        .click();
+      const create = page.getByRole("dialog");
+      await create
+        .getByLabel("Fixture label", { exact: true })
+        .fill("Planned final");
+      await create
+        .getByLabel("Scheduled date and time (UTC; optional)", { exact: true })
+        .fill("2026-11-02T12:00");
+      await create
+        .getByRole("button", { name: "Create fixture", exact: true })
+        .click();
+      await expect(create).not.toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Planned final", exact: true }),
+      ).toBeVisible();
+      await expect(page.getByText("Team TBD", { exact: true })).toHaveCount(2);
+      await page
+        .getByRole("button", { name: "Assign Referee", exact: true })
+        .click();
+      const assignment = page.getByRole("dialog");
+      for (const id of [refId, refId + 1]) {
+        await assignment
+          .getByRole("searchbox", { name: "Search referees" })
+          .fill(String(id));
+        await assignment
+          .getByRole("checkbox", { name: new RegExp(String(id)) })
+          .check();
+      }
+      await assignment
+        .getByRole("button", { name: "Save assignments", exact: true })
+        .click();
+      await expect(assignment).not.toBeVisible();
+      let workspace = await (await context.request.get(endpoint)).json();
+      const fixture = workspace.fixtures[0];
+      expect(fixture.refereeIds).toEqual([refId, refId + 1]);
+      expect(fixture.homeTeamId).toBeNull();
+      expect(fixture.awayTeamId).toBeNull();
+      expect(fixture.version).toBe(0);
+      const matchUrl = `${endpoint}/${fixture.id}`;
+      // Another operator changes the assignments while this dialog still has revision 1.
+      await page
+        .getByRole("button", { name: "Assign Referee", exact: true })
+        .click();
+      expect(
+        (
+          await context.request.patch(`${matchUrl}/referees`, {
+            headers,
+            data: { expectedAssignmentRevision: 1, refereeIds: [refId] },
+          })
+        ).status(),
+      ).toBe(200);
+      await assignment
+        .getByRole("button", { name: "Save assignments", exact: true })
+        .click();
+      await expect(assignment.getByRole("alert")).toContainText(
+        "Referee assignments changed",
+      );
+      await assignment
+        .getByRole("button", { name: "Reload assignments", exact: true })
+        .click();
+      await assignment
+        .getByRole("searchbox", { name: "Search referees" })
+        .fill(String(refId + 1));
+      await expect(
+        assignment.getByRole("checkbox", {
+          name: new RegExp(String(refId + 1)),
+        }),
+      ).not.toBeChecked();
+      await assignment
+        .getByRole("checkbox", { name: new RegExp(String(refId + 1)) })
+        .check();
+      await assignment
+        .getByRole("button", { name: "Save assignments", exact: true })
+        .click();
+      await expect(assignment).not.toBeVisible();
+      for (const client of [referee, second]) {
+        expect((await client.request.get(matchUrl)).status()).toBe(409);
+        expect(
+          (
+            await client.request.post(`${matchUrl}/imports`, {
+              headers,
+              data: {
+                match: "999001",
+                requestKey: randomUUID(),
+                expectedFixtureVersion: 0,
+                expectedVersion: 0,
+                confirmed: true,
+              },
+            })
+          ).status(),
+        ).toBe(409);
+      }
+      const refPage = await referee.newPage();
+      await refPage.goto("/admin/tournaments/test-cup/matches");
+      await expect(
+        refPage.getByRole("heading", {
+          name: "My assigned matches",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await refPage
+        .getByRole("link", { name: "Open match ↗", exact: true })
+        .click();
+      await expect(
+        refPage.getByText(/Participants are not confirmed/),
+      ).toBeVisible();
+      await expect(
+        refPage.getByRole("button", { name: /import/i }),
+      ).toHaveCount(0);
+      await refPage.close();
+      const publicUrl = `/api/tournaments/test-cup/matches/${fixture.id}`;
+      expect((await guest.request.get(publicUrl)).status()).toBe(404);
+      await page
+        .getByRole("button", { name: "Manage fixture", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Publish fixture", exact: true })
+        .click();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(
+        page.getByText("Published fixture", { exact: true }),
+      ).toBeVisible();
+      const published = await (await guest.request.get(publicUrl)).json();
+      expect(published).toMatchObject({
+        confirmed: false,
+        result: null,
+        home: { team: null },
+        away: { team: null },
+        scheduledAt: "2026-11-02T12:00:00.000Z",
+      });
+      expect(JSON.stringify(published)).not.toContain("referee");
+      await db()
+        .update(staffRoles)
+        .set({ revokedAt: new Date() })
+        .where(eq(staffRoles.userId, refId + 1));
+      expect((await second.request.get(endpoint)).status()).toBe(403);
+      expect((await second.request.get(matchUrl)).status()).toBe(403);
+      await page.reload();
+      await page
+        .getByRole("button", { name: "Assign Referee", exact: true })
+        .click();
+      await assignment
+        .getByRole("searchbox", { name: "Search referees" })
+        .fill(String(refId + 1));
+      await expect(assignment.getByText(/Role no longer active/)).toBeVisible();
+      await assignment
+        .getByRole("checkbox", { name: new RegExp(String(refId + 1)) })
+        .uncheck();
+      await assignment
+        .getByRole("button", { name: "Save assignments", exact: true })
+        .click();
+      await expect(assignment).not.toBeVisible();
+      workspace = await (await context.request.get(endpoint)).json();
+      expect(workspace.fixtures[0].refereeIds).toEqual([refId]);
+      expect(workspace.fixtures[0].version).toBe(1); // Only fixture publication changed this version.
+      expect(workspace.fixtures[0].assignmentRevision).toBe(4);
+      await page.getByRole("tab", { name: "Bracket", exact: true }).click();
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+      await page.evaluate(() => {
+        if (document.activeElement instanceof HTMLElement)
+          document.activeElement.blur();
+        window.scrollTo(0, 0);
+      });
+      await page.screenshot({
+        path: info.outputPath("planned-fixture.png"),
+        fullPage: true,
+      });
+      expect(
+        (
+          await db()
+            .select()
+            .from(resultAuditEvents)
+            .where(eq(resultAuditEvents.action, "fixture_referees"))
+        ).length,
+      ).toBe(4);
+    } finally {
+      await referee.close();
+      await second.close();
+      await guest.close();
     }
   });
 });

@@ -25,6 +25,38 @@ export function RefereeAssignment({
     setRevision(fixture.assignmentRevision);
     setError("");
   }
+  async function reload() {
+    setPending(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/admin/tournaments/${slug}/matches`, {
+        cache: "no-store",
+      });
+      if (!response.ok)
+        throw new Error(
+          "Assignments could not be reloaded. Refresh the page to check your access.",
+        );
+      const workspace: {
+        fixtures: Pick<
+          FixtureWorkspace["fixtures"][number],
+          "id" | "refereeIds" | "assignmentRevision"
+        >[];
+      } = await response.json();
+      const current = workspace.fixtures.find((f) => f.id === fixture.id);
+      if (!current) throw new Error("This fixture is no longer available.");
+      setSelected(current.refereeIds);
+      setRevision(current.assignmentRevision);
+      router.refresh();
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Connection interrupted. Try reloading again.",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
   async function save() {
     setPending(true);
     setError("");
@@ -92,7 +124,7 @@ export function RefereeAssignment({
         <h2 id={`${id}-title`}>Referees · {fixture.label}</h2>
         <p className="muted small">
           {fixture.scheduledAt
-            ? `${formatDate(fixture.scheduledAt, fixture.timeZone)} (${fixture.timeZone})`
+            ? formatDate(fixture.scheduledAt, fixture.timeZone)
             : "Match time TBA"}
         </p>
         <p className="small">
@@ -184,7 +216,7 @@ export function RefereeAssignment({
             Cancel
           </button>
           {error && (
-            <button className="secondary" disabled={pending} onClick={reset}>
+            <button className="secondary" disabled={pending} onClick={reload}>
               Reload assignments
             </button>
           )}

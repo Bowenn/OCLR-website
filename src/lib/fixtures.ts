@@ -53,8 +53,8 @@ const confirmation = {
 const fixtureFields = {
   label: z.string().trim().min(1).max(100),
   roundId: z.uuid(),
-  homeTeamId: z.uuid(),
-  awayTeamId: z.uuid(),
+  homeTeamId: z.uuid().nullable(),
+  awayTeamId: z.uuid().nullable(),
   scheduledAt: z.iso.datetime({ offset: true }).nullable(),
   timeZone: z.string().trim().max(80).refine(validTimeZone),
   status: z.enum(["scheduled", "in_progress", "cancelled"]),
@@ -513,7 +513,7 @@ export async function fixtureForReview(
       .from(matchResults)
       .where(eq(matchResults.fixtureId, id));
     return {
-      fixture,
+      fixture: { ...fixture, homeTeamId: home.id, awayTeamId: away.id },
       round,
       teams: [home, away] as const,
       pool: pool
@@ -750,8 +750,10 @@ export async function fixtureCommand(
         const official = await officialTeams(tx, slug);
         if (
           c.published &&
-          (!official.some((t) => t.id === before!.homeTeamId) ||
-            !official.some((t) => t.id === before!.awayTeamId))
+          ((before!.homeTeamId !== null &&
+            !official.some((t) => t.id === before!.homeTeamId)) ||
+            (before!.awayTeamId !== null &&
+              !official.some((t) => t.id === before!.awayTeamId)))
         )
           throw new HttpError(
             409,
@@ -778,13 +780,14 @@ export async function fixtureCommand(
         throw new HttpError(409, "Unpublish this fixture before amending it.");
       const official = await officialTeams(tx, slug);
       if (
-        c.homeTeamId === c.awayTeamId ||
-        !official.some((t) => t.id === c.homeTeamId) ||
-        !official.some((t) => t.id === c.awayTeamId)
+        (c.homeTeamId !== null && c.homeTeamId === c.awayTeamId) ||
+        (c.homeTeamId !== null &&
+          !official.some((t) => t.id === c.homeTeamId)) ||
+        (c.awayTeamId !== null && !official.some((t) => t.id === c.awayTeamId))
       )
         throw new HttpError(
           400,
-          "Choose two different finalized, published teams from this edition.",
+          "Choose different finalized, published teams from this edition, or leave participants TBD.",
         );
       const [round] = await tx
         .select()

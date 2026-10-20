@@ -261,6 +261,16 @@ describe.skipIf(!base)(
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
             expect(
+              (
+                await pool.query(
+                  "SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name='fixtures' AND column_name IN ('home_team_id', 'away_team_id') ORDER BY column_name",
+                )
+              ).rows,
+            ).toEqual([
+              { column_name: "away_team_id", is_nullable: "YES" },
+              { column_name: "home_team_id", is_nullable: "YES" },
+            ]);
+            expect(
               (await pool.query("SELECT assignment_revision FROM fixtures"))
                 .rows,
             ).toEqual([{ assignment_revision: 0 }]);

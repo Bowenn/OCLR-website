@@ -2638,7 +2638,7 @@ body:has(.presenter-view) .site-footer,
   margin-bottom: 1rem;
 }
 .fixture-configuration {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--color-border);
   padding-top: 1rem;
 }
 .fixture-configuration > .form-stack {
@@ -2672,6 +2672,8 @@ body:has(.presenter-view) .site-footer,
   margin-bottom: 0.85rem;
 }
 .fixture-workspace .match-meta h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: 0.95rem;
 }
 .fixture-workspace .match-meta > span {

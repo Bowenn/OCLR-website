@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 let fixtureEditions: unknown[];
 import { seedEditions } from "../fixtures/editions";
 import { assertTestDatabase } from "../database";
@@ -36,6 +37,8 @@ import {
   groupedFixtures,
   fixtureBracket,
 } from "../../src/lib/fixture-views";
+import { publicFixture } from "../../src/lib/public-competition";
+import { importFixtureMatch, resultCommand } from "../../src/lib/results";
 import { mappoolCommand } from "../../src/lib/mappools";
 import { seedPublicDirectory } from "../fixtures/players";
 import { edition } from "../fixtures/edition";
@@ -324,6 +327,37 @@ describe.skipIf(!url)(
       expect(stored).toEqual({ ...unchanged, assignmentRevision: 1 });
       expect(await db().select().from(matchResults)).toEqual(resultBefore);
       const auditCount = (await db().select().from(resultAuditEvents)).length;
+      const assignmentsBeforeRetry = await db().select().from(fixtureReferees);
+      await assignFixtureReferees(admin, "test-cup", f.id, {
+        expectedAssignmentRevision: 1,
+        refereeIds: updated.refereeIds,
+      });
+      expect(await db().select().from(fixtureReferees)).toEqual(
+        assignmentsBeforeRetry,
+      );
+      expect((await db().select().from(resultAuditEvents)).length).toBe(
+        auditCount,
+      );
+      await expect(
+        assignFixtureReferees(admin, "test-cup", f.id, {
+          expectedAssignmentRevision: 1,
+          refereeIds: [],
+          homeTeamId: awayId,
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      await db()
+        .insert(staffRoles)
+        .values({
+          userId: player.osuId,
+          role: "referee",
+          editionSlug: "other-test-cup",
+          grantedBy: admin.osuId,
+        });
+      expect(
+        (await staffFixtures(admin, "test-cup")).eligibleReferees.some(
+          (u) => u.osuId === player.osuId,
+        ),
+      ).toBe(false);
       await expect(
         assignFixtureReferees(referee, "test-cup", f.id, {
           expectedAssignmentRevision: 1,
@@ -532,6 +566,170 @@ describe.skipIf(!url)(
           (s) => s.groupConfiguration?.groups.flatMap((g) => g.teamIds) ?? [],
         ),
       ).toEqual([homeId, awayId]);
+    });
+    it("persists planned participants and assignments without fake teams, gates reporting and safely publishes TBD schedules", async () => {
+      const plannedBody = {
+        ...body(),
+        homeTeamId: null,
+        awayTeamId: null,
+        scheduledAt: "2026-11-02T12:00:00Z",
+      };
+      let data = await fixtureCommand(admin, "test-cup", plannedBody);
+      const fixture = data.fixtures[0];
+      expect(fixture).toMatchObject({ homeTeamId: null, awayTeamId: null });
+      expect(await publicFixture("test-cup", fixture.id)).toBeNull();
+      data = await assignFixtureReferees(admin, "test-cup", fixture.id, {
+        expectedAssignmentRevision: 0,
+        refereeIds: [referee.osuId, otherRef.osuId],
+      });
+      expect(data.fixtures[0].refereeIds).toHaveLength(2);
+      expect((await staffFixtures(referee, "test-cup")).fixtures[0].id).toBe(
+        fixture.id,
+      );
+      await expect(
+        fixtureForReview(referee, "test-cup", fixture.id),
+      ).rejects.toMatchObject({ status: 409 });
+      await expect(
+        fixtureForReview(player, "test-cup", fixture.id),
+      ).rejects.toMatchObject({ status: 403 });
+      const request = {
+        expectedFixtureVersion: 0,
+        expectedVersion: 0,
+        requestKey: randomUUID(),
+        confirmed: true,
+      };
+      await expect(
+        importFixtureMatch(referee, "test-cup", fixture.id, {
+          ...request,
+          match: "999001",
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      await expect(
+        resultCommand(admin, "test-cup", fixture.id, {
+          ...request,
+          action: "approve",
+          revision: 1,
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      expect(await db().select().from(matchImports)).toEqual([]);
+      expect(await db().select().from(matchResults)).toEqual([]);
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: fixture.id,
+        expectedVersion: 0,
+        published: true,
+      });
+      expect(await publicFixture("test-cup", fixture.id)).toMatchObject({
+        home: { team: null },
+        away: { team: null },
+        confirmed: false,
+        result: null,
+        scheduledAt: "2026-11-02T12:00:00.000Z",
+      });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: fixture.id,
+        expectedVersion: 1,
+        published: false,
+      });
+      data = await fixtureCommand(admin, "test-cup", {
+        ...Object.fromEntries(
+          Object.entries(plannedBody).filter(([key]) => key !== "refereeIds"),
+        ),
+        action: "edit",
+        fixtureId: fixture.id,
+        expectedVersion: 2,
+        homeTeamId: homeId,
+      });
+      await expect(
+        fixtureForReview(referee, "test-cup", fixture.id),
+      ).rejects.toMatchObject({ status: 409 });
+      data = await fixtureCommand(admin, "test-cup", {
+        ...body(true),
+        action: "edit",
+        fixtureId: fixture.id,
+        expectedVersion: 3,
+      });
+      expect(
+        (await fixtureForReview(referee, "test-cup", fixture.id)).fixture,
+      ).toMatchObject({
+        homeTeamId: homeId,
+        awayTeamId: awayId,
+        version: 4,
+        assignmentRevision: 1,
+      });
+      expect(data.fixtures[0].refereeIds).toHaveLength(2);
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...plannedBody,
+          position: 2,
+          homeTeamId: randomUUID(),
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+    });
+    it("retains winner/loser source links on planned knockout fixtures without disclosing unpublished sources", async () => {
+      const maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_create",
+        stage: "knockout",
+        name: "Planned knockout",
+        position: 1,
+      });
+      const ko = maps.rounds.find((r) => r.stage === "knockout")!;
+      const payload = {
+        ...body(),
+        roundId: ko.id,
+        mappoolId: null,
+        homeTeamId: null,
+        awayTeamId: null,
+      };
+      let data = await fixtureCommand(admin, "test-cup", {
+        ...payload,
+        label: "QF1",
+      });
+      const qf = data.fixtures[0];
+      data = await fixtureCommand(admin, "test-cup", {
+        ...payload,
+        label: "SF1",
+        position: 2,
+        homeSourceId: qf.id,
+        homeSourceOutcome: "winner",
+      });
+      const sf = data.fixtures.find((f) => f.label === "SF1")!;
+      const bracket = fixtureBracket("test-cup", data)!;
+      expect(bracket.groups[0].rounds[0].matches[1].slots[0]).toMatchObject({
+        label: "Winner of QF1",
+        teamId: null,
+        sourceMatchId: qf.id,
+      });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: sf.id,
+        expectedVersion: 0,
+        published: true,
+      });
+      expect((await publicFixture("test-cup", sf.id))?.home).toMatchObject({
+        team: null,
+        sourceId: null,
+      });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: qf.id,
+        expectedVersion: 0,
+        published: true,
+      });
+      expect((await publicFixture("test-cup", sf.id))?.home).toMatchObject({
+        team: null,
+        label: "Winner of QF1",
+        sourceId: qf.id,
+      });
+      await expect(
+        fixtureForReview(admin, "test-cup", sf.id),
+      ).rejects.toMatchObject({ status: 409 });
     });
     it("database uniqueness keeps imports/games/revisions distinct and no source record creates an official result", async () => {
       const [fixture] = (await fixtureCommand(admin, "test-cup", body()))

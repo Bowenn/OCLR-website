@@ -101,7 +101,7 @@ test.describe("tournament-centered administration", () => {
     for (const [link, heading] of [
       ["Players & teams", "Team management"],
       ["Mappools", "Mappool management"],
-      ["Fixtures & results", "Match fixtures"],
+      ["Fixtures & results", "Fixtures & results"],
     ]) {
       await menu(page);
       await navigation.getByRole("link", { name: link, exact: true }).click();

@@ -113,6 +113,13 @@
       "when": 1792495693893,
       "tag": "0015_fixture_referee_revision",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792496741901,
+      "tag": "0016_planned_fixture_participants",
+      "breakpoints": true
     }
   ]
 }

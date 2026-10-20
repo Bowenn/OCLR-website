@@ -52,8 +52,8 @@ function FixtureForm({
   const payload = {
     label,
     roundId,
-    homeTeamId,
-    awayTeamId,
+    homeTeamId: homeTeamId || null,
+    awayTeamId: awayTeamId || null,
     mappoolId: mappoolId || null,
     position: Number(position),
     scheduledAt: time ? `${time}${time.length === 16 ? ":00" : ""}Z` : null,
@@ -117,8 +117,8 @@ function FixtureForm({
   return (
     <div className="form-stack">
       <p className="muted">
-        Both teams must have finalized, published rosters. Leave the match time
-        empty when it is unconfirmed.
+        Leave unconfirmed participants as Team TBD. Reporting requires two
+        finalized, published teams.
       </p>
       <label className="field">
         <span>Fixture label</span>
@@ -150,14 +150,14 @@ function FixtureForm({
       <label className="field">
         <span>Home team</span>
         <select value={homeTeamId} onChange={(e) => setHome(e.target.value)}>
-          <option value="">Choose an official team</option>
+          <option value="">Team TBD</option>
           {teamOptions}
         </select>
       </label>
       <label className="field">
         <span>Away team</span>
         <select value={awayTeamId} onChange={(e) => setAway(e.target.value)}>
-          <option value="">Choose an official team</option>
+          <option value="">Team TBD</option>
           {teamOptions}
         </select>
       </label>
@@ -216,9 +216,8 @@ function FixtureForm({
         <details>
           <summary>Explicit bracket progression</summary>
           <p className="muted">
-            Optional winner/loser links describe only approved progression. Both
-            official teams must still be confirmed for this fixture; no forfeits
-            or advancement are inferred.
+            Link planned slots to a previous match. Confirm the official teams
+            before reporting results.
           </p>
           {sourceSelect("home")}
           {sourceSelect("away")}
@@ -751,9 +750,7 @@ export function FixtureManager({
           );
         })}
         <p className="small muted">
-          {f.scheduledAt
-            ? `${formatDate(f.scheduledAt, f.timeZone)} (${f.timeZone})`
-            : "Time TBA"}
+          {f.scheduledAt ? formatDate(f.scheduledAt, f.timeZone) : "Time TBA"}
         </p>
         <p className="small">
           <span className="badge">
@@ -825,7 +822,7 @@ export function FixtureManager({
           <button
             type="button"
             className="secondary"
-            disabled={!data.rounds.length || data.teams.length < 2}
+            disabled={!data.rounds.length}
             onClick={() => open("new")}
           >
             Create a fixture

@@ -216,8 +216,8 @@ export async function publicCompetition(slug: string) {
         const away = slot("away");
         // A direct unpublished team withholds its fixture; progression slots never reveal stored future assignments.
         if (
-          (!f.homeSourceId && !home.team) ||
-          (!f.awaySourceId && !away.team)
+          (!f.homeSourceId && f.homeTeamId !== null && !home.team) ||
+          (!f.awaySourceId && f.awayTeamId !== null && !away.team)
         ) {
           visiting.delete(id);
           cache.set(id, null);
@@ -285,9 +285,11 @@ export async function publicCompetition(slug: string) {
           home,
           away,
           confirmed,
-          scheduledAt: confirmed
-            ? (f.scheduledAt?.toISOString() ?? null)
-            : null,
+          // Explicitly published TBD schedules are useful; stale confirmed-team lineage still withholds its time.
+          scheduledAt:
+            confirmed || f.homeTeamId === null || f.awayTeamId === null
+              ? (f.scheduledAt?.toISOString() ?? null)
+              : null,
           timeZone: f.timeZone,
           status: f.status,
           result,
