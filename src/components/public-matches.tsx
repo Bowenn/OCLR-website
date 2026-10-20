@@ -27,14 +27,14 @@ export function MatchCard({
                 : "Awaiting fixture confirmation"}
         </span>
       </div>
-      <h2>
+      <h3>
         <Link
           href={`/tournaments/${slug}/matches/${f.id}`}
           className="text-link"
         >
           {f.label} ↗
         </Link>
-      </h2>
+      </h3>
       <div className="match-versus">
         <span>{f.home.label}</span>
         <strong>
@@ -136,9 +136,24 @@ export function PublicMatches({
       <p className="muted small" role="status">
         {matches.length} published fixture{matches.length === 1 ? "" : "s"}
       </p>
-      {matches.map((f) => (
-        <MatchCard key={f.id} fixture={f} slug={slug} />
-      ))}
+      {[...new Set(matches.map((f) => f.roundId))].map((roundId) => {
+        const group = matches.filter((f) => f.roundId === roundId);
+        return (
+          <section
+            className="stack"
+            key={roundId}
+            aria-labelledby={`public-round-${roundId}`}
+          >
+            <h2 id={`public-round-${roundId}`}>
+              {group[0].stage === "group" ? "Group Stage" : "Knockout Stage"} ·{" "}
+              {group[0].roundName}
+            </h2>
+            {group.map((f) => (
+              <MatchCard key={f.id} fixture={f} slug={slug} />
+            ))}
+          </section>
+        );
+      })}
       {!matches.length && (
         <p className="notice">
           No published fixtures match these filters. Confirmed matches will

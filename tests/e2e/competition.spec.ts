@@ -164,6 +164,13 @@ test.describe("anonymous tournament competition center", () => {
         animations: "disabled",
       });
       await page.goto("/tournaments/test-cup/results");
+      await expect(
+        page.getByRole("heading", {
+          level: 2,
+          name: "Knockout Stage · Synthetic Review Round",
+          exact: true,
+        }),
+      ).toBeVisible();
       await page
         .getByRole("combobox", { name: /^Competition stage/ })
         .selectOption("group");

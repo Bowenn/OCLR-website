@@ -739,6 +739,16 @@ describe.skipIf(!url)(
       });
       expect(await db().select().from(resultRevisions)).toHaveLength(1);
     });
+    it("shows upstream differences before the first referee submission", async () => {
+      let view = await imported();
+      expect(view.current).toBeNull();
+      expect(view.diff).toBeNull();
+      vi.mocked(fetchMatchSource).mockResolvedValue(await makeSource(true));
+      view = await imported();
+      expect(view.current).toBeNull();
+      expect(view.diff?.changed).toEqual([1]);
+      expect(view.context.result?.publishedRevision).toBeNull();
+    });
     it("detects changed upstream facts and preserves the published result until a new reviewed correction is approved/published", async () => {
       let view = await imported();
       view = (

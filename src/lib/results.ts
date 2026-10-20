@@ -41,6 +41,14 @@ const common = {
   confirmed: z.literal(true),
   reason: z.string().trim().min(1).max(1000),
 };
+const sourceDiffSchema = z
+  .object({
+    added: z.array(z.number().int().positive()).max(3000),
+    removed: z.array(z.number().int().positive()).max(3000),
+    changed: z.array(z.number().int().positive()).max(3000),
+    historyChanged: z.boolean(),
+  })
+  .strict();
 const importSchema = z
   .object({ ...common, match: z.string().trim().min(1).max(250) })
   .strict();
@@ -267,10 +275,19 @@ export async function matchReview(
       const previous = baseline
         ? matchSourceSchema.safeParse(baseline.source)
         : null;
+      const lastImportEvent = context.events.find(
+        (e) =>
+          e.action === "source_imported" && e.detail.importId === latest?.id,
+      );
+      const recordedDiff = sourceDiffSchema.safeParse(
+        lastImportEvent?.detail.diff,
+      );
       const diff =
         source && previous?.success
           ? compareMatchSources(previous.data, source)
-          : null;
+          : !current && recordedDiff.success
+            ? recordedDiff.data
+            : null;
       const imports = await tx
         .select({
           id: matchImports.id,
