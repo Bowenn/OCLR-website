@@ -1438,3 +1438,48 @@ body:has(.presenter-view) .site-footer,
 .broadcast-link {
   margin-left: 1.5rem;
 }
+
+.mappool-slots {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.beatmap-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: center;
+  gap: 1.25rem;
+}
+.beatmap-row h3 {
+  margin: 0.7rem 0 0.35rem;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+.beatmap-cover {
+  aspect-ratio: 1.8;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--color-surface);
+  display: grid;
+  place-items: center;
+}
+.beatmap-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mappool-entry-controls {
+  display: grid;
+  gap: 0.75rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+@media (max-width: 600px) {
+  .beatmap-row {
+    grid-template-columns: 1fr;
+  }
+  .beatmap-cover {
+    max-height: 160px;
+  }
+}

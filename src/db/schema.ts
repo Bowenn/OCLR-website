@@ -324,3 +324,114 @@ export const staffRoleEvents = pgTable(
   },
   (t) => [index("staff_role_events_grant_idx").on(t.grantId)],
 );
+
+export const stageKind = pgEnum("stage_kind", ["group", "knockout"]);
+export const tournamentStages = pgTable(
+  "tournament_stages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    kind: stageKind("kind").notNull(),
+  },
+  (t) => [
+    unique("stage_edition_kind_unique").on(t.editionSlug, t.kind),
+    unique("stage_id_edition_unique").on(t.id, t.editionSlug),
+  ],
+);
+export const tournamentRounds = pgTable(
+  "tournament_rounds",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug").notNull(),
+    stageId: uuid("stage_id").notNull(),
+    name: text("name").notNull(),
+    position: integer("position").notNull(),
+    version: integer("version").notNull().default(0),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.stageId, t.editionSlug],
+      foreignColumns: [tournamentStages.id, tournamentStages.editionSlug],
+    }),
+    unique("round_stage_position_unique").on(t.stageId, t.position),
+    unique("round_id_edition_unique").on(t.id, t.editionSlug),
+  ],
+);
+export const mappoolCategory = pgEnum("mappool_category", [
+  "NM",
+  "HD",
+  "DT",
+  "HR",
+  "FM",
+  "TB",
+]);
+export const fmMode = pgEnum("fm_mode", ["free_mod", "force_mod"]);
+export const mappools = pgTable(
+  "mappools",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug").notNull(),
+    roundId: uuid("round_id").notNull(),
+    name: text("name").notNull(),
+    fmMode: fmMode("fm_mode"),
+    fmRestrictions: text("fm_restrictions").notNull().default(""),
+    version: integer("version").notNull().default(0),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    lockedAt: timestamp("locked_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.roundId, t.editionSlug],
+      foreignColumns: [tournamentRounds.id, tournamentRounds.editionSlug],
+    }),
+    unique("pool_round_name_unique").on(t.roundId, t.name),
+    unique("pool_id_edition_unique").on(t.id, t.editionSlug),
+    index("pool_public_edition_idx").on(t.editionSlug, t.publishedAt),
+  ],
+);
+export const mappoolEntries = pgTable(
+  "mappool_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    poolId: uuid("pool_id")
+      .notNull()
+      .references(() => mappools.id),
+    category: mappoolCategory("category").notNull(),
+    position: integer("position").notNull(),
+    beatmapId: bigint("beatmap_id", { mode: "number" }).notNull(),
+    metadata: jsonb("metadata")
+      .$type<import("../lib/osu-beatmaps").BeatmapMetadata>()
+      .notNull(),
+    metadataFetchedAt: timestamp("metadata_fetched_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("pool_slot_unique").on(t.poolId, t.category, t.position),
+    index("pool_entry_pool_idx").on(t.poolId),
+  ],
+);
+export const mappoolEvents = pgTable(
+  "mappool_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    poolId: uuid("pool_id").references(() => mappools.id),
+    actorId: bigint("actor_id", { mode: "number" }).notNull(),
+    action: text("action").notNull(),
+    reason: text("reason").notNull(),
+    before: jsonb("before").$type<Record<string, unknown>>(),
+    after: jsonb("after").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("mappool_events_pool_idx").on(t.poolId)],
+);

@@ -35,6 +35,7 @@ export default async function EditionLayout({
             ["", "Overview"],
             ["/rules", "Rules"],
             ["/schedule", "Schedule"],
+            ["/mappools", "Mappools"],
             ["/participants", "Participants"],
             ["/teams", "Teams"],
           ].map(([path, name]) => (

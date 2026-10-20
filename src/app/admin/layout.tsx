@@ -30,6 +30,16 @@ export default async function StaffLayout({
           )}
           <Link href="/dashboard">Player dashboard</Link>
           {getEditions()
+            .filter((e) => can("manage_mappools", e.slug))
+            .map((e) => (
+              <Link
+                key={`maps-${e.slug}`}
+                href={`/admin/tournaments/${e.slug}/mappools`}
+              >
+                {e.name}: Mappools
+              </Link>
+            ))}
+          {getEditions()
             .filter((e) => can("manage_captains", e.slug))
             .map((e) => (
               <Link key={e.slug} href={`/admin/tournaments/${e.slug}/captains`}>

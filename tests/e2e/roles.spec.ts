@@ -37,6 +37,14 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
         403,
       );
       await page.goto("/admin/staff");
+      const assignment = page
+        .locator("article")
+        .filter({
+          has: page.getByRole("heading", {
+            name: `Synthetic Player ${operatorId} · ${operatorId}`,
+            exact: true,
+          }),
+        });
       await page.getByLabel("Verified osu! user ID").fill(String(operatorId));
       await page
         .getByRole("combobox", { name: /^Role/ })
@@ -50,7 +58,7 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       await page.getByRole("button", { name: "Review role grant" }).click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByRole("button", { name: "Revoke role" }),
+        assignment.getByRole("button", { name: "Revoke role" }),
       ).toBeVisible();
       const listing = await (
         await context.request.get("/api/admin/staff")
@@ -128,13 +136,13 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
         fullPage: true,
         animations: "disabled",
       });
-      await page
+      await assignment
         .getByLabel(/Revocation reason/)
         .fill("Synthetic browser immediate revocation");
-      await page.getByRole("button", { name: "Revoke role" }).click();
+      await assignment.getByRole("button", { name: "Revoke role" }).click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByRole("button", { name: "Revoke role" }),
+        assignment.getByRole("button", { name: "Revoke role" }),
       ).toHaveCount(0);
       expect(
         (
