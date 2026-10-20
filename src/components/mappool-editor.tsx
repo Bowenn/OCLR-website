@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { MappoolWorkspace } from "@/lib/mappools";
 import {
   categories,
@@ -25,16 +25,19 @@ function Save({
   description,
   payload,
   disabled = false,
+  onSuccess,
 }: {
   change: Change;
   label: string;
   description: string;
   payload: Record<string, unknown>;
   disabled?: boolean;
+  onSuccess?: () => void;
 }) {
   return (
     <ConfirmMutation
       disabled={disabled}
+      onSuccess={onSuccess}
       requireConfirmation={["pool_publish", "entry_remove"].includes(
         String(payload.action),
       )}
@@ -50,13 +53,19 @@ function RoundForm({
   change,
   stage,
   round,
+  onSuccess,
+  nextPosition,
 }: {
   change: Change;
   stage: string;
+  nextPosition: number;
   round?: Round;
+  onSuccess: () => void;
 }) {
   const [name, setName] = useState(round?.name ?? "");
-  const [position, setPosition] = useState(String(round?.position ?? 1));
+  const [position, setPosition] = useState(
+    String(round?.position ?? nextPosition),
+  );
   return (
     <div className="form-stack">
       <label className="field">
@@ -80,6 +89,7 @@ function RoundForm({
       </label>
       <Save
         change={change}
+        onSuccess={onSuccess}
         label={round ? "Save round" : "Create round"}
         description={`${round ? "Update" : "Create"} ${name || "the round"} in ${stage === "group" ? "Group Stage" : "Knockout Stage"}.`}
         payload={
@@ -102,7 +112,15 @@ function RoundForm({
     </div>
   );
 }
-function CreatePool({ change, roundId }: { change: Change; roundId: string }) {
+function CreatePool({
+  change,
+  roundId,
+  onSuccess,
+}: {
+  change: Change;
+  roundId: string;
+  onSuccess: () => void;
+}) {
   const [name, setName] = useState("");
   return (
     <div className="form-stack">
@@ -117,6 +135,7 @@ function CreatePool({ change, roundId }: { change: Change; roundId: string }) {
       <Save
         change={change}
         label="Create draft pool"
+        onSuccess={onSuccess}
         description={`Create the unpublished pool ${name || "(name required)"} in the selected round.`}
         payload={{ action: "pool_create", roundId, name }}
       />
@@ -312,6 +331,57 @@ function EntryEditor({
     </details>
   );
 }
+// Each tab group has one active panel and supports the standard arrow/Home/End keys.
+function EditorTabs<T extends string>({
+  id,
+  label,
+  items,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  items: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="mappool-tabs" role="tablist" aria-label={label}>
+      {items.map((item, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={`${id}-${item.value}`}
+          aria-controls={`${id}-panel`}
+          aria-selected={value === item.value}
+          tabIndex={value === item.value ? 0 : -1}
+          key={item.value}
+          onClick={() => onChange(item.value)}
+          onKeyDown={(event) => {
+            const next =
+              event.key === "ArrowRight"
+                ? (index + 1) % items.length
+                : event.key === "ArrowLeft"
+                  ? (index + items.length - 1) % items.length
+                  : event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? items.length - 1
+                      : null;
+            if (next === null) return;
+            event.preventDefault();
+            onChange(items[next].value);
+            document.getElementById(`${id}-${items[next].value}`)?.focus();
+          }}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+type Task = "maps" | "import" | "batch" | "settings";
+type Setup = "round_create" | "round_edit" | "pool_create";
 export function MappoolEditor({
   slug,
   data,
@@ -319,117 +389,205 @@ export function MappoolEditor({
   slug: string;
   data: MappoolWorkspace;
 }) {
-  const [stage, setStage] = useState("group");
+  const id = useId();
+  const [stage, setStage] = useState(data.rounds[0]?.stage ?? "group");
   const [roundId, setRoundId] = useState("");
   const [poolId, setPoolId] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("NM");
-
+  const [task, setTask] = useState<Task>("maps");
+  const [setup, setSetup] = useState<Setup | null>(null);
+  const [feedback, setFeedback] = useState("");
   const rounds = data.rounds.filter((r) => r.stage === stage);
   const round = rounds.find((r) => r.id === roundId) ?? rounds[0];
   const pools = data.pools.filter((p) => p.roundId === round?.id);
   const pool = pools.find((p) => p.id === poolId) ?? pools[0];
-  const entries = data.entries
-    .filter((e) => e.poolId === pool?.id && e.category === category)
+  const poolEntries = data.entries.filter((e) => e.poolId === pool?.id);
+  const entries = poolEntries
+    .filter((e) => e.category === category)
     .sort((a, b) => a.position - b.position);
   const change = { url: `/api/admin/tournaments/${slug}/mappools` };
-  const editable = pool && !pool.publishedAt && !pool.lockedAt;
+  const editable = Boolean(pool && !pool.publishedAt && !pool.lockedAt);
+  const activeTask = editable ? task : "maps";
+  function resetContext() {
+    setTask("maps");
+    setCategory("NM");
+    setSetup(null);
+    setFeedback("");
+  }
+  function toggleSetup(value: Setup) {
+    setFeedback("");
+    setSetup(setup === value ? null : value);
+  }
   return (
-    <div className="stack">
-      <div className="panel form-stack">
-        <h2>Edition workspace</h2>
-        <div className="filters">
-          <label className="field">
-            <span>Stage</span>
-            <select
-              value={stage}
-              onChange={(e) => {
-                setStage(e.target.value);
-                setRoundId("");
-                setPoolId("");
-              }}
-            >
-              <option value="group">Group Stage</option>
-              <option value="knockout">Knockout Stage</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>Round</span>
-            <select
-              value={round?.id ?? ""}
-              onChange={(e) => {
-                setRoundId(e.target.value);
-                setPoolId("");
-              }}
-            >
-              {!round && <option value="">No rounds configured</option>}
-              {rounds.map((r) => (
-                <option value={r.id} key={r.id}>
-                  {r.position}. {r.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>Mappool</span>
-            <select
-              value={pool?.id ?? ""}
-              onChange={(e) => setPoolId(e.target.value)}
-            >
-              {!pool && <option value="">No pools configured</option>}
-              {pools.map((p) => (
-                <option value={p.id} key={p.id}>
-                  {p.name}
-                  {p.publishedAt ? " · Published" : " · Draft"}
-                </option>
-              ))}
-            </select>
-          </label>
+    <div className="mappool-workbench">
+      <div className="mappool-context">
+        <div className="mappool-toolbar">
+          <EditorTabs
+            id={`${id}-stage`}
+            label="Competition stage"
+            value={stage}
+            items={[
+              { value: "group", label: "Group Stage" },
+              { value: "knockout", label: "Knockout Stage" },
+            ]}
+            onChange={(value) => {
+              setStage(value);
+              setRoundId("");
+              setPoolId("");
+              resetContext();
+            }}
+          />
+          <button
+            type="button"
+            className="secondary"
+            aria-expanded={setup === "round_create"}
+            aria-controls={setup ? `${id}-setup` : undefined}
+            onClick={() => toggleSetup("round_create")}
+          >
+            + New round
+          </button>
         </div>
-        <details>
-          <summary>Create a round</summary>
-          <RoundForm change={change} stage={stage} />
-        </details>
-        {round && (
-          <>
-            <details>
-              <summary>Edit selected round</summary>
-              <RoundForm
-                key={`${round.id}-${round.version}`}
-                change={change}
-                stage={stage}
-                round={round}
-              />
-            </details>
-            <details>
-              <summary>Create a mappool</summary>
-              <CreatePool key={round.id} change={change} roundId={round.id} />
-            </details>
-          </>
-        )}
+        <div
+          role="tabpanel"
+          id={`${id}-stage-panel`}
+          aria-labelledby={`${id}-stage-${stage}`}
+          tabIndex={0}
+        >
+          {rounds.length ? (
+            <div className="mappool-round-bar">
+              <div className="mappool-rounds" role="group" aria-label="Rounds">
+                {rounds.map((r) => (
+                  <button
+                    type="button"
+                    key={r.id}
+                    aria-pressed={round?.id === r.id}
+                    onClick={() => {
+                      setRoundId(r.id);
+                      setPoolId("");
+                      resetContext();
+                    }}
+                  >
+                    {r.name}
+                  </button>
+                ))}
+              </div>
+              <div className="actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  aria-expanded={setup === "round_edit"}
+                  aria-controls={setup ? `${id}-setup` : undefined}
+                  onClick={() => toggleSetup("round_edit")}
+                >
+                  Edit round
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  aria-expanded={setup === "pool_create"}
+                  aria-controls={setup ? `${id}-setup` : undefined}
+                  onClick={() => toggleSetup("pool_create")}
+                >
+                  + New pool
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="muted small mappool-empty">
+              No rounds in this stage. Create a round to get started.
+            </p>
+          )}
+          {pools.length > 1 && (
+            <div className="mappool-pools" role="group" aria-label="Mappools">
+              {pools.map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  aria-pressed={pool?.id === p.id}
+                  onClick={() => {
+                    setPoolId(p.id);
+                    resetContext();
+                  }}
+                >
+                  {p.name}
+                  <span className="muted small">
+                    {p.publishedAt ? "Published" : "Draft"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-      {pool ? (
-        <>
-          {editable && (
-            <MappoolBatch
-              key={`${pool.id}-${pool.version}`}
-              url={change.url}
-              pool={pool}
-              entries={data.entries.filter((e) => e.poolId === pool.id)}
+      {setup && (
+        <section
+          className="mappool-setup"
+          id={`${id}-setup`}
+          aria-labelledby={`${id}-setup-title`}
+        >
+          <div className="mappool-toolbar">
+            <h2 id={`${id}-setup-title`}>
+              {setup === "round_create"
+                ? "Create a round"
+                : setup === "round_edit"
+                  ? "Edit selected round"
+                  : "Create a mappool"}
+            </h2>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => setSetup(null)}
+            >
+              Cancel
+            </button>
+          </div>
+          {setup === "pool_create" && round ? (
+            <CreatePool
+              key={round.id}
+              change={change}
+              roundId={round.id}
+              onSuccess={() => {
+                setSetup(null);
+                setFeedback(
+                  "Pool created. Select it in this round to start editing.",
+                );
+              }}
+            />
+          ) : (
+            <RoundForm
+              key={`${setup}-${round?.id}-${round?.version}`}
+              change={change}
+              stage={stage}
+              nextPosition={Math.max(0, ...rounds.map((r) => r.position)) + 1}
+              round={setup === "round_edit" ? round : undefined}
+              onSuccess={() => {
+                setSetup(null);
+                setFeedback("Round saved.");
+              }}
             />
           )}
-          <section className="panel form-stack">
-            <div className="section-title">
-              <h2>{pool.name}</h2>
-              <span className="badge">
-                {pool.publishedAt ? "Published" : "Draft"} · v{pool.version}
-              </span>
-            </div>
-            {pool.lockedAt && (
-              <p className="notice">
-                This pool is referenced by a completed fixture. Map changes are
-                locked; create a new pool for later matches.
+        </section>
+      )}
+      {feedback && (
+        <div role="status" className="mappool-feedback">
+          {feedback}
+        </div>
+      )}
+      {pool ? (
+        <section className="mappool-active" aria-label="Selected mappool">
+          <div className="mappool-toolbar mappool-pool-heading">
+            <div>
+              <p className="muted small">
+                {round?.name} · {poolEntries.length}{" "}
+                {poolEntries.length === 1 ? "map" : "maps"}
               </p>
-            )}
+              <h2>
+                {pool.name}{" "}
+                <span className="badge">
+                  {pool.publishedAt ? "Published" : "Draft"} · v{pool.version}
+                </span>
+              </h2>
+            </div>
             <div className="actions">
               <Save
                 change={change}
@@ -448,153 +606,213 @@ export function MappoolEditor({
               />
               {pool.publishedAt && (
                 <Link
-                  className="button secondary"
+                  className="text-link small"
                   href={`/tournaments/${slug}/mappools/${pool.id}`}
                 >
                   View public pool ↗
                 </Link>
               )}
             </div>
-            {editable ? (
-              <details>
-                <summary>Pool name and FM policy</summary>
+          </div>
+          {pool.lockedAt ? (
+            <p className="notice">
+              This pool is referenced by a completed fixture. Map changes are
+              locked; create a new pool for later matches.
+            </p>
+          ) : (
+            pool.publishedAt && (
+              <p className="muted small">
+                Published pools are read-only. Unpublish this pool before
+                editing.
+              </p>
+            )
+          )}
+          {!editable && (
+            <p className="muted small">
+              {pool.fmMode === "free_mod"
+                ? "Free Mod"
+                : pool.fmMode === "force_mod"
+                  ? "Force Mod"
+                  : "FM disabled"}
+              {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
+            </p>
+          )}
+          <EditorTabs
+            id={`${id}-task`}
+            label="Pool tools"
+            value={activeTask}
+            onChange={(value) => {
+              setTask(value);
+              setFeedback("");
+            }}
+            items={
+              editable
+                ? [
+                    { value: "maps", label: "Maps" },
+                    { value: "import", label: "Bulk import" },
+                    { value: "batch", label: "Batch edit" },
+                    { value: "settings", label: "Pool settings" },
+                  ]
+                : [{ value: "maps", label: "Maps" }]
+            }
+          />
+          <div
+            className="mappool-task"
+            role="tabpanel"
+            id={`${id}-task-panel`}
+            aria-labelledby={`${id}-task-${activeTask}`}
+            tabIndex={0}
+          >
+            {activeTask === "maps" && (
+              <>
+                <h3 className="sr-only">Map slots</h3>
+                <div
+                  className="mappool-mods"
+                  role="group"
+                  aria-label="Mod categories"
+                >
+                  {categories.map((c) => (
+                    <button
+                      key={c}
+                      className="secondary"
+                      aria-pressed={category === c}
+                      onClick={() => setCategory(c)}
+                    >
+                      {c} (
+                      {
+                        data.entries.filter(
+                          (e) => e.poolId === pool.id && e.category === c,
+                        ).length
+                      }
+                      )
+                    </button>
+                  ))}
+                </div>
+                <h3 className="spaced">
+                  {category} /{" "}
+                  {category === "FM" && pool.fmMode
+                    ? pool.fmMode === "free_mod"
+                      ? "Free Mod"
+                      : "Force Mod"
+                    : categoryNames[category]}
+                </h3>
+                {entries.map((entry, i) => (
+                  <article className="mappool-entry-controls" key={entry.id}>
+                    <BeatmapDetails
+                      beatmapId={entry.beatmapId}
+                      metadata={entry.metadata}
+                      label={slotLabel(entry.category, entry.position)}
+                    />
+                    {editable && (
+                      <>
+                        <EntryEditor
+                          key={`${entry.id}-${pool.version}`}
+                          change={change}
+                          pool={pool}
+                          category={category}
+                          entry={entry}
+                        />
+                        <div className="actions">
+                          {i > 0 && (
+                            <Save
+                              change={change}
+                              label={`Move ${slotLabel(entry.category, entry.position)} up`}
+                              description="Reorder this category and renumber its slots. No maps are removed."
+                              payload={{
+                                action: "reorder",
+                                poolId: pool.id,
+                                expectedVersion: pool.version,
+                                category,
+                                entryIds: entries
+                                  .map((e) => e.id)
+                                  .map((id, j, ids) =>
+                                    j === i - 1
+                                      ? ids[i]
+                                      : j === i
+                                        ? ids[i - 1]
+                                        : id,
+                                  ),
+                              }}
+                            />
+                          )}
+                          <Save
+                            change={change}
+                            label={`Refresh ${slotLabel(entry.category, entry.position)} metadata`}
+                            description="Refresh official metadata. Provider failures retain the saved map information."
+                            payload={{
+                              action: "entry_refresh",
+                              poolId: pool.id,
+                              expectedVersion: pool.version,
+                              entryId: entry.id,
+                            }}
+                          />
+                          <Save
+                            change={change}
+                            label={`Remove ${slotLabel(entry.category, entry.position)}`}
+                            description="Remove this map slot from the draft pool. The previous revision remains in the audit history."
+                            payload={{
+                              action: "entry_remove",
+                              poolId: pool.id,
+                              expectedVersion: pool.version,
+                              entryId: entry.id,
+                            }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </article>
+                ))}
+                {!entries.length && (
+                  <p className="notice spaced">
+                    No {category} slots configured.
+                  </p>
+                )}
+                {editable && (category !== "FM" || pool.fmMode) && (
+                  <details className="spaced">
+                    <summary>Add a {category} beatmap</summary>
+                    <EntryForm
+                      key={`${pool.id}-${category}-${pool.version}`}
+                      change={change}
+                      pool={pool}
+                      category={category}
+                    />
+                  </details>
+                )}
+                {category === "FM" && !pool.fmMode && (
+                  <p className="muted">
+                    Choose Free Mod or Force Mod in pool settings to enable FM.
+                  </p>
+                )}
+              </>
+            )}
+            {(activeTask === "import" || activeTask === "batch") && (
+              <MappoolBatch
+                key={`${pool.id}-${pool.version}-${activeTask}`}
+                url={change.url}
+                pool={pool}
+                entries={poolEntries}
+                mode={activeTask}
+              />
+            )}
+            {activeTask === "settings" && (
+              <div className="mappool-settings">
+                <h3>Pool name and FM policy</h3>
                 <PoolSettings
                   key={`${pool.id}-${pool.version}`}
                   change={change}
                   pool={pool}
                 />
-              </details>
-            ) : (
-              <p className="muted">
-                {pool.fmMode === "free_mod"
-                  ? "Free Mod"
-                  : pool.fmMode === "force_mod"
-                    ? "Force Mod"
-                    : "FM disabled"}
-                {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
-              </p>
+              </div>
             )}
-          </section>
-          <section className="panel">
-            <h2>Map slots</h2>
-            <div className="actions" role="group" aria-label="Mod categories">
-              {categories.map((c) => (
-                <button
-                  key={c}
-                  className="secondary"
-                  aria-pressed={category === c}
-                  onClick={() => setCategory(c)}
-                >
-                  {c} (
-                  {
-                    data.entries.filter(
-                      (e) => e.poolId === pool.id && e.category === c,
-                    ).length
-                  }
-                  )
-                </button>
-              ))}
-            </div>
-            <h3 className="spaced">
-              {category} /{" "}
-              {category === "FM" && pool.fmMode
-                ? pool.fmMode === "free_mod"
-                  ? "Free Mod"
-                  : "Force Mod"
-                : categoryNames[category]}
-            </h3>
-            {entries.map((entry, i) => (
-              <article className="mappool-entry-controls" key={entry.id}>
-                <BeatmapDetails
-                  beatmapId={entry.beatmapId}
-                  metadata={entry.metadata}
-                  label={slotLabel(entry.category, entry.position)}
-                />
-                {editable && (
-                  <>
-                    <EntryEditor
-                      key={`${entry.id}-${pool.version}`}
-                      change={change}
-                      pool={pool}
-                      category={category}
-                      entry={entry}
-                    />
-                    <div className="actions">
-                      {i > 0 && (
-                        <Save
-                          change={change}
-                          label={`Move ${slotLabel(entry.category, entry.position)} up`}
-                          description="Reorder this category and renumber its slots. No maps are removed."
-                          payload={{
-                            action: "reorder",
-                            poolId: pool.id,
-                            expectedVersion: pool.version,
-                            category,
-                            entryIds: entries
-                              .map((e) => e.id)
-                              .map((id, j, ids) =>
-                                j === i - 1
-                                  ? ids[i]
-                                  : j === i
-                                    ? ids[i - 1]
-                                    : id,
-                              ),
-                          }}
-                        />
-                      )}
-                      <Save
-                        change={change}
-                        label={`Refresh ${slotLabel(entry.category, entry.position)} metadata`}
-                        description="Refresh official metadata. Provider failures retain the saved map information."
-                        payload={{
-                          action: "entry_refresh",
-                          poolId: pool.id,
-                          expectedVersion: pool.version,
-                          entryId: entry.id,
-                        }}
-                      />
-                      <Save
-                        change={change}
-                        label={`Remove ${slotLabel(entry.category, entry.position)}`}
-                        description="Remove this map slot from the draft pool. The previous revision remains in the audit history."
-                        payload={{
-                          action: "entry_remove",
-                          poolId: pool.id,
-                          expectedVersion: pool.version,
-                          entryId: entry.id,
-                        }}
-                      />
-                    </div>
-                  </>
-                )}
-              </article>
-            ))}
-            {!entries.length && (
-              <p className="notice spaced">No {category} slots configured.</p>
-            )}
-            {editable && (category !== "FM" || pool.fmMode) && (
-              <details className="spaced">
-                <summary>Add a {category} beatmap</summary>
-                <EntryForm
-                  key={`${pool.id}-${category}-${pool.version}`}
-                  change={change}
-                  pool={pool}
-                  category={category}
-                />
-              </details>
-            )}
-            {category === "FM" && !pool.fmMode && (
-              <p className="muted">
-                Choose Free Mod or Force Mod in pool settings to enable FM.
-              </p>
-            )}
-          </section>
-        </>
+          </div>
+        </section>
       ) : (
-        <p className="notice">
-          Create a round and a draft pool to begin. No tournament rounds or mod
-          restrictions are assumed.
-        </p>
+        round &&
+        !setup && (
+          <p className="muted small mappool-empty">
+            No mappools in {round.name}. Create a draft pool to add beatmaps.
+          </p>
+        )
       )}
     </div>
   );

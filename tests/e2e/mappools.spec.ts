@@ -60,7 +60,9 @@ test.describe("published mappools and restricted editing", () => {
         ).status(),
       ).toBe(403);
       await openTournamentTool(page, "test-cup", "Mappools", isMobile);
-      await page.getByText("Create a round", { exact: true }).click();
+      await page
+        .getByRole("button", { name: "+ New round", exact: true })
+        .click();
       await page
         .getByLabel("Round name", { exact: true })
         .fill("Synthetic Group Round");
@@ -68,15 +70,19 @@ test.describe("published mappools and restricted editing", () => {
         .getByRole("button", { name: "Create round", exact: true })
         .click();
       await expect(
-        page.getByRole("combobox", { name: /^Round/ }),
+        page.getByRole("group", { name: "Rounds", exact: true }),
       ).toContainText("Synthetic Group Round");
-      await page.getByText("Create a mappool", { exact: true }).click();
+      await page
+        .getByRole("button", { name: "+ New pool", exact: true })
+        .click();
       await page.getByLabel("New pool name").fill("Synthetic Browser Pool");
       await page.getByRole("button", { name: "Create draft pool" }).click();
       await expect(
         page.getByRole("heading", { name: "Synthetic Browser Pool" }),
       ).toBeVisible();
-      await page.getByText("Pool name and FM policy", { exact: true }).click();
+      await page
+        .getByRole("tab", { name: "Pool settings", exact: true })
+        .click();
       await page
         .getByRole("combobox", { name: /^FM policy/ })
         .selectOption("force_mod");
@@ -133,6 +139,7 @@ test.describe("published mappools and restricted editing", () => {
           })
         ).status(),
       ).toBe(400);
+      await page.getByRole("tab", { name: "Maps", exact: true }).click();
       await page.getByRole("button", { name: "FM (0)", exact: true }).click();
       await page.getByText("Add a FM beatmap", { exact: true }).click();
       const input = page.getByRole("textbox", {
@@ -276,5 +283,203 @@ test.describe("published mappools and restricted editing", () => {
       await referee.close();
       await db().update(mappools).set({ publishedAt: null });
     }
+  });
+  test("stage and tool tabs keep one pool in focus across round switches and reloads", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    const actor = isMobile ? 70001 : 60001;
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await context.addCookies([await seedSession(actor)]);
+    const url = "/api/admin/tournaments/test-cup/mappools";
+    async function change(data: object) {
+      const response = await context.request.post(url, {
+        headers: { origin: "http://127.0.0.1:3100" },
+        data: { ...data, confirmed: true },
+      });
+      expect(response.status()).toBe(200);
+      return response.json();
+    }
+    for (const [stage, name, position] of [
+      ["group", "Group Round One", 1],
+      ["group", "Group Round Two", 2],
+      ["knockout", "Knockout Final", 1],
+    ] as const) {
+      await change({ action: "round_create", stage, name, position });
+    }
+    let data = await (await context.request.get(url)).json();
+    for (const [roundName, name] of [
+      ["Group Round One", "Primary Pool"],
+      ["Group Round One", "Reserve Pool"],
+      ["Group Round Two", "Second Round Pool"],
+      ["Knockout Final", "Final Pool"],
+    ]) {
+      await change({
+        action: "pool_create",
+        roundId: data.rounds.find((r: { name: string }) => r.name === roundName)
+          .id,
+        name,
+      });
+    }
+    data = await (await context.request.get(url)).json();
+    const primary = data.pools.find(
+      (p: { name: string }) => p.name === "Primary Pool",
+    );
+    await change({
+      action: "entry_save",
+      poolId: primary.id,
+      expectedVersion: 0,
+      entryId: null,
+      beatmap: "123",
+      category: "NM",
+      position: 1,
+    });
+    await page.goto("/admin/tournaments/test-cup/mappools");
+    const stages = page.getByRole("tablist", { name: "Competition stage" });
+    await stages.getByRole("tab", { name: "Group Stage", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Group Round One", exact: true })
+      .click();
+    await page
+      .getByRole("group", { name: "Mappools", exact: true })
+      .getByRole("button", { name: /Primary Pool/ })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: /Primary Pool/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Synthetic Browser Song/ }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("region", { name: "Selected mappool", exact: true })
+        .getByRole("combobox"),
+    ).toHaveCount(0);
+    const maps = page.getByRole("tab", { name: "Maps", exact: true });
+    await page
+      .getByRole("button", { name: "+ New round", exact: true })
+      .click();
+    await expect(page.getByLabel("Round order", { exact: true })).toHaveValue(
+      "3",
+    );
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await maps.focus();
+    await page.keyboard.press("End");
+    await expect(
+      page.getByRole("tab", { name: "Pool settings", exact: true }),
+    ).toBeFocused();
+    await expect(
+      page.getByRole("combobox", { name: "FM policy", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Map rows", { exact: true })).toHaveCount(0);
+    await page.keyboard.press("Home");
+    await expect(maps).toBeFocused();
+    await expect(
+      page.getByRole("combobox", { name: "FM policy", exact: true }),
+    ).toHaveCount(0);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({
+      path: info.outputPath("mappool-workspace.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+    await page.getByRole("tab", { name: "Bulk import", exact: true }).click();
+    await expect(page.getByLabel("Map rows", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("combobox", { name: "FM policy", exact: true }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("group", { name: "Mappools", exact: true })
+      .getByRole("button", { name: /Reserve Pool/ })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: /Reserve Pool/ }),
+    ).toBeVisible();
+    await expect(maps).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByRole("heading", { name: /Synthetic Browser Song/ }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Group Round Two", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: /Second Round Pool/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("group", { name: "Mappools", exact: true }),
+    ).toHaveCount(0);
+    await stages.getByRole("tab", { name: "Group Stage", exact: true }).focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(
+      stages.getByRole("tab", { name: "Knockout Stage", exact: true }),
+    ).toBeFocused();
+    await expect(
+      page.getByRole("heading", { name: /Final Pool/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Group Round One", exact: true }),
+    ).toHaveCount(0);
+    await page.getByRole("button", { name: "Edit round", exact: true }).click();
+    await expect(page.getByLabel("Round name", { exact: true })).toHaveValue(
+      "Knockout Final",
+    );
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(page.getByLabel("Round name", { exact: true })).toHaveCount(0);
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { name: "Mappool management", exact: true }),
+    ).toBeVisible();
+    await stages.getByRole("tab", { name: "Group Stage", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Group Round One", exact: true })
+      .click();
+    await page
+      .getByRole("group", { name: "Mappools", exact: true })
+      .getByRole("button", { name: /Primary Pool/ })
+      .click();
+    await page.getByRole("tab", { name: "Pool settings", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Publish pool", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Confirm", exact: true }).click();
+    await expect(
+      page.getByText("Published · v2", { exact: true }),
+    ).toBeVisible();
+    await expect(maps).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByRole("tab", { name: /Bulk import|Batch edit|Pool settings/ }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: /Synthetic Browser Song/ }),
+    ).toBeVisible();
+    await db()
+      .update(mappools)
+      .set({ publishedAt: null, lockedAt: new Date() })
+      .where(eq(mappools.id, primary.id));
+    await page.reload();
+    await page
+      .getByRole("group", { name: "Mappools", exact: true })
+      .getByRole("button", { name: /Primary Pool/ })
+      .click();
+    await expect(page.getByText(/Map changes are locked/)).toBeVisible();
+    await expect(
+      page.getByRole("tab", { name: /Bulk import|Batch edit|Pool settings/ }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("Edit or replace NM1", { exact: true }),
+    ).toHaveCount(0);
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
   });
 });

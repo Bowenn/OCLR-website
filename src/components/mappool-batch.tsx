@@ -8,7 +8,9 @@ export function MappoolBatch({
   url,
   pool,
   entries,
+  mode,
 }: {
+  mode: "import" | "batch";
   url: string;
   pool: Pool;
   entries: MappoolWorkspace["entries"];
@@ -60,11 +62,10 @@ export function MappoolBatch({
     preview.rows.length > 0 &&
     preview.rows.every((r) => !r.error && r.snapshot);
   return (
-    <section className="panel form-stack">
-      <h2>Bulk import & batch management</h2>
-      <details>
-        <summary>Import multiple beatmaps</summary>
-        <div className="form-stack spaced">
+    <section className="mappool-batch">
+      {mode === "import" && (
+        <div className="form-stack">
+          <h3>Import multiple beatmaps</h3>
           <p className="muted small">
             Up to 50 rows in the selected pool. Use a slot and a beatmap ID or
             official difficulty URL. Existing slots are never replaced.
@@ -184,11 +185,11 @@ export function MappoolBatch({
             </>
           )}
         </div>
-      </details>
-      {entries.length > 0 && (
-        <details>
-          <summary>Manage multiple map slots</summary>
-          <div className="form-stack spaced">
+      )}
+      {mode === "batch" &&
+        (entries.length > 0 ? (
+          <div className="form-stack">
+            <h3>Manage multiple map slots</h3>
             <p className="muted small">
               Select up to 50 maps. Moves assign consecutive slot numbers in the
               displayed order; occupied target slots are rejected.
@@ -300,8 +301,11 @@ export function MappoolBatch({
               />
             </div>
           </div>
-        </details>
-      )}
+        ) : (
+          <p className="muted small">
+            No maps to select. Add beatmaps in Maps or Bulk import first.
+          </p>
+        ))}
     </section>
   );
 }

@@ -2147,3 +2147,171 @@ body:has(.presenter-view) .site-footer,
 .captain-player-card > button {
   margin-left: auto;
 }
+
+/* One active mappool, with compact navigation and a focused working surface. */
+.mappool-workbench {
+  min-width: 0;
+}
+.mappool-toolbar,
+.mappool-round-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+}
+.mappool-workbench .actions {
+  margin: 0;
+  gap: 0.5rem;
+}
+.mappool-workbench button {
+  padding: 0.55rem 0.8rem;
+  font-size: 0.8rem;
+  min-height: 2.5rem;
+}
+.mappool-tabs {
+  display: flex;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+}
+.mappool-tabs button {
+  flex-shrink: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-muted);
+}
+.mappool-tabs button:hover,
+.mappool-tabs button[aria-selected="true"] {
+  color: #efc3ff;
+  border-bottom-color: #c879ec;
+  background: #b666df0c;
+  transform: none;
+}
+.mappool-tabs button:focus-visible {
+  outline-offset: -4px;
+}
+.mappool-round-bar {
+  padding-block: 0.75rem;
+}
+.mappool-rounds,
+.mappool-pools,
+.mappool-mods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.mappool-rounds {
+  flex: 1 1 16rem;
+}
+.mappool-mods {
+  margin-bottom: 0.75rem;
+}
+.mappool-workbench .beatmap-row {
+  grid-template-columns: 80px minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+}
+.mappool-workbench .beatmap-cover {
+  aspect-ratio: 1.5;
+}
+
+.mappool-rounds button,
+.mappool-pools button,
+.mappool-mods button {
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-muted);
+  border: 1px solid transparent;
+  overflow-wrap: anywhere;
+}
+.mappool-workbench button[aria-pressed="true"] {
+  background: #a45bd521;
+  border-color: #9f62c15c;
+  color: #edc1ff;
+}
+.mappool-pools {
+  border-top: 1px solid var(--color-border);
+  padding-block: 0.75rem;
+}
+.mappool-pools button {
+  display: flex;
+  gap: 0.75rem;
+  text-align: left;
+}
+.mappool-pool-heading {
+  padding-block: 1.25rem;
+}
+.mappool-pool-heading h2,
+.mappool-setup h2,
+.mappool-workbench h3 {
+  margin: 0;
+}
+.mappool-pool-heading h2 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.mappool-pool-heading p {
+  margin-bottom: 0.4rem;
+}
+.mappool-task {
+  padding-top: 1rem;
+  min-width: 0;
+}
+.mappool-workbench .form-stack {
+  margin-top: 1rem;
+  gap: 1rem;
+}
+.mappool-batch > .form-stack {
+  margin-top: 0;
+}
+.mappool-settings,
+.mappool-setup > .form-stack {
+  max-width: 42rem;
+}
+.mappool-settings .field,
+.mappool-setup .field {
+  margin: 0;
+}
+.mappool-setup {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  background: var(--color-surface);
+}
+.mappool-empty {
+  margin: 0;
+  padding-block: 1rem;
+}
+.mappool-feedback:not(:empty) {
+  padding-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #84e4c2;
+}
+@media (max-width: 600px) {
+  .mappool-context > .mappool-toolbar {
+    align-items: stretch;
+  }
+  .mappool-context > .mappool-toolbar .mappool-tabs {
+    flex: 1 1 100%;
+  }
+  .mappool-rounds {
+    flex-basis: 100%;
+  }
+  .mappool-pool-heading {
+    align-items: flex-start;
+  }
+  .mappool-pool-heading .actions {
+    flex-basis: 100%;
+  }
+}

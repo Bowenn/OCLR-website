@@ -78,11 +78,9 @@ test.describe("automatic beatmap preview boundaries", () => {
     });
     await page.goto("/admin/tournaments/test-cup/mappools");
     await page
-      .getByRole("combobox", { name: "Stage", exact: true })
-      .selectOption("knockout");
-    await page
-      .getByRole("combobox", { name: "Round", exact: true })
-      .selectOption(round.id);
+      .getByRole("tab", { name: "Knockout Stage", exact: true })
+      .click();
+    await page.getByRole("button", { name: round.name, exact: true }).click();
     await page.getByText("Add a NM beatmap", { exact: true }).click();
     const input = page.getByRole("textbox", {
       name: "Beatmap URL or ID",

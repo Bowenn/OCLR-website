@@ -16,8 +16,7 @@ export default async function MappoolsPage({
     return (
       <>
         <PageHeading eyebrow="COMPETITION MAPS" title="Mappool management">
-          Configure approved stages, rounds and map slots. Published pools
-          require an explicit unpublish before editing.
+          Manage maps by stage and round.
         </PageHeading>
         <MappoolEditor slug={edition} data={data} />
       </>

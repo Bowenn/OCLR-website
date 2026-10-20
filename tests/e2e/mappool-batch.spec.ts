@@ -38,7 +38,7 @@ test.describe("bulk mappool operations", () => {
     });
     const pool = data.pools[0].id;
     await page.goto("/admin/tournaments/test-cup/mappools");
-    await page.getByText("Import multiple beatmaps", { exact: true }).click();
+    await page.getByRole("tab", { name: "Bulk import", exact: true }).click();
     await page
       .getByLabel("Map rows", { exact: true })
       .fill("NM1 123\nNM1 456\nHD1 https://osu.ppy.sh/beatmapsets/42");
@@ -67,9 +67,9 @@ test.describe("bulk mappool operations", () => {
       .getByRole("button", { name: "Import verified batch", exact: true })
       .click();
     await expect(
-      page.getByText("Manage multiple map slots", { exact: true }),
+      page.getByRole("tab", { name: "Batch edit", exact: true }),
     ).toBeVisible();
-    await page.getByText("Manage multiple map slots", { exact: true }).click();
+    await page.getByRole("tab", { name: "Batch edit", exact: true }).click();
     await page.getByLabel("Select NM1", { exact: true }).check();
     await page.getByLabel("Select HD1", { exact: true }).check();
     await page
@@ -80,7 +80,6 @@ test.describe("bulk mappool operations", () => {
       .getByRole("button", { name: "Move / renumber selected", exact: true })
       .click();
     await expect(page.getByLabel("Select DT3", { exact: true })).toBeAttached();
-    await page.getByText("Manage multiple map slots", { exact: true }).click();
     await expect(page.getByLabel("Select DT3", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Select DT4", { exact: true })).toBeVisible();
     expect(
@@ -96,6 +95,7 @@ test.describe("bulk mappool operations", () => {
       ),
     ).toBe(true);
 
+    await page.getByRole("tab", { name: "Maps", exact: true }).click();
     await page.getByRole("button", { name: /^DT \(2\)$/ }).click();
     await page.getByText("Edit or replace DT3", { exact: true }).click();
     const editor = page
@@ -113,6 +113,7 @@ test.describe("bulk mappool operations", () => {
     await expect(
       page.getByText("DT · 6.75 ★ official adjusted", { exact: false }).first(),
     ).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
       path: test.info().outputPath("bulk-mappool-editor.png"),
       fullPage: true,
@@ -150,7 +151,7 @@ test.describe("bulk mappool operations", () => {
       published: false,
     });
     await page.reload();
-    await page.getByText("Manage multiple map slots", { exact: true }).click();
+    await page.getByRole("tab", { name: "Batch edit", exact: true }).click();
     await page.getByLabel("Select DT3", { exact: true }).check();
     await page.getByLabel("Select DT4", { exact: true }).check();
     await page
@@ -158,7 +159,10 @@ test.describe("bulk mappool operations", () => {
       .click();
     await page.getByRole("button", { name: "Confirm", exact: true }).click();
     await expect(
-      page.getByText("Manage multiple map slots", { exact: true }),
-    ).toHaveCount(0);
+      page.getByText(
+        "No maps to select. Add beatmaps in Maps or Bulk import first.",
+        { exact: true },
+      ),
+    ).toBeVisible();
   });
 });
