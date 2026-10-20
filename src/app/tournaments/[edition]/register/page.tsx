@@ -44,7 +44,7 @@ export default async function Register({
               : "Registration is not open"
           }
         >
-          Check the tournament overview for confirmed dates and rules.
+          Check the tournament overview for registration dates.
         </EmptyState>
       ) : !user ? (
         <div className="panel">
@@ -54,10 +54,12 @@ export default async function Register({
         </div>
       ) : (
         <>
-          <section className="notice spaced">
-            <h2>Eligibility</h2>
-            <p>{edition.eligibility}</p>
-          </section>
+          {edition.eligibility && (
+            <section className="notice spaced">
+              <h2>Eligibility</h2>
+              <p>{edition.eligibility}</p>
+            </section>
+          )}
           <ApplicationForm
             edition={edition}
             username={user.username}

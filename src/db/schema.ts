@@ -126,7 +126,8 @@ export const registrations = pgTable(
       .notNull()
       .references(() => users.osuId, { onDelete: "cascade" }),
     status: registrationStatus("status").notNull().default("pending"),
-    rulesVersion: text("rules_version").notNull(),
+    rulesVersion: text("rules_version"),
+    eligibilityAcknowledged: boolean("eligibility_acknowledged"),
     configurationVersion: integer("configuration_version"),
     answers: jsonb("answers").$type<Record<string, string>>().notNull(),
     statusReason: text("status_reason"),

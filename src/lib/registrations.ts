@@ -31,9 +31,9 @@ export async function registrationAvailability(
 }
 const applicationInput = z
   .object({
-    rulesAcknowledged: z.literal(true),
-    eligibilityAcknowledged: z.literal(true),
-    rulesVersion: z.string().min(1).max(80),
+    rulesAcknowledged: z.literal(true).optional(),
+    eligibilityAcknowledged: z.literal(true).optional(),
+    rulesVersion: z.string().min(1).max(80).nullable().optional(),
     configurationVersion: z.number().int().nonnegative(),
     answers: z.record(z.string(), z.string()).default({}),
   })
@@ -47,18 +47,45 @@ export function validateApplication(
   if (!result.success)
     throw new HttpError(
       400,
-      "Acknowledge the rules and eligibility requirements, and check your answers.",
+      "Check the application fields and any applicable acknowledgments.",
     );
   if (result.data.configurationVersion !== configurationVersion)
     throw new HttpError(
       409,
       "The tournament application changed. Refresh and review the current questions and rules.",
     );
-  if (result.data.rulesVersion !== edition.rules?.version)
+  if (edition.rules) {
+    if (!result.data.rulesAcknowledged)
+      throw new HttpError(
+        400,
+        "Acknowledge the published rules before applying.",
+      );
+    if (result.data.rulesVersion !== edition.rules.version)
+      throw new HttpError(
+        409,
+        "The rules have changed. Refresh and read them before applying.",
+      );
+  } else if (
+    result.data.rulesAcknowledged ||
+    result.data.rulesVersion != null
+  ) {
     throw new HttpError(
-      409,
-      "The rules have changed. Refresh and read them before applying.",
+      400,
+      "No rules are configured for this application. Refresh before applying.",
     );
+  }
+  if (
+    edition.eligibility
+      ? !result.data.eligibilityAcknowledged
+      : result.data.eligibilityAcknowledged
+  ) {
+    throw new HttpError(
+      400,
+      edition.eligibility
+        ? "Acknowledge the published eligibility disclosure before applying."
+        : "No eligibility disclosure is configured. Refresh before applying.",
+    );
+  }
   const questions = edition.registration?.questions ?? [];
   if (
     Object.keys(result.data.answers).some(
@@ -73,7 +100,11 @@ export function validateApplication(
       throw new HttpError(400, `Check your answer to “${question.label}”.`);
     answers[question.id] = answer;
   }
-  return { answers, rulesVersion: result.data.rulesVersion };
+  return {
+    answers,
+    rulesVersion: edition.rules ? result.data.rulesVersion! : null,
+    eligibilityAcknowledged: edition.eligibility ? true : null,
+  };
 }
 export async function submitRegistration(
   user: User,
@@ -218,6 +249,7 @@ export async function ownRegistrations(userId: number) {
       editionSlug: registrations.editionSlug,
       status: registrations.status,
       rulesVersion: registrations.rulesVersion,
+      eligibilityAcknowledged: registrations.eligibilityAcknowledged,
       configurationVersion: registrations.configurationVersion,
       answers: registrations.answers,
       statusReason: registrations.statusReason,

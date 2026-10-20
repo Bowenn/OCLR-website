@@ -252,27 +252,6 @@ function General({ data, saved }: EditorProps) {
     </section>
   );
 }
-function ApplicationPolicy({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="check-field">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span>
-        I have organizer approval to retain existing applications under their
-        saved rules and questions. No automatic re-acknowledgment is required.
-      </span>
-    </label>
-  );
-}
 function Rules({ data, saved }: EditorProps) {
   const [configured, setConfigured] = useState(Boolean(data.edition.rules));
   const [version, setVersion] = useState(data.edition.rules?.version ?? "");
@@ -282,16 +261,14 @@ function Rules({ data, saved }: EditorProps) {
   const [eligibility, setEligibility] = useState(
     data.edition.eligibility ?? "",
   );
-  const [retain, setRetain] = useState(false);
   return (
     <section className="panel form-stack">
       <h2>Rules & eligibility</h2>
       <p className="muted small">
-        Pause registration before changing rules. Published or acknowledged
-        wording uses a new, unused version. Existing applications keep their
-        original snapshot.
+        Rules and eligibility are optional. Changed rules use a new version;
+        existing applications keep their original acknowledgment and snapshot.
       </p>
-      {!data.edition.rules && (
+      {
         <label className="check-field">
           <input
             type="checkbox"
@@ -300,7 +277,7 @@ function Rules({ data, saved }: EditorProps) {
           />
           <span>Configure approved rules</span>
         </label>
-      )}
+      }
       {configured && (
         <>
           <label className="field">
@@ -396,9 +373,6 @@ function Rules({ data, saved }: EditorProps) {
           onChange={(e) => setEligibility(e.target.value)}
         />
       </label>
-      {data.applications > 0 && (
-        <ApplicationPolicy checked={retain} onChange={setRetain} />
-      )}
       <Save
         data={data}
         saved={saved}
@@ -406,7 +380,6 @@ function Rules({ data, saved }: EditorProps) {
         fields={{
           rules: configured ? { version, sections } : null,
           eligibility: eligibility.trim() || null,
-          ...(retain ? { existingApplicationsPolicy: "retain_existing" } : {}),
         }}
         label="Save rules & eligibility"
       />
@@ -427,7 +400,6 @@ function Registration({ data, saved }: EditorProps) {
     e.registration?.withdrawUntil ?? null,
   );
   const [questions, setQuestions] = useState(e.registration?.questions ?? []);
-  const [retain, setRetain] = useState(false);
   const blockers = registrationBlockers(
     e,
     data.readiness.some(
@@ -480,11 +452,6 @@ function Registration({ data, saved }: EditorProps) {
                   <li key={message}>{message}</li>
                 ))}
               </ul>
-              {(!e.rules || !e.eligibility) && (
-                <a href={`/admin/tournaments/${e.slug}/settings?section=rules`}>
-                  Open Rules & eligibility →
-                </a>
-              )}
             </aside>
           )}
           <p className="muted small">
@@ -502,9 +469,8 @@ function Registration({ data, saved }: EditorProps) {
           </label>
           <h3>Application questions</h3>
           <p className="muted small">
-            Collect only necessary information. After applications exist, pause
-            entry, save a new rules version, and approve retaining previous
-            acknowledgments before changing questions.
+            Collect only necessary information. Existing applications retain
+            their original questions and answers when you edit this form.
           </p>
           {questions.map((q, i) => (
             <fieldset className="form-stack" key={q.id}>
@@ -606,9 +572,6 @@ function Registration({ data, saved }: EditorProps) {
           </button>
         </>
       )}
-      {data.applications > 0 && (
-        <ApplicationPolicy checked={retain} onChange={setRetain} />
-      )}
       <Save
         data={data}
         saved={saved}
@@ -617,12 +580,8 @@ function Registration({ data, saved }: EditorProps) {
           registration: configured
             ? { enabled, opensAt, closesAt, withdrawUntil, questions }
             : null,
-          ...(retain ? { existingApplicationsPolicy: "retain_existing" } : {}),
         }}
         label="Save registration settings"
-        confirmation={
-          enabled || Boolean(e.registration?.enabled) || data.applications > 0
-        }
         disabled={
           configured &&
           (!opensAt || !closesAt || (enabled && blockers.length > 0))
@@ -710,7 +669,6 @@ function Schedule({ data, saved }: EditorProps) {
   );
 }
 function Publication({ data, saved }: EditorProps) {
-  const [approved, setApproved] = useState(false);
   return (
     <section className="panel form-stack">
       <h2>Publication</h2>
@@ -729,31 +687,17 @@ function Publication({ data, saved }: EditorProps) {
             : "Publish this tournament?"
         }
         description="Review tournament identity, public wording and the effect on visibility before confirming."
-        canConfirm={approved}
         url={`/api/admin/tournaments/${data.edition.slug}`}
         payload={{
           action: "publication",
           expectedRevision: data.revision,
           confirmed: true,
-          contentApproved: approved,
           published: !data.edition.published,
         }}
         onSuccess={() => {
-          setApproved(false);
           saved("Publication updated.");
         }}
-      >
-        <label className="check-field">
-          <input
-            type="checkbox"
-            checked={approved}
-            onChange={(e) => setApproved(e.target.checked)}
-          />
-          <span>
-            I confirm this visibility change is approved by the organizers.
-          </span>
-        </label>
-      </ConfirmMutation>
+      />
       <p className="muted small">
         Historical tournaments are retained. Mark an edition Completed in
         General settings; use visibility controls to archive it privately.

@@ -175,7 +175,6 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
           published: true,
           expectedRevision: 0,
           confirmed: true,
-          contentApproved: true,
         }),
       ).rejects.toMatchObject({ status: 403 });
     }
@@ -238,7 +237,6 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     current = await change(current.revision, "registration", { registration });
     current = await change(current.revision, "publication", {
       published: true,
-      contentApproved: true,
     });
     expect(current.edition.registration?.enabled).toBe(false);
     vi.stubEnv("PRIVACY_RETENTION_NOTICE", "");
@@ -267,28 +265,13 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     };
     await expect(
       change(current.revision, "rules", {
-        rules: { ...rules, version: "s12-v2" },
-        eligibility: current.edition.eligibility,
-        existingApplicationsPolicy: "retain_existing",
-      }),
-    ).rejects.toMatchObject({ status: 409 });
-    current = await change(current.revision, "registration", { registration });
-    await expect(
-      change(current.revision, "rules", {
         rules,
         eligibility: current.edition.eligibility,
       }),
     ).rejects.toMatchObject({ status: 409 });
-    await expect(
-      change(current.revision, "rules", {
-        rules: { ...rules, version: "s12-v2" },
-        eligibility: current.edition.eligibility,
-      }),
-    ).rejects.toMatchObject({ status: 400 });
     current = await change(current.revision, "rules", {
       rules: { ...rules, version: "s12-v2" },
       eligibility: current.edition.eligibility,
-      existingApplicationsPolicy: "retain_existing",
     });
     current = await change(current.revision, "registration", {
       registration: {
@@ -297,18 +280,11 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
           { ...registration.questions[0], label: "Revised question" },
         ],
       },
-      existingApplicationsPolicy: "retain_existing",
     });
     current = await change(current.revision, "registration", {
       registration: { ...registration, questions: [] },
-      existingApplicationsPolicy: "retain_existing",
     });
-    await expect(
-      change(current.revision, "registration", {
-        registration,
-        existingApplicationsPolicy: "retain_existing",
-      }),
-    ).rejects.toMatchObject({ status: 409 });
+    current = await change(current.revision, "registration", { registration });
     const [snapshot] = await db()
       .select()
       .from(editionRevisions)
@@ -328,7 +304,6 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     });
     current = await change(current.revision, "publication", {
       published: false,
-      contentApproved: true,
     });
     expect(await getPublicEdition("s12")).toBeUndefined();
     expect(current.edition.registration?.enabled).toBe(false);
@@ -414,7 +389,6 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       (
         await change(0, "publication", {
           published: false,
-          contentApproved: true,
         })
       ).revision,
     ).toBe(0);
@@ -499,35 +473,56 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     ).rejects.toMatchObject({ status: 409 });
     expect((await db().select().from(registrations)).length).toBe(1);
   });
-  it("identifies missing eligibility instead of returning a generic prerequisite error", async () => {
-    const paused = await tournamentCommand(admin, "test-cup", {
-      action: "registration",
-      expectedRevision: 0,
-      confirmed: true,
-      registration: { ...edition.registration, enabled: false },
+  it("accepts applications without optional rules and never retroactively records consent", async () => {
+    let current = await create();
+    current = await change(current.revision, "publication", {
+      published: true,
     });
-    const missing = await tournamentCommand(admin, "test-cup", {
-      action: "rules",
-      expectedRevision: paused.revision,
-      confirmed: true,
-      rules: { ...edition.rules, version: "missing-eligibility-test" },
-      eligibility: null,
+    current = await change(current.revision, "registration", {
+      registration: { ...edition.registration, enabled: true },
     });
-    const eventsBefore = missing.events.length;
+    const noRules = { configurationVersion: current.revision, answers: {} };
     await expect(
-      tournamentCommand(admin, "test-cup", {
-        action: "registration",
-        expectedRevision: missing.revision,
-        confirmed: true,
-        registration: { ...edition.registration, enabled: true },
+      submitRegistration(mapper, "s12", {
+        ...noRules,
+        rulesAcknowledged: true,
+        rulesVersion: "invented",
       }),
-    ).rejects.toMatchObject({
-      status: 409,
-      message: "Add an eligibility disclosure in Rules & eligibility.",
+    ).rejects.toMatchObject({ status: 400 });
+    const old = await submitRegistration(player, "s12", noRules);
+    expect(old).toMatchObject({
+      rulesVersion: null,
+      eligibilityAcknowledged: null,
     });
-    expect((await tournamentForAdmin(admin, "test-cup")).events.length).toBe(
-      eventsBefore,
-    );
+    current = await change(current.revision, "rules", {
+      rules: {
+        version: "later-v1",
+        sections: [{ heading: "Later rules", body: "Synthetic later rules." }],
+      },
+      eligibility: "Synthetic later eligibility.",
+    });
+    expect((await db().select().from(registrations))[0]).toMatchObject({
+      rulesVersion: null,
+      eligibilityAcknowledged: null,
+      configurationVersion: old.configurationVersion,
+    });
+    await expect(
+      submitRegistration(mapper, "s12", {
+        configurationVersion: current.revision,
+        answers: {},
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    const newer = await submitRegistration(mapper, "s12", {
+      configurationVersion: current.revision,
+      answers: {},
+      rulesAcknowledged: true,
+      rulesVersion: "later-v1",
+      eligibilityAcknowledged: true,
+    });
+    expect(newer).toMatchObject({
+      rulesVersion: "later-v1",
+      eligibilityAcknowledged: true,
+    });
   });
   it("pauses registration on completion, so restoring Upcoming cannot reopen it implicitly", async () => {
     const command = {

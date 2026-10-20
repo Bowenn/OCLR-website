@@ -109,16 +109,18 @@ export default async function Dashboard({
                         </p>
                       )}
                       <p className="muted small">
-                        Acknowledged rules: {r.rulesVersion}. Existing
-                        acknowledgments remain associated with their saved
-                        version.
+                        {r.rulesVersion
+                          ? `Acknowledged rules: ${r.rulesVersion}.`
+                          : "No rules were configured when you applied."}{" "}
+                        Existing acknowledgments remain associated with their
+                        saved version.
                       </p>
-                      {acknowledgedConfiguration?.rules && (
+                      {acknowledgedConfiguration && (
                         <details className="spaced">
                           <summary>
                             My acknowledged rules and application
                           </summary>
-                          {acknowledgedConfiguration.rules.sections.map(
+                          {acknowledgedConfiguration.rules?.sections.map(
                             (s, i) => (
                               <section key={i}>
                                 <h4>{s.heading}</h4>

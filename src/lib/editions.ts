@@ -112,10 +112,6 @@ export function registrationBlockers(
     ...(!edition.published
       ? ["Publish the tournament before enabling registration."]
       : []),
-    ...(!edition.rules ? ["Add approved rules in Rules & eligibility."] : []),
-    ...(!edition.eligibility
-      ? ["Add an eligibility disclosure in Rules & eligibility."]
-      : []),
     ...(!privacyConfigured
       ? ["Complete the server privacy configuration."]
       : []),
@@ -128,13 +124,7 @@ export function enrollmentState(
   edition: Edition,
   now = new Date(),
 ): "unannounced" | "upcoming" | "open" | "closed" | "paused" {
-  if (
-    !edition.published ||
-    !edition.registration ||
-    !edition.rules ||
-    !edition.eligibility
-  )
-    return "unannounced";
+  if (!edition.published || !edition.registration) return "unannounced";
   if (
     edition.status === "completed" ||
     now.getTime() >= Date.parse(edition.registration.closesAt)

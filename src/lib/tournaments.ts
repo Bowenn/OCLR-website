@@ -79,9 +79,6 @@ const version = {
   expectedRevision: z.number().int().nonnegative(),
   confirmed: z.literal(true),
 };
-const policy = {
-  existingApplicationsPolicy: z.literal("retain_existing").optional(),
-};
 const createSchema = z
   .object({
     slug: shape.slug.refine((s) => s !== "new", "This slug is reserved"),
@@ -101,7 +98,6 @@ const commandSchema = z.discriminatedUnion("action", [
   z
     .object({
       ...version,
-      ...policy,
       action: z.literal("rules"),
       rules: shape.rules,
       eligibility: shape.eligibility,
@@ -110,7 +106,6 @@ const commandSchema = z.discriminatedUnion("action", [
   z
     .object({
       ...version,
-      ...policy,
       action: z.literal("registration"),
       registration: shape.registration,
     })
@@ -127,7 +122,6 @@ const commandSchema = z.discriminatedUnion("action", [
       ...version,
       action: z.literal("publication"),
       published: z.boolean(),
-      contentApproved: z.literal(true),
     })
     .strict(),
 ]);
@@ -142,8 +136,6 @@ function invalid(parsed: { success: boolean; error?: z.ZodError }) {
 }
 export function tournamentReadiness(e: Edition, locked = false) {
   return [
-    { label: "Approved rules", ready: Boolean(e.rules) },
-    { label: "Eligibility disclosure", ready: Boolean(e.eligibility) },
     { label: "Registration dates", ready: Boolean(e.registration) },
     { label: "Privacy configuration", ready: privacyReady() },
     {
@@ -333,10 +325,6 @@ export async function tournamentCommand(
       );
     const e = current.edition;
     let next: Edition = e;
-    const applications = await tx
-      .select({ rulesVersion: registrations.rulesVersion })
-      .from(registrations)
-      .where(eq(registrations.editionSlug, slug));
     const revisions = await tx
       .select()
       .from(editionRevisions)
@@ -356,73 +344,22 @@ export async function tournamentCommand(
             : e.registration,
       };
     if (c.action === "rules") {
-      const changed =
-        JSON.stringify({ rules: e.rules, eligibility: e.eligibility }) !==
-        JSON.stringify({ rules: c.rules, eligibility: c.eligibility });
-      if (changed && e.registration?.enabled)
+      if (
+        c.rules &&
+        revisions.some(
+          (r) =>
+            r.configuration.rules?.version === c.rules?.version &&
+            JSON.stringify(r.configuration.rules) !== JSON.stringify(c.rules),
+        )
+      ) {
         throw new HttpError(
           409,
-          "Pause registration before changing approved rules or eligibility.",
+          "Use a new rules version when changing previously saved rules. Historical acknowledgments are preserved.",
         );
-      if (
-        changed &&
-        e.rules &&
-        (!c.rules ||
-          c.rules.version === e.rules.version ||
-          revisions.some(
-            (r) => r.configuration.rules?.version === c.rules?.version,
-          ))
-      )
-        throw new HttpError(
-          409,
-          "Use a new, unused rules version; acknowledged rules cannot be rewritten.",
-        );
-      if (
-        changed &&
-        applications.length &&
-        c.existingApplicationsPolicy !== "retain_existing"
-      )
-        throw new HttpError(
-          400,
-          "Confirm organizer approval to retain existing applications under their saved rules.",
-        );
+      }
       next = { ...e, rules: c.rules, eligibility: c.eligibility };
     }
     if (c.action === "registration") {
-      const changedQuestions =
-        JSON.stringify(e.registration?.questions ?? []) !==
-        JSON.stringify(c.registration?.questions ?? []);
-      if (changedQuestions && applications.length) {
-        if (
-          e.registration?.enabled ||
-          applications.some((a) => a.rulesVersion === e.rules?.version)
-        )
-          throw new HttpError(
-            409,
-            "Pause registration and save a new rules version before changing questions with existing applications.",
-          );
-        if (c.existingApplicationsPolicy !== "retain_existing")
-          throw new HttpError(
-            400,
-            "Confirm organizer approval to retain applications with their saved questions.",
-          );
-      }
-      const previousIds = new Set(
-        e.registration?.questions.map((q) => q.id) ?? [],
-      );
-      const retired = new Set(
-        revisions
-          .flatMap(
-            (r) =>
-              r.configuration.registration?.questions.map((q) => q.id) ?? [],
-          )
-          .filter((id) => !previousIds.has(id)),
-      );
-      if (c.registration?.questions.some((q) => retired.has(q.id)))
-        throw new HttpError(
-          409,
-          "A retired question ID cannot be reused. Choose a new stable ID.",
-        );
       if (c.registration?.enabled) {
         const blockers = registrationBlockers(e, privacyReady());
         if (blockers.length) throw new HttpError(409, blockers.join(" "));
@@ -466,11 +403,6 @@ export async function tournamentCommand(
           revision: current.revision,
         },
         after: { configuration, revision },
-        ...("existingApplicationsPolicy" in c
-          ? {
-              existingApplicationsPolicy: c.existingApplicationsPolicy ?? null,
-            }
-          : {}),
       },
     });
   });

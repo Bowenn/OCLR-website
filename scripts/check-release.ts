@@ -3,7 +3,6 @@ import { appUrl } from "../src/lib/http";
 import { authReady, oauthConfig } from "../src/lib/auth/config";
 import { getAnnouncements } from "../src/lib/announcements";
 import { getBrackets } from "../src/lib/brackets";
-import { getEditions } from "../src/lib/content";
 import { db, closeDb } from "../src/db";
 import { sql } from "drizzle-orm";
 try {
@@ -29,12 +28,6 @@ try {
   );
   if (!ids.length && !globalAdmins.rows.length)
     throw new Error("Provision a verified global Admin before release.");
-  for (const e of await getEditions()) {
-    if (e.published && e.registration && (!e.rules || !e.eligibility))
-      throw new Error(
-        "Published registration requires approved rules and eligibility disclosure.",
-      );
-  }
   await db().execute(
     sql`SELECT configuration, configuration_version FROM edition_state LIMIT 0`,
   );
@@ -52,7 +45,9 @@ try {
   await db().execute(
     sql`SELECT osu_id, mode, profile, attempted_at, retry_at, refresh_token, error_status FROM user_profile_cache LIMIT 0`,
   );
-  await db().execute(sql`SELECT 1 FROM registrations LIMIT 0`);
+  await db().execute(
+    sql`SELECT eligibility_acknowledged FROM registrations LIMIT 0`,
+  );
   await db().execute(sql`SELECT before, after FROM staff_role_events LIMIT 0`);
   await db().execute(
     sql`SELECT 1 FROM captains, teams, memberships, draft_sessions, draft_picks, edition_events LIMIT 0`,

@@ -30,14 +30,12 @@ describe("edition configuration", () => {
       }).success,
     ).toBe(false);
   });
-  it("requires published rules, eligibility and window before opening; closes at exact boundary", () => {
+  it("requires publication and a window before opening; closes at exact boundary", () => {
     expect(enrollmentState({ ...edition, published: false })).toBe(
       "unannounced",
     );
-    expect(enrollmentState({ ...edition, rules: null })).toBe("unannounced");
-    expect(enrollmentState({ ...edition, eligibility: null })).toBe(
-      "unannounced",
-    );
+    expect(enrollmentState({ ...edition, rules: null })).toBe("open");
+    expect(enrollmentState({ ...edition, eligibility: null })).toBe("open");
     expect(enrollmentState(edition, new Date("2024-12-31T23:59:59Z"))).toBe(
       "upcoming",
     );
@@ -73,7 +71,7 @@ describe("edition configuration", () => {
     expect(registrationBlockers(edition, true)).toEqual([]);
     expect(
       registrationBlockers({ ...edition, eligibility: null }, true),
-    ).toEqual(["Add an eligibility disclosure in Rules & eligibility."]);
+    ).toEqual([]);
     expect(
       registrationBlockers(
         { ...edition, published: false, status: "completed" },

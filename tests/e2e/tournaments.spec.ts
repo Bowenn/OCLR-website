@@ -198,10 +198,6 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByRole("button", { name: "Publish tournament", exact: true })
         .click();
-      await page
-        .getByRole("dialog")
-        .getByLabel(/I confirm this visibility change/)
-        .check();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(page.getByRole("status")).toHaveText("Publication updated.");
       const guestPage = await guest.newPage();
@@ -239,7 +235,6 @@ test.describe("browser-managed authoritative tournament editions", () => {
           exact: true,
         })
         .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(page.getByRole("status")).toContainText("saved");
       state = await current();
       expect(state.edition.registration.enabled).toBe(true);
@@ -303,7 +298,6 @@ test.describe("browser-managed authoritative tournament editions", () => {
           exact: true,
         })
         .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(page.getByRole("status")).toContainText("saved");
       await tab("Rules & eligibility");
       await page
@@ -312,7 +306,6 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Section 1 heading", { exact: true })
         .fill("Revised synthetic rules");
-      await page.getByLabel(/I have organizer approval to retain/).check();
       await page
         .getByRole("button", { name: "Save rules & eligibility", exact: true })
         .click();
@@ -321,14 +314,12 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Question 1 label", { exact: true })
         .fill("Revised availability");
-      await page.getByLabel(/I have organizer approval to retain/).check();
       await page
         .getByRole("button", {
           name: "Save registration settings",
           exact: true,
         })
         .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(page.getByRole("status")).toContainText("saved");
       await playerPage.reload();
       await playerPage
@@ -372,7 +363,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
               action: "publication",
               expectedRevision: (await current()).revision,
               confirmed: true,
-              contentApproved: true,
+
               published: false,
             },
           })
@@ -415,10 +406,6 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByRole("button", { name: "Unpublish tournament", exact: true })
         .click();
-      await page
-        .getByRole("dialog")
-        .getByLabel(/I confirm this visibility change/)
-        .check();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(page.getByRole("status")).toHaveText("Publication updated.");
       expect(

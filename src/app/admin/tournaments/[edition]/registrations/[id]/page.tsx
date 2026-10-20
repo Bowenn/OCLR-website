@@ -32,7 +32,7 @@ export default async function Application({
             </div>
             <div>
               <dt>Rules acknowledged</dt>
-              <dd>{r.rulesVersion}</dd>
+              <dd>{r.rulesVersion ?? "No rules configured at submission"}</dd>
             </div>
             {Object.entries(r.answers).map(([key, value]) => (
               <div key={key}>

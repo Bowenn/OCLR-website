@@ -264,7 +264,7 @@ describe.skipIf(!base)(
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));
@@ -275,6 +275,24 @@ describe.skipIf(!base)(
                 )
               ).rows,
             ).toEqual(anchor);
+            expect(
+              (
+                await pool.query(
+                  "SELECT rules_version, eligibility_acknowledged FROM registrations",
+                )
+              ).rows.every(
+                (row) =>
+                  row.rules_version === "original-v1" &&
+                  row.eligibility_acknowledged === null,
+              ),
+            ).toBe(true);
+            expect(
+              (
+                await pool.query(
+                  "SELECT is_nullable FROM information_schema.columns WHERE table_name='registrations' AND column_name='rules_version'",
+                )
+              ).rows[0].is_nullable,
+            ).toBe("YES");
             expect(
               (
                 await pool.query(

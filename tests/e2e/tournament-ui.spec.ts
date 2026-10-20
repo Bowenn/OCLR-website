@@ -10,6 +10,7 @@ test.describe("registration readiness and confirmation layout", () => {
   test("centers confirmation and error dialogs, explains blockers and schedules future entry", async ({
     page,
     context,
+    browser,
     isMobile,
   }, info) => {
     await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
@@ -66,7 +67,6 @@ test.describe("registration readiness and confirmation layout", () => {
       );
     };
     await centered();
-    await dialog.getByRole("checkbox").check();
     const state = await current();
     const { name, summary, season, branding, timeZone, status } = state.edition;
     await command("general", {
@@ -95,36 +95,17 @@ test.describe("registration readiness and confirmation layout", () => {
         questions: [],
       },
     });
-    await command("publication", { published: true, contentApproved: true });
+    await command("publication", { published: true });
     await page.goto(`/admin/tournaments/${slug}/settings?section=registration`);
     await expect(
       page.getByRole("checkbox", {
         name: "Enable registration during this window",
         exact: true,
       }),
-    ).toBeDisabled();
+    ).toBeEnabled();
     await expect(
-      page.getByText("Add an eligibility disclosure in Rules & eligibility.", {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await page
-      .getByRole("link", { name: "Open Rules & eligibility", exact: false })
-      .click();
-    await expect(page).toHaveURL(/section=rules$/);
-    await command("rules", {
-      rules: {
-        version: "ui-test-v1",
-        sections: [
-          {
-            heading: "Synthetic approved rules",
-            body: "Synthetic test rules only.",
-          },
-        ],
-      },
-      eligibility: "Synthetic approved eligibility only.",
-    });
-    await page.goto(`/admin/tournaments/${slug}/settings?section=registration`);
+      page.getByText("Before enabling registration", { exact: true }),
+    ).toHaveCount(0);
     await page
       .getByRole("checkbox", {
         name: "Enable registration during this window",
@@ -136,12 +117,7 @@ test.describe("registration readiness and confirmation layout", () => {
       exact: true,
     });
     await save.click();
-    await centered();
-    await page.keyboard.press("Escape");
     await expect(dialog).not.toBeVisible();
-    await expect(save).toBeFocused();
-    await save.click();
-    await dialog.getByRole("button", { name: "Confirm", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("saved");
     const publicState = await (
       await context.request.get(`/api/tournaments/${slug}`)
@@ -152,7 +128,7 @@ test.describe("registration readiness and confirmation layout", () => {
       name: "Registration",
       exact: true,
     });
-    await expect(readiness.locator("li")).toHaveCount(5);
+    await expect(readiness.locator("li")).toHaveCount(3);
     await expect(
       readiness.getByText("upcoming", { exact: true }),
     ).toBeVisible();
@@ -173,5 +149,52 @@ test.describe("registration readiness and confirmation layout", () => {
       path: info.outputPath("compact-tournament-dashboard.png"),
       fullPage: true,
     });
+    await command("registration", {
+      registration: {
+        enabled: true,
+        opensAt: new Date(now - 3600000).toISOString(),
+        closesAt: new Date(now + 7200000).toISOString(),
+        withdrawUntil: null,
+        questions: [],
+      },
+    });
+    const player = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    try {
+      await player.addCookies([await seedSession(isMobile ? 355102 : 355002)]);
+      const applicant = await player.newPage();
+      await applicant.goto(`/tournaments/${slug}/register`);
+      await expect(applicant.getByRole("checkbox")).toHaveCount(0);
+      await expect(
+        applicant.getByRole("link", { name: "privacy notice", exact: true }),
+      ).toBeVisible();
+      await applicant
+        .getByRole("button", { name: "Submit individual application" })
+        .click();
+      await expect(applicant).toHaveURL(/dashboard\?submitted=1$/);
+      await expect(
+        applicant.getByText("No rules were configured when you applied.", {
+          exact: false,
+        }),
+      ).toBeVisible();
+      await command("rules", {
+        rules: {
+          version: "later-v1",
+          sections: [
+            { heading: "Later rules", body: "Synthetic later rules." },
+          ],
+        },
+        eligibility: "Synthetic later eligibility.",
+      });
+      await applicant.reload();
+      await expect(
+        applicant.getByText("No rules were configured when you applied.", {
+          exact: false,
+        }),
+      ).toBeVisible();
+    } finally {
+      await player.close();
+    }
   });
 });

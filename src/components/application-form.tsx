@@ -33,9 +33,15 @@ export function ApplicationForm({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            rulesAcknowledged: form.get("rules") === "on",
-            eligibilityAcknowledged: form.get("eligibility") === "on",
-            rulesVersion: edition.rules!.version,
+            ...(edition.rules
+              ? {
+                  rulesAcknowledged: form.get("rules") === "on",
+                  rulesVersion: edition.rules.version,
+                }
+              : {}),
+            ...(edition.eligibility
+              ? { eligibilityAcknowledged: form.get("eligibility") === "on" }
+              : {}),
             configurationVersion,
             answers,
           }),
@@ -76,27 +82,31 @@ export function ApplicationForm({
           />
         </label>
       ))}
-      <label className="check-field">
-        <input name="rules" type="checkbox" required />
-        <span>
-          I have read and agree to the{" "}
-          <Link
-            className="text-link"
-            href={`/tournaments/${edition.slug}/rules`}
-            target="_blank"
-            rel="noopener"
-          >
-            published rules (opens a new tab)
-          </Link>
-          , version {edition.rules!.version}.
-        </span>
-      </label>
-      <label className="check-field">
-        <input name="eligibility" type="checkbox" required />
-        <span>
-          I have read the eligibility requirements and confirm I meet them.
-        </span>
-      </label>
+      {edition.rules && (
+        <label className="check-field">
+          <input name="rules" type="checkbox" required />
+          <span>
+            I have read and agree to the{" "}
+            <Link
+              className="text-link"
+              href={`/tournaments/${edition.slug}/rules`}
+              target="_blank"
+              rel="noopener"
+            >
+              published rules (opens a new tab)
+            </Link>
+            , version {edition.rules.version}.
+          </span>
+        </label>
+      )}
+      {edition.eligibility && (
+        <label className="check-field">
+          <input name="eligibility" type="checkbox" required />
+          <span>
+            I have read the eligibility requirements and confirm I meet them.
+          </span>
+        </label>
+      )}
       <p className="small muted">
         Applications are reviewed by tournament staff. Submitting is not
         acceptance or official osu! validation. Read the{" "}
