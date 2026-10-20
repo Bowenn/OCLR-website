@@ -20,12 +20,9 @@ export function Header({
     <header className="site-header">
       <div className={`nav-wrap${user?.staff ? " staff-header" : ""}`}>
         <Link href="/" className="brand" aria-label="OCLR home">
-          <span className="brand-mark" aria-hidden="true">
-            o!
-          </span>
           OCLR
           <span className="brand-divider" />
-          <span className="brand-note">THE ROOKIE STAGE</span>
+          <span className="brand-note">osu! Chinese League Rookie</span>
         </Link>
         <button
           className="menu-toggle secondary"

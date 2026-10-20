@@ -125,6 +125,15 @@ test.describe("concept-aligned tournament surfaces", () => {
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      for (const img of await target.locator('img[src^="/oclr-s11-"]').all()) {
+        await img.scrollIntoViewIfNeeded();
+        await expect
+          .poll(() =>
+            img.evaluate((el) => (el as HTMLImageElement).naturalWidth),
+          )
+          .toBeGreaterThan(0);
+      }
+      await target.evaluate(() => window.scrollTo(0, 0));
       await target.screenshot({
         path: info.outputPath(
           `${process.env.OCLR_DESIGN_CAPTURE ?? "after"}-${name}.png`,
@@ -150,12 +159,35 @@ test.describe("concept-aligned tournament surfaces", () => {
         ["news", "/news"],
         ["about", "/about"],
       ]) {
-        await capture(page, name, path, name === "home");
+        await capture(page, name, path, ["home", "overview"].includes(name));
+        if (name === "overview")
+          await expect(
+            page
+              .getByRole("navigation", { name: "Tournament navigation" })
+              .locator('[aria-current="page"]'),
+          ).toHaveText("Overview");
         expect(await page.locator("main").innerText()).not.toContain(
           "VISUAL_PRIVATE_ANSWER",
         );
       }
       await capture(page, "bracket", "/tournaments/test-cup/bracket", true);
+      const tournamentNav = page.getByRole("navigation", {
+        name: "Tournament navigation",
+      });
+      await expect(tournamentNav.locator('[aria-current="page"]')).toHaveText(
+        "Bracket",
+      );
+      await expect(
+        tournamentNav.locator('[aria-current="page"]'),
+      ).toBeInViewport();
+      await tournamentNav
+        .getByRole("link", { name: "Mappools", exact: true })
+        .focus();
+      await page.keyboard.press("Enter");
+      await expect(tournamentNav.locator('[aria-current="page"]')).toHaveText(
+        "Mappools",
+      );
+      await page.goto("/tournaments/test-cup/bracket");
       await expect(page.locator(".match-card")).toHaveCount(2);
       await expect(page.locator(".match-winner")).toHaveCount(1);
       await context.addCookies([playerCookie]);

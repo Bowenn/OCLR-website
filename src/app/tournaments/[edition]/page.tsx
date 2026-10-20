@@ -26,68 +26,74 @@ export default async function Overview({
       <PageHeading eyebrow="TOURNAMENT OVERVIEW" title={edition.name}>
         {edition.summary}
       </PageHeading>
-      {edition.branding.keyVisual && (
-        <Image
-          className="edition-key-visual"
-          src={edition.branding.keyVisual}
-          alt={`${edition.name} key visual`}
-          width={1672}
-          height={941}
-          sizes="(max-width: 760px) 100vw, 900px"
-        />
-      )}
-      <div className="panel">
-        <Badge>{edition.status}</Badge>
-        <h2 className="spaced">Individual entry. Team competition.</h2>
-        <p className="muted">
-          Apply individually → staff appoint captains → eligible player pool →
-          live captain-turn draft → published team rosters → team competition.
-        </p>
-        <dl className="detail-list">
-          <div>
-            <dt>Registration</dt>
-            <dd>{state}</dd>
+      <section
+        className="edition-overview"
+        aria-label="Tournament registration overview"
+      >
+        {edition.branding.keyVisual && (
+          <Image
+            className="edition-key-visual"
+            src={edition.branding.keyVisual}
+            unoptimized
+            alt={`${edition.name} key visual`}
+            width={1672}
+            height={941}
+            sizes="(max-width: 760px) 100vw, 900px"
+          />
+        )}
+        <div className="edition-enrollment">
+          <div className="section-title">
+            <h2>Registration</h2>
+            <Badge>{state}</Badge>
           </div>
-          <div>
-            <dt>Opens</dt>
-            <dd>
-              {formatDate(
-                edition.registration?.opensAt ?? null,
-                edition.timeZone,
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>Closes</dt>
-            <dd>
-              {formatDate(
-                edition.registration?.closesAt ?? null,
-                edition.timeZone,
-              )}
-            </dd>
-          </div>
-        </dl>
-        <div className="actions">
-          {state === "open" && (
-            <Action href={`/tournaments/${slug}/register`}>
-              Register individually →
+          <p className="muted small">
+            Individual entry. Captain-led team draft.
+          </p>
+          <dl className="detail-list">
+            <div>
+              <dt>Tournament</dt>
+              <dd>{edition.status}</dd>
+            </div>
+            <div>
+              <dt>Opens</dt>
+              <dd>
+                {formatDate(
+                  edition.registration?.opensAt ?? null,
+                  edition.timeZone,
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Closes</dt>
+              <dd>
+                {formatDate(
+                  edition.registration?.closesAt ?? null,
+                  edition.timeZone,
+                )}
+              </dd>
+            </div>
+          </dl>
+          <div className="actions">
+            {state === "open" && (
+              <Action href={`/tournaments/${slug}/register`}>
+                Register individually →
+              </Action>
+            )}
+            <Action href={`/tournaments/${slug}/rules`} secondary compact>
+              Read the rules
             </Action>
-          )}
-          <Action href={`/tournaments/${slug}/rules`} secondary>
-            Read the rules
-          </Action>
-          <Action href={`/tournaments/${slug}/schedule`} secondary>
-            View schedule
-          </Action>
+            <Action href={`/tournaments/${slug}/schedule`} secondary compact>
+              View schedule
+            </Action>
+          </div>
         </div>
-      </div>
-      <section className="section-space">
-        <h2>Eligibility</h2>
-        <p className="muted">
-          {edition.eligibility ??
-            "No additional eligibility disclosure has been published."}
-        </p>
       </section>
+      {edition.eligibility && (
+        <section className="section-space">
+          <h2>Eligibility</h2>
+          <p className="muted">{edition.eligibility}</p>
+        </section>
+      )}
     </>
   );
 }

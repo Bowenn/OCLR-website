@@ -17,6 +17,7 @@ export function EditionArtwork({
       {image ? (
         <Image
           src={image}
+          unoptimized
           alt=""
           width={1200}
           height={1200}

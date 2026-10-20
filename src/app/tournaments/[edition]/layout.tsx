@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TournamentNavigation } from "@/components/tournament-navigation";
 import { notFound } from "next/navigation";
 import { publicDraft } from "@/lib/draft";
 import { getPublicEdition } from "@/lib/content";
@@ -17,30 +18,13 @@ export default async function EditionLayout({
   const draft = draftResult.status === "fulfilled" ? draftResult.value : null;
   const liveUnavailable = draftResult.status === "rejected";
   return (
-    <div className="container page workspace">
+    <div className="container page workspace tournament-workspace">
       <aside className="sidebar">
         <Link href="/tournaments" className="eyebrow">
           ← TOURNAMENTS
         </Link>
         <h2>{edition.name}</h2>
-        <nav aria-label="Tournament navigation">
-          {[
-            ["", "Overview"],
-            ["/rules", "Rules"],
-            ["/schedule", "Schedule"],
-            ["/mappools", "Mappools"],
-            ["/results", "Results"],
-            ["/bracket", "Bracket"],
-            ["/participants", "Participants"],
-            ["/teams", "Teams"],
-          ].map(([path, name]) => (
-            <Link key={path} href={`/tournaments/${slug}${path}`}>
-              {name}
-            </Link>
-          ))}
-          <Link href={`/players?edition=${slug}`}>Players</Link>
-          {draft && <Link href={`/tournaments/${slug}/draft`}>Live draft</Link>}
-        </nav>
+        <TournamentNavigation slug={slug} liveDraft={Boolean(draft)} />
       </aside>
       <div className="workspace-main">
         {liveUnavailable && (
