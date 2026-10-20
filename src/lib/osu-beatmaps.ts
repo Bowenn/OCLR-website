@@ -31,36 +31,39 @@ function remember(
   if (cache.size >= 200) cache.delete(cache.keys().next().value!);
   cache.set(id, value);
 }
+function normalizeBeatmap(value: unknown, id: number): BeatmapSnapshot {
+  const parsed = beatmap.safeParse(value);
+  if (!parsed.success || parsed.data.id !== id)
+    throw new HttpError(
+      502,
+      "osu! returned incomplete beatmap metadata. Saved records were preserved.",
+    );
+  const b = parsed.data;
+  const fetchedAt = Date.now();
+  const metadata = {
+    setId: b.beatmapset_id,
+    title: b.beatmapset.title,
+    artist: b.beatmapset.artist,
+    mapper: b.beatmapset.creator,
+    difficulty: b.version,
+    stars: b.difficulty_rating,
+    bpm: b.bpm,
+    duration: b.total_length,
+  };
+  const snapshot: BeatmapSnapshot = {
+    beatmapId: id,
+    fetchedAt: new Date(fetchedAt).toISOString(),
+    metadata,
+    fingerprint: createHash("sha256")
+      .update(JSON.stringify({ beatmapId: id, metadata }))
+      .digest("hex"),
+  };
+  remember(id, { snapshot, expiresAt: fetchedAt + 60000 });
+  return snapshot;
+}
 async function loadBeatmap(id: number): Promise<BeatmapSnapshot> {
   try {
-    const parsed = beatmap.safeParse(await osuApi(`/beatmaps/${id}`));
-    if (!parsed.success || parsed.data.id !== id)
-      throw new HttpError(
-        502,
-        "osu! returned incomplete beatmap metadata. Saved records were preserved.",
-      );
-    const b = parsed.data;
-    const fetchedAt = Date.now();
-    const metadata = {
-      setId: b.beatmapset_id,
-      title: b.beatmapset.title,
-      artist: b.beatmapset.artist,
-      mapper: b.beatmapset.creator,
-      difficulty: b.version,
-      stars: b.difficulty_rating,
-      bpm: b.bpm,
-      duration: b.total_length,
-    };
-    const snapshot: BeatmapSnapshot = {
-      beatmapId: id,
-      fetchedAt: new Date(fetchedAt).toISOString(),
-      metadata,
-      fingerprint: createHash("sha256")
-        .update(JSON.stringify({ beatmapId: id, metadata }))
-        .digest("hex"),
-    };
-    remember(id, { snapshot, expiresAt: fetchedAt + 60000 });
-    return snapshot;
+    return normalizeBeatmap(await osuApi(`/beatmaps/${id}`), id);
   } catch (error) {
     if (error instanceof HttpError) {
       // Cool down failed lookups too; never turn stale data into a verified Save.
@@ -93,4 +96,82 @@ export async function fetchBeatmap(id: number): Promise<BeatmapSnapshot> {
   } finally {
     inFlight.delete(id);
   }
+}
+
+// The official batch endpoint accepts at most 50 IDs. Reuse single-lookup snapshots and in-flight work.
+let batchRequests = 0;
+export async function fetchBeatmaps(
+  ids: number[],
+): Promise<Map<number, BeatmapSnapshot | HttpError>> {
+  const unique = [...new Set(ids)];
+  if (
+    !unique.length ||
+    unique.length > 50 ||
+    unique.some((id) => !Number.isSafeInteger(id) || id <= 0)
+  )
+    throw new HttpError(400, "A batch requires 1–50 valid beatmap IDs.");
+  const missing = unique.filter(
+    (id) =>
+      !inFlight.has(id) && !((cache.get(id)?.expiresAt ?? 0) > Date.now()),
+  );
+  if (missing.length) {
+    if (batchRequests >= 2)
+      throw new HttpError(429, "osu! batch lookup is busy. Retry shortly.");
+    batchRequests++;
+    const pending = (async () => {
+      try {
+        const response = z
+          .object({ beatmaps: z.array(z.unknown()).max(50) })
+          .safeParse(
+            await osuApi(
+              `/beatmaps?${missing.map((id) => `ids[]=${id}`).join("&")}`,
+            ),
+          );
+        if (!response.success)
+          throw new HttpError(502, "osu! returned incomplete batch metadata.");
+        return response.data.beatmaps;
+      } finally {
+        batchRequests--;
+      }
+    })();
+    for (const id of missing) {
+      const item = pending.then((records) =>
+        normalizeBeatmap(
+          records.find(
+            (row) =>
+              row && typeof row === "object" && "id" in row && row.id === id,
+          ),
+          id,
+        ),
+      );
+      // Attach rejection handlers immediately; per-row failures are returned to the preview.
+      item.catch((error: unknown) => {
+        if (error instanceof HttpError)
+          remember(id, {
+            error,
+            expiresAt:
+              Date.now() +
+              (error.status === 404 || error.status === 429 ? 60000 : 10000),
+          });
+      });
+      inFlight.set(id, item);
+    }
+  }
+  const rows = await Promise.all(
+    unique.map(async (id) => {
+      try {
+        return [id, await fetchBeatmap(id)] as const;
+      } catch (error) {
+        return [
+          id,
+          error instanceof HttpError
+            ? error
+            : new HttpError(502, "Beatmap lookup failed."),
+        ] as const;
+      } finally {
+        if (missing.includes(id)) inFlight.delete(id);
+      }
+    }),
+  );
+  return new Map<number, BeatmapSnapshot | HttpError>(rows);
 }

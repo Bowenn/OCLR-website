@@ -21,6 +21,16 @@ globalThis.fetch = async (input, init) => {
       expires_in: 3600,
       token_type: "Bearer",
     });
+  if (url.pathname === "/api/v2/beatmaps") {
+    const beatmaps = [];
+    for (const id of new Set(url.searchParams.getAll("ids[]"))) {
+      const response = await globalThis.fetch(
+        `https://osu.ppy.sh/api/v2/beatmaps/${id}`,
+      );
+      if (response.ok) beatmaps.push(await response.json());
+    }
+    return Response.json({ beatmaps });
+  }
   const match = /^\/api\/v2\/beatmaps\/([1-9]\d*)$/.exec(url.pathname);
   if (match) {
     const id = Number(match[1]);

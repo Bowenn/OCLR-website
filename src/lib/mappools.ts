@@ -14,11 +14,13 @@ import {
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { getEdition, getPublicEdition } from "./content";
-import { fetchBeatmap } from "./osu-beatmaps";
+import { fetchBeatmap, fetchBeatmaps } from "./osu-beatmaps";
 import { HttpError } from "./http";
 import {
   categories,
   parseBeatmapId,
+  parseMappoolRows,
+  type BeatmapSnapshot,
   type BeatmapMetadata,
 } from "./mappool-model";
 const confirmation = {
@@ -30,7 +32,55 @@ const versioned = {
 };
 const name = z.string().trim().min(1).max(80);
 const position = z.number().int().min(1).max(999);
+const batchIds = z
+  .array(z.uuid())
+  .min(1)
+  .max(50)
+  .refine((ids) => new Set(ids).size === ids.length);
+const batchRow = z
+  .object({
+    category: z.enum(categories),
+    position,
+    beatmap: z.string().trim().min(1).max(250),
+    expectedMetadataFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict();
 const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...confirmation,
+      ...versioned,
+      action: z.literal("batch_import"),
+      rows: z.array(batchRow).min(1).max(50),
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
+      ...versioned,
+      action: z.literal("batch_remove"),
+      entryIds: batchIds,
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
+      ...versioned,
+      action: z.literal("batch_move"),
+      entryIds: batchIds,
+      category: z.enum(categories),
+      position,
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
+      ...versioned,
+      action: z.literal("batch_refresh"),
+      entryIds: batchIds,
+    })
+    .strict(),
+
   z
     .object({
       ...confirmation,
@@ -192,6 +242,70 @@ export async function previewBeatmap(
     );
   return fetchBeatmap(id);
 }
+export async function previewMappoolBatch(
+  actor: User,
+  slug: string,
+  input: unknown,
+) {
+  const data = await mappoolWorkspace(actor, slug);
+  const parsed = z
+    .object({ ...versioned, text: z.string().max(16000) })
+    .strict()
+    .safeParse(input);
+  if (!parsed.success)
+    throw new HttpError(400, "Choose a pool and enter 1–50 rows.");
+  const c = parsed.data,
+    pool = data.pools.find((p) => p.id === c.poolId);
+  if (!pool) throw new HttpError(404, "Mappool not found.");
+  if (pool.version !== c.expectedVersion || pool.publishedAt || pool.lockedAt)
+    throw new HttpError(
+      409,
+      "Refresh the pool. Published or locked pools cannot be edited.",
+    );
+  let rows;
+  try {
+    rows = parseMappoolRows(c.text);
+  } catch {
+    throw new HttpError(400, "Enter between 1 and 50 map rows.");
+  }
+  const existing = data.entries.filter((e) => e.poolId === pool.id);
+  rows = rows.map((r) => ({
+    ...r,
+    error:
+      r.error ??
+      (existing.some(
+        (e) => e.category === r.category && e.position === r.position,
+      )
+        ? "Slot already exists; edit it separately."
+        : existing.some(
+              (e) => e.category === r.category && e.beatmapId === r.beatmapId,
+            )
+          ? "Beatmap already exists in this category."
+          : r.category === "FM" && !pool.fmMode
+            ? "Configure Free Mod or Force Mod first."
+            : null),
+  }));
+  const ids = rows.filter((r) => !r.error).map((r) => r.beatmapId!);
+  const snapshots = ids.length
+    ? await fetchBeatmaps(ids)
+    : new Map<number, BeatmapSnapshot | HttpError>();
+  return {
+    poolId: pool.id,
+    version: pool.version,
+    rows: rows.map((r) => {
+      const snapshot = snapshots.get(r.beatmapId!);
+      return {
+        ...r,
+        snapshot: snapshot instanceof HttpError ? null : (snapshot ?? null),
+        error:
+          r.error ?? (snapshot instanceof HttpError ? snapshot.message : null),
+      };
+    }),
+  };
+}
+export type MappoolBatchPreview = Awaited<
+  ReturnType<typeof previewMappoolBatch>
+>;
 export async function mappoolCommand(
   actor: User,
   slug: string,
@@ -206,6 +320,62 @@ export async function mappoolCommand(
   let metadata: BeatmapMetadata | undefined;
   let beatmapId: number | undefined;
   let metadataFetchedAt: Date | undefined;
+  const batchMetadata = new Map<number, BeatmapSnapshot>();
+  if (c.action === "batch_import" || c.action === "batch_refresh") {
+    const [pool] = await db()
+      .select()
+      .from(mappools)
+      .where(and(eq(mappools.id, c.poolId), eq(mappools.editionSlug, slug)));
+    if (!pool) throw new HttpError(404, "Mappool not found.");
+    if (pool.version !== c.expectedVersion || pool.publishedAt || pool.lockedAt)
+      throw new HttpError(
+        409,
+        "Refresh the pool. Published or locked pools cannot be edited.",
+      );
+    let ids: number[];
+    if (c.action === "batch_import") {
+      const rows = parseMappoolRows(
+        c.rows.map((r) => `${r.category}${r.position} ${r.beatmap}`).join("\n"),
+      );
+      if (rows.some((r) => r.error))
+        throw new HttpError(400, "Correct invalid or duplicate batch entries.");
+      ids = rows.map((r) => r.beatmapId!);
+    } else {
+      const entries = await db()
+        .select()
+        .from(mappoolEntries)
+        .where(
+          and(
+            eq(mappoolEntries.poolId, pool.id),
+            inArray(mappoolEntries.id, c.entryIds),
+          ),
+        );
+      if (entries.length !== c.entryIds.length)
+        throw new HttpError(404, "Selected maps no longer exist in this pool.");
+      if (
+        entries.some((e) => Date.now() - e.metadataFetchedAt.getTime() < 60000)
+      )
+        throw new HttpError(429, "Wait one minute between metadata refreshes.");
+      ids = entries.map((e) => e.beatmapId);
+    }
+    const snapshots = await fetchBeatmaps(ids);
+    for (const [id, value] of snapshots) {
+      if (value instanceof HttpError) throw value;
+      batchMetadata.set(id, value);
+    }
+    if (
+      c.action === "batch_import" &&
+      c.rows.some(
+        (r) =>
+          batchMetadata.get(parseBeatmapId(r.beatmap)!)?.fingerprint !==
+          r.expectedMetadataFingerprint,
+      )
+    )
+      throw new HttpError(
+        409,
+        "Official metadata changed. Preview the batch again.",
+      );
+  }
   // Provider work happens before the transaction; the version is checked again under lock.
   if (c.action === "entry_save" || c.action === "entry_refresh") {
     const [pool] = await db()
@@ -404,7 +574,92 @@ export async function mappoolCommand(
         .from(mappoolEntries)
         .where(eq(mappoolEntries.poolId, pool.id));
       const before = { pool, entries };
-      if (c.action === "pool_settings") {
+      if (c.action === "batch_import") {
+        for (const row of c.rows) {
+          const id = parseBeatmapId(row.beatmap)!;
+          if (
+            entries.some(
+              (e) =>
+                e.category === row.category &&
+                (e.position === row.position || e.beatmapId === id),
+            )
+          )
+            throw new HttpError(
+              409,
+              "A batch slot or beatmap already exists in this category. No maps were saved.",
+            );
+          if (row.category === "FM" && !pool.fmMode)
+            throw new HttpError(409, "Configure FM before importing FM slots.");
+          const snapshot = batchMetadata.get(id)!;
+          await tx
+            .insert(mappoolEntries)
+            .values({
+              poolId: pool.id,
+              category: row.category,
+              position: row.position,
+              beatmapId: id,
+              metadata: snapshot.metadata,
+              metadataFetchedAt: new Date(snapshot.fetchedAt),
+            });
+        }
+      } else if (
+        c.action === "batch_remove" ||
+        c.action === "batch_move" ||
+        c.action === "batch_refresh"
+      ) {
+        const selected = c.entryIds.map((id) =>
+          entries.find((e) => e.id === id),
+        );
+        if (selected.some((e) => !e))
+          throw new HttpError(
+            404,
+            "Selected maps no longer exist in this pool.",
+          );
+        if (c.action === "batch_remove")
+          await tx
+            .delete(mappoolEntries)
+            .where(inArray(mappoolEntries.id, c.entryIds));
+        else if (c.action === "batch_refresh") {
+          for (const entry of selected) {
+            const snapshot = batchMetadata.get(entry!.beatmapId)!;
+            await tx
+              .update(mappoolEntries)
+              .set({
+                metadata: snapshot.metadata,
+                metadataFetchedAt: new Date(snapshot.fetchedAt),
+              })
+              .where(eq(mappoolEntries.id, entry!.id));
+          }
+        } else {
+          if (c.position + c.entryIds.length - 1 > 999)
+            throw new HttpError(400, "Slot numbers must remain within 1–999.");
+          if (c.category === "FM" && !pool.fmMode)
+            throw new HttpError(409, "Configure FM first.");
+          const positions = c.entryIds.map((_, i) => c.position + i);
+          if (
+            entries.some(
+              (e) =>
+                !c.entryIds.includes(e.id) &&
+                e.category === c.category &&
+                positions.includes(e.position),
+            )
+          )
+            throw new HttpError(
+              409,
+              "Target slots are occupied. No maps were moved.",
+            );
+          for (let i = 0; i < c.entryIds.length; i++)
+            await tx
+              .update(mappoolEntries)
+              .set({ position: 10000 + i })
+              .where(eq(mappoolEntries.id, c.entryIds[i]));
+          for (let i = 0; i < c.entryIds.length; i++)
+            await tx
+              .update(mappoolEntries)
+              .set({ category: c.category, position: c.position + i })
+              .where(eq(mappoolEntries.id, c.entryIds[i]));
+        }
+      } else if (c.action === "pool_settings") {
         if (!c.fmMode && entries.some((e) => e.category === "FM"))
           throw new HttpError(409, "Remove FM slots before disabling FM.");
         await tx

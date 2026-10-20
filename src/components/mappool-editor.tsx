@@ -11,6 +11,7 @@ import {
 } from "@/lib/mappool-model";
 import { ConfirmMutation } from "./confirm-mutation";
 import { BeatmapDetails } from "./beatmap-details";
+import { MappoolBatch } from "./mappool-batch";
 import { BeatmapPreview } from "./beatmap-preview";
 type Pool = MappoolWorkspace["pools"][number];
 type Entry = MappoolWorkspace["entries"][number];
@@ -375,6 +376,14 @@ export function MappoolEditor({
       </div>
       {pool ? (
         <>
+          {editable && (
+            <MappoolBatch
+              key={`${pool.id}-${pool.version}`}
+              url={change.url}
+              pool={pool}
+              entries={data.entries.filter((e) => e.poolId === pool.id)}
+            />
+          )}
           <section className="panel form-stack">
             <div className="section-title">
               <h2>{pool.name}</h2>

@@ -103,3 +103,27 @@ describe("bounded shared beatmap preview/Save cache", () => {
     expect((await fetchBeatmap(123)).metadata.title).toBe("Synthetic Song 123");
   });
 });
+
+describe("official batch lookup", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("deduplicates IDs, isolates malformed/missing rows and reuses verified single snapshots", async () => {
+    vi.resetModules();
+    const { osuApi } = await import("../../src/lib/osu-api");
+    vi.mocked(osuApi)
+      .mockReset()
+      .mockResolvedValue({ beatmaps: [map(123), map(456)] });
+    const { fetchBeatmaps, fetchBeatmap } =
+      await import("../../src/lib/osu-beatmaps");
+    const rows = await fetchBeatmaps([123, 456, 123, 789]);
+    expect(rows.get(123)).toMatchObject({ beatmapId: 123 });
+    expect(rows.get(789)).toMatchObject({ status: 502 });
+    expect(osuApi).toHaveBeenCalledWith(
+      "/beatmaps?ids[]=123&ids[]=456&ids[]=789",
+    );
+    await fetchBeatmap(123);
+    expect(osuApi).toHaveBeenCalledTimes(1);
+    await expect(
+      fetchBeatmaps(Array.from({ length: 51 }, (_, i) => i + 1)),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+});

@@ -23,16 +23,18 @@ import {
 } from "../../src/db/schema";
 import {
   previewBeatmap,
+  previewMappoolBatch,
   mappoolCommand,
   mappoolWorkspace,
   publicMappools,
 } from "../../src/lib/mappools";
-import { fetchBeatmap } from "../../src/lib/osu-beatmaps";
+import { fetchBeatmap, fetchBeatmaps } from "../../src/lib/osu-beatmaps";
 import { HttpError } from "../../src/lib/http";
 import { edition } from "../fixtures/edition";
 vi.mock("../../src/lib/osu-beatmaps", async (original) => ({
   ...(await original<typeof import("../../src/lib/osu-beatmaps")>()),
   fetchBeatmap: vi.fn(),
+  fetchBeatmaps: vi.fn(),
 }));
 const metadata = {
   setId: 1,
@@ -75,6 +77,18 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
         fetchedAt: "2026-01-01T00:00:00.000Z",
         fingerprint: "a".repeat(64),
       }));
+    vi.mocked(fetchBeatmaps)
+      .mockReset()
+      .mockImplementation(
+        async (ids) =>
+          new Map(
+            await Promise.all(
+              [...new Set(ids)].map(
+                async (id) => [id, await fetchBeatmap(id)] as const,
+              ),
+            ),
+          ),
+      );
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
     await seedEditions(fixtureEditions);
     await db().insert(users).values([admin, mapper, referee, player]);
@@ -560,5 +574,173 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
         position: 2,
       }),
     ).rejects.toMatchObject({ status: 409 });
+  });
+  it("previews mixed formats, conflicts and duplicate entries without changing saved maps", async () => {
+    const pool = await create();
+    const preview = await previewMappoolBatch(mapper, edition.slug, {
+      poolId: pool.id,
+      expectedVersion: 0,
+      text: "NM1 123\nHD1 https://osu.ppy.sh/beatmaps/456\nDT1 https://osu.ppy.sh/beatmapsets/42#osu/123\nNM1 789\nNM2 123\nTB https://osu.ppy.sh/beatmapsets/42",
+    });
+    expect(preview.rows.slice(0, 3).every((r) => r.snapshot && !r.error)).toBe(
+      true,
+    );
+    expect(preview.rows[2].warning).toContain("reused");
+    expect(preview.rows.slice(3).every((r) => r.error)).toBe(true);
+    expect((await mappoolWorkspace(mapper, edition.slug)).entries).toHaveLength(
+      0,
+    );
+    for (const actor of [referee, player])
+      await expect(
+        previewMappoolBatch(actor, edition.slug, {
+          poolId: pool.id,
+          expectedVersion: 0,
+          text: "NM1 123",
+        }),
+      ).rejects.toMatchObject({ status: 403 });
+  });
+  async function batch(
+    poolId: string,
+    expectedVersion = 0,
+    text = "NM1 123\nHD1 456",
+  ) {
+    const p = await previewMappoolBatch(mapper, edition.slug, {
+      poolId,
+      expectedVersion,
+      text,
+    });
+    return {
+      ...confirm,
+      action: "batch_import",
+      poolId,
+      expectedVersion,
+      rows: p.rows.map((r) => ({
+        category: r.category,
+        position: r.position,
+        beatmap: String(r.beatmapId),
+        expectedMetadataFingerprint: r.snapshot?.fingerprint,
+      })),
+    };
+  }
+  it("saves one atomic batch revision and audit, rejects stale/colliding/forged requests", async () => {
+    const pool = await create();
+    const payload = await batch(pool.id);
+    const outcomes = await Promise.allSettled([
+      mappoolCommand(mapper, edition.slug, payload),
+      mappoolCommand(admin, edition.slug, payload),
+    ]);
+    expect(outcomes.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(outcomes.find((r) => r.status === "rejected")).toMatchObject({
+      reason: { status: 409 },
+    });
+    expect((await mappoolWorkspace(mapper, edition.slug)).entries).toHaveLength(
+      2,
+    );
+    expect(
+      (await auditEvents()).filter((e) => e.action === "batch_import"),
+    ).toHaveLength(1);
+    await expect(
+      mappoolCommand(mapper, edition.slug, { ...payload, expectedVersion: 1 }),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      mappoolCommand(mapper, edition.slug, {
+        ...payload,
+        expectedVersion: 1,
+        rows: [
+          {
+            ...payload.rows[0],
+            position: 2,
+            expectedMetadataFingerprint: "b".repeat(64),
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const p = await previewMappoolBatch(mapper, edition.slug, {
+      poolId: pool.id,
+      expectedVersion: 1,
+      text: "NM1 789",
+    });
+    expect(p.rows[0].error).toContain("exists");
+  });
+  it("rolls back every row and its audit on lookup, collision or audit failure", async () => {
+    const pool = await create();
+    const payload = await batch(pool.id);
+    vi.mocked(fetchBeatmaps).mockResolvedValueOnce(
+      new Map([[123, new HttpError(502, "Synthetic outage")]]),
+    );
+    await expect(
+      mappoolCommand(mapper, edition.slug, payload),
+    ).rejects.toMatchObject({ status: 502 });
+    await db().execute(
+      sql`CREATE FUNCTION oclr_test_fail_batch() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic batch audit failure'; END $$`,
+    );
+    try {
+      await db().execute(
+        sql`CREATE TRIGGER oclr_test_fail_batch BEFORE INSERT ON mappool_events FOR EACH ROW EXECUTE FUNCTION oclr_test_fail_batch()`,
+      );
+      await expect(
+        mappoolCommand(mapper, edition.slug, payload),
+      ).rejects.toThrow();
+      expect((await mappoolWorkspace(mapper, edition.slug)).entries).toEqual(
+        [],
+      );
+      expect(
+        (await auditEvents()).filter((e) => e.action === "batch_import"),
+      ).toHaveLength(0);
+    } finally {
+      await db().execute(sql`DROP FUNCTION oclr_test_fail_batch() CASCADE`);
+    }
+  });
+  it("moves, renumbers, refreshes and removes selected maps atomically while protecting published pools", async () => {
+    const pool = await create();
+    let data = await mappoolCommand(mapper, edition.slug, await batch(pool.id));
+    const ids = data.entries.map((e) => e.id);
+    const command = (action: string, extra: object = {}) =>
+      mappoolCommand(mapper, edition.slug, {
+        ...confirm,
+        action,
+        poolId: pool.id,
+        expectedVersion: data.pools[0].version,
+        entryIds: ids,
+        ...extra,
+      });
+    data = await command("batch_move", { category: "DT", position: 3 });
+    expect(data.entries.map((e) => e.position)).toEqual([3, 4]);
+    expect(data.entries.every((e) => e.category === "DT")).toBe(true);
+    await db()
+      .update(mappoolEntries)
+      .set({ metadataFetchedAt: new Date() })
+      .where(eq(mappoolEntries.poolId, pool.id));
+    await expect(command("batch_refresh")).rejects.toMatchObject({
+      status: 429,
+    });
+    await db()
+      .update(mappoolEntries)
+      .set({ metadataFetchedAt: new Date(0) })
+      .where(eq(mappoolEntries.poolId, pool.id));
+    data = await command("batch_refresh");
+    expect(data.pools[0].version).toBe(3);
+    data = await mappoolCommand(mapper, edition.slug, {
+      ...confirm,
+      action: "pool_publish",
+      poolId: pool.id,
+      expectedVersion: 3,
+      published: true,
+    });
+    await expect(command("batch_remove")).rejects.toMatchObject({
+      status: 409,
+    });
+    expect(
+      (await publicMappools(edition.slug, pool.id))[0].entries,
+    ).toHaveLength(2);
+    data = await mappoolCommand(mapper, edition.slug, {
+      ...confirm,
+      action: "pool_publish",
+      poolId: pool.id,
+      expectedVersion: data.pools[0].version,
+      published: false,
+    });
+    data = await command("batch_remove");
+    expect(data.entries).toEqual([]);
   });
 });
