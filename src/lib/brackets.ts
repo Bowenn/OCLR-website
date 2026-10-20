@@ -6,6 +6,8 @@ import {
   resolveBracket,
 } from "./bracket-model";
 import { getPublicEdition } from "./content";
+import { publicCompetition } from "./public-competition";
+import type { ResolvedBracket, ResolvedMatch } from "./bracket-model";
 import { publishedTeams } from "./teams";
 export function getBrackets() {
   const file = process.env.OCLR_BRACKETS_FILE;
@@ -17,6 +19,56 @@ export function getBrackets() {
 }
 export async function publicBracket(slug: string) {
   if (!getPublicEdition(slug)) return null;
+  const competition = await publicCompetition(slug);
+  if (competition?.databaseAuthority) {
+    const fixtures = competition.fixtures.filter((f) => f.stage === "knockout");
+    if (!fixtures.length) return null;
+    const rounds = [...new Set(fixtures.map((f) => f.roundId))].map((id) => {
+      const matches = fixtures.filter((f) => f.roundId === id);
+      return {
+        id,
+        label: matches[0].roundName,
+        matches: matches.map((f): ResolvedMatch => ({
+          id: f.id,
+          label: f.label,
+          status: f.result ? "completed" : "pending",
+          slots: [f.home, f.away].map((s) => ({
+            teamId: s.team?.id ?? null,
+            label: s.label,
+            sourceMatchId: s.sourceId,
+            kind: s.outcome ?? (s.team ? "team" : "tba"),
+          })) as ResolvedMatch["slots"],
+          scores: f.result
+            ? [f.result.homeWins, f.result.awayWins]
+            : [null, null],
+          winnerSlot: f.result?.winnerTeamId
+            ? f.result.winnerTeamId === f.home.team?.id
+              ? 0
+              : 1
+            : null,
+          note: f.result?.publicNote
+            ? f.result.publicNote.slice(0, 500)
+            : f.status === "cancelled"
+              ? "Cancelled; no winner assumed."
+              : !f.confirmed
+                ? "Awaiting fixture confirmation."
+                : null,
+          detailsUrl: `/tournaments/${slug}/matches/${f.id}`,
+        })),
+      };
+    });
+    return {
+      editionSlug: slug,
+      published: true,
+      formatLabel: "Knockout Stage · configured fixture progression",
+      source: { label: "Approved published OCLR results", url: null },
+      updatedAt: fixtures
+        .map((f) => f.updatedAt)
+        .sort()
+        .at(-1)!,
+      groups: [{ id: "knockout", label: "Knockout Stage", rounds }],
+    } satisfies ResolvedBracket;
+  }
   const bracket = getBrackets().find(
     (b) => b.editionSlug === slug && b.published,
   );

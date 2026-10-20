@@ -71,6 +71,13 @@
       "when": 1792459924534,
       "tag": "0009_sparkling_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792461952505,
+      "tag": "0010_wealthy_songbird",
+      "breakpoints": true
     }
   ]
 }

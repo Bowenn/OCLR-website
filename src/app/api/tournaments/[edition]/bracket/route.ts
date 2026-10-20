@@ -1,0 +1,20 @@
+import { NextResponse } from "next/server";
+import { publicBracket } from "@/lib/brackets";
+import { getPublicEdition } from "@/lib/content";
+import { apiError, HttpError } from "@/lib/http";
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ edition: string }> },
+) {
+  try {
+    const { edition } = await context.params;
+    if (!getPublicEdition(edition))
+      throw new HttpError(404, "Edition not found.");
+    return NextResponse.json(
+      { bracket: await publicBracket(edition) },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    return apiError(error);
+  }
+}

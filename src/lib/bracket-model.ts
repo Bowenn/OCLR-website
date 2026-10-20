@@ -72,6 +72,7 @@ export type ResolvedSlot = {
   kind: "team" | "winner" | "loser" | "tba" | "bye";
 };
 export type ResolvedMatch = Omit<Match, "slots"> & {
+  detailsUrl?: string;
   slots: [ResolvedSlot, ResolvedSlot];
 };
 export type ResolvedBracket = Omit<Bracket, "groups"> & {

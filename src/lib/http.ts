@@ -33,7 +33,10 @@ export function requireSameOrigin(request: Request) {
       "Request origin was not accepted. Refresh the page and try again.",
     );
 }
-export async function readJson(request: Request): Promise<unknown> {
+export async function readJson(
+  request: Request,
+  limit = 32768,
+): Promise<unknown> {
   if (!request.headers.get("content-type")?.startsWith("application/json"))
     throw new HttpError(415, "Send JSON data.");
   // Bound the actual stream as well as Content-Length; do not trust the header.
@@ -46,7 +49,7 @@ export async function readJson(request: Request): Promise<unknown> {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > 32768) {
+      if (size > limit) {
         await reader.cancel();
         throw new HttpError(413, "The request is too large.");
       }

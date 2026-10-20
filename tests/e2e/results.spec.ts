@@ -31,6 +31,20 @@ test.describe("private referee review and Admin publication", () => {
     });
     try {
       expect((await guest.request.get(endpoint)).status()).toBe(401);
+      const publicEndpoint = `/api/tournaments/test-cup/matches/${seed.fixtureId}`;
+      const beforePublication = await (
+        await guest.request.get(publicEndpoint)
+      ).json();
+      expect(beforePublication.result).toBeNull();
+      expect(JSON.stringify(beforePublication)).not.toContain("999001");
+      expect(
+        (
+          await guest.request.post(publicEndpoint, {
+            data: { action: "publish" },
+          })
+        ).status(),
+      ).toBe(405);
+
       await page.goto(route);
       await page
         .getByLabel("Internal operation reason")
@@ -130,6 +144,23 @@ test.describe("private referee review and Admin publication", () => {
         page.getByText("Current revision: 1 · Published revision: 1"),
       ).toBeVisible();
       review = await (await context.request.get(endpoint)).json();
+      const published = await (await guest.request.get(publicEndpoint)).json();
+      expect(published.result).toMatchObject({
+        homeWins: 2,
+        awayWins: 1,
+        revision: 1,
+        mpId: 999001,
+      });
+      const publicText = JSON.stringify(published);
+      for (const secret of [
+        "private audit note",
+        "SYNTHETIC_PRIVATE_CONTACT",
+        "rosterSnapshot",
+        "decisions",
+        "sourceFingerprint",
+        "approvedBy",
+      ])
+        expect(publicText).not.toContain(secret);
       expect(review.published.proposal.series).toMatchObject({
         homeWins: 2,
         awayWins: 1,

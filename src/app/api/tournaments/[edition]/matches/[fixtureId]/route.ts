@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+import { publicFixture } from "@/lib/public-competition";
+import { apiError, HttpError } from "@/lib/http";
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ edition: string; fixtureId: string }> },
+) {
+  try {
+    const { edition, fixtureId } = await context.params;
+    const data = await publicFixture(edition, fixtureId);
+    if (!data) throw new HttpError(404, "Published fixture not found.");
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (error) {
+    return apiError(error);
+  }
+}

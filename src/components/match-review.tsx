@@ -308,7 +308,7 @@ function SourceReview({
         );
       })}
       <article className="panel stack">
-        <h3>Proposed series</h3>
+        <h3>New review preview</h3>
         <p className="score">
           {preview.series.homeWins} : {preview.series.awayWins}
         </p>

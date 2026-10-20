@@ -132,6 +132,13 @@ export function BracketView({ bracket }: { bracket: ResolvedBracket }) {
                       </div>
                     ))}
                     {match.note && <p className="match-note">{match.note}</p>}
+                    {match.detailsUrl && (
+                      <p className="match-note">
+                        <Link className="text-link" href={match.detailsUrl}>
+                          Match details & source ↗
+                        </Link>
+                      </p>
+                    )}
                   </article>
                 ))}
               </div>

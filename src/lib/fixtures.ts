@@ -37,6 +37,7 @@ import {
 import type { User } from "./auth/sessions";
 import { getEditions } from "./content";
 import {
+  groupConfigurationSchema,
   scoringRulesSchema,
   standingsRulesSchema,
   validTimeZone,
@@ -66,6 +67,16 @@ const fixtureFields = {
     .refine((ids) => new Set(ids).size === ids.length),
 };
 const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...confirmation,
+      action: z.literal("stage_groups"),
+      stageId: z.uuid(),
+      expectedVersion: z.number().int().nonnegative(),
+      configuration: groupConfigurationSchema.nullable(),
+      published: z.boolean(),
+    })
+    .strict(),
   z
     .object({ ...confirmation, ...fixtureFields, action: z.literal("create") })
     .strict(),
@@ -232,7 +243,14 @@ export async function staffFixtures(actor: User, slug: string) {
               ),
             )
         : [];
+      const stages = canManage
+        ? await tx
+            .select()
+            .from(tournamentStages)
+            .where(eq(tournamentStages.editionSlug, slug))
+        : [];
       return {
+        stages,
         canManage,
         timeZone: edition.timeZone,
         fixtures: rows.map((f) => ({
@@ -421,6 +439,59 @@ export async function fixtureCommand(
         .where(eq(editionState.slug, slug))
         .for("update");
       await assertCapability(actor, "manage_fixtures", slug, tx);
+      if (c.action === "stage_groups") {
+        const [stage] = await tx
+          .select()
+          .from(tournamentStages)
+          .where(
+            and(
+              eq(tournamentStages.id, c.stageId),
+              eq(tournamentStages.editionSlug, slug),
+            ),
+          )
+          .for("update");
+        if (!stage || stage.kind !== "group")
+          throw new HttpError(400, "Choose this edition's Group Stage.");
+        if (stage.version !== c.expectedVersion)
+          throw new HttpError(
+            409,
+            "Group configuration changed. Refresh before continuing.",
+          );
+        if (c.published && !c.configuration)
+          throw new HttpError(
+            400,
+            "Configure approved groups before publication.",
+          );
+        const official = await officialTeams(tx, slug);
+        if (
+          c.configuration?.groups.some((g) =>
+            g.teamIds.some((id) => !official.some((t) => t.id === id)),
+          )
+        )
+          throw new HttpError(
+            400,
+            "Groups may contain only this edition's finalized published teams.",
+          );
+        const [after] = await tx
+          .update(tournamentStages)
+          .set({
+            groupConfiguration: c.configuration,
+            groupsPublishedAt: c.published ? new Date() : null,
+            version: stage.version + 1,
+          })
+          .where(eq(tournamentStages.id, stage.id))
+          .returning();
+        await tx
+          .insert(editionEvents)
+          .values({
+            editionSlug: slug,
+            actorId: actor.osuId,
+            kind: "competition_groups",
+            reason: c.reason,
+            detail: { before: stage, after },
+          });
+        return;
+      }
       if (c.action === "round_rules") {
         const [round] = await tx
           .select({

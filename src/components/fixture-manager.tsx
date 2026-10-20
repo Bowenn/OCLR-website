@@ -136,6 +136,17 @@ function FixtureForm({
           {!data.rounds.length && (
             <option value="">No rounds configured</option>
           )}
+          {data.stages
+            .filter((s) => s.kind === "group")
+            .map((s) => (
+              <StageGroups
+                key={`${s.id}-${s.version}`}
+                stage={s}
+                slug={slug}
+                data={data}
+                reason={reason}
+              />
+            ))}
           {data.rounds.map((r) => (
             <option key={r.round.id} value={r.round.id}>
               {r.stage === "group" ? "Group" : "Knockout"} / {r.round.name}
@@ -521,16 +532,6 @@ function RoundRules({
                 />
               </label>
               <label className="field">
-                <span>Points for a draw (leave blank if unconfirmed)</span>
-                <input
-                  type="number"
-                  min={-100}
-                  max={100}
-                  value={drawPoints}
-                  onChange={(e) => setDrawPoints(e.target.value)}
-                />
-              </label>
-              <label className="field">
                 <span>Ranking criteria, in order</span>
                 <input
                   value={tiebreakers}
@@ -597,6 +598,138 @@ function RoundRules({
     </div>
   );
 }
+function StageGroups({
+  slug,
+  data,
+  stage,
+  reason,
+}: {
+  slug: string;
+  data: FixtureWorkspace;
+  stage: FixtureWorkspace["stages"][number];
+  reason: string;
+}) {
+  const [groups, setGroups] = useState(stage.groupConfiguration?.groups ?? []);
+  const [version, setVersion] = useState(
+    stage.groupConfiguration?.version ?? "",
+  );
+  const [published, setPublished] = useState(Boolean(stage.groupsPublishedAt));
+  return (
+    <details className="form-stack">
+      <summary>Approved Group Stage assignments</summary>
+      <p className="muted">
+        Configure the actual groups and team membership. Unpublished assignments
+        never appear in standings. Each team may belong to one group in this
+        stage.
+      </p>
+      <label className="field">
+        <span>Approved group configuration version</span>
+        <input
+          value={version}
+          maxLength={80}
+          onChange={(e) => setVersion(e.target.value)}
+        />
+      </label>
+      {groups.map((group, index) => (
+        <fieldset key={index}>
+          <legend>Group {index + 1}</legend>
+          <label className="field">
+            <span>Group identifier {index + 1}</span>
+            <input
+              value={group.key}
+              maxLength={60}
+              onChange={(e) =>
+                setGroups((old) =>
+                  old.map((g, i) =>
+                    i === index ? { ...g, key: e.target.value } : g,
+                  ),
+                )
+              }
+            />
+          </label>
+          <label className="field">
+            <span>Group name {index + 1}</span>
+            <input
+              value={group.name}
+              maxLength={80}
+              onChange={(e) =>
+                setGroups((old) =>
+                  old.map((g, i) =>
+                    i === index ? { ...g, name: e.target.value } : g,
+                  ),
+                )
+              }
+            />
+          </label>
+          {data.teams.map((t) => (
+            <label className="checkbox-row" key={t.id}>
+              <input
+                type="checkbox"
+                checked={group.teamIds.includes(t.id)}
+                onChange={(e) =>
+                  setGroups((old) =>
+                    old.map((g, i) =>
+                      i === index
+                        ? {
+                            ...g,
+                            teamIds: e.target.checked
+                              ? [...g.teamIds, t.id]
+                              : g.teamIds.filter((id) => id !== t.id),
+                          }
+                        : g,
+                    ),
+                  )
+                }
+              />
+              <span>{t.name}</span>
+            </label>
+          ))}
+          <button
+            type="button"
+            className="secondary"
+            onClick={() =>
+              setGroups((old) => old.filter((_, i) => i !== index))
+            }
+          >
+            Remove group {index + 1}
+          </button>
+        </fieldset>
+      ))}
+      <button
+        type="button"
+        className="secondary"
+        onClick={() =>
+          setGroups((old) => [...old, { key: "", name: "", teamIds: [] }])
+        }
+      >
+        Add group
+      </button>
+      <label className="checkbox-row">
+        <input
+          type="checkbox"
+          checked={published}
+          onChange={(e) => setPublished(e.target.checked)}
+        />
+        <span>Publish approved group assignments</span>
+      </label>
+      <ConfirmMutation
+        label="Save group assignments"
+        title="Save approved Group Stage configuration?"
+        description="This updates the group membership used by public standings when published. Scores remain governed by reviewed results and the configured round ranking rules."
+        url={`/api/admin/tournaments/${slug}/matches`}
+        payload={{
+          action: "stage_groups",
+          stageId: stage.id,
+          expectedVersion: stage.version,
+          configuration: groups.length ? { version, groups } : null,
+          published,
+          reason,
+          confirmed: true,
+        }}
+      />
+    </details>
+  );
+}
 export function FixtureManager({
   slug,
   data,
@@ -635,6 +768,17 @@ export function FixtureManager({
               teams before scheduling.
             </p>
           )}
+          {data.stages
+            .filter((s) => s.kind === "group")
+            .map((s) => (
+              <StageGroups
+                key={`${s.id}-${s.version}`}
+                stage={s}
+                slug={slug}
+                data={data}
+                reason={reason}
+              />
+            ))}
           {data.rounds.map((r) => (
             <details key={r.round.id}>
               <summary>{r.round.name}: approved competition rules</summary>

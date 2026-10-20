@@ -335,6 +335,11 @@ export const tournamentStages = pgTable(
       .notNull()
       .references(() => editionState.slug),
     kind: stageKind("kind").notNull(),
+    version: integer("version").notNull().default(0),
+    groupConfiguration: jsonb("group_configuration").$type<
+      import("../lib/competition-model").GroupConfiguration
+    >(),
+    groupsPublishedAt: timestamp("groups_published_at", { withTimezone: true }),
   },
   (t) => [
     unique("stage_edition_kind_unique").on(t.editionSlug, t.kind),

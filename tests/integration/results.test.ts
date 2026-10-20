@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -24,7 +24,15 @@ import {
   resultRevisions,
   staffRoles,
   users,
+  fixtures,
+  tournamentStages,
+  teams,
 } from "../../src/db/schema";
+import {
+  publicCompetition,
+  publicFixture,
+} from "../../src/lib/public-competition";
+import { publicBracket } from "../../src/lib/brackets";
 import { fixtureCommand, fixtureForReview } from "../../src/lib/fixtures";
 import { mappoolCommand } from "../../src/lib/mappools";
 import {
@@ -38,6 +46,7 @@ import { osuApi } from "../../src/lib/osu-api";
 import { HttpError } from "../../src/lib/http";
 import type { MatchSource } from "../../src/lib/match-model";
 import { edition } from "../fixtures/edition";
+import { bracketFixture } from "../fixtures/bracket";
 import { seedPublicDirectory } from "../fixtures/players";
 import {
   syntheticApiGame,
@@ -256,6 +265,314 @@ describe.skipIf(!url)(
         })
       ).review;
     }
+    it("publishes only reviewed snapshots and derives configured group standings without private data", async () => {
+      let view = await imported();
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId,
+        expectedVersion: 0,
+        published: true,
+      });
+      view = await matchReview(referee, "test-cup", fixtureId);
+      expect((await publicFixture("test-cup", fixtureId))?.result).toBeNull();
+      const stage = (await db().select().from(tournamentStages))[0];
+      const group = {
+        version: "synthetic-groups-v1",
+        groups: [
+          {
+            key: "synthetic-a",
+            name: "Synthetic Group A",
+            teamIds: view.context.teams.map((t) => t.id),
+          },
+        ],
+      };
+      await expect(
+        fixtureCommand(referee, "test-cup", {
+          ...confirm,
+          action: "stage_groups",
+          stageId: stage.id,
+          expectedVersion: 0,
+          configuration: group,
+          published: true,
+        }),
+      ).rejects.toMatchObject({ status: 403 });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "stage_groups",
+        stageId: stage.id,
+        expectedVersion: 0,
+        configuration: group,
+        published: false,
+      });
+      expect((await publicCompetition("test-cup"))?.groups).toEqual([]);
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "stage_groups",
+        stageId: stage.id,
+        expectedVersion: 1,
+        configuration: group,
+        published: true,
+      });
+      expect(
+        (await publicCompetition("test-cup"))?.groups[0].rankingPending,
+      ).toBe(true);
+      view = (
+        await resultCommand(referee, "test-cup", fixtureId, submission(view))
+      ).review;
+      expect((await publicFixture("test-cup", fixtureId))?.result).toBeNull();
+      view = await approved(view);
+      expect((await publicFixture("test-cup", fixtureId))?.result).toBeNull();
+      view = await published(view);
+      let publicData = (await publicCompetition("test-cup"))!;
+      expect(publicData.fixtures[0].result).toMatchObject({
+        homeWins: 2,
+        awayWins: 1,
+        revision: 1,
+        mpId: syntheticMatchId,
+      });
+      expect(publicData.groups[0].rows.map((r) => r.played)).toEqual([1, 1]);
+      expect(
+        publicData.groups[0].rows.every(
+          (r) => r.points === null && r.rank === null,
+        ),
+      ).toBe(true);
+      const serialized = JSON.stringify(publicData);
+      for (const privateField of [
+        "SYNTHETIC_PRIVATE_CONTACT",
+        "SYNTHETIC_INTERNAL_REASON",
+        "rosterSnapshot",
+        "sourceFingerprint",
+        "decisions",
+        "createdBy",
+        "approvedBy",
+        "Internal",
+        "substitutions",
+      ])
+        expect(serialized).not.toContain(privateField);
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId: view.context.round.id,
+        expectedVersion: view.context.round.version,
+        scoringRules: syntheticScoringRules,
+        standingsRules: {
+          version: "synthetic-points-v1",
+          winPoints: 3,
+          lossPoints: 0,
+          drawPoints: null,
+          tiebreakers: ["points", "map_difference"],
+        },
+      });
+      publicData = (await publicCompetition("test-cup"))!;
+      expect(publicData.groups[0].rankingPending).toBe(false);
+      expect(publicData.groups[0].rows.map((r) => [r.rank, r.points])).toEqual([
+        [1, 3],
+        [2, 0],
+      ]);
+      await db()
+        .update(teams)
+        .set({ rosterPublished: false })
+        .where(eq(teams.id, view.context.fixture.homeTeamId));
+      expect((await publicCompetition("test-cup"))?.fixtures).toEqual([]);
+      expect((await publicCompetition("test-cup"))?.groups).toEqual([]);
+      expect(await publicFixture("private-test-cup", fixtureId)).toBeNull();
+    });
+    it("holds downstream results after a corrected knockout winner and disables legacy score authority", async () => {
+      const maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_create",
+        stage: "knockout",
+        name: "Synthetic KO",
+        position: 1,
+      });
+      const roundId = maps.rounds.find((r) => r.stage === "knockout")!.id;
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        expectedVersion: 0,
+        scoringRules: syntheticScoringRules,
+        standingsRules: null,
+      });
+      fixtureBody = { ...fixtureBody, roundId, mappoolId: null };
+      await fixtureCommand(admin, "test-cup", {
+        ...fixtureBody,
+        action: "edit",
+        fixtureId,
+        expectedVersion: 0,
+      });
+      let root = await imported();
+      root = (
+        await resultCommand(referee, "test-cup", fixtureId, submission(root))
+      ).review;
+      root = await published(await approved(root));
+      const legacyFile = join(scratch, "legacy-brackets.json");
+      writeFileSync(
+        legacyFile,
+        JSON.stringify([
+          bracketFixture(
+            "test-cup",
+            root.context.fixture.homeTeamId,
+            root.context.fixture.awayTeamId,
+          ),
+        ]),
+      );
+      vi.stubEnv("OCLR_BRACKETS_FILE", legacyFile);
+      expect((await publicBracket("test-cup"))?.formatLabel).toBe(
+        "Knockout Stage · configured fixture progression",
+      );
+      const third = await seedPublicDirectory(293001);
+      const child = (
+        await fixtureCommand(admin, "test-cup", {
+          ...fixtureBody,
+          label: "Synthetic Future Fixture",
+          position: 2,
+          awayTeamId: third.teamId,
+          homeSourceId: fixtureId,
+          homeSourceOutcome: "winner",
+        })
+      ).fixtures.find((f) => f.position === 2)!;
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: child.id,
+        expectedVersion: child.version,
+        published: true,
+      });
+      const childContext = await fixtureForReview(
+        referee,
+        "test-cup",
+        child.id,
+      );
+      const oldIds = root.context.teams.flatMap((t) =>
+        t.members.map((m) => m.osuId),
+      );
+      const newIds = childContext.teams.flatMap((t) =>
+        t.members.map((m) => m.osuId),
+      );
+      const childSource = structuredClone(source);
+      childSource.games = childSource.games.map((g) => ({
+        ...g,
+        id: g.id + 100,
+        scores: g.scores.map((s) => ({
+          ...s,
+          osuId: newIds[oldIds.indexOf(s.osuId!)],
+        })),
+      }));
+      childSource.events = childSource.events.map((e) => ({
+        ...e,
+        gameId: e.gameId! + 100,
+      }));
+      childSource.fingerprint = createHash("sha256")
+        .update(JSON.stringify(childSource.games))
+        .digest("hex");
+      vi.mocked(fetchMatchSource).mockResolvedValue(childSource);
+      let cv = await imported(child.id);
+      cv = (await resultCommand(referee, "test-cup", child.id, submission(cv)))
+        .review;
+      cv = (
+        await resultCommand(admin, "test-cup", child.id, {
+          ...base(cv),
+          action: "approve",
+          revision: 1,
+        })
+      ).review;
+      await resultCommand(admin, "test-cup", child.id, {
+        ...base(cv),
+        action: "publish",
+        revision: 1,
+        progressionAcknowledged: true,
+      });
+      expect(
+        (await publicFixture("test-cup", child.id))?.result?.homeWins,
+      ).toBe(2);
+      expect(
+        (await publicBracket("test-cup"))?.groups[0].rounds[0].matches,
+      ).toHaveLength(2);
+      vi.mocked(fetchMatchSource).mockResolvedValue(await makeSource(true));
+      root = await imported();
+      const correction = submission(root);
+      correction.decisions[2] = {
+        ...correction.decisions[2],
+        included: false,
+        reason: "Synthetic game after the corrected series finished",
+      };
+      root = (await resultCommand(referee, "test-cup", fixtureId, correction))
+        .review;
+      root = await approved(root);
+      expect(
+        (await publicFixture("test-cup", child.id))?.result,
+      ).not.toBeNull();
+      root = await published(root);
+      const publicChild = (await publicFixture("test-cup", child.id))!;
+      expect(publicChild.confirmed).toBe(false);
+      expect(publicChild.home.team?.id).toBe(root.context.fixture.awayTeamId);
+      expect(publicChild.result).toBeNull();
+      expect(publicChild.scheduledAt).toBeNull();
+      // Withdrawing the conflicting child preserves history and permits an explicit fixture correction.
+      const savedChild = await matchReview(admin, "test-cup", child.id);
+      await resultCommand(admin, "test-cup", child.id, {
+        ...base(savedChild),
+        action: "void",
+        progressionAcknowledged: true,
+      });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: child.id,
+        expectedVersion: savedChild.context.fixture.version,
+        published: false,
+      });
+      await fixtureCommand(admin, "test-cup", {
+        ...fixtureBody,
+        action: "edit",
+        fixtureId: child.id,
+        expectedVersion: savedChild.context.fixture.version + 1,
+        label: "Synthetic Future Fixture",
+        position: 2,
+        homeTeamId: root.context.fixture.awayTeamId,
+        awayTeamId: third.teamId,
+        homeSourceId: fixtureId,
+        homeSourceOutcome: "winner",
+      });
+      expect(
+        (await matchReview(admin, "test-cup", child.id)).revisions[0].proposal
+          ?.teamIds[0],
+      ).toBe(root.context.fixture.homeTeamId);
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: child.id,
+        expectedVersion: savedChild.context.fixture.version + 2,
+        published: true,
+      });
+
+      const bracketChild = (await publicBracket(
+        "test-cup",
+      ))!.groups[0].rounds[0].matches.find((m) => m.id === child.id)!;
+      expect(bracketChild.status).toBe("pending");
+      expect(bracketChild.scores).toEqual([null, null]);
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId,
+        expectedVersion: root.context.fixture.version,
+        published: false,
+      });
+      const hiddenLineage = (await publicFixture("test-cup", child.id))!;
+      expect(hiddenLineage.home.team).toBeNull();
+      expect(hiddenLineage.home.sourceId).toBeNull();
+      expect(hiddenLineage.result).toBeNull();
+      expect((await publicCompetition("test-cup"))?.databaseAuthority).toBe(
+        true,
+      );
+      await db()
+        .update(fixtures)
+        .set({ publishedAt: null })
+        .where(eq(fixtures.id, child.id));
+      expect(await publicBracket("test-cup")).toBeNull();
+    });
     it("persists source evidence, requires referee review/Admin approval, and publishes only an approved revision", async () => {
       let view = await imported();
       expect(view.context.result).toMatchObject({

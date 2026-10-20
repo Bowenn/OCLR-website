@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/user";
 import { staffFixtures, fixtureCommand } from "@/lib/fixtures";
@@ -24,10 +25,11 @@ export async function POST(
     requireSameOrigin(request);
     const user = await requireUser();
     const { edition } = await context.params;
-    return NextResponse.json(
-      await fixtureCommand(user, edition, await readJson(request)),
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    const result = await fixtureCommand(user, edition, await readJson(request));
+    revalidatePath(`/tournaments/${edition}`, "layout");
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     return apiError(error);
   }

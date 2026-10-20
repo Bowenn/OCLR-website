@@ -51,3 +51,35 @@ export function validTimeZone(value: string) {
     return false;
   }
 }
+
+export const groupConfigurationSchema = z
+  .object({
+    version: z.string().trim().min(1).max(80),
+    groups: z
+      .array(
+        z
+          .object({
+            key: z
+              .string()
+              .regex(/^[a-z0-9][a-z0-9-]*$/)
+              .max(60),
+            name: z.string().trim().min(1).max(80),
+            teamIds: z
+              .array(z.uuid())
+              .min(2)
+              .max(128)
+              .refine((ids) => new Set(ids).size === ids.length),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(64),
+  })
+  .strict()
+  .refine(
+    (c) =>
+      new Set(c.groups.map((g) => g.key)).size === c.groups.length &&
+      new Set(c.groups.flatMap((g) => g.teamIds)).size ===
+        c.groups.flatMap((g) => g.teamIds).length,
+  );
+export type GroupConfiguration = z.infer<typeof groupConfigurationSchema>;

@@ -29,7 +29,7 @@ export async function POST(
       user,
       edition,
       fixtureId,
-      await readJson(request),
+      await readJson(request, 524288),
     );
     if (result.publicChanged)
       revalidatePath(`/tournaments/${edition}`, "layout");

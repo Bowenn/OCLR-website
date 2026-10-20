@@ -21,6 +21,7 @@ export async function seedResultReview(
   adminId: number,
   refereeId: number,
   base: number,
+  stage: "group" | "knockout" = "group",
 ) {
   const url = process.env.TEST_DATABASE_URL;
   if (!url || !new URL(url).pathname.includes("test"))
@@ -47,7 +48,7 @@ export async function seedResultReview(
   const maps = await mappoolCommand(actor, "test-cup", {
     ...confirm,
     action: "round_create",
-    stage: "group",
+    stage,
     name: "Synthetic Review Round",
     position: 1,
   });
