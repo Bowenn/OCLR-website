@@ -84,6 +84,14 @@ test.describe("private referee review and Admin publication", () => {
           exact: true,
         }),
       ).toBeVisible();
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+
       await page
         .getByRole("button", { name: "Submit proposed result", exact: true })
         .click();

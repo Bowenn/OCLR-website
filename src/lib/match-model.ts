@@ -208,6 +208,20 @@ export const reviewedResultSchema = z
         z
           .object({
             gameId: id,
+            confidence: z.enum(["roster", "manual", "unresolved"]).optional(),
+            attribution: z
+              .array(
+                z
+                  .object({
+                    osuId: id.nullable(),
+                    teamId: z.uuid().nullable(),
+                    evidence: z.enum(["roster", "substitution"]).nullable(),
+                  })
+                  .strict(),
+              )
+              .max(64)
+              .optional(),
+            warnings: z.array(z.string().max(1000)).max(200).optional(),
             beatmapId: id.nullable(),
             beatmap: matchGameSchema.shape.beatmap,
             mods: z.array(z.string().max(16)).max(64),

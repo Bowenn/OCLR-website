@@ -1,8 +1,10 @@
+import { assertTestDatabase } from "../database";
 import { createHash } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { db } from "../../src/db";
 import {
   matchGames,
+  mappoolEntries,
   matchImports,
   matchResults,
   staffRoles,
@@ -22,10 +24,10 @@ export async function seedResultReview(
   refereeId: number,
   base: number,
   stage: "group" | "knockout" = "group",
+  withPool = false,
 ) {
   const url = process.env.TEST_DATABASE_URL;
-  if (!url || !new URL(url).pathname.includes("test"))
-    throw new Error("Use an isolated test database");
+  assertTestDatabase(url);
   process.env.DATABASE_URL = url;
   process.env.ADMIN_OSU_IDS = String(adminId);
   await db().execute(sql`TRUNCATE tournament_stages CASCADE`);
@@ -61,6 +63,44 @@ export async function seedResultReview(
     scoringRules: syntheticScoringRules,
     standingsRules: null,
   });
+  let poolId: string | null = null;
+  if (withPool) {
+    const maps = await mappoolCommand(actor, "test-cup", {
+      ...confirm,
+      action: "pool_create",
+      roundId,
+      name: "Synthetic Released Fixture Pool",
+    });
+    const pool = maps.pools.find((p) => p.roundId === roundId)!;
+    poolId = pool.id;
+    await db()
+      .insert(mappoolEntries)
+      .values(
+        [1, 2, 3].map((position) => ({
+          poolId: pool.id,
+          category: "NM" as const,
+          position,
+          beatmapId: 10000 + position,
+          metadata: {
+            setId: 42,
+            title: `Synthetic Map ${position}`,
+            artist: "Synthetic Artist",
+            difficulty: "Synthetic Difficulty",
+            mapper: "Synthetic Mapper",
+            stars: 4,
+            bpm: 180,
+            duration: 90,
+          },
+        })),
+      );
+    await mappoolCommand(actor, "test-cup", {
+      ...confirm,
+      action: "pool_publish",
+      poolId,
+      expectedVersion: 0,
+      published: true,
+    });
+  }
   const workspace = await fixtureCommand(actor, "test-cup", {
     ...confirm,
     action: "create",
@@ -72,7 +112,7 @@ export async function seedResultReview(
     scheduledAt: null,
     timeZone: "Asia/Taipei",
     status: "scheduled",
-    mappoolId: null,
+    mappoolId: poolId,
     homeSourceId: null,
     homeSourceOutcome: null,
     awaySourceId: null,
@@ -173,5 +213,13 @@ export async function seedResultReview(
   await db()
     .insert(matchResults)
     .values({ fixtureId, latestImportId: record.id, version: 1 });
-  return { fixtureId, home, away, source, importId: record.id, context };
+  return {
+    poolId,
+    fixtureId,
+    home,
+    away,
+    source,
+    importId: record.id,
+    context,
+  };
 }

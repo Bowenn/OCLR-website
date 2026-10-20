@@ -175,6 +175,13 @@ function proposalFrom(
       .filter((g) => g.decision?.included)
       .map((g) => ({
         gameId: g.game.id,
+        confidence: g.confidence,
+        attribution: g.players.map(({ osuId, teamId, evidence }) => ({
+          osuId,
+          teamId,
+          evidence,
+        })),
+        warnings: g.warnings,
         beatmapId: g.game.beatmapId,
         beatmap: g.game.beatmap,
         mods: g.game.mods,

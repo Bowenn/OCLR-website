@@ -24,6 +24,7 @@ test.describe("anonymous tournament competition center", () => {
       refId,
       isMobile ? 309000 : 308000,
       "knockout",
+      true,
     );
     const admin = await browser.newContext({
       baseURL: "http://127.0.0.1:3100",
@@ -51,6 +52,11 @@ test.describe("anonymous tournament competition center", () => {
     try {
       expect(await context.cookies()).toEqual([]);
       const initial = await (await context.request.get(publicEndpoint)).json();
+      expect(initial.pool).toMatchObject({
+        id: seed.poolId,
+        name: "Synthetic Released Fixture Pool",
+      });
+
       expect(initial.result).toBeNull();
       await command({
         action: "submit",
@@ -105,6 +111,12 @@ test.describe("anonymous tournament competition center", () => {
           ),
         ).toBe(true);
       }
+      await expect(
+        page.getByRole("link", {
+          name: "Released mappool: Synthetic Released Fixture Pool ↗",
+          exact: true,
+        }),
+      ).toBeVisible();
       const published = await (
         await context.request.get(publicEndpoint)
       ).json();

@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -22,8 +23,7 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
   let scratch: string;
   let fixture: Awaited<ReturnType<typeof seedPublicDirectory>>;
   beforeAll(() => {
-    if (!new URL(url!).pathname.includes("test"))
-      throw new Error("Use a test database");
+    assertTestDatabase(url);
     scratch = mkdtempSync(join(tmpdir(), "oclr-players-"));
     const path = join(scratch, "editions.json");
     writeFileSync(
@@ -97,14 +97,12 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
       .update(captains)
       .set({ published: true })
       .where(eq(captains.userId, fixture.captainId));
-    await db()
-      .insert(captains)
-      .values({
-        editionSlug: "private-test-cup",
-        userId: fixture.unpublishedCaptainId,
-        position: 1,
-        published: true,
-      });
+    await db().insert(captains).values({
+      editionSlug: "private-test-cup",
+      userId: fixture.unpublishedCaptainId,
+      position: 1,
+      published: true,
+    });
     expect((await publicPlayers({ edition: "private-test-cup" })).rows).toEqual(
       [],
     );

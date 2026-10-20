@@ -36,15 +36,43 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       expect((await operator.request.get("/api/admin/staff")).status()).toBe(
         403,
       );
+      const scopedCookie = await seedSession(operatorId + 2);
+      const scoped = await browser.newContext({
+        baseURL: "http://127.0.0.1:3100",
+      });
+      try {
+        await scoped.addCookies([scopedCookie]);
+        expect(
+          (
+            await context.request.post("/api/admin/staff", {
+              headers: origin,
+              data: {
+                action: "grant",
+                userId: operatorId + 2,
+                role: "admin",
+                editionSlug: "test-cup",
+                confirmed: true,
+                reason: "Synthetic scoped Admin publication check",
+              },
+            })
+          ).status(),
+        ).toBe(200);
+        const scopedHtml = await (
+          await scoped.request.get("/admin/staff")
+        ).text();
+        expect(scopedHtml).toContain("Synthetic test edition");
+        expect(scopedHtml).not.toContain("Synthetic desktop draft");
+        expect(scopedHtml).not.toContain("Synthetic mobile draft");
+      } finally {
+        await scoped.close();
+      }
       await page.goto("/admin/staff");
-      const assignment = page
-        .locator("article")
-        .filter({
-          has: page.getByRole("heading", {
-            name: `Synthetic Player ${operatorId} · ${operatorId}`,
-            exact: true,
-          }),
-        });
+      const assignment = page.locator("article").filter({
+        has: page.getByRole("heading", {
+          name: `Synthetic Player ${operatorId} · ${operatorId}`,
+          exact: true,
+        }),
+      });
       await page.getByLabel("Verified osu! user ID").fill(String(operatorId));
       await page
         .getByRole("combobox", { name: /^Role/ })
@@ -81,6 +109,28 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       await expect(
         operatorPage.getByRole("link", { name: /Captains$/ }),
       ).toHaveCount(0);
+      for (const path of [
+        "/admin/staff",
+        "/admin/tournaments/test-cup/captains",
+        "/admin/tournaments/test-cup/teams",
+        "/admin/tournaments/test-cup/draft",
+        "/admin/tournaments/test-cup/matches",
+        "/admin/tournaments/draft-desktop-test/mappools",
+      ]) {
+        // https://nextjs.org/docs/app/api-reference/file-conventions/not-found
+        // A streamed not-found page may already have HTTP 200 headers.
+        // Assert denial content here; API checks below assert exact 401/403 statuses.
+        await operatorPage.goto(path);
+        await expect(
+          operatorPage.getByRole("heading", {
+            name: "Off the beat.",
+            exact: true,
+          }),
+        ).toBeVisible();
+        await expect(
+          operatorPage.getByText("Something went wrong.", { exact: true }),
+        ).toHaveCount(0);
+      }
       for (const path of [
         "/api/admin/staff",
         "/api/admin/registrations",

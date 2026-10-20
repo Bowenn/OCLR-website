@@ -48,6 +48,14 @@ export function MatchCard({
           : "Match time TBA"}{" "}
         · {f.timeZone}
       </p>
+      {f.pool && (
+        <Link
+          className="text-link"
+          href={`/tournaments/${slug}/mappools/${f.pool.id}`}
+        >
+          Released mappool: {f.pool.name} ↗
+        </Link>
+      )}
       {f.result && (
         <p className="small muted">
           {f.result.draw
@@ -174,7 +182,12 @@ export function GroupStandings({
               incomplete or inconsistent.
             </p>
           )}
-          <div className="table-scroll">
+          <div
+            className="table-scroll"
+            role="region"
+            tabIndex={0}
+            aria-label={`${g.name} standings; scroll horizontally`}
+          >
             <table>
               <caption>
                 {g.name} · {g.version}

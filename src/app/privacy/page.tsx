@@ -40,9 +40,9 @@ export default function Privacy() {
       <h2>Cookies and external services</h2>
       <p>
         Essential HTTP-only cookies support login, callback security and your
-        session. Sessions expire after seven days. Profile avatars, when
-        displayed, load from osu!’s image service. No advertising or analytics
-        cookies are used.
+        session. Sessions expire after seven days. Profile avatars and beatmap
+        covers, when displayed, load from osu!’s image services. No advertising
+        or analytics cookies are used.
       </p>
       <h2>Retention and requests</h2>
       {privacyReady() ? (

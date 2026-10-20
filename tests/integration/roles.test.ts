@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -48,8 +49,7 @@ const grant = (
 describe.skipIf(!url)("persistent role authorization", () => {
   let scratch: string;
   beforeAll(() => {
-    if (!new URL(url!).pathname.includes("test"))
-      throw new Error("Use a test database");
+    assertTestDatabase(url);
     scratch = mkdtempSync(join(tmpdir(), "oclr-roles-"));
     const path = join(scratch, "editions.json");
     writeFileSync(

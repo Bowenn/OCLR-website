@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { writeFileSync } from "node:fs";
 import { bracketFixture } from "../fixtures/bracket";
 import {
@@ -19,8 +20,7 @@ test.describe("isolated multi-captain rehearsal", () => {
   test.setTimeout(90000);
   const contexts: BrowserContext[] = [];
   test.beforeAll(() => {
-    if (!new URL(testUrl!).pathname.includes("test"))
-      throw new Error("Isolated database required");
+    assertTestDatabase(testUrl);
     process.env.DATABASE_URL = testUrl;
     process.env.ADMIN_OSU_IDS = "110001,120001";
   });

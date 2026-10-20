@@ -36,27 +36,33 @@ export default async function MatchPage({
       </PageHeading>
       <section className="panel stack">
         <div className="match-versus">
-          {[f.home, f.away].map((s, i) => (
-            <div key={i}>
-              {i === 1 && (
-                <strong>
-                  {result
-                    ? `${result.homeWins} : ${result.awayWins}`
-                    : "vs"}{" "}
-                </strong>
-              )}
-              {s.team ? (
-                <Link
-                  className="text-link"
-                  href={`/tournaments/${slug}/teams/${s.team.id}`}
-                >
-                  {s.label}
-                </Link>
-              ) : (
-                s.label
-              )}
-            </div>
-          ))}
+          <span>
+            {f.home.team ? (
+              <Link
+                className="text-link"
+                href={`/tournaments/${slug}/teams/${f.home.team.id}`}
+              >
+                {f.home.label}
+              </Link>
+            ) : (
+              f.home.label
+            )}
+          </span>
+          <strong>
+            {result ? `${result.homeWins} : ${result.awayWins}` : "vs"}
+          </strong>
+          <span>
+            {f.away.team ? (
+              <Link
+                className="text-link"
+                href={`/tournaments/${slug}/teams/${f.away.team.id}`}
+              >
+                {f.away.label}
+              </Link>
+            ) : (
+              f.away.label
+            )}
+          </span>
         </div>
         <p>
           {f.scheduledAt
@@ -64,6 +70,14 @@ export default async function MatchPage({
             : "Match time TBA"}{" "}
           · {f.timeZone}
         </p>
+        {f.pool && (
+          <Link
+            className="text-link"
+            href={`/tournaments/${slug}/mappools/${f.pool.id}`}
+          >
+            Released mappool: {f.pool.name} ↗
+          </Link>
+        )}
         {!f.confirmed && (
           <p className="notice">
             This fixture awaits confirmation against published progression. No

@@ -150,7 +150,12 @@ function SourceReview({
                   Open beatmap ↗
                 </a>
               )}
-              <div className="table-scroll">
+              <div
+                className="table-scroll"
+                role="region"
+                tabIndex={0}
+                aria-label={`Recorded game ${i + 1} scores; scroll horizontally`}
+              >
                 <table>
                   <caption>Recorded player scores for game {i + 1}</caption>
                   <thead>

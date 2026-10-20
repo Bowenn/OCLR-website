@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -79,8 +80,7 @@ describe.skipIf(!url)(
     let fixtureBody: Record<string, unknown>;
     let actualFetch: typeof fetchMatchSource;
     beforeAll(async () => {
-      if (!new URL(url!).pathname.includes("test"))
-        throw new Error("Use a test database");
+      assertTestDatabase(url);
       scratch = mkdtempSync(join(tmpdir(), "oclr-results-"));
       const path = join(scratch, "editions.json");
       writeFileSync(path, JSON.stringify([edition]));
@@ -297,6 +297,22 @@ describe.skipIf(!url)(
           published: true,
         }),
       ).rejects.toMatchObject({ status: 403 });
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...confirm,
+          action: "stage_groups",
+          stageId: stage.id,
+          expectedVersion: 0,
+          configuration: {
+            ...group,
+            groups: [
+              ...group.groups,
+              { ...group.groups[0], key: "synthetic-duplicate-team" },
+            ],
+          },
+          published: true,
+        }),
+      ).rejects.toMatchObject({ status: 400 });
       await fixtureCommand(admin, "test-cup", {
         ...confirm,
         action: "stage_groups",
@@ -325,6 +341,30 @@ describe.skipIf(!url)(
       expect((await publicFixture("test-cup", fixtureId))?.result).toBeNull();
       view = await published(view);
       let publicData = (await publicCompetition("test-cup"))!;
+      expect(publicData.fixtures[0].pool).toBeNull();
+      const [pool] = await db()
+        .select()
+        .from(mappools)
+        .where(eq(mappools.id, poolId));
+      await mappoolCommand(mapper, "test-cup", {
+        ...confirm,
+        action: "pool_publish",
+        poolId,
+        expectedVersion: pool.version,
+        published: true,
+      });
+      expect((await publicFixture("test-cup", fixtureId))?.pool).toEqual({
+        id: poolId,
+        name: pool.name,
+      });
+      await mappoolCommand(mapper, "test-cup", {
+        ...confirm,
+        action: "pool_publish",
+        poolId,
+        expectedVersion: pool.version + 1,
+        published: false,
+      });
+      expect((await publicFixture("test-cup", fixtureId))?.pool).toBeNull();
       expect(publicData.fixtures[0].result).toMatchObject({
         homeWins: 2,
         awayWins: 1,
@@ -348,6 +388,7 @@ describe.skipIf(!url)(
         "approvedBy",
         "Internal",
         "substitutions",
+        "attribution",
       ])
         expect(serialized).not.toContain(privateField);
       await fixtureCommand(admin, "test-cup", {
@@ -587,6 +628,15 @@ describe.skipIf(!url)(
         state: "submitted",
         currentRevision: 1,
         publishedRevision: null,
+      });
+      expect(view.current?.proposal?.games[0]).toMatchObject({
+        confidence: "roster",
+        attribution: [
+          { evidence: "roster" },
+          { evidence: "roster" },
+          { evidence: "roster" },
+          { evidence: "roster" },
+        ],
       });
       expect(view.current?.proposal?.series).toMatchObject({
         homeWins: 2,

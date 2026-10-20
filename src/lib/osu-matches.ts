@@ -236,8 +236,18 @@ export async function fetchMatchSource(matchId: number): Promise<MatchSource> {
   let complete = true;
   let reachedEnd = false;
   let bytes = 0;
+  const deadline = performance.now() + 120_000;
+  const checkBudget = () => {
+    if (performance.now() > deadline)
+      throw new HttpError(
+        503,
+        "Match history exceeded the import time budget. No stored result was changed; retry when the provider is responsive.",
+      );
+  };
   for (; pages < 100;) {
+    checkBudget();
     const raw = await osuApi(`/matches/${matchId}?after=${cursor}&limit=100`);
+    checkBudget();
     pages++;
     bytes += Buffer.byteLength(JSON.stringify(raw));
     if (bytes > 8 * 1024 * 1024)

@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -21,8 +22,7 @@ describe.skipIf(!testUrl)(
   "OAuth and session boundaries (real PostgreSQL; provider transport mocked)",
   () => {
     beforeAll(() => {
-      if (!new URL(testUrl!).pathname.includes("test"))
-        throw new Error("Integration database name must contain test");
+      assertTestDatabase(testUrl);
       vi.stubEnv("DATABASE_URL", testUrl!);
       vi.stubEnv("APP_URL", "https://oclr.example.test");
       vi.stubEnv("OSU_CLIENT_ID", "123");

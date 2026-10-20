@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -38,8 +39,7 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
   let scratch: string;
   let contentFile: string;
   beforeAll(() => {
-    if (!new URL(testUrl!).pathname.includes("test"))
-      throw new Error("Use an isolated test database");
+    assertTestDatabase(testUrl);
     scratch = mkdtempSync(join(tmpdir(), "oclr-registration-"));
     contentFile = join(scratch, "editions.json");
     vi.stubEnv("DATABASE_URL", testUrl!);

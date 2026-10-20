@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -52,8 +53,7 @@ const confirm = { confirmed: true, reason: "Synthetic map rehearsal" };
 describe.skipIf(!url)("edition mappool integrity and publication", () => {
   let scratch: string;
   beforeAll(() => {
-    if (!new URL(url!).pathname.includes("test"))
-      throw new Error("Use a test database");
+    assertTestDatabase(url);
     scratch = mkdtempSync(join(tmpdir(), "oclr-mappools-"));
     const path = join(scratch, "editions.json");
     writeFileSync(

@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../src/db";
 import {
@@ -11,8 +12,7 @@ import {
 // Isolated test fixture only; never imported by application code.
 export async function seedPublicDirectory(base: number) {
   const url = process.env.TEST_DATABASE_URL;
-  if (!url || !new URL(url).pathname.includes("test"))
-    throw new Error("Use an isolated test database");
+  assertTestDatabase(url);
   process.env.DATABASE_URL = url;
   const ids = [base, base + 1, base + 2, base + 3];
   await db().delete(memberships).where(inArray(memberships.userId, ids));

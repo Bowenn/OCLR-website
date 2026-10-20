@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -17,8 +18,7 @@ describe.skipIf(!url)(
   "authorization within concurrent database transactions",
   () => {
     beforeAll(() => {
-      if (!new URL(url!).pathname.includes("test"))
-        throw new Error("Use a test database");
+      assertTestDatabase(url);
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", "");
     });
@@ -26,14 +26,12 @@ describe.skipIf(!url)(
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
       await db().insert(users).values(actor);
       await db().insert(editionState).values({ slug: "test-cup" });
-      await db()
-        .insert(staffRoles)
-        .values({
-          userId: actor.osuId,
-          role: "referee",
-          editionSlug: "test-cup",
-          grantedBy: actor.osuId,
-        });
+      await db().insert(staffRoles).values({
+        userId: actor.osuId,
+        role: "referee",
+        editionSlug: "test-cup",
+        grantedBy: actor.osuId,
+      });
     });
     afterAll(async () => {
       await closeDb();

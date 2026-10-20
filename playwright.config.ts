@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "./tests/database";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -12,6 +13,7 @@ const bracketsPath =
   process.env.OCLR_TEST_BRACKETS_FILE ||
   join(tmpdir(), `oclr-e2e-brackets-${process.pid}.json`);
 if (process.env.TEST_DATABASE_URL) {
+  assertTestDatabase(process.env.TEST_DATABASE_URL);
   process.env.OCLR_TEST_BRACKETS_FILE = bracketsPath;
   process.env.OCLR_BRACKETS_FILE = bracketsPath;
   if (!existsSync(bracketsPath)) writeFileSync(bracketsPath, "[]");

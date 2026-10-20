@@ -15,6 +15,20 @@ import {
 vi.mock("../../src/lib/osu-api", () => ({ osuApi: vi.fn() }));
 beforeEach(() => vi.mocked(osuApi).mockReset());
 describe("official MP history normalization", () => {
+  it("bounds a slow paginated provider without returning a falsely complete source", async () => {
+    const clock = vi.spyOn(performance, "now").mockReturnValue(0);
+    vi.mocked(osuApi).mockImplementation(async () => {
+      clock.mockReturnValue(121_000);
+      return syntheticPage([syntheticEvent(1)], { latest_event_id: 3 });
+    });
+    try {
+      await expect(fetchMatchSource(syntheticMatchId)).rejects.toMatchObject({
+        status: 503,
+      });
+    } finally {
+      clock.mockRestore();
+    }
+  });
   it("accepts only IDs and canonical official match URLs", () => {
     for (const input of [
       "117427458",

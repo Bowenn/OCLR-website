@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -43,8 +44,7 @@ describe.skipIf(!url)(
   () => {
     let scratch: string;
     beforeAll(() => {
-      if (!new URL(url!).pathname.includes("test"))
-        throw new Error("Use a test database");
+      assertTestDatabase(url);
       scratch = mkdtempSync(join(tmpdir(), "oclr-teams-"));
       const path = join(scratch, "editions.json");
       writeFileSync(path, JSON.stringify([edition]));
@@ -57,15 +57,13 @@ describe.skipIf(!url)(
       await db().insert(users).values([staff, a, b, player]);
       await db().insert(editionState).values({ slug: edition.slug });
       for (const p of [a, b, player])
-        await db()
-          .insert(registrations)
-          .values({
-            userId: p.osuId,
-            editionSlug: edition.slug,
-            status: "accepted",
-            rulesVersion: "test-v1",
-            answers: {},
-          });
+        await db().insert(registrations).values({
+          userId: p.osuId,
+          editionSlug: edition.slug,
+          status: "accepted",
+          rulesVersion: "test-v1",
+          answers: {},
+        });
       await updateCaptains(
         staff,
         edition.slug,
@@ -112,27 +110,23 @@ describe.skipIf(!url)(
       const data = await configure();
       const results = await Promise.allSettled(
         data.teams.map((t) =>
-          db()
-            .insert(memberships)
-            .values({
-              editionSlug: edition.slug,
-              teamId: t.id,
-              userId: player.osuId,
-              origin: "synthetic_test",
-            }),
+          db().insert(memberships).values({
+            editionSlug: edition.slug,
+            teamId: t.id,
+            userId: player.osuId,
+            origin: "synthetic_test",
+          }),
         ),
       );
       expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
       expect((await captainSetup(staff, edition.slug)).pool).toHaveLength(0);
       await expect(
-        db()
-          .insert(memberships)
-          .values({
-            editionSlug: "wrong-edition",
-            teamId: data.teams[0].id,
-            userId: player.osuId,
-            origin: "synthetic_test",
-          }),
+        db().insert(memberships).values({
+          editionSlug: "wrong-edition",
+          teamId: data.teams[0].id,
+          userId: player.osuId,
+          origin: "synthetic_test",
+        }),
       ).rejects.toThrow();
     });
     it("keeps identity/roster private until separately approved and finalized", async () => {

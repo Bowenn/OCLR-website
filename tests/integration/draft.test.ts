@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { updateCaptains } from "../../src/lib/captains";
 import { ownTeam } from "../../src/lib/teams";
 import { execFileSync } from "node:child_process";
@@ -39,8 +40,7 @@ describe.skipIf(!url)(
     let scratch: string;
     let fixture: Awaited<ReturnType<typeof prepareDraft>>;
     beforeAll(() => {
-      if (!new URL(url!).pathname.includes("test"))
-        throw new Error("Use a test database");
+      assertTestDatabase(url);
       scratch = mkdtempSync(join(tmpdir(), "oclr-draft-"));
       const path = join(scratch, "editions.json");
       writeFileSync(path, JSON.stringify([edition]));

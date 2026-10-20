@@ -2,6 +2,7 @@ import { and, asc, eq, isNotNull, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import {
   captains,
+  mappools,
   fixtures,
   matchImports,
   matchResults,
@@ -54,6 +55,7 @@ export type PublicMatchResult = {
   updatedAt: string;
 };
 export type PublicFixture = {
+  pool: { id: string; name: string } | null;
   id: string;
   label: string;
   roundId: string;
@@ -117,12 +119,23 @@ export async function publicCompetition(slug: string) {
           revision: resultRevisions.revision,
           resultPublishedAt: matchResults.publishedAt,
           mpId: matchImports.externalMatchId,
+          publicPoolId: mappools.id,
+          publicPoolName: mappools.name,
         })
         .from(fixtures)
         .innerJoin(tournamentRounds, eq(tournamentRounds.id, fixtures.roundId))
         .innerJoin(
           tournamentStages,
           eq(tournamentStages.id, tournamentRounds.stageId),
+        )
+        .leftJoin(
+          mappools,
+          and(
+            eq(mappools.id, fixtures.mappoolId),
+            eq(mappools.roundId, fixtures.roundId),
+            eq(mappools.editionSlug, slug),
+            isNotNull(mappools.publishedAt),
+          ),
         )
         .leftJoin(
           matchResults,
@@ -257,6 +270,10 @@ export async function publicCompetition(slug: string) {
               }
             : null;
         const projected: PublicFixture = {
+          pool:
+            row.publicPoolId && row.publicPoolName
+              ? { id: row.publicPoolId, name: row.publicPoolName }
+              : null,
           id,
           label: f.label,
           roundId: row.round.id,

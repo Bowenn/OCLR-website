@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -17,8 +18,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
     isMobile,
   }, info) => {
     const url = process.env.TEST_DATABASE_URL!;
-    if (!new URL(url).pathname.includes("test"))
-      throw new Error("Use a test database");
+    assertTestDatabase(url);
     process.env.DATABASE_URL = url;
     await db().execute(sql`TRUNCATE tournament_stages CASCADE`);
     const adminId = isMobile ? 70001 : 60001;

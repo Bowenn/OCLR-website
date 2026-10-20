@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db";
 import {
@@ -12,11 +13,7 @@ import { updateTeams } from "../../src/lib/teams";
 import { draftCommand, staffDraft } from "../../src/lib/draft";
 // Fixture provisioner for isolated databases only; never imported by application code.
 export async function prepareDraft(slug: string, base: number, turns = 2) {
-  if (
-    !process.env.TEST_DATABASE_URL ||
-    !new URL(process.env.TEST_DATABASE_URL).pathname.includes("test")
-  )
-    throw new Error("Isolated test database required");
+  assertTestDatabase(process.env.TEST_DATABASE_URL);
   const staff = { osuId: base, username: `Synthetic Operator ${base}` };
   const a = { osuId: base + 1, username: `Synthetic Captain A ${base}` };
   const b = { osuId: base + 2, username: `Synthetic Captain B ${base}` };

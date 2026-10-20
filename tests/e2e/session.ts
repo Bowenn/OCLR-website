@@ -1,11 +1,11 @@
+import { assertTestDatabase } from "../database";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db";
 import { editionState, users } from "../../src/db/schema";
 import { createSession } from "../../src/lib/auth/sessions";
 export async function seedSession(id: number) {
   const url = process.env.TEST_DATABASE_URL;
-  if (!url || !new URL(url).pathname.includes("test"))
-    throw new Error("An isolated TEST_DATABASE_URL is required");
+  assertTestDatabase(url);
   process.env.DATABASE_URL = url;
   await db().delete(users).where(eq(users.osuId, id));
   await db()

@@ -1,3 +1,4 @@
+import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
 import { mappoolWorkspace } from "@/lib/mappools";
 import { PageHeading } from "@/components/ui";
@@ -8,16 +9,18 @@ export default async function MappoolsPage({
 }: {
   params: Promise<{ edition: string }>;
 }) {
-  const actor = await requireUser();
-  const { edition } = await params;
-  const data = await mappoolWorkspace(actor, edition);
-  return (
-    <>
-      <PageHeading eyebrow="COMPETITION MAPS" title="Mappool management">
-        Configure approved stages, rounds and map slots. Published pools require
-        an explicit unpublish before editing.
-      </PageHeading>
-      <MappoolEditor slug={edition} data={data} />
-    </>
-  );
+  return authorizedPage(async () => {
+    const actor = await requireUser();
+    const { edition } = await params;
+    const data = await mappoolWorkspace(actor, edition);
+    return (
+      <>
+        <PageHeading eyebrow="COMPETITION MAPS" title="Mappool management">
+          Configure approved stages, rounds and map slots. Published pools
+          require an explicit unpublish before editing.
+        </PageHeading>
+        <MappoolEditor slug={edition} data={data} />
+      </>
+    );
+  });
 }

@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { updateTeams } from "../../src/lib/teams";
 import {
   afterAll,
@@ -35,8 +36,7 @@ const player = { osuId: 80004, username: "Synthetic Pool Player" };
 describe.skipIf(!url)("captain setup, publication and eligibility", () => {
   let scratch: string;
   beforeAll(() => {
-    if (!new URL(url!).pathname.includes("test"))
-      throw new Error("Use a test database");
+    assertTestDatabase(url);
     scratch = mkdtempSync(join(tmpdir(), "oclr-captains-"));
     const path = join(scratch, "editions.json");
     writeFileSync(

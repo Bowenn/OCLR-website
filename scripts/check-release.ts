@@ -49,6 +49,13 @@ try {
   await db().execute(
     sql`SELECT 1 FROM fixtures, fixture_referees, match_imports, match_games, match_results, result_revisions, result_audit_events, result_game_claims LIMIT 0`,
   );
+  await db().execute(sql`SELECT latest_import_id FROM match_results LIMIT 0`);
+  await db().execute(
+    sql`SELECT request_key, request_hash FROM result_audit_events LIMIT 0`,
+  );
+  await db().execute(
+    sql`SELECT group_configuration, groups_published_at FROM tournament_stages LIMIT 0`,
+  );
   console.log(
     "Configuration and database preflight passed. Live OAuth, deployment and organizer approval must still be verified.",
   );

@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -62,8 +63,7 @@ describe.skipIf(!url)(
     let roundId: string;
     let poolId: string;
     beforeAll(() => {
-      if (!new URL(url!).pathname.includes("test"))
-        throw new Error("Use a test database");
+      assertTestDatabase(url);
       scratch = mkdtempSync(join(tmpdir(), "oclr-fixtures-"));
       const path = join(scratch, "editions.json");
       writeFileSync(

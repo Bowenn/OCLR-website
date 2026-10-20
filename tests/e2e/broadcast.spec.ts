@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import { randomUUID } from "node:crypto";
 import { expect, test, type BrowserContext } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -13,8 +14,7 @@ test.describe("published OBS browser-source rehearsal", () => {
   test.setTimeout(120000);
   const actors: BrowserContext[] = [];
   test.beforeAll(() => {
-    if (!new URL(testUrl!).pathname.includes("test"))
-      throw new Error("Isolated database required");
+    assertTestDatabase(testUrl);
     process.env.DATABASE_URL = testUrl;
     process.env.ADMIN_OSU_IDS = "110001,120001";
   });

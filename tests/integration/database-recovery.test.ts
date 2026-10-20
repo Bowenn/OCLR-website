@@ -1,11 +1,11 @@
+import { assertTestDatabase } from "../database";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { Pool } from "pg";
 import { getPool, closeDb } from "../../src/db";
 const url = process.env.TEST_DATABASE_URL;
 describe.skipIf(!url)("database connection recovery", () => {
   beforeAll(() => {
-    if (!new URL(url!).pathname.includes("test"))
-      throw new Error("Use an isolated test database");
+    assertTestDatabase(url);
     vi.stubEnv("DATABASE_URL", url!);
   });
   afterAll(async () => {

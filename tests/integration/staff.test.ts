@@ -1,3 +1,4 @@
+import { assertTestDatabase } from "../database";
 import {
   afterAll,
   beforeAll,
@@ -25,8 +26,7 @@ const staff = { osuId: 50001, username: "Synthetic Staff" };
 const player = { osuId: 50002, username: "=Synthetic Player" };
 describe.skipIf(!url)("staff review boundaries and concurrency", () => {
   beforeAll(() => {
-    if (!new URL(url!).pathname.includes("test"))
-      throw new Error("Use a test database");
+    assertTestDatabase(url);
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(staff.osuId));
   });

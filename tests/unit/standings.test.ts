@@ -36,6 +36,7 @@ function fixture(
     updatedAt: "2020-01-01T00:00:00Z",
   };
   return {
+    pool: null,
     id: "f",
     label: "Synthetic match",
     roundId: "r",
