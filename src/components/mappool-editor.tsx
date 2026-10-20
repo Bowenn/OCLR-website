@@ -1,10 +1,17 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { MappoolWorkspace } from "@/lib/mappools";
-import { categories, categoryNames, slotLabel } from "@/lib/mappool-model";
+import {
+  categories,
+  categoryNames,
+  slotLabel,
+  parseBeatmapId,
+  type BeatmapSnapshot,
+} from "@/lib/mappool-model";
 import { ConfirmMutation } from "./confirm-mutation";
-import { BeatmapCover } from "./beatmap-cover";
+import { BeatmapDetails } from "./beatmap-details";
+import { BeatmapPreview } from "./beatmap-preview";
 type Pool = MappoolWorkspace["pools"][number];
 type Entry = MappoolWorkspace["entries"][number];
 type Round = MappoolWorkspace["rounds"][number];
@@ -14,14 +21,17 @@ function Save({
   label,
   description,
   payload,
+  disabled = false,
 }: {
   change: Change;
   label: string;
   description: string;
   payload: Record<string, unknown>;
+  disabled?: boolean;
 }) {
   return (
     <ConfirmMutation
+      disabled={disabled}
       requireConfirmation={["pool_publish", "entry_remove"].includes(
         String(payload.action),
       )}
@@ -168,6 +178,12 @@ function EntryForm({
   entry?: Entry;
 }) {
   const [beatmap, setBeatmap] = useState(entry ? String(entry.beatmapId) : "");
+  const id = parseBeatmapId(beatmap);
+  const [preview, setPreview] = useState<BeatmapSnapshot | null>(null);
+  const ready = useCallback(
+    (snapshot: BeatmapSnapshot | null) => setPreview(snapshot),
+    [],
+  );
   const [mod, setMod] = useState(entry?.category ?? category);
   const [position, setPosition] = useState(String(entry?.position ?? 1));
   return (
@@ -176,10 +192,29 @@ function EntryForm({
         <span>Beatmap URL or ID</span>
         <input
           value={beatmap}
-          onChange={(e) => setBeatmap(e.target.value)}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (parseBeatmapId(next) !== id) setPreview(null);
+            setBeatmap(next);
+          }}
+          aria-invalid={Boolean(beatmap.trim() && !id)}
+          autoComplete="off"
           maxLength={250}
         />
       </label>
+      {beatmap.trim() && !id && (
+        <p role="alert" className="notice error-text">
+          Enter a numeric beatmap ID or an official osu! difficulty URL.
+        </p>
+      )}
+      {id && (
+        <BeatmapPreview
+          key={id}
+          id={id}
+          url={`${change.url}/preview`}
+          onReady={ready}
+        />
+      )}
       <label className="field">
         <span>Mod category</span>
         <select value={mod} onChange={(e) => setMod(e.target.value)}>
@@ -203,9 +238,11 @@ function EntryForm({
       <Save
         change={change}
         label={entry ? "Save map slot" : "Add beatmap"}
-        description={`Save beatmap ${beatmap || "(required)"} in ${slotLabel(mod, Number(position))}. Official metadata will be fetched for new or replaced maps. Provider errors preserve saved records.`}
+        disabled={!id || preview?.beatmapId !== id}
+        description={`Save beatmap ${beatmap || "(required)"} in ${slotLabel(mod, Number(position))}. Official metadata is verified again when saving. Provider errors preserve saved records.`}
         payload={{
           action: "entry_save",
+          expectedMetadataFingerprint: preview?.fingerprint,
           poolId: pool.id,
           expectedVersion: pool.version,
           entryId: entry?.id ?? null,
@@ -215,6 +252,34 @@ function EntryForm({
         }}
       />
     </div>
+  );
+}
+function EntryEditor({
+  change,
+  pool,
+  category,
+  entry,
+}: {
+  change: Change;
+  pool: Pool;
+  category: string;
+  entry: Entry;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary>
+        Edit or replace {slotLabel(entry.category, entry.position)}
+      </summary>
+      {open && (
+        <EntryForm
+          change={change}
+          pool={pool}
+          category={category}
+          entry={entry}
+        />
+      )}
+    </details>
   );
 }
 export function MappoolEditor({
@@ -402,41 +467,20 @@ export function MappoolEditor({
             </h3>
             {entries.map((entry, i) => (
               <article className="mappool-entry-controls" key={entry.id}>
-                <div className="beatmap-row">
-                  <BeatmapCover setId={entry.metadata.setId} />
-                  <div>
-                    <span className="badge">
-                      {slotLabel(entry.category, entry.position)}
-                    </span>
-                    <h3>
-                      <a
-                        className="text-link"
-                        href={`https://osu.ppy.sh/beatmaps/${entry.beatmapId}`}
-                      >
-                        {entry.metadata.artist} — {entry.metadata.title} ↗
-                      </a>
-                    </h3>
-                    <p className="muted small">
-                      {entry.metadata.difficulty} · {entry.metadata.mapper} ·{" "}
-                      {entry.metadata.stars.toFixed(2)} ★
-                    </p>
-                  </div>
-                </div>
+                <BeatmapDetails
+                  beatmapId={entry.beatmapId}
+                  metadata={entry.metadata}
+                  label={slotLabel(entry.category, entry.position)}
+                />
                 {editable && (
                   <>
-                    <details>
-                      <summary>
-                        Edit or replace{" "}
-                        {slotLabel(entry.category, entry.position)}
-                      </summary>
-                      <EntryForm
-                        key={`${entry.id}-${pool.version}`}
-                        change={change}
-                        pool={pool}
-                        category={category}
-                        entry={entry}
-                      />
-                    </details>
+                    <EntryEditor
+                      key={`${entry.id}-${pool.version}`}
+                      change={change}
+                      pool={pool}
+                      category={category}
+                      entry={entry}
+                    />
                     <div className="actions">
                       {i > 0 && (
                         <Save

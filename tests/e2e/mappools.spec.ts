@@ -3,7 +3,12 @@ import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
 import { seedSession } from "./session";
 import { db, closeDb } from "../../src/db";
-import { mappools, mappoolEntries, staffRoles } from "../../src/db/schema";
+import {
+  mappools,
+  mappoolEntries,
+  mappoolEvents,
+  staffRoles,
+} from "../../src/db/schema";
 test.describe("published mappools and restricted editing", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(async () => closeDb());
@@ -94,27 +99,86 @@ test.describe("published mappools and restricted editing", () => {
           await guestPage.goto(`/tournaments/test-cup/mappools/${pool.id}`)
         )?.status(),
       ).toBe(404);
-      // Isolated saved metadata fixture: no production API mocking, credentials or test route.
+      const previewUrl = `${url}/preview`;
+      expect(
+        (
+          await guest.request.post(previewUrl, {
+            headers,
+            data: { beatmap: "123" },
+          })
+        ).status(),
+      ).toBe(401);
+      expect(
+        (
+          await referee.request.post(previewUrl, {
+            headers,
+            data: { beatmap: "123" },
+          })
+        ).status(),
+      ).toBe(403);
+      expect(
+        (
+          await context.request.post(previewUrl, {
+            headers: { origin: "https://evil.example" },
+            data: { beatmap: "123" },
+          })
+        ).status(),
+      ).toBe(403);
+      expect(
+        (
+          await context.request.post(previewUrl, {
+            headers,
+            data: { beatmap: "https://evil.example/123" },
+          })
+        ).status(),
+      ).toBe(400);
+      await page.getByRole("button", { name: "FM (0)", exact: true }).click();
+      await page.getByText("Add a FM beatmap", { exact: true }).click();
+      const input = page.getByRole("textbox", {
+        name: "Beatmap URL or ID",
+        exact: true,
+      });
+      await input.fill("https://osu.ppy.sh/beatmapsets/42#osu/123");
+      await expect(page.getByRole("status")).toHaveText(
+        "Looking up beatmap 123…",
+      );
+      await expect(
+        page.getByRole("button", { name: "Add beatmap", exact: true }),
+      ).toBeDisabled();
+      const preview = page.getByLabel("Beatmap preview", { exact: true });
+      await expect(
+        preview.getByRole("link", { name: /Synthetic Browser Song/ }),
+      ).toBeVisible();
+      await expect(preview).toContainText("4.50 ★ base");
+      await expect(preview).toContainText("180 BPM · 2:03");
+      await expect(preview).toContainText("Official osu! API");
+      await expect(preview).toContainText("Set 42");
+      const fetchedAt = await preview.locator("time").getAttribute("datetime");
+      await expect(
+        page.getByRole("textbox", {
+          name: /reason|song title|artist|BPM|duration/i,
+        }),
+      ).toHaveCount(0);
+      await page
+        .getByRole("button", { name: "Add beatmap", exact: true })
+        .click();
+      await expect(page.getByText("Draft · v2", { exact: true })).toBeVisible();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
       const [entry] = await db()
-        .insert(mappoolEntries)
-        .values({
-          poolId: pool.id,
-          category: "FM",
-          position: 1,
-          beatmapId: 123,
-          metadata: {
-            setId: 42,
-            title: "Synthetic Browser Song",
-            artist: "Synthetic Artist",
-            difficulty: "Synthetic Difficulty",
-            mapper: "Synthetic Mapper",
-            stars: 4.5,
-            bpm: 180,
-            duration: 123,
-          },
-        })
-        .returning();
-      await page.reload();
+        .select()
+        .from(mappoolEntries)
+        .where(eq(mappoolEntries.poolId, pool.id));
+      expect(entry.metadataFetchedAt.toISOString()).toBe(fetchedAt);
+      expect(entry.metadata.title).toBe("Synthetic Browser Song");
+      const events = await db()
+        .select()
+        .from(mappoolEvents)
+        .where(eq(mappoolEvents.poolId, pool.id));
+      expect(events.find((e) => e.action === "entry_save")).toMatchObject({
+        actorId: id,
+        reason: null,
+        after: { entries: [{ beatmapId: 123, metadata: entry.metadata }] },
+      });
       await page.getByRole("button", { name: "FM (1)", exact: true }).click();
       await expect(
         page.getByRole("heading", { name: /Synthetic Browser Song/ }),
@@ -124,7 +188,7 @@ test.describe("published mappools and restricted editing", () => {
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByText("Published · v2", { exact: true }),
+        page.getByText("Published · v3", { exact: true }),
       ).toBeVisible();
       expect(
         (
@@ -133,7 +197,7 @@ test.describe("published mappools and restricted editing", () => {
             data: {
               action: "entry_remove",
               poolId: pool.id,
-              expectedVersion: 2,
+              expectedVersion: 3,
               entryId: entry.id,
 
               confirmed: true,
@@ -189,7 +253,7 @@ test.describe("published mappools and restricted editing", () => {
         .getByRole("button", { name: "Unpublish pool", exact: true })
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
-      await expect(page.getByText("Draft · v3", { exact: true })).toBeVisible();
+      await expect(page.getByText("Draft · v4", { exact: true })).toBeVisible();
       expect(
         (
           await guest.request.get(

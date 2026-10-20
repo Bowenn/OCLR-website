@@ -186,7 +186,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
             data: { ...operation, match: "999001" },
           })
         ).status(),
-      ).toBe(503);
+      ).toBe(502); // Test transport supplies an unavailable provider; credentials are configured.
       const afterUnavailable = await (
         await referee.request.get(reportUrl)
       ).json();

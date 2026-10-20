@@ -14,9 +14,13 @@ import {
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { getEditions, getPublicEdition } from "./content";
-import { fetchBeatmap, parseBeatmapId } from "./osu-beatmaps";
+import { fetchBeatmap } from "./osu-beatmaps";
 import { HttpError } from "./http";
-import { categories } from "./mappool-model";
+import {
+  categories,
+  parseBeatmapId,
+  type BeatmapMetadata,
+} from "./mappool-model";
 const confirmation = {
   confirmed: z.literal(true),
 };
@@ -77,6 +81,10 @@ const commandSchema = z.discriminatedUnion("action", [
       ...confirmation,
       ...versioned,
       action: z.literal("entry_save"),
+      expectedMetadataFingerprint: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .optional(),
       entryId: z.uuid().nullable(),
       beatmap: z.string().trim().min(1).max(250),
       category: z.enum(categories),
@@ -171,6 +179,27 @@ export async function mappoolWorkspace(actor: User, slug: string) {
   );
 }
 export type MappoolWorkspace = Awaited<ReturnType<typeof mappoolWorkspace>>;
+// Preview is a protected read, not a mutation. No registration or audit data is returned.
+export async function previewBeatmap(
+  actor: User,
+  slug: string,
+  input: unknown,
+) {
+  await assertCapability(actor, "manage_mappools", slug);
+  if (!getEditions().some((e) => e.slug === slug))
+    throw new HttpError(404, "Edition not found.");
+  const parsed = z
+    .object({ beatmap: z.string().trim().min(1).max(250) })
+    .strict()
+    .safeParse(input);
+  const id = parsed.success ? parseBeatmapId(parsed.data.beatmap) : null;
+  if (!id)
+    throw new HttpError(
+      400,
+      "Enter an osu! beatmap ID or canonical difficulty URL.",
+    );
+  return fetchBeatmap(id);
+}
 export async function mappoolCommand(
   actor: User,
   slug: string,
@@ -183,7 +212,7 @@ export async function mappoolCommand(
   if (!parsed.success)
     throw new HttpError(400, "Confirm a valid mappool change.");
   const c = parsed.data;
-  let metadata: Awaited<ReturnType<typeof fetchBeatmap>> | undefined;
+  let metadata: BeatmapMetadata | undefined;
   let beatmapId: number | undefined;
   let metadataFetchedAt: Date | undefined;
   // Provider work happens before the transaction; the version is checked again under lock.
@@ -211,7 +240,14 @@ export async function mappoolCommand(
       : [];
     if (c.entryId && !entry) throw new HttpError(404, "Map slot not found.");
     beatmapId =
-      c.action === "entry_save" ? parseBeatmapId(c.beatmap) : entry!.beatmapId;
+      c.action === "entry_save"
+        ? (parseBeatmapId(c.beatmap) ?? undefined)
+        : entry!.beatmapId;
+    if (!beatmapId)
+      throw new HttpError(
+        400,
+        "Enter an osu! beatmap ID or canonical difficulty URL.",
+      );
     if (
       c.action === "entry_refresh" &&
       entry &&
@@ -221,14 +257,18 @@ export async function mappoolCommand(
         429,
         "Wait at least one minute between metadata refreshes.",
       );
-    metadata =
-      c.action === "entry_save" && entry?.beatmapId === beatmapId
-        ? entry.metadata
-        : await fetchBeatmap(beatmapId);
-    metadataFetchedAt =
-      c.action === "entry_save" && entry?.beatmapId === beatmapId
-        ? entry.metadataFetchedAt
-        : new Date();
+    const snapshot = await fetchBeatmap(beatmapId);
+    if (
+      c.action === "entry_save" &&
+      c.expectedMetadataFingerprint &&
+      c.expectedMetadataFingerprint !== snapshot.fingerprint
+    )
+      throw new HttpError(
+        409,
+        "Official metadata changed after your preview. Look up the beatmap again before saving.",
+      );
+    metadata = snapshot.metadata;
+    metadataFetchedAt = new Date(snapshot.fetchedAt);
   }
   try {
     await db().transaction(async (tx) => {
@@ -423,7 +463,7 @@ export async function mappoolCommand(
         else if (c.action === "entry_refresh")
           await tx
             .update(mappoolEntries)
-            .set({ metadata: metadata!, metadataFetchedAt: new Date() })
+            .set({ metadata: metadata!, metadataFetchedAt: metadataFetchedAt! })
             .where(eq(mappoolEntries.id, c.entryId));
         else {
           if (c.category === "FM" && !pool.fmMode)

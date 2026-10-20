@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { parseBeatmapId } from "../../src/lib/osu-beatmaps";
+import { parseBeatmapId } from "../../src/lib/mappool-model";
 const token = () =>
   new Response(
     JSON.stringify({
@@ -29,6 +29,7 @@ describe("official beatmap parsing and server API boundaries", () => {
     vi.stubEnv("OSU_CLIENT_SECRET", "synthetic-test-secret");
   });
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
   });
@@ -50,8 +51,15 @@ describe("official beatmap parsing and server API boundaries", () => {
       "https://osu.ppy.sh/beatmapsets/42",
       "https://osu.ppy.sh/beatmaps/123?url=https://example.com",
       "file:///beatmaps/123",
+      "https://osu.ppy.sh:443/beatmaps/123",
+      "https://osu.ppy.sh/a/../beatmaps/123",
+      "https://osu.ppy.sh/beatmaps/%31%32%33",
+      "https://osu.ppy.sh/beatmaps/123#osu/123",
+      "https://osu.ppy.sh/beatmaps/123?",
+      "https://osu.ppy.sh/beatmapsets/42#osu/123/extra",
+      "https://osu.ppy.sh\\evil.example/beatmaps/123",
     ])
-      expect(() => parseBeatmapId(value)).toThrow();
+      expect(parseBeatmapId(value)).toBeNull();
   });
   it("uses a server client-credentials public token, reuses it, and normalizes only necessary metadata", async () => {
     const fetch = vi
@@ -66,7 +74,7 @@ describe("official beatmap parsing and server API boundaries", () => {
       fetchBeatmap(123),
     ]);
     expect(first).toEqual(simultaneous);
-    expect(first).toEqual({
+    expect(first.metadata).toEqual({
       setId: 42,
       title: "Synthetic Song",
       artist: "Synthetic Artist",
@@ -75,6 +83,11 @@ describe("official beatmap parsing and server API boundaries", () => {
       stars: 4.5,
       bpm: 180,
       duration: 123,
+    });
+    expect(first).toMatchObject({
+      beatmapId: 123,
+      fetchedAt: expect.any(String),
+      fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
     });
     await fetchBeatmap(123); // Cached metadata avoids duplicate provider reads.
     await fetchBeatmap(456);
@@ -127,7 +140,10 @@ describe("official beatmap parsing and server API boundaries", () => {
     vi.stubGlobal("fetch", fetch);
     const { fetchBeatmap } = await import("../../src/lib/osu-beatmaps");
     await expect(fetchBeatmap(123)).rejects.toMatchObject({ status: 404 });
+    const now = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(now + 61000);
     await expect(fetchBeatmap(123)).rejects.toMatchObject({ status: 502 });
+    vi.spyOn(Date, "now").mockReturnValue(now + 122000);
     await expect(fetchBeatmap(123)).rejects.toMatchObject({ status: 502 });
   });
   it("retries transient provider failures once with a bounded delay", async () => {
@@ -138,7 +154,7 @@ describe("official beatmap parsing and server API boundaries", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(map)));
     vi.stubGlobal("fetch", fetch);
     const { fetchBeatmap } = await import("../../src/lib/osu-beatmaps");
-    expect((await fetchBeatmap(123)).setId).toBe(42);
+    expect((await fetchBeatmap(123)).metadata.setId).toBe(42);
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 });

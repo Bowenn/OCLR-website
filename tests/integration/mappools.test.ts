@@ -23,6 +23,7 @@ import {
   tournamentRounds,
 } from "../../src/db/schema";
 import {
+  previewBeatmap,
   mappoolCommand,
   mappoolWorkspace,
   publicMappools,
@@ -69,7 +70,14 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
   });
   beforeEach(async () => {
-    vi.mocked(fetchBeatmap).mockReset().mockResolvedValue(metadata);
+    vi.mocked(fetchBeatmap)
+      .mockReset()
+      .mockImplementation(async (id) => ({
+        beatmapId: id,
+        metadata,
+        fetchedAt: "2026-01-01T00:00:00.000Z",
+        fingerprint: "a".repeat(64),
+      }));
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
     await db().insert(users).values([admin, mapper, referee, player]);
     await db().insert(editionState).values({ slug: edition.slug });
@@ -136,6 +144,81 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     category,
     position,
     beatmap,
+  });
+  it("protects preview lookups by role and edition without writing an audit event", async () => {
+    for (const actor of [referee, player])
+      await expect(
+        previewBeatmap(actor, edition.slug, { beatmap: "123" }),
+      ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      previewBeatmap(mapper, "other-test-cup", { beatmap: "123" }),
+    ).rejects.toMatchObject({ status: 403 });
+    for (const input of [
+      { beatmap: "https://evil.example/123" },
+      { beatmap: "123", actorId: admin.osuId },
+      { beatmap: "" },
+    ])
+      await expect(
+        previewBeatmap(mapper, edition.slug, input),
+      ).rejects.toMatchObject({ status: 400 });
+    expect(fetchBeatmap).not.toHaveBeenCalled();
+    expect(
+      await previewBeatmap(mapper, edition.slug, {
+        beatmap: "https://osu.ppy.sh/beatmapsets/42#osu/123",
+      }),
+    ).toMatchObject({ beatmapId: 123, metadata });
+    expect(
+      await previewBeatmap(admin, edition.slug, { beatmap: "123" }),
+    ).toMatchObject({ beatmapId: 123 });
+    expect(await db().select().from(mappoolEvents)).toEqual([]);
+    await db()
+      .update(staffRoles)
+      .set({ revokedAt: new Date() })
+      .where(eq(staffRoles.userId, mapper.osuId));
+    await expect(
+      previewBeatmap(mapper, edition.slug, { beatmap: "123" }),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+  it("verifies metadata on Save and refuses a changed preview or browser-supplied metadata", async () => {
+    const pool = await create();
+    await expect(
+      mappoolCommand(mapper, edition.slug, {
+        ...add(pool.id, 0),
+        metadata: { title: "Forged" },
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      mappoolCommand(mapper, edition.slug, {
+        ...add(pool.id, 0),
+        expectedMetadataFingerprint: "b".repeat(64),
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect((await mappoolWorkspace(mapper, edition.slug)).entries).toEqual([]);
+    const preview = await previewBeatmap(mapper, edition.slug, {
+      beatmap: "123",
+    });
+    let data = await mappoolCommand(mapper, edition.slug, {
+      ...add(pool.id, 0),
+      expectedMetadataFingerprint: preview.fingerprint,
+    });
+    expect(data.entries[0]).toMatchObject({
+      metadata: preview.metadata,
+      metadataFetchedAt: new Date(preview.fetchedAt),
+    });
+    vi.mocked(fetchBeatmap).mockResolvedValue({
+      ...preview,
+      metadata: { ...metadata, title: "Changed upstream" },
+      fetchedAt: "2026-01-02T00:00:00.000Z",
+      fingerprint: "c".repeat(64),
+    });
+    data = await mappoolCommand(mapper, edition.slug, {
+      ...add(pool.id, 1),
+      entryId: data.entries[0].id,
+    });
+    expect(data.entries[0].metadata.title).toBe("Changed upstream");
+    expect(data.events.filter((e) => e.action === "entry_save")).toHaveLength(
+      2,
+    );
   });
   it("automatically records actor, target, versions and map changes without a reason", async () => {
     const pool = await create();

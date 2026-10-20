@@ -1,6 +1,6 @@
 import type { publicMappools } from "@/lib/mappools";
 import { categories, categoryNames, slotLabel } from "@/lib/mappool-model";
-import { BeatmapCover } from "./beatmap-cover";
+import { BeatmapDetails } from "./beatmap-details";
 export function MappoolView({
   pool,
 }: {
@@ -55,29 +55,12 @@ export function MappoolView({
               </div>
               <ol className="mappool-slots">
                 {entries.map((e) => (
-                  <li className="beatmap-row panel" key={e.id}>
-                    <BeatmapCover setId={e.metadata.setId} />
-                    <div>
-                      <span className="badge">
-                        {slotLabel(e.category, e.position)}
-                      </span>
-                      <h3>
-                        <a
-                          className="text-link"
-                          href={`https://osu.ppy.sh/beatmaps/${e.beatmapId}`}
-                        >
-                          {e.metadata.artist} — {e.metadata.title} ↗
-                        </a>
-                      </h3>
-                      <p className="muted small">
-                        {e.metadata.difficulty} · mapped by {e.metadata.mapper}
-                      </p>
-                      <p className="small">
-                        {e.metadata.stars.toFixed(2)} ★ · {e.metadata.bpm} BPM ·{" "}
-                        {Math.floor(e.metadata.duration / 60)}:
-                        {String(e.metadata.duration % 60).padStart(2, "0")}
-                      </p>
-                    </div>
+                  <li className="panel" key={e.id}>
+                    <BeatmapDetails
+                      beatmapId={e.beatmapId}
+                      metadata={e.metadata}
+                      label={slotLabel(e.category, e.position)}
+                    />
                   </li>
                 ))}
               </ol>

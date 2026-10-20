@@ -6,7 +6,7 @@ export function BeatmapCover({ setId }: { setId: number }) {
   return (
     <div className="beatmap-cover">
       {failed ? (
-        <span aria-hidden="true">OCLR</span>
+        <span className="muted small">Cover unavailable</span>
       ) : (
         <Image
           src={`https://assets.ppy.sh/beatmaps/${setId}/covers/cover.jpg`}

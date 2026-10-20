@@ -450,7 +450,7 @@ export const mappoolEntries = pgTable(
     position: integer("position").notNull(),
     beatmapId: bigint("beatmap_id", { mode: "number" }).notNull(),
     metadata: jsonb("metadata")
-      .$type<import("../lib/osu-beatmaps").BeatmapMetadata>()
+      .$type<import("../lib/mappool-model").BeatmapMetadata>()
       .notNull(),
     metadataFetchedAt: timestamp("metadata_fetched_at", { withTimezone: true })
       .notNull()

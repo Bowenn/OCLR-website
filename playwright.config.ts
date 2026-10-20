@@ -62,15 +62,18 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm start -- --hostname 127.0.0.1 --port 3100",
+    command: process.env.TEST_DATABASE_URL
+      ? "node --import tsx --import ./tests/fixtures/osu-provider.ts node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100"
+      : "npm start -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
     env: process.env.TEST_DATABASE_URL
       ? {
           DATABASE_URL: process.env.TEST_DATABASE_URL,
           ADMIN_OSU_IDS: "60001,70001,110001,120001",
-          OSU_CLIENT_ID: "",
-          OSU_CLIENT_SECRET: "",
+          TEST_DATABASE_URL: process.env.TEST_DATABASE_URL,
+          OSU_CLIENT_ID: "123",
+          OSU_CLIENT_SECRET: "synthetic-browser-provider-secret",
           APP_URL: "http://127.0.0.1:3100",
           OCLR_EDITIONS_FILE: fixturePath,
           OCLR_BRACKETS_FILE: bracketsPath,
