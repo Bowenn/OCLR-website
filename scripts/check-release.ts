@@ -43,6 +43,12 @@ try {
   await db().execute(
     sql`SELECT 1 FROM captains, teams, memberships, draft_sessions, draft_picks, edition_events LIMIT 0`,
   );
+  await db().execute(
+    sql`SELECT 1 FROM staff_role_events, tournament_stages, tournament_rounds, mappools, mappool_entries, mappool_events LIMIT 0`,
+  );
+  await db().execute(
+    sql`SELECT 1 FROM fixtures, fixture_referees, match_imports, match_games, match_results, result_revisions, result_audit_events, result_game_claims LIMIT 0`,
+  );
   console.log(
     "Configuration and database preflight passed. Live OAuth, deployment and organizer approval must still be verified.",
   );

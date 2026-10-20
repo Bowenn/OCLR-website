@@ -3,6 +3,8 @@ import { z } from "zod";
 import { db } from "@/db";
 import {
   editionState,
+  fixtures,
+  resultRevisions,
   tournamentStages,
   tournamentRounds,
   mappools,
@@ -289,7 +291,21 @@ export async function mappoolCommand(
               ),
             )
             .limit(1);
-          if (used.length)
+          const completed = await tx
+            .select({ id: fixtures.id })
+            .from(fixtures)
+            .innerJoin(
+              resultRevisions,
+              eq(resultRevisions.fixtureId, fixtures.id),
+            )
+            .where(
+              and(
+                eq(fixtures.roundId, before.id),
+                isNotNull(resultRevisions.approvedAt),
+              ),
+            )
+            .limit(1);
+          if (used.length || completed.length)
             throw new HttpError(
               409,
               "Published or completed-fixture round labels are protected. Unpublish editable pools first.",

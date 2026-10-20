@@ -1,0 +1,700 @@
+import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  getTableColumns,
+} from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/db";
+import {
+  captains,
+  editionState,
+  editionEvents,
+  resultRevisions,
+  fixtureReferees,
+  fixtures,
+  memberships,
+  teams,
+  users,
+  tournamentRounds,
+  tournamentStages,
+  mappools,
+  mappoolEntries,
+  matchResults,
+  resultAuditEvents,
+} from "@/db/schema";
+import {
+  assertCapability,
+  hasCapability,
+  permits,
+  staffAccess,
+} from "./auth/staff";
+import type { User } from "./auth/sessions";
+import { getEditions } from "./content";
+import {
+  scoringRulesSchema,
+  standingsRulesSchema,
+  validTimeZone,
+} from "./competition-model";
+import { HttpError } from "./http";
+const confirmation = {
+  confirmed: z.literal(true),
+  reason: z.string().trim().min(1).max(1000),
+};
+const fixtureFields = {
+  label: z.string().trim().min(1).max(100),
+  roundId: z.uuid(),
+  homeTeamId: z.uuid(),
+  awayTeamId: z.uuid(),
+  scheduledAt: z.iso.datetime({ offset: true }).nullable(),
+  timeZone: z.string().trim().max(80).refine(validTimeZone),
+  status: z.enum(["scheduled", "in_progress", "cancelled"]),
+  mappoolId: z.uuid().nullable(),
+  position: z.number().int().min(1).max(999),
+  homeSourceId: z.uuid().nullable(),
+  homeSourceOutcome: z.enum(["winner", "loser"]).nullable(),
+  awaySourceId: z.uuid().nullable(),
+  awaySourceOutcome: z.enum(["winner", "loser"]).nullable(),
+  refereeIds: z
+    .array(z.number().int().positive().max(Number.MAX_SAFE_INTEGER))
+    .max(50)
+    .refine((ids) => new Set(ids).size === ids.length),
+};
+const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({ ...confirmation, ...fixtureFields, action: z.literal("create") })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
+      ...fixtureFields,
+      action: z.literal("edit"),
+      fixtureId: z.uuid(),
+      expectedVersion: z.number().int().nonnegative(),
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
+      action: z.literal("publish"),
+      fixtureId: z.uuid(),
+      expectedVersion: z.number().int().nonnegative(),
+      published: z.boolean(),
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
+      action: z.literal("round_rules"),
+      roundId: z.uuid(),
+      expectedVersion: z.number().int().nonnegative(),
+      scoringRules: scoringRulesSchema.nullable(),
+      standingsRules: standingsRulesSchema.nullable(),
+    })
+    .strict(),
+]);
+type Reader = Pick<ReturnType<typeof db>, "select">;
+async function officialTeams(reader: Reader, slug: string) {
+  const rows = await reader
+    .select({ id: teams.id, name: teams.name, captainId: teams.captainId })
+    .from(teams)
+    .innerJoin(
+      captains,
+      and(
+        eq(captains.editionSlug, teams.editionSlug),
+        eq(captains.userId, teams.captainId),
+        eq(captains.published, true),
+      ),
+    )
+    .where(
+      and(
+        eq(teams.editionSlug, slug),
+        eq(teams.identityPublished, true),
+        eq(teams.rosterPublished, true),
+        isNotNull(teams.finalizedAt),
+        isNull(teams.archivedAt),
+      ),
+    )
+    .orderBy(teams.name);
+  const members = rows.length
+    ? await reader
+        .select({
+          teamId: memberships.teamId,
+          osuId: users.osuId,
+          username: users.username,
+        })
+        .from(memberships)
+        .innerJoin(users, eq(users.osuId, memberships.userId))
+        .where(
+          and(
+            inArray(
+              memberships.teamId,
+              rows.map((t) => t.id),
+            ),
+            isNull(memberships.leftAt),
+          ),
+        )
+    : [];
+  return rows.map((t) => ({
+    ...t,
+    members: members
+      .filter((m) => m.teamId === t.id)
+      .map(({ osuId, username }) => ({ osuId, username })),
+  }));
+}
+function configuredEdition(slug: string) {
+  const edition = getEditions().find((e) => e.slug === slug);
+  if (!edition) throw new HttpError(404, "Edition not found.");
+  return edition;
+}
+export async function staffFixtures(actor: User, slug: string) {
+  const access = await staffAccess(actor);
+  const canManage = permits(access, "manage_fixtures", slug);
+  if (!canManage && !permits(access, "record_results", slug))
+    throw new HttpError(403, "Fixture access is required.");
+  const edition = configuredEdition(slug);
+  return db().transaction(
+    async (tx) => {
+      const assigned = await tx
+        .select({ fixtureId: fixtureReferees.fixtureId })
+        .from(fixtureReferees)
+        .where(eq(fixtureReferees.userId, actor.osuId));
+      const rows = await tx
+        .select()
+        .from(fixtures)
+        .where(
+          and(
+            eq(fixtures.editionSlug, slug),
+            canManage
+              ? undefined
+              : inArray(
+                  fixtures.id,
+                  assigned.map((a) => a.fixtureId),
+                ),
+          ),
+        )
+        .orderBy(fixtures.scheduledAt, fixtures.position);
+      const rounds = await tx
+        .select({ round: tournamentRounds, stage: tournamentStages.kind })
+        .from(tournamentRounds)
+        .innerJoin(
+          tournamentStages,
+          eq(tournamentStages.id, tournamentRounds.stageId),
+        )
+        .where(
+          and(
+            eq(tournamentRounds.editionSlug, slug),
+            canManage
+              ? undefined
+              : inArray(
+                  tournamentRounds.id,
+                  rows.map((f) => f.roundId),
+                ),
+          ),
+        )
+        .orderBy(tournamentStages.kind, tournamentRounds.position);
+      const official = await officialTeams(tx, slug);
+      const assignments = rows.length
+        ? await tx
+            .select()
+            .from(fixtureReferees)
+            .where(
+              inArray(
+                fixtureReferees.fixtureId,
+                rows.map((f) => f.id),
+              ),
+            )
+        : [];
+      const pools = canManage
+        ? await tx
+            .select({
+              id: mappools.id,
+              name: mappools.name,
+              roundId: mappools.roundId,
+            })
+            .from(mappools)
+            .where(eq(mappools.editionSlug, slug))
+            .orderBy(mappools.name)
+        : [];
+      const results = rows.length
+        ? await tx
+            .select()
+            .from(matchResults)
+            .where(
+              inArray(
+                matchResults.fixtureId,
+                rows.map((f) => f.id),
+              ),
+            )
+        : [];
+      return {
+        canManage,
+        timeZone: edition.timeZone,
+        fixtures: rows.map((f) => ({
+          ...f,
+          refereeIds: assignments
+            .filter((a) => a.fixtureId === f.id)
+            .map((a) => a.userId),
+          result: results.find((r) => r.fixtureId === f.id) ?? null,
+        })),
+        rounds,
+        teams: canManage
+          ? official
+          : official.filter((t) =>
+              rows.some((f) => f.homeTeamId === t.id || f.awayTeamId === t.id),
+            ),
+        pools,
+      };
+    },
+    { isolationLevel: "repeatable read" },
+  );
+}
+export type FixtureWorkspace = Awaited<ReturnType<typeof staffFixtures>>;
+/** Private typed contract used by the MP importer. No browser-provided identity is accepted. */
+export async function fixtureForReview(actor: User, slug: string, id: string) {
+  await assertCapability(actor, "record_results", slug);
+  configuredEdition(slug);
+  if (!z.uuid().safeParse(id).success)
+    throw new HttpError(404, "Fixture not found.");
+  const admin = await hasCapability(actor, "manage_fixtures", slug);
+  return db().transaction(
+    async (tx) => {
+      const [fixture] = await tx
+        .select()
+        .from(fixtures)
+        .where(and(eq(fixtures.id, id), eq(fixtures.editionSlug, slug)));
+      if (!fixture) throw new HttpError(404, "Fixture not found.");
+      const [assignment] = await tx
+        .select()
+        .from(fixtureReferees)
+        .where(
+          and(
+            eq(fixtureReferees.fixtureId, id),
+            eq(fixtureReferees.userId, actor.osuId),
+          ),
+        );
+      if (!admin && !assignment)
+        throw new HttpError(403, "You are not assigned to this fixture.");
+      const [round] = await tx
+        .select({
+          ...getTableColumns(tournamentRounds),
+          stage: tournamentStages.kind,
+        })
+        .from(tournamentRounds)
+        .innerJoin(
+          tournamentStages,
+          eq(tournamentStages.id, tournamentRounds.stageId),
+        )
+        .where(eq(tournamentRounds.id, fixture.roundId));
+      const official = await officialTeams(tx, slug);
+      const home = official.find((t) => t.id === fixture.homeTeamId);
+      const away = official.find((t) => t.id === fixture.awayTeamId);
+      if (!home || !away)
+        throw new HttpError(
+          409,
+          "Both teams must have finalized published identities and rosters before reporting.",
+        );
+      const [pool] = fixture.mappoolId
+        ? await tx
+            .select()
+            .from(mappools)
+            .where(eq(mappools.id, fixture.mappoolId))
+        : [];
+      const maps = pool
+        ? await tx
+            .select({
+              beatmapId: mappoolEntries.beatmapId,
+              category: mappoolEntries.category,
+              position: mappoolEntries.position,
+            })
+            .from(mappoolEntries)
+            .where(eq(mappoolEntries.poolId, pool.id))
+        : [];
+      const [result] = await tx
+        .select()
+        .from(matchResults)
+        .where(eq(matchResults.fixtureId, id));
+      const events = await tx
+        .select()
+        .from(resultAuditEvents)
+        .where(eq(resultAuditEvents.fixtureId, id))
+        .orderBy(desc(resultAuditEvents.createdAt))
+        .limit(100);
+      return {
+        fixture,
+        round,
+        teams: [home, away] as const,
+        pool: pool
+          ? {
+              id: pool.id,
+              name: pool.name,
+              fmMode: pool.fmMode,
+              fmRestrictions: pool.fmRestrictions,
+              entries: maps,
+            }
+          : null,
+        result: result ?? null,
+        canApprove: admin,
+        events,
+      };
+    },
+    { isolationLevel: "repeatable read" },
+  );
+}
+export type FixtureReviewContext = Awaited<ReturnType<typeof fixtureForReview>>;
+function validateSources(
+  rows: (typeof fixtures.$inferSelect)[],
+  kinds: Map<string, string>,
+) {
+  const byId = new Map(rows.map((f) => [f.id, f]));
+  for (const f of rows)
+    for (const [sourceId, outcome] of [
+      [f.homeSourceId, f.homeSourceOutcome],
+      [f.awaySourceId, f.awaySourceOutcome],
+    ]) {
+      if (Boolean(sourceId) !== Boolean(outcome))
+        throw new HttpError(
+          400,
+          "A bracket source requires both a fixture and winner/loser selection.",
+        );
+      if (
+        sourceId &&
+        (!byId.has(sourceId) ||
+          kinds.get(f.roundId) !== "knockout" ||
+          kinds.get(byId.get(sourceId)!.roundId) !== "knockout")
+      )
+        throw new HttpError(
+          400,
+          "Bracket sources must be knockout fixtures in this edition.",
+        );
+    }
+  const pending = new Map(
+    rows.map((f) => [
+      f.id,
+      new Set(
+        [f.homeSourceId, f.awaySourceId].filter((id): id is string =>
+          Boolean(id),
+        ),
+      ),
+    ]),
+  );
+  while (pending.size) {
+    const ready = [...pending].filter(([, sources]) =>
+      [...sources].every((id) => !pending.has(id)),
+    );
+    if (!ready.length)
+      throw new HttpError(400, "Bracket sources cannot contain a cycle.");
+    ready.forEach(([id]) => pending.delete(id));
+  }
+}
+export async function fixtureCommand(
+  actor: User,
+  slug: string,
+  input: unknown,
+) {
+  await assertCapability(actor, "manage_fixtures", slug);
+  configuredEdition(slug);
+  const parsed = commandSchema.safeParse(input);
+  if (!parsed.success)
+    throw new HttpError(
+      400,
+      "Confirm valid fixture fields, rules and a reason.",
+    );
+  const c = parsed.data;
+  try {
+    await db().transaction(async (tx) => {
+      await tx.insert(editionState).values({ slug }).onConflictDoNothing();
+      await tx
+        .select()
+        .from(editionState)
+        .where(eq(editionState.slug, slug))
+        .for("update");
+      await assertCapability(actor, "manage_fixtures", slug);
+      if (c.action === "round_rules") {
+        const [round] = await tx
+          .select({
+            ...getTableColumns(tournamentRounds),
+            stage: tournamentStages.kind,
+          })
+          .from(tournamentRounds)
+          .innerJoin(
+            tournamentStages,
+            eq(tournamentStages.id, tournamentRounds.stageId),
+          )
+          .where(
+            and(
+              eq(tournamentRounds.id, c.roundId),
+              eq(tournamentRounds.editionSlug, slug),
+            ),
+          );
+        if (!round) throw new HttpError(404, "Round not found.");
+        if (round.version !== c.expectedVersion)
+          throw new HttpError(
+            409,
+            "Round configuration changed. Refresh before continuing.",
+          );
+        if (round.stage !== "group" && c.standingsRules)
+          throw new HttpError(
+            400,
+            "Standings rules belong to Group Stage rounds.",
+          );
+        const completed = await tx
+          .select({ id: fixtures.id })
+          .from(fixtures)
+          .innerJoin(
+            resultRevisions,
+            eq(resultRevisions.fixtureId, fixtures.id),
+          )
+          .where(
+            and(
+              eq(fixtures.roundId, round.id),
+              isNotNull(resultRevisions.approvedAt),
+            ),
+          )
+          .limit(1);
+        if (
+          completed.length &&
+          !isDeepStrictEqual(c.scoringRules, round.scoringRules)
+        )
+          throw new HttpError(
+            409,
+            "Scoring rules used by approved results are immutable. Configure a new round for a different ruleset.",
+          );
+        const [updated] = await tx
+          .update(tournamentRounds)
+          .set({
+            scoringRules: c.scoringRules,
+            standingsRules: c.standingsRules,
+            version: round.version + 1,
+          })
+          .where(eq(tournamentRounds.id, round.id))
+          .returning();
+        // Round configuration is audited using the existing edition audit stream.
+        await tx.insert(editionEvents).values({
+          editionSlug: slug,
+          actorId: actor.osuId,
+          kind: "competition_round_rules",
+          reason: c.reason,
+          detail: { before: round, after: updated },
+        });
+        return;
+      }
+      const [before] =
+        c.action === "create"
+          ? []
+          : await tx
+              .select()
+              .from(fixtures)
+              .where(
+                and(
+                  eq(fixtures.id, c.fixtureId),
+                  eq(fixtures.editionSlug, slug),
+                ),
+              )
+              .for("update");
+      if (c.action !== "create" && !before)
+        throw new HttpError(404, "Fixture not found.");
+      if (c.action !== "create" && before!.version !== c.expectedVersion)
+        throw new HttpError(409, "Fixture changed. Refresh before continuing.");
+      if (c.action === "publish") {
+        const official = await officialTeams(tx, slug);
+        if (
+          c.published &&
+          (!official.some((t) => t.id === before!.homeTeamId) ||
+            !official.some((t) => t.id === before!.awayTeamId))
+        )
+          throw new HttpError(
+            409,
+            "Publish finalized teams and rosters before publishing a fixture.",
+          );
+        const [after] = await tx
+          .update(fixtures)
+          .set({
+            publishedAt: c.published ? new Date() : null,
+            version: before!.version + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(fixtures.id, before!.id))
+          .returning();
+        await tx.insert(resultAuditEvents).values({
+          fixtureId: after.id,
+          actorId: actor.osuId,
+          action: c.published ? "fixture_publish" : "fixture_unpublish",
+          reason: c.reason,
+          detail: { before, after },
+        });
+        return;
+      }
+      if (before?.publishedAt)
+        throw new HttpError(409, "Unpublish this fixture before amending it.");
+      const official = await officialTeams(tx, slug);
+      if (
+        c.homeTeamId === c.awayTeamId ||
+        !official.some((t) => t.id === c.homeTeamId) ||
+        !official.some((t) => t.id === c.awayTeamId)
+      )
+        throw new HttpError(
+          400,
+          "Choose two different finalized, published teams from this edition.",
+        );
+      const [round] = await tx
+        .select()
+        .from(tournamentRounds)
+        .where(
+          and(
+            eq(tournamentRounds.id, c.roundId),
+            eq(tournamentRounds.editionSlug, slug),
+          ),
+        );
+      if (!round) throw new HttpError(404, "Round not found in this edition.");
+      if (c.mappoolId) {
+        const [pool] = await tx
+          .select()
+          .from(mappools)
+          .where(
+            and(
+              eq(mappools.id, c.mappoolId),
+              eq(mappools.roundId, c.roundId),
+              eq(mappools.editionSlug, slug),
+            ),
+          );
+        if (!pool)
+          throw new HttpError(
+            400,
+            "Choose a mappool from this fixture's edition and round.",
+          );
+      }
+      for (const userId of c.refereeIds) {
+        const [user] = await tx
+          .select()
+          .from(users)
+          .where(eq(users.osuId, userId));
+        if (!user || !(await hasCapability(user, "record_results", slug)))
+          throw new HttpError(
+            400,
+            "Every assigned referee must have an active result-reporting role for this edition.",
+          );
+      }
+      const [result] = before
+        ? await tx
+            .select()
+            .from(matchResults)
+            .where(eq(matchResults.fixtureId, before.id))
+        : [];
+      if (
+        result &&
+        result.currentRevision > 0 &&
+        before &&
+        (before.homeTeamId !== c.homeTeamId ||
+          before.awayTeamId !== c.awayTeamId ||
+          before.roundId !== c.roundId ||
+          before.mappoolId !== c.mappoolId ||
+          before.homeSourceId !== c.homeSourceId ||
+          before.homeSourceOutcome !== c.homeSourceOutcome ||
+          before.awaySourceId !== c.awaySourceId ||
+          before.awaySourceOutcome !== c.awaySourceOutcome)
+      )
+        throw new HttpError(
+          409,
+          "Reported fixture teams, round, pool and progression are immutable. Review/cancel the existing report instead of reassigning it.",
+        );
+      const values = {
+        label: c.label,
+        roundId: c.roundId,
+        homeTeamId: c.homeTeamId,
+        awayTeamId: c.awayTeamId,
+        scheduledAt: c.scheduledAt ? new Date(c.scheduledAt) : null,
+        timeZone: c.timeZone,
+        status: c.status,
+        mappoolId: c.mappoolId,
+        position: c.position,
+        homeSourceId: c.homeSourceId,
+        homeSourceOutcome: c.homeSourceOutcome,
+        awaySourceId: c.awaySourceId,
+        awaySourceOutcome: c.awaySourceOutcome,
+        updatedAt: new Date(),
+      };
+      const candidateId = before?.id ?? randomUUID();
+      const allBefore = await tx
+        .select()
+        .from(fixtures)
+        .where(eq(fixtures.editionSlug, slug));
+      const kindsBefore = await tx
+        .select({ id: tournamentRounds.id, kind: tournamentStages.kind })
+        .from(tournamentRounds)
+        .innerJoin(
+          tournamentStages,
+          eq(tournamentStages.id, tournamentRounds.stageId),
+        )
+        .where(eq(tournamentRounds.editionSlug, slug));
+      validateSources(
+        [
+          ...allBefore.filter((f) => f.id !== candidateId),
+          {
+            ...values,
+            id: candidateId,
+            editionSlug: slug,
+            publishedAt: before?.publishedAt ?? null,
+            version: before?.version ?? 0,
+          },
+        ],
+        new Map(kindsBefore.map((r) => [r.id, r.kind])),
+      );
+      const [after] = before
+        ? await tx
+            .update(fixtures)
+            .set({ ...values, version: before.version + 1 })
+            .where(eq(fixtures.id, before.id))
+            .returning()
+        : await tx
+            .insert(fixtures)
+            .values({ ...values, id: candidateId, editionSlug: slug })
+            .returning();
+      const oldAssignments = before
+        ? await tx
+            .select()
+            .from(fixtureReferees)
+            .where(eq(fixtureReferees.fixtureId, before.id))
+        : [];
+      await tx
+        .delete(fixtureReferees)
+        .where(eq(fixtureReferees.fixtureId, after.id));
+      if (c.refereeIds.length)
+        await tx.insert(fixtureReferees).values(
+          c.refereeIds.map((userId) => ({
+            fixtureId: after.id,
+            userId,
+            assignedBy: actor.osuId,
+          })),
+        );
+      await tx.insert(resultAuditEvents).values({
+        fixtureId: after.id,
+        actorId: actor.osuId,
+        action: before ? "fixture_amend" : "fixture_create",
+        reason: c.reason,
+        detail: {
+          before: before ?? null,
+          after,
+          priorReferees: oldAssignments.map((r) => r.userId),
+          refereeIds: c.refereeIds,
+        },
+      });
+    });
+  } catch (error) {
+    if (
+      (error instanceof Error ? (error.cause as { code?: string }) : undefined)
+        ?.code === "23505"
+    )
+      throw new HttpError(
+        409,
+        "This fixture position already exists. Refresh before continuing.",
+      );
+    throw error;
+  }
+  return staffFixtures(actor, slug);
+}

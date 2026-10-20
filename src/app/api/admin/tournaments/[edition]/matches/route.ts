@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth/user";
+import { staffFixtures, fixtureCommand } from "@/lib/fixtures";
+import { apiError, readJson, requireSameOrigin } from "@/lib/http";
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ edition: string }> },
+) {
+  try {
+    const user = await requireUser();
+    const { edition } = await context.params;
+    return NextResponse.json(await staffFixtures(user, edition), {
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (error) {
+    return apiError(error);
+  }
+}
+export async function POST(
+  request: Request,
+  context: { params: Promise<{ edition: string }> },
+) {
+  try {
+    requireSameOrigin(request);
+    const user = await requireUser();
+    const { edition } = await context.params;
+    return NextResponse.json(
+      await fixtureCommand(user, edition, await readJson(request)),
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    return apiError(error);
+  }
+}

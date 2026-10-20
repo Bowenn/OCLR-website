@@ -1,0 +1,529 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { eq, sql } from "drizzle-orm";
+import { db, closeDb } from "../../src/db";
+import {
+  editionState,
+  fixtureReferees,
+  fixtures,
+  matchGames,
+  matchImports,
+  matchResults,
+  resultAuditEvents,
+  resultRevisions,
+  staffRoles,
+  teams,
+  users,
+} from "../../src/db/schema";
+import {
+  fixtureCommand,
+  fixtureForReview,
+  staffFixtures,
+} from "../../src/lib/fixtures";
+import { mappoolCommand } from "../../src/lib/mappools";
+import { seedPublicDirectory } from "../fixtures/players";
+import { edition } from "../fixtures/edition";
+const url = process.env.TEST_DATABASE_URL;
+const admin = { osuId: 250001, username: "Synthetic Fixture Admin" };
+const referee = { osuId: 250002, username: "Synthetic Assigned Referee" };
+const otherRef = { osuId: 250003, username: "Synthetic Unassigned Referee" };
+const mapper = { osuId: 250004, username: "Synthetic Mappooler" };
+const player = { osuId: 250005, username: "Synthetic Player" };
+const confirm = { confirmed: true, reason: "Synthetic fixture rehearsal" };
+const rules = {
+  version: "synthetic-v1",
+  mode: "osu",
+  teamType: "team-vs",
+  scoringType: "score",
+  aggregation: "sum",
+  playersPerTeam: 2,
+  series: { type: "first_to", wins: 2 },
+  allowSubstitutions: false,
+};
+describe.skipIf(!url)(
+  "competition fixture integrity and assigned-referee boundaries",
+  () => {
+    let scratch: string;
+    let homeId: string;
+    let awayId: string;
+    let roundId: string;
+    let poolId: string;
+    beforeAll(() => {
+      if (!new URL(url!).pathname.includes("test"))
+        throw new Error("Use a test database");
+      scratch = mkdtempSync(join(tmpdir(), "oclr-fixtures-"));
+      const path = join(scratch, "editions.json");
+      writeFileSync(
+        path,
+        JSON.stringify([edition, { ...edition, slug: "other-test-cup" }]),
+      );
+      vi.stubEnv("OCLR_EDITIONS_FILE", path);
+      vi.stubEnv("DATABASE_URL", url!);
+      vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
+    });
+    beforeEach(async () => {
+      await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+      homeId = (await seedPublicDirectory(260001)).teamId;
+      awayId = (await seedPublicDirectory(260101)).teamId;
+      await db()
+        .insert(users)
+        .values([admin, referee, otherRef, mapper, player]);
+      await db()
+        .insert(staffRoles)
+        .values([
+          {
+            userId: referee.osuId,
+            role: "referee",
+            editionSlug: "test-cup",
+            grantedBy: admin.osuId,
+          },
+          {
+            userId: otherRef.osuId,
+            role: "referee",
+            editionSlug: "test-cup",
+            grantedBy: admin.osuId,
+          },
+          {
+            userId: mapper.osuId,
+            role: "mappooler",
+            editionSlug: "test-cup",
+            grantedBy: admin.osuId,
+          },
+        ]);
+      let maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_create",
+        stage: "group",
+        name: "Synthetic Group Round",
+        position: 1,
+      });
+      roundId = maps.rounds[0].id;
+      maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "pool_create",
+        roundId,
+        name: "Synthetic Match Pool",
+      });
+      poolId = maps.pools[0].id;
+    });
+    afterAll(async () => {
+      await closeDb();
+      vi.unstubAllEnvs();
+      rmSync(scratch, { recursive: true, force: true });
+    });
+    function body() {
+      return {
+        ...confirm,
+        action: "create",
+        label: "Synthetic Fixture",
+        roundId,
+        homeTeamId: homeId,
+        awayTeamId: awayId,
+        position: 1,
+        scheduledAt: null,
+        timeZone: "Asia/Taipei",
+        status: "scheduled",
+        mappoolId: poolId,
+        homeSourceId: null,
+        homeSourceOutcome: null,
+        awaySourceId: null,
+        awaySourceOutcome: null,
+        refereeIds: [referee.osuId],
+      };
+    }
+    it("creates persistent fixtures separately from results and limits referee reads to assigned fixtures", async () => {
+      const data = await fixtureCommand(admin, "test-cup", body());
+      const fixture = data.fixtures[0];
+      expect(fixture).toMatchObject({
+        scheduledAt: null,
+        result: null,
+        publishedAt: null,
+        version: 0,
+        refereeIds: [referee.osuId],
+      });
+      expect((await staffFixtures(referee, "test-cup")).fixtures).toHaveLength(
+        1,
+      );
+      expect((await staffFixtures(otherRef, "test-cup")).fixtures).toEqual([]);
+      expect(
+        (await fixtureForReview(referee, "test-cup", fixture.id)).teams.map(
+          (t) => t.id,
+        ),
+      ).toEqual([homeId, awayId]);
+      await expect(
+        fixtureForReview(otherRef, "test-cup", fixture.id),
+      ).rejects.toMatchObject({ status: 403 });
+      for (const actor of [mapper, player]) {
+        await expect(staffFixtures(actor, "test-cup")).rejects.toMatchObject({
+          status: 403,
+        });
+        await expect(
+          fixtureForReview(actor, "test-cup", fixture.id),
+        ).rejects.toMatchObject({ status: 403 });
+      }
+      for (const actor of [referee, mapper, player])
+        await expect(
+          fixtureCommand(actor, "test-cup", body()),
+        ).rejects.toMatchObject({ status: 403 });
+      await closeDb();
+      expect(
+        (await fixtureForReview(referee, "test-cup", fixture.id)).fixture.id,
+      ).toBe(fixture.id);
+    });
+    it("rejects invalid/unconfirmed fields, unpublished teams and cross-round/edition identities", async () => {
+      for (const change of [
+        { homeTeamId: awayId },
+        { timeZone: "Invalid/Zone" },
+        { scheduledAt: "2030-01-01T10:00:00" },
+        { confirmed: false },
+        { refereeIds: [player.osuId] },
+        { refereeIds: [referee.osuId, referee.osuId] },
+        { actorId: player.osuId },
+      ])
+        await expect(
+          fixtureCommand(admin, "test-cup", { ...body(), ...change }),
+        ).rejects.toMatchObject({ status: 400 });
+      await db()
+        .update(teams)
+        .set({ rosterPublished: false })
+        .where(eq(teams.id, homeId));
+      await expect(
+        fixtureCommand(admin, "test-cup", body()),
+      ).rejects.toMatchObject({ status: 400 });
+      await db()
+        .update(teams)
+        .set({ rosterPublished: true })
+        .where(eq(teams.id, homeId));
+      const maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_create",
+        stage: "knockout",
+        name: "Synthetic Knockout Round",
+        position: 1,
+      });
+      const ko = maps.rounds.find((r) => r.stage === "knockout")!;
+      await expect(
+        fixtureCommand(admin, "test-cup", { ...body(), roundId: ko.id }),
+      ).rejects.toMatchObject({ status: 400 });
+      await db().insert(editionState).values({ slug: "other-test-cup" });
+      await expect(
+        fixtureCommand(admin, "other-test-cup", body()),
+      ).rejects.toMatchObject({ status: 400 });
+      await expect(
+        db().insert(fixtures).values({
+          editionSlug: "test-cup",
+          roundId: ko.id,
+          homeTeamId: homeId,
+          awayTeamId: awayId,
+          label: "Synthetic invalid cross-round",
+          position: 1,
+          timeZone: "UTC",
+          mappoolId: poolId,
+        }),
+      ).rejects.toThrow();
+      await expect(
+        db().insert(fixtures).values({
+          editionSlug: "test-cup",
+          roundId,
+          homeTeamId: homeId,
+          awayTeamId: homeId,
+          label: "Synthetic invalid self-match",
+          position: 1,
+          timeZone: "UTC",
+        }),
+      ).rejects.toThrow();
+    });
+    it("serializes stale amendments, audits actual operators and applies assignment/role revocation immediately", async () => {
+      const data = await fixtureCommand(admin, "test-cup", body());
+      const f = data.fixtures[0];
+      const { action: _action, ...fields } = body();
+      void _action;
+      const amendment = {
+        ...fields,
+        action: "edit",
+        fixtureId: f.id,
+        expectedVersion: 0,
+        refereeIds: [],
+      };
+      const results = await Promise.allSettled([
+        fixtureCommand(admin, "test-cup", amendment),
+        fixtureCommand(admin, "test-cup", amendment),
+      ]);
+      expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      expect(results.find((r) => r.status === "rejected")).toMatchObject({
+        reason: { status: 409 },
+      });
+      await expect(
+        fixtureForReview(referee, "test-cup", f.id),
+      ).rejects.toMatchObject({ status: 403 });
+      await fixtureCommand(admin, "test-cup", {
+        ...amendment,
+        expectedVersion: 1,
+        refereeIds: [referee.osuId],
+      });
+      await db()
+        .update(staffRoles)
+        .set({ revokedAt: new Date() })
+        .where(eq(staffRoles.userId, referee.osuId));
+      await expect(
+        fixtureForReview(referee, "test-cup", f.id),
+      ).rejects.toMatchObject({ status: 403 });
+      const events = await db().select().from(resultAuditEvents);
+      expect(events).toHaveLength(3);
+      expect(
+        events.every(
+          (e) => e.actorId === admin.osuId && e.reason === confirm.reason,
+        ),
+      ).toBe(true);
+    });
+    it("requires explicit publication/amendments and preserves UTC instants and timezone labels", async () => {
+      const [f] = (
+        await fixtureCommand(admin, "test-cup", {
+          ...body(),
+          scheduledAt: "2030-01-01T20:00:00+08:00",
+        })
+      ).fixtures;
+      expect(f.scheduledAt?.toISOString()).toBe("2030-01-01T12:00:00.000Z");
+      const published = await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId: f.id,
+        expectedVersion: 0,
+        published: true,
+      });
+      expect(published.fixtures[0].publishedAt).not.toBeNull();
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...body(),
+          action: "edit",
+          fixtureId: f.id,
+          expectedVersion: 1,
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      expect(await db().select().from(matchResults)).toEqual([]);
+    });
+    it("stores approved rule configuration without inventing defaults and rejects source cycles", async () => {
+      const [f] = (await fixtureCommand(admin, "test-cup", body())).fixtures;
+      expect(
+        (await fixtureForReview(admin, "test-cup", f.id)).round.scoringRules,
+      ).toBeNull();
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        expectedVersion: 0,
+        scoringRules: rules,
+        standingsRules: {
+          version: "synthetic-points",
+          winPoints: 2,
+          lossPoints: 0,
+          drawPoints: null,
+          tiebreakers: ["points", "map_difference"],
+        },
+      });
+      expect(
+        (await fixtureForReview(admin, "test-cup", f.id)).round.scoringRules,
+      ).toEqual(rules);
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...confirm,
+          action: "round_rules",
+          roundId,
+          expectedVersion: 1,
+          scoringRules: { ...rules, series: null },
+          standingsRules: null,
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      const maps = await mappoolCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_create",
+        stage: "knockout",
+        name: "Synthetic Knockout Round",
+        position: 1,
+      });
+      const ko = maps.rounds.find((r) => r.stage === "knockout")!;
+      const koBody = { ...body(), roundId: ko.id, mappoolId: null };
+      const data = await fixtureCommand(admin, "test-cup", koBody);
+      const a = data.fixtures.find((r) => r.roundId === ko.id)!;
+      const second = await fixtureCommand(admin, "test-cup", {
+        ...koBody,
+        position: 2,
+        homeSourceId: a.id,
+        homeSourceOutcome: "winner",
+      });
+      const b = second.fixtures.find(
+        (r) => r.roundId === ko.id && r.position === 2,
+      )!;
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...koBody,
+          action: "edit",
+          fixtureId: a.id,
+          expectedVersion: 0,
+          homeSourceId: b.id,
+          homeSourceOutcome: "winner",
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...koBody,
+          position: 3,
+          homeSourceId: a.id,
+          homeSourceOutcome: null,
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+    });
+    it("database uniqueness keeps imports/games/revisions distinct and no source record creates an official result", async () => {
+      const [fixture] = (await fixtureCommand(admin, "test-cup", body()))
+        .fixtures;
+      const [source] = await db()
+        .insert(matchImports)
+        .values({
+          fixtureId: fixture.id,
+          externalMatchId: 1,
+          fingerprint: "synthetic-source",
+          source: { synthetic: true },
+          createdBy: referee.osuId,
+        })
+        .returning();
+      await expect(
+        db().insert(matchImports).values({
+          fixtureId: fixture.id,
+          externalMatchId: 1,
+          fingerprint: "synthetic-source",
+          source: {},
+          createdBy: referee.osuId,
+        }),
+      ).rejects.toThrow();
+      await db()
+        .insert(matchGames)
+        .values({
+          importId: source.id,
+          externalGameId: 1,
+          data: { synthetic: true },
+        });
+      await expect(
+        db()
+          .insert(matchGames)
+          .values({ importId: source.id, externalGameId: 1, data: {} }),
+      ).rejects.toThrow();
+      expect(await db().select().from(matchResults)).toEqual([]);
+      await db().insert(matchResults).values({ fixtureId: fixture.id });
+      await db()
+        .insert(resultRevisions)
+        .values({
+          fixtureId: fixture.id,
+          revision: 1,
+          importId: source.id,
+          proposal: { synthetic: true },
+          createdBy: referee.osuId,
+          reason: "Synthetic review only",
+        });
+      expect((await db().select().from(matchResults))[0]).toMatchObject({
+        state: "draft",
+        publishedRevision: null,
+      });
+      expect(
+        (await db().select().from(resultRevisions))[0].approvedAt,
+      ).toBeNull();
+      expect(await db().select().from(fixtureReferees)).toHaveLength(1);
+    });
+    it("keeps approved scoring rules immutable while permitting explicit standings-rule changes", async () => {
+      const [fixture] = (await fixtureCommand(admin, "test-cup", body()))
+        .fixtures;
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        expectedVersion: 0,
+        scoringRules: rules,
+        standingsRules: null,
+      });
+      const [source] = await db()
+        .insert(matchImports)
+        .values({
+          fixtureId: fixture.id,
+          externalMatchId: 1,
+          fingerprint: "synthetic-approved-source",
+          source: {},
+          createdBy: referee.osuId,
+        })
+        .returning();
+      await db().insert(matchResults).values({
+        fixtureId: fixture.id,
+        state: "approved",
+        currentRevision: 1,
+      });
+      await db()
+        .insert(resultRevisions)
+        .values({
+          fixtureId: fixture.id,
+          revision: 1,
+          importId: source.id,
+          proposal: { synthetic: true },
+          reason: "Synthetic approved revision",
+          createdBy: referee.osuId,
+          approvedBy: admin.osuId,
+          approvedAt: new Date(),
+        });
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "round_rules",
+        roundId,
+        expectedVersion: 1,
+        scoringRules: rules,
+        standingsRules: {
+          version: "synthetic-points",
+          winPoints: 2,
+          lossPoints: 0,
+          drawPoints: null,
+          tiebreakers: ["points"],
+        },
+      });
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...confirm,
+          action: "round_rules",
+          roundId,
+          expectedVersion: 2,
+          scoringRules: { ...rules, playersPerTeam: 3 },
+          standingsRules: null,
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      await expect(
+        mappoolCommand(mapper, "test-cup", {
+          ...confirm,
+          action: "round_edit",
+          roundId,
+          expectedVersion: 2,
+          name: "Changed completed round",
+          position: 2,
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      const second = (
+        await fixtureCommand(admin, "test-cup", { ...body(), position: 2 })
+      ).fixtures.find((f) => f.position === 2)!;
+      await db().insert(matchResults).values({ fixtureId: second.id });
+      await expect(
+        db().insert(resultRevisions).values({
+          fixtureId: second.id,
+          revision: 1,
+          importId: source.id,
+          proposal: {},
+          reason: "Cross-fixture source forbidden",
+          createdBy: referee.osuId,
+        }),
+      ).rejects.toThrow();
+    });
+  },
+);

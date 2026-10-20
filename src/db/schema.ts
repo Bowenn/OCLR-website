@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   pgEnum,
+  check,
   integer,
   boolean,
   primaryKey,
@@ -349,6 +350,14 @@ export const tournamentRounds = pgTable(
     name: text("name").notNull(),
     position: integer("position").notNull(),
     version: integer("version").notNull().default(0),
+    scoringRules:
+      jsonb("scoring_rules").$type<
+        import("../lib/competition-model").ScoringRules
+      >(),
+    standingsRules:
+      jsonb("standings_rules").$type<
+        import("../lib/competition-model").StandingsRules
+      >(),
   },
   (t) => [
     foreignKey({
@@ -391,6 +400,7 @@ export const mappools = pgTable(
     }),
     unique("pool_round_name_unique").on(t.roundId, t.name),
     unique("pool_id_edition_unique").on(t.id, t.editionSlug),
+    unique("pool_id_round_edition_unique").on(t.id, t.roundId, t.editionSlug),
     index("pool_public_edition_idx").on(t.editionSlug, t.publishedAt),
   ],
 );
@@ -434,4 +444,211 @@ export const mappoolEvents = pgTable(
       .defaultNow(),
   },
   (t) => [index("mappool_events_pool_idx").on(t.poolId)],
+);
+
+export const fixtureStatus = pgEnum("fixture_status", [
+  "scheduled",
+  "in_progress",
+  "cancelled",
+]);
+export const fixtures = pgTable(
+  "fixtures",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug").notNull(),
+    roundId: uuid("round_id").notNull(),
+    label: text("label").notNull(),
+    homeTeamId: uuid("home_team_id").notNull(),
+    awayTeamId: uuid("away_team_id").notNull(),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    timeZone: text("time_zone").notNull(),
+    status: fixtureStatus("status").notNull().default("scheduled"),
+    mappoolId: uuid("mappool_id"),
+    position: integer("position").notNull(),
+    homeSourceId: uuid("home_source_id"),
+    homeSourceOutcome: text("home_source_outcome").$type<"winner" | "loser">(),
+    awaySourceId: uuid("away_source_id"),
+    awaySourceOutcome: text("away_source_outcome").$type<"winner" | "loser">(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    version: integer("version").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.roundId, t.editionSlug],
+      foreignColumns: [tournamentRounds.id, tournamentRounds.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.homeTeamId, t.editionSlug],
+      foreignColumns: [teams.id, teams.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.awayTeamId, t.editionSlug],
+      foreignColumns: [teams.id, teams.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.mappoolId, t.roundId, t.editionSlug],
+      foreignColumns: [mappools.id, mappools.roundId, mappools.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.homeSourceId, t.editionSlug],
+      foreignColumns: [t.id, t.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.awaySourceId, t.editionSlug],
+      foreignColumns: [t.id, t.editionSlug],
+    }),
+    unique("fixture_id_edition_unique").on(t.id, t.editionSlug),
+    unique("fixture_round_position_unique").on(t.roundId, t.position),
+    check("fixture_distinct_teams", sql`${t.homeTeamId} <> ${t.awayTeamId}`),
+    check("fixture_positive_position", sql`${t.position} > 0`),
+    check(
+      "fixture_home_source_pair",
+      sql`(${t.homeSourceId} IS NULL AND ${t.homeSourceOutcome} IS NULL) OR (${t.homeSourceId} IS NOT NULL AND ${t.homeSourceOutcome} IS NOT NULL AND ${t.homeSourceOutcome} IN ('winner', 'loser'))`,
+    ),
+    check(
+      "fixture_away_source_pair",
+      sql`(${t.awaySourceId} IS NULL AND ${t.awaySourceOutcome} IS NULL) OR (${t.awaySourceId} IS NOT NULL AND ${t.awaySourceOutcome} IS NOT NULL AND ${t.awaySourceOutcome} IN ('winner', 'loser'))`,
+    ),
+    index("fixtures_public_schedule_idx").on(
+      t.editionSlug,
+      t.publishedAt,
+      t.scheduledAt,
+    ),
+  ],
+);
+export const fixtureReferees = pgTable(
+  "fixture_referees",
+  {
+    fixtureId: uuid("fixture_id")
+      .notNull()
+      .references(() => fixtures.id),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    assignedBy: bigint("assigned_by", { mode: "number" }).notNull(),
+    assignedAt: timestamp("assigned_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.fixtureId, t.userId] }),
+    index("fixture_referee_user_idx").on(t.userId),
+  ],
+);
+export const matchImports = pgTable(
+  "match_imports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    fixtureId: uuid("fixture_id")
+      .notNull()
+      .references(() => fixtures.id),
+    externalMatchId: bigint("external_match_id", { mode: "number" }).notNull(),
+    fingerprint: text("fingerprint").notNull(),
+    source: jsonb("source").$type<unknown>().notNull(),
+    createdBy: bigint("created_by", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("import_id_fixture_unique").on(t.id, t.fixtureId),
+    unique("match_import_revision_unique").on(
+      t.fixtureId,
+      t.externalMatchId,
+      t.fingerprint,
+    ),
+  ],
+);
+export const matchGames = pgTable(
+  "match_games",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    importId: uuid("import_id")
+      .notNull()
+      .references(() => matchImports.id),
+    externalGameId: bigint("external_game_id", { mode: "number" }).notNull(),
+    beatmapId: bigint("beatmap_id", { mode: "number" }),
+    data: jsonb("data").$type<unknown>().notNull(),
+  },
+  (t) => [unique("match_import_game_unique").on(t.importId, t.externalGameId)],
+);
+export const resultState = pgEnum("result_state", [
+  "draft",
+  "submitted",
+  "approved",
+]);
+export const matchResults = pgTable("match_results", {
+  fixtureId: uuid("fixture_id")
+    .primaryKey()
+    .references(() => fixtures.id),
+  state: resultState("state").notNull().default("draft"),
+  version: integer("version").notNull().default(0),
+  currentRevision: integer("current_revision").notNull().default(0),
+  publishedRevision: integer("published_revision"),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+});
+export const resultRevisions = pgTable(
+  "result_revisions",
+  {
+    fixtureId: uuid("fixture_id")
+      .notNull()
+      .references(() => matchResults.fixtureId),
+    revision: integer("revision").notNull(),
+    importId: uuid("import_id").notNull(),
+    proposal: jsonb("proposal").$type<unknown>().notNull(),
+    reason: text("reason").notNull(),
+    createdBy: bigint("created_by", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    approvedBy: bigint("approved_by", { mode: "number" }),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.fixtureId, t.revision] }),
+    foreignKey({
+      columns: [t.importId, t.fixtureId],
+      foreignColumns: [matchImports.id, matchImports.fixtureId],
+    }),
+    check("result_revision_positive", sql`${t.revision} > 0`),
+    check(
+      "result_approval_actor_pair",
+      sql`(${t.approvedAt} IS NULL AND ${t.approvedBy} IS NULL) OR (${t.approvedAt} IS NOT NULL AND ${t.approvedBy} IS NOT NULL)`,
+    ),
+  ],
+);
+export const resultAuditEvents = pgTable(
+  "result_audit_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    fixtureId: uuid("fixture_id")
+      .notNull()
+      .references(() => fixtures.id),
+    actorId: bigint("actor_id", { mode: "number" }).notNull(),
+    action: text("action").notNull(),
+    reason: text("reason").notNull(),
+    detail: jsonb("detail").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("result_audit_fixture_idx").on(t.fixtureId)],
+);
+export const resultGameClaims = pgTable(
+  "result_game_claims",
+  {
+    editionSlug: text("edition_slug").notNull(),
+    externalGameId: bigint("external_game_id", { mode: "number" }).notNull(),
+    fixtureId: uuid("fixture_id").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.editionSlug, t.externalGameId] }),
+    foreignKey({
+      columns: [t.fixtureId, t.editionSlug],
+      foreignColumns: [fixtures.id, fixtures.editionSlug],
+    }),
+  ],
 );
