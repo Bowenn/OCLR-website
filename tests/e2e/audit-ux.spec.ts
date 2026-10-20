@@ -329,6 +329,12 @@ test.describe("automatic staff auditing", () => {
         }),
       });
     });
+    const unavailableResponse = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/admin/profiles") &&
+        response.request().method() === "POST" &&
+        Number(response.request().postDataJSON().input) === base + 1,
+    );
     await page.goto("/admin/tournaments/test-cup/captains");
     const available = page.locator(`[data-player-id="${base}"]`);
     await available.scrollIntoViewIfNeeded();
@@ -337,6 +343,7 @@ test.describe("automatic staff auditing", () => {
     ).toBeVisible();
     const unavailable = page.locator(`[data-player-id="${base + 1}"]`);
     await unavailable.scrollIntoViewIfNeeded();
+    expect((await unavailableResponse).status()).toBe(503);
     await expect(
       unavailable.getByText("Country unavailable", { exact: true }),
     ).toBeVisible();
