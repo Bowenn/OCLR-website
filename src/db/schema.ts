@@ -82,10 +82,39 @@ export const registrationStatus = pgEnum("registration_status", [
 ]);
 export const editionState = pgTable("edition_state", {
   slug: text("slug").primaryKey(),
+  configuration:
+    jsonb("configuration").$type<
+      import("../lib/editions").EditionConfiguration
+    >(),
+  configurationVersion: integer("configuration_version").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  configurationUpdatedAt: timestamp("configuration_updated_at", {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
   lockedAt: timestamp("locked_at", { withTimezone: true }),
   setupVersion: integer("setup_version").notNull().default(0),
   poolPublished: boolean("pool_published").notNull().default(false),
 });
+export const editionRevisions = pgTable(
+  "edition_revisions",
+  {
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    version: integer("version").notNull(),
+    configuration: jsonb("configuration")
+      .$type<import("../lib/editions").EditionConfiguration>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.editionSlug, t.version] })],
+);
 export const registrations = pgTable(
   "registrations",
   {
@@ -98,6 +127,7 @@ export const registrations = pgTable(
       .references(() => users.osuId, { onDelete: "cascade" }),
     status: registrationStatus("status").notNull().default("pending"),
     rulesVersion: text("rules_version").notNull(),
+    configurationVersion: integer("configuration_version"),
     answers: jsonb("answers").$type<Record<string, string>>().notNull(),
     statusReason: text("status_reason"),
     draftUnavailableReason: text("draft_unavailable_reason"),
@@ -109,6 +139,11 @@ export const registrations = pgTable(
       .defaultNow(),
   },
   (table) => [
+    foreignKey({
+      name: "registrations_configuration_fk",
+      columns: [table.editionSlug, table.configurationVersion],
+      foreignColumns: [editionRevisions.editionSlug, editionRevisions.version],
+    }),
     unique("registrations_edition_user_unique").on(
       table.editionSlug,
       table.userId,

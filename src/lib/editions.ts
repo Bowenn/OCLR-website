@@ -1,6 +1,6 @@
 import { z } from "zod";
 const instant = z.iso.datetime({ offset: true });
-const question = z
+export const questionSchema = z
   .object({
     id: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/),
     label: z.string().min(1).max(200),
@@ -14,7 +14,16 @@ export const editionSchema = z
       .string()
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
       .max(80),
-    name: z.string().min(1).max(100),
+    name: z.string().trim().min(1).max(100),
+    season: z.string().trim().min(1).max(40).nullable().default(null),
+    branding: z
+      .object({
+        logo: z.enum(["/oclr-s11-square-logo.webp"]).nullable(),
+        background: z.enum(["/oclr-s11-website-background.webp"]).nullable(),
+        keyVisual: z.enum(["/oclr-s11-key-visual.webp"]).nullable(),
+      })
+      .strict()
+      .default({ logo: null, background: null, keyVisual: null }),
     published: z.boolean(),
     status: z.enum(["upcoming", "live", "completed"]),
     summary: z.string().min(1).max(2000),
@@ -28,24 +37,29 @@ export const editionSchema = z
     }, "Use an IANA time zone"),
     rules: z
       .object({
-        version: z.string().min(1).max(80),
+        version: z.string().trim().min(1).max(80),
         sections: z
           .array(
             z
-              .object({ heading: z.string().min(1), body: z.string().min(1) })
+              .object({
+                heading: z.string().trim().min(1).max(200),
+                body: z.string().trim().min(1).max(20000),
+              })
               .strict(),
           )
-          .min(1),
+          .min(1)
+          .max(32),
       })
       .strict()
       .nullable(),
     eligibility: z.string().min(1).max(4000).nullable(),
     registration: z
       .object({
+        enabled: z.boolean().default(true),
         opensAt: instant,
         closesAt: instant,
         withdrawUntil: instant.nullable(),
-        questions: z.array(question).max(16).default([]),
+        questions: z.array(questionSchema).max(16).default([]),
       })
       .strict()
       .refine(
@@ -57,13 +71,27 @@ export const editionSchema = z
           new Set(v.questions.map((q) => q.id)).size === v.questions.length,
         "Question IDs must be unique",
       )
+      .refine(
+        (v) =>
+          !v.withdrawUntil ||
+          Date.parse(v.withdrawUntil) >= Date.parse(v.opensAt),
+        "Withdrawal deadline must not precede opening",
+      )
       .nullable(),
-    schedule: z.array(
-      z.object({ label: z.string().min(1), at: instant.nullable() }).strict(),
-    ),
+    schedule: z
+      .array(
+        z
+          .object({
+            label: z.string().trim().min(1).max(200),
+            at: instant.nullable(),
+          })
+          .strict(),
+      )
+      .max(64),
   })
   .strict();
-export type Edition = z.infer<typeof editionSchema>;
+export type Edition = z.output<typeof editionSchema>;
+export type EditionConfiguration = Omit<z.output<typeof editionSchema>, "slug">;
 export const editionsSchema = z
   .array(editionSchema)
   .refine(
@@ -77,6 +105,7 @@ export function enrollmentState(
   if (
     !edition.published ||
     !edition.registration ||
+    edition.registration.enabled === false ||
     !edition.rules ||
     !edition.eligibility
   )
