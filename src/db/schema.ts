@@ -23,6 +23,34 @@ export const users = pgTable("users", {
     .notNull()
     .defaultNow(),
 });
+// Compact public provider projection; independent of OAuth identities/participation.
+export const userProfileCache = pgTable(
+  "user_profile_cache",
+  {
+    osuId: bigint("osu_id", { mode: "number" }).notNull(),
+    mode: text("mode").notNull(),
+    profile:
+      jsonb("profile").$type<
+        import("@/lib/osu-profile-model").OsuUserProfile
+      >(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true }).notNull(),
+    retryAt: timestamp("retry_at", { withTimezone: true }).notNull(),
+    refreshToken: uuid("refresh_token"),
+    errorStatus: integer("error_status"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.osuId, t.mode] }),
+    index("user_profile_cache_attempt_idx").on(t.attemptedAt),
+    check(
+      "user_profile_cache_id_positive",
+      sql`${t.osuId} > 0 AND ${t.osuId} <= 9007199254740991`,
+    ),
+    check(
+      "user_profile_cache_mode",
+      sql`${t.mode} IN ('osu', 'taiko', 'fruits', 'mania')`,
+    ),
+  ],
+);
 export const sessions = pgTable(
   "sessions",
   {

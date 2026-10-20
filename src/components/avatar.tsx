@@ -4,9 +4,11 @@ import { useState } from "react";
 export function Avatar({
   osuId,
   username,
+  avatarUrl,
 }: {
   osuId: number;
   username: string;
+  avatarUrl?: string;
 }) {
   const [failed, setFailed] = useState(false);
   return (
@@ -15,7 +17,7 @@ export function Avatar({
         <span aria-hidden="true">{username.slice(0, 2)}</span>
       ) : (
         <Image
-          src={`https://a.ppy.sh/${osuId}`}
+          src={avatarUrl ?? `https://a.ppy.sh/${osuId}`}
           alt=""
           width={88}
           height={88}

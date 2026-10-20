@@ -137,6 +137,13 @@ export default async function Players({
                   </dd>
                 </div>
               </dl>
+              <Link
+                className="text-link"
+                href={`/players/${p.osuId}`}
+                prefetch={false}
+              >
+                Player profile & statistics →
+              </Link>
             </li>
           ))}
         </ul>

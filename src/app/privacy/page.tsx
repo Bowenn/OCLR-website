@@ -30,6 +30,15 @@ export default function Privacy() {
       </p>
       <h2>Competition records and staff actions</h2>
       <p>
+        Published participant profiles can display dated public osu! metadata
+        and ruleset statistics. A compact server-side snapshot is cached for 30
+        minutes, with a maximum of 1,000 ID/ruleset combinations. Temporary
+        provider failures retain the last successful snapshot with a stale
+        label. Staff with registration permissions can look up public osu!
+        profiles; lookup does not publish an application or determine
+        eligibility.
+      </p>
+      <p>
         Assigned referees and administrators can review multiplayer snapshots
         containing player IDs and game scores. Unreviewed imports, internal
         review reasons and individual score evidence stay in the protected staff

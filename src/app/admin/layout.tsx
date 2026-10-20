@@ -47,6 +47,7 @@ export default async function StaffLayout({
         <p className="eyebrow">STAFF WORKSPACE</p>
         <h2>OCLR operations</h2>
         <StaffNavigation
+          canLookupProfiles={grants.some((g) => g.role === "admin")}
           canManageStaff={grants.some((g) => g.role === "admin")}
           editions={editions}
         />

@@ -1,0 +1,200 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  normalizeOsuProfile,
+  parseOsuProfile,
+} from "../../src/lib/osu-profile-model";
+import { profileResponse } from "../fixtures/osu-profile";
+describe("official osu! user profiles", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+  it("parses the organizer example, stable numeric IDs and explicit modes", () => {
+    expect(parseOsuProfile("https://osu.ppy.sh/users/651307/osu")).toEqual({
+      osuId: 651307,
+      mode: "osu",
+      canonicalUrl: "https://osu.ppy.sh/users/651307/osu",
+    });
+    for (const input of [
+      "651307",
+      "https://osu.ppy.sh/users/651307",
+      "https://osu.ppy.sh/users/651307/",
+    ])
+      expect(parseOsuProfile(input).mode).toBe("osu");
+    for (const mode of ["osu", "taiko", "fruits", "mania"])
+      expect(
+        parseOsuProfile(`https://osu.ppy.sh/users/651307/${mode}`).mode,
+      ).toBe(mode);
+    expect(parseOsuProfile("651307", "mania").mode).toBe("mania");
+  });
+  it.each([
+    "0",
+    "01",
+    "-1",
+    "+12",
+    "1e3",
+    "1.2",
+    "9007199254740993",
+    "NaN",
+    "peppy",
+    "",
+    "http://osu.ppy.sh/users/1",
+    "https://example.com/users/1",
+    "https://osu.ppy.sh.evil/users/1",
+    "https://user@osu.ppy.sh/users/1",
+    "https://osu.ppy.sh:443/users/1",
+    "https://osu.ppy.sh/users/1?mode=mania",
+    "https://osu.ppy.sh/users/1#osu",
+    "https://osu.ppy.sh/users/1/unknown",
+    "https://osu.ppy.sh/users/01",
+    "https://osu.ppy.sh/users/%31",
+    "https://osu.ppy.sh/a/../users/1",
+    "https://osu.ppy.sh/users/1/osu/extra",
+  ])("rejects noncanonical or unsafe input %s", (input) =>
+    expect(() => parseOsuProfile(input)).toThrow(),
+  );
+  it("rejects conflicting or unsupported modes", () => {
+    expect(() => parseOsuProfile("1", "standard")).toThrow();
+    expect(() =>
+      parseOsuProfile("https://osu.ppy.sh/users/1/mania", "osu"),
+    ).toThrow();
+  });
+  it("normalizes mode-specific public metadata and exact scores without collecting the complete user object", () => {
+    const p = normalizeOsuProfile(
+      profileResponse,
+      260001,
+      "osu",
+      "2026-10-20T00:00:00Z",
+    );
+    expect(p).toMatchObject({
+      username: "Synthetic Profile Player",
+      ruleset: "osu",
+      defaultRuleset: "mania",
+      countryName: "Taiwan",
+      lastSeenAt: null,
+      fetchedAt: "2026-10-20T00:00:00Z",
+      statistics: {
+        pp: 1234.56,
+        accuracy: 97.25,
+        rankedScore: "9007199254740993",
+        totalScore: "987654321",
+        playTimeSeconds: 123456,
+      },
+    });
+    expect(JSON.stringify(p)).not.toMatch(
+      /PRIVATE_CONTACT|HISTORY|discord|account_history/,
+    );
+  });
+  it("tolerates null, missing and malformed optional fields without inventing zero or losing numeric precision", () => {
+    const p = normalizeOsuProfile(
+      {
+        id: 1,
+        username: "Synthetic",
+        country: null,
+        statistics: {
+          pp: null,
+          total_score: 9007199254740992,
+          ranked_score: "9007199254740995",
+          play_count: "wrong",
+          hit_accuracy: 101,
+        },
+      },
+      1,
+      "mania",
+    );
+    expect(p.statistics).toMatchObject({
+      globalRank: null,
+      pp: null,
+      playCount: null,
+      accuracy: null,
+      totalScore: null,
+      rankedScore: "9007199254740995",
+      level: null,
+    });
+    expect(p.avatarUrl).toBeNull();
+    expect(
+      normalizeOsuProfile(
+        { id: 1, username: "Synthetic", statistics: null },
+        1,
+        "osu",
+      ).statistics.pp,
+    ).toBeNull();
+    const zero = normalizeOsuProfile(
+      { id: 1, username: "Synthetic", statistics: { pp: 0, play_count: 0 } },
+      1,
+      "osu",
+    );
+    expect(zero.statistics.pp).toBe(0);
+  });
+  it("rejects mismatched identities/modes, malformed essential data and closed users", () => {
+    for (const value of [
+      { ...profileResponse, id: 2 },
+      { ...profileResponse, username: "" },
+      { ...profileResponse, statistics: { mode: "mania" } },
+      {},
+    ])
+      expect(() => normalizeOsuProfile(value, 260001, "osu")).toThrow();
+    expect(() =>
+      normalizeOsuProfile(
+        { ...profileResponse, is_deleted: true },
+        260001,
+        "osu",
+      ),
+    ).toThrow(/unavailable/);
+    expect(() =>
+      normalizeOsuProfile(
+        { ...profileResponse, is_restricted: true },
+        260001,
+        "osu",
+      ),
+    ).toThrow(/unavailable/);
+  });
+  it("limits remote images to approved HTTPS osu! image services", () => {
+    const p = normalizeOsuProfile(
+      {
+        ...profileResponse,
+        avatar_url: "https://evil.example/pixel",
+        cover: { url: "javascript:alert(1)" },
+      },
+      260001,
+      "osu",
+    );
+    expect(p.avatarUrl).toBeNull();
+    expect(p.coverUrl).toBeNull();
+  });
+  it("extends only the fixed official user endpoint using the shared public-token transport", async () => {
+    vi.resetModules();
+    vi.stubEnv("OSU_CLIENT_ID", "123");
+    vi.stubEnv("OSU_CLIENT_SECRET", "synthetic-test-secret");
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            access_token: "synthetic-token",
+            token_type: "Bearer",
+            expires_in: 3600,
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify(profileResponse)));
+    vi.stubGlobal("fetch", fetch);
+    const { osuApi } = await import("../../src/lib/osu-api");
+    for (const path of [
+      "/users/1/osu?key=username",
+      "/users/1/osu?key=id&url=evil",
+      "/users/1/unknown",
+      "/users/@someone/osu?key=id",
+      "/users/1/osu/extra?key=id",
+    ])
+      await expect(osuApi(path)).rejects.toMatchObject({ status: 400 });
+    await osuApi("/users/260001/osu?key=id");
+    expect(fetch.mock.calls[1][0]).toBe(
+      "https://osu.ppy.sh/api/v2/users/260001/osu?key=id",
+    );
+    expect((fetch.mock.calls[0][1].body as URLSearchParams).get("scope")).toBe(
+      "public",
+    );
+    expect(fetch.mock.calls[1][1].redirect).toBe("error");
+  });
+});

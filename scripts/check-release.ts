@@ -39,6 +39,9 @@ try {
   getAnnouncements();
   z.email().parse(process.env.PRIVACY_CONTACT_EMAIL);
   await db().execute(sql`SELECT 1 FROM users LIMIT 0`);
+  await db().execute(
+    sql`SELECT osu_id, mode, profile, attempted_at, retry_at, refresh_token, error_status FROM user_profile_cache LIMIT 0`,
+  );
   await db().execute(sql`SELECT 1 FROM registrations LIMIT 0`);
   await db().execute(
     sql`SELECT 1 FROM captains, teams, memberships, draft_sessions, draft_picks, edition_events LIMIT 0`,

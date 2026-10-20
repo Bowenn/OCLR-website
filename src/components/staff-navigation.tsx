@@ -3,9 +3,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 export function StaffNavigation({
   canManageStaff,
+  canLookupProfiles,
   editions,
 }: {
   canManageStaff: boolean;
+  canLookupProfiles: boolean;
   editions: {
     slug: string;
     name: string;
@@ -16,6 +18,9 @@ export function StaffNavigation({
   return (
     <nav aria-label="Staff navigation">
       <Link href="/admin">Operations</Link>
+      {canLookupProfiles && (
+        <Link href="/admin/profiles">osu! profile lookup</Link>
+      )}
       {canManageStaff && <Link href="/admin/staff">Staff assignments</Link>}
       <Link href="/dashboard">Player dashboard</Link>
       {editions.map((e) => (

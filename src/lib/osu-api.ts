@@ -83,7 +83,7 @@ async function clientToken() {
 }
 export async function osuApi(path: string): Promise<unknown> {
   if (
-    !/^\/(?:beatmaps\/[1-9]\d*|matches\/[1-9]\d*(?:\?(?:before|after)=\d+&limit=100|\?limit=100)?)$/.test(
+    !/^\/(?:beatmaps\/[1-9]\d*|users\/[1-9]\d*\/(?:osu|taiko|fruits|mania)\?key=id|matches\/[1-9]\d*(?:\?(?:before|after)=\d+&limit=100|\?limit=100)?)$/.test(
       path,
     )
   )

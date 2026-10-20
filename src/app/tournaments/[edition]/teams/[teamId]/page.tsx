@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { publishedTeams } from "@/lib/teams";
 import { PageHeading, EmptyState } from "@/components/ui";
 export default async function Team({
@@ -24,6 +25,14 @@ export default async function Team({
               >
                 {m.username} ↗
               </a>
+              {" · "}
+              <Link
+                href={`/players/${m.osuId}`}
+                prefetch={false}
+                className="text-link"
+              >
+                OCLR profile
+              </Link>
             </li>
           ))}
         </ul>

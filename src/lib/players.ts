@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { captains, memberships, teams, users } from "@/db/schema";
 import { getPublicEditions } from "./content";
 import { HttpError } from "./http";
+import { parseOsuProfile } from "./osu-profile-model";
 const filtersSchema = z
   .object({
     q: z.string().trim().max(100).default(""),
@@ -24,11 +25,13 @@ type PublishedPlayer = {
   captain: boolean;
   participation: "captain" | "finalized_roster";
 };
-export async function publicPlayers(input: unknown) {
+export async function publicPlayers(input: unknown, exactOsuId?: number) {
   const parsed = filtersSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Choose a valid player search, edition and page.");
   const filters = parsed.data;
+  if (filters.q.startsWith("https://"))
+    filters.q = String(parseOsuProfile(filters.q).osuId);
   const editions = getPublicEditions().filter(
     (e) => !filters.edition || filters.edition === e.slug,
   );
@@ -119,8 +122,10 @@ export async function publicPlayers(input: unknown) {
         });
       const q = filters.q.toLowerCase();
       const matching = [...byIdentity.values()]
-        .filter(
-          (p) => p.username.toLowerCase().includes(q) || String(p.osuId) === q,
+        .filter((p) =>
+          exactOsuId
+            ? p.osuId === exactOsuId
+            : p.username.toLowerCase().includes(q) || String(p.osuId) === q,
         )
         .sort(
           (a, b) =>
@@ -129,11 +134,16 @@ export async function publicPlayers(input: unknown) {
             a.osuId - b.osuId,
         );
       return {
-        rows: matching.slice((filters.page - 1) * 24, filters.page * 24),
+        rows: exactOsuId
+          ? matching
+          : matching.slice((filters.page - 1) * 24, filters.page * 24),
         total: matching.length,
         filters,
       };
     },
     { isolationLevel: "repeatable read" },
   );
+}
+export async function publicPlayer(osuId: number) {
+  return (await publicPlayers({}, osuId)).rows;
 }
