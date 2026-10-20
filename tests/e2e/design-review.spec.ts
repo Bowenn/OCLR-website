@@ -106,6 +106,7 @@ test.describe("concept-aligned tournament surfaces", () => {
       width: isMobile ? 390 : 1440,
       height: isMobile ? 844 : 900,
     });
+    await page.emulateMedia({ reducedMotion: "reduce" });
     const bracketPath = process.env.OCLR_TEST_BRACKETS_FILE!;
     const previous = readFileSync(bracketPath, "utf8");
     writeFileSync(
@@ -159,7 +160,12 @@ test.describe("concept-aligned tournament surfaces", () => {
         ["news", "/news"],
         ["about", "/about"],
       ]) {
-        await capture(page, name, path, ["home", "overview"].includes(name));
+        await capture(page, name, path, true);
+        if (name === "home")
+          await expect(page.locator(".hero-art")).toHaveCSS(
+            "animation-name",
+            "none",
+          );
         if (name === "overview")
           await expect(
             page

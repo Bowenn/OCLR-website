@@ -31,23 +31,14 @@ export default async function Players({
   const { rows, total, filters } = result;
   const query = new URLSearchParams({ q: filters.q, edition: filters.edition });
   return (
-    <div className="container page">
+    <div className="container page directory-page">
       <PageHeading eyebrow="INDIVIDUAL PLAYERS. ONE COMMUNITY." title="Players">
         Meet the published captains and players representing OCLR. Browse the
         directory without signing in.
       </PageHeading>
-      <div className="actions">
-        <Action href="/dashboard" secondary>
-          My private dashboard →
-        </Action>
-        <Action href="/tournaments" secondary>
-          Browse tournaments
-        </Action>
-      </div>
-      <p className="notice spaced">
-        Applications stay private. Acceptance alone does not publish a player:
-        only approved captain identities and finalized, published team rosters
-        appear here.
+      <p className="muted small">
+        Applications stay private. Only published captains and finalized team
+        rosters appear here.
       </p>
       <form action="/players" method="get" className="filters">
         <label className="field">
@@ -121,7 +112,7 @@ export default async function Players({
                         className="text-link"
                         href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
                       >
-                        {p.team.name} ↗
+                        {p.team.name}&nbsp;↗
                       </Link>
                     ) : (
                       "Team identity awaiting publication"
@@ -129,7 +120,7 @@ export default async function Players({
                   </dd>
                 </div>
                 <div>
-                  <dt>Public participation</dt>
+                  <dt>Status</dt>
                   <dd>
                     {p.participation === "finalized_roster"
                       ? "Finalized roster"

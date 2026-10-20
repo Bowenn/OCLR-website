@@ -369,7 +369,8 @@ button:hover {
   position: absolute;
   inset: 0;
   z-index: -3;
-  background: url("/rookie-stage.svg") center 52% / cover;
+  background-position: center 52%;
+  background-size: cover;
   animation: art-in 1.2s ease-out both;
 }
 .hero-shade {
@@ -387,8 +388,11 @@ button:hover {
     linear-gradient(0deg, #090c17, transparent 26%);
 }
 .hero-content {
-  padding-block: clamp(2rem, 5vw, 3.5rem);
+  padding-block: clamp(1.5rem, 5vw, 3.5rem);
   animation: rise-in 0.7s ease-out both;
+}
+.hero .actions {
+  margin-top: 1.25rem;
 }
 .hero-kicker {
   display: flex;
@@ -431,7 +435,7 @@ button:hover {
 .hero-copy {
   font-size: 0.87rem;
   color: #b1b5ce;
-  max-width: 450px;
+  max-width: 30rem;
   margin-bottom: 1.8rem;
 }
 .section-title {
@@ -450,10 +454,10 @@ button:hover {
 .section-title > a {
   font-size: 0.75rem;
 }
-.featured-edition {
+.edition-card {
   display: grid;
-  grid-template-columns: 1fr 1.5fr 0.85fr;
-  gap: 2rem;
+  grid-template-columns: 128px minmax(0, 1fr) minmax(200px, 0.6fr);
+  gap: 1.5rem;
   padding: 1.2rem;
   align-items: center;
   background: linear-gradient(110deg, #171b2e, #121522);
@@ -461,8 +465,10 @@ button:hover {
   border-radius: 0.8rem;
 }
 .edition-art {
-  min-height: 210px;
-  align-self: stretch;
+  aspect-ratio: 1;
+  min-height: 128px;
+  align-self: start;
+  overflow: hidden;
   border-radius: 0.4rem;
   display: grid;
   place-items: center;
@@ -471,7 +477,7 @@ button:hover {
     url("/rookie-stage.svg") 67% center / cover;
 }
 .edition-art > span {
-  font-size: 3rem;
+  font-size: 2rem;
   letter-spacing: -0.065em;
   font-weight: 900;
   text-shadow: 0 3px 25px #13111e;
@@ -479,24 +485,23 @@ button:hover {
 .edition-art small {
   display: block;
   text-align: center;
-  font-size: 0.5rem;
+  font-size: 0.4rem;
   letter-spacing: 0.23em;
   margin-top: 0.25rem;
 }
-.edition-copy {
-  padding-block: 0.7rem;
-}
-.edition-copy h3 {
-  font-size: 1.45rem;
-  margin: 1rem 0 0.8rem;
-  max-width: 22ch;
+
+.edition-copy h2 {
+  font-size: 1.35rem;
+  margin: 0.65rem 0 0.5rem;
 }
 .edition-copy p {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.8rem;
 }
+
 .edition-facts {
   border-left: 1px solid #303047;
-  padding-left: 1.6rem;
+  padding-left: 1.25rem;
 }
 .edition-facts > div + div {
   margin-top: 1.1rem;
@@ -528,8 +533,8 @@ button:hover {
   }
 }
 @media (max-width: 1000px) {
-  .featured-edition {
-    grid-template-columns: 0.8fr 1.2fr;
+  .edition-card {
+    grid-template-columns: 112px minmax(0, 1fr);
   }
   .edition-facts {
     grid-column: 1 / -1;
@@ -545,12 +550,6 @@ button:hover {
   }
 }
 @media (max-width: 760px) {
-  .hero {
-    min-height: 0;
-  }
-  .hero-content {
-    padding-top: 1.5rem;
-  }
   .hero-art {
     position: relative;
     inset: auto;
@@ -578,18 +577,28 @@ button:hover {
   .hero-copy {
     max-width: 300px;
   }
-  .featured-edition {
-    grid-template-columns: 1fr;
+  .edition-card {
+    grid-template-columns: 72px minmax(0, 1fr);
     gap: 1rem;
+    padding: 1rem;
   }
   .edition-art {
-    min-height: 190px;
+    min-height: 72px;
   }
-  .edition-copy {
-    padding: 0.5rem;
+  .edition-copy h2 {
+    font-size: 1.15rem;
+  }
+  .edition-art > span {
+    font-size: 1.25rem;
+  }
+  .edition-art small {
+    display: none;
+  }
+  .edition-copy .actions {
+    gap: 0.5rem;
   }
   .edition-facts {
-    padding: 1rem 0.5rem 0;
+    padding: 1rem 0 0;
     flex-wrap: wrap;
     gap: 1rem 2rem;
   }
@@ -1580,43 +1589,35 @@ body:has(.presenter-view) .site-footer,
 }
 .news-list article {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 2.5rem;
-  padding: 2rem 0;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.5rem 0;
   border-top: 1px solid #2d3045;
 }
 .news-list h2 {
-  font-size: 1.7rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.35rem;
   overflow-wrap: anywhere;
 }
 .news-list h2 a:hover {
   color: #dfa6fb;
 }
 .news-list p {
+  margin-bottom: 0.5rem;
   font-size: 0.85rem;
 }
 .about-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
-  gap: 5rem;
-}
-.about-layout .prose > h2:first-child {
-  margin-top: 0;
+  gap: 3rem;
 }
 .about-aside {
   align-self: start;
   border-top: 2px solid #b16bd3;
-  background: #141827;
-  border-radius: 0.3rem 0.3rem 0.75rem 0.75rem;
-  padding: 2rem;
+  padding: 1.25rem 0 0;
 }
 .about-aside h2 {
   font-size: 1.4rem;
-}
-.about-aside hr {
-  border: 0;
-  border-top: 1px solid #33344b;
-  margin-block: 2rem;
 }
 @media (max-width: 760px) {
   .news-list article {
@@ -1711,8 +1712,8 @@ body:has(.presenter-view) .site-footer,
   min-width: 0;
 }
 .directory-identity h2 {
-  font-size: 1.3rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
   overflow-wrap: anywhere;
 }
 .directory-identity p {
@@ -1725,18 +1726,44 @@ body:has(.presenter-view) .site-footer,
 }
 .directory-details {
   display: grid;
-  gap: 1rem;
-  margin: 1.5rem 0 0;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  font-size: 0.8rem;
+}
+.directory-details > div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+.directory-page .filters {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  margin-block: 1.25rem;
+}
+.player-directory > .panel {
+  padding: 1.25rem;
+}
+.player-directory > li > .text-link {
+  font-size: 0.8rem;
 }
 .directory-details dt {
   color: var(--color-muted);
   font-size: 0.8rem;
 }
 .directory-details dd {
-  margin: 0.1rem 0 0;
+  margin: 0;
   overflow-wrap: anywhere;
 }
 @media (max-width: 700px) {
+  .directory-page .filters {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .directory-page .filters .field:first-child {
+    grid-column: 1 / -1;
+  }
+  .directory-details > div {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+  }
   .player-directory {
     grid-template-columns: 1fr;
   }
@@ -1846,10 +1873,10 @@ body:has(.presenter-view) .site-footer,
   overflow-wrap: anywhere;
 }
 
-.edition-art-s11 {
+.edition-art-branded {
   background: transparent;
 }
-.edition-art-s11 img {
+.edition-art-branded img {
   display: block;
   width: 100%;
   height: auto;
@@ -1933,10 +1960,6 @@ body:has(.presenter-view) .site-footer,
     min-height: 44px;
     display: flex;
     align-items: center;
-  }
-  .edition-art-s11 {
-    width: min(100%, 240px);
-    margin-inline: auto;
   }
 }
 
@@ -2961,19 +2984,6 @@ body:has(.presenter-view) .site-footer,
   min-width: 0;
 }
 
-/* One edition-led hero, followed by current updates instead of repeated introductions. */
-.home-hero {
-  min-height: 0;
-}
-.home-hero .hero-content {
-  padding-block: clamp(1.5rem, 5vw, 3.5rem);
-}
-.home-hero .actions {
-  margin-top: 1.25rem;
-}
-.home-hero .hero-copy {
-  max-width: 30rem;
-}
 .home-updates {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
@@ -3127,10 +3137,6 @@ body:has(.presenter-view) .site-footer,
   .nav-wrap .brand {
     font-size: 1.25rem;
     gap: 0.5rem;
-  }
-  .nav-wrap .brand-mark {
-    width: 26px;
-    height: 26px;
   }
   .nav-login {
     font-size: 0.65rem;

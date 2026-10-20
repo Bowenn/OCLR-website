@@ -30,7 +30,7 @@ test("landing page has honest CTAs and readable original artwork", async ({
     "osu! Chinese League Rookie",
   );
   await expect(
-    page.locator(".highlights, .workflow-section, .featured-edition"),
+    page.locator(".highlights, .workflow-section, .edition-card"),
   ).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: "Latest news", exact: true }),

@@ -64,10 +64,10 @@ export default async function About() {
             </p>
           )}
           <div className="actions spaced">
-            <Action href="/tournaments" secondary>
+            <Action href="/tournaments" secondary compact>
               Explore tournaments →
             </Action>
-            <Action href="/news" secondary>
+            <Action href="/news" secondary compact>
               Latest news
             </Action>
           </div>

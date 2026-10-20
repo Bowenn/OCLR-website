@@ -19,7 +19,7 @@ export default async function Home() {
   const milestone = nextConfirmedMilestone(editions, now);
   return (
     <>
-      <section className="hero home-hero" aria-labelledby="hero-title">
+      <section className="hero" aria-labelledby="hero-title">
         <div
           className="hero-art"
           style={{

@@ -5,19 +5,19 @@ import { formatDate, type Edition } from "@/lib/editions";
 export async function EditionCard({ edition }: { edition: Edition }) {
   const state = await registrationAvailability(edition);
   return (
-    <article className="featured-edition">
+    <article className="edition-card">
       <EditionArtwork slug={edition.slug} logo={edition.branding.logo} />
       <div className="edition-copy">
         <Badge>Registration: {state}</Badge>
-        <h3>{edition.name}</h3>
+        <h2>{edition.name}</h2>
         <p className="muted">{edition.summary}</p>
         <div className="actions">
           {state === "open" && (
-            <Action href={`/tournaments/${edition.slug}/register`}>
+            <Action href={`/tournaments/${edition.slug}/register`} compact>
               Register individually →
             </Action>
           )}
-          <Action href={`/tournaments/${edition.slug}`} secondary>
+          <Action href={`/tournaments/${edition.slug}`} secondary compact>
             View tournament →
           </Action>
         </div>
@@ -40,10 +40,6 @@ export async function EditionCard({ edition }: { edition: Edition }) {
               edition.timeZone,
             )}
           </dd>
-        </div>
-        <div>
-          <dt>Entry</dt>
-          <dd>Individual registration</dd>
         </div>
       </dl>
     </article>

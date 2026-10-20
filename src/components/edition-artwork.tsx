@@ -11,7 +11,7 @@ export function EditionArtwork({
     logo === undefined && slug === "s11" ? "/oclr-s11-square-logo.webp" : logo;
   return (
     <div
-      className={`edition-art${image ? " edition-art-s11" : ""}`}
+      className={`edition-art${image ? " edition-art-branded" : ""}`}
       aria-hidden="true"
     >
       {image ? (
