@@ -438,4 +438,29 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       submitRegistration(player, "test-cup", submitted),
     ).rejects.toMatchObject({ status: 409 });
   });
+  it("pauses registration on completion, so restoring Upcoming cannot reopen it implicitly", async () => {
+    const command = {
+      expectedRevision: 0,
+      confirmed: true,
+      action: "general",
+      name: edition.name,
+      season: edition.season,
+      summary: edition.summary,
+      timeZone: edition.timeZone,
+      branding: edition.branding,
+      status: "completed",
+    };
+    const complete = await tournamentCommand(admin, "test-cup", command);
+    expect(complete.edition.registration?.enabled).toBe(false);
+    expect(
+      (await tournamentList(admin)).rows.find((row) => row.slug === "test-cup")
+        ?.registrationState,
+    ).toBe("closed");
+    const restored = await tournamentCommand(admin, "test-cup", {
+      ...command,
+      expectedRevision: complete.revision,
+      status: "upcoming",
+    });
+    expect(restored.edition.registration?.enabled).toBe(false);
+  });
 });

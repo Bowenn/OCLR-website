@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
 import { listStaffRoles } from "@/lib/staff-roles";
@@ -14,9 +15,11 @@ export default async function StaffPage({
       await requireUser(),
     );
     const requested = (await searchParams).edition ?? "";
-    const selected = (await getEditions()).find(
+    const editions = await getEditions();
+    const selected = editions.find(
       (e) => e.slug === requested && (!scopes || scopes.includes(e.slug)),
     );
+    if (requested && !selected) notFound();
     return (
       <>
         <PageHeading eyebrow="ACCESS CONTROL" title="Staff assignments">
@@ -24,8 +27,9 @@ export default async function StaffPage({
           confirmation and are audited.
         </PageHeading>
         <StaffRoleForm
+          key={selected?.slug ?? "all"}
           initialEdition={selected?.slug ?? ""}
-          editions={(await getEditions())
+          editions={editions
             .filter((e) => !scopes || scopes.includes(e.slug))
             .map((e) => ({ slug: e.slug, name: e.name }))}
           scopes={scopes}
@@ -40,7 +44,10 @@ export default async function StaffPage({
           )}
           {grants
             .filter(
-              ({ grant }) => !selected || grant.editionSlug === selected.slug,
+              ({ grant }) =>
+                !selected ||
+                grant.editionSlug === null ||
+                grant.editionSlug === selected.slug,
             )
             .map(({ grant: g, username }) => (
               <article className="panel spaced" key={g.id}>
@@ -70,7 +77,12 @@ export default async function StaffPage({
           <h2>Recent access history</h2>
           <p className="muted small">Latest 100 events within your scope.</p>
           {events
-            .filter((event) => !selected || event.editionSlug === selected.slug)
+            .filter(
+              (event) =>
+                !selected ||
+                event.editionSlug === null ||
+                event.editionSlug === selected.slug,
+            )
             .map((e) => (
               <article className="panel spaced" key={e.id}>
                 <p>

@@ -40,8 +40,12 @@ export function StaffNavigation({
                 key={link.path}
                 href={`/admin/tournaments/${e.slug}${link.path ? `/${link.path}` : ""}`}
                 aria-current={
-                  pathname.startsWith(
-                    `/admin/tournaments/${e.slug}${link.path ? `/${link.path}` : ""}`,
+                  (
+                    link.path
+                      ? pathname.startsWith(
+                          `/admin/tournaments/${e.slug}/${link.path}`,
+                        )
+                      : pathname === `/admin/tournaments/${e.slug}`
                   )
                     ? "page"
                     : undefined

@@ -27,14 +27,20 @@ export const editionSchema = z
     published: z.boolean(),
     status: z.enum(["upcoming", "live", "completed"]),
     summary: z.string().trim().min(1).max(2000),
-    timeZone: z.string().refine((value) => {
-      try {
-        new Intl.DateTimeFormat("en", { timeZone: value });
-        return true;
-      } catch {
-        return false;
-      }
-    }, "Use an IANA time zone"),
+    timeZone: z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .refine((value) => {
+        if (!/^[A-Za-z][A-Za-z0-9_+/-]*$/.test(value)) return false;
+        try {
+          new Intl.DateTimeFormat("en", { timeZone: value });
+          return true;
+        } catch {
+          return false;
+        }
+      }, "Use an IANA time zone"),
     rules: z
       .object({
         version: z.string().trim().min(1).max(80),
@@ -101,11 +107,10 @@ export const editionsSchema = z
 export function enrollmentState(
   edition: Edition,
   now = new Date(),
-): "unannounced" | "upcoming" | "open" | "closed" {
+): "unannounced" | "upcoming" | "open" | "closed" | "paused" {
   if (
     !edition.published ||
     !edition.registration ||
-    edition.registration.enabled === false ||
     !edition.rules ||
     !edition.eligibility
   )
@@ -115,6 +120,7 @@ export function enrollmentState(
     now.getTime() >= Date.parse(edition.registration.closesAt)
   )
     return "closed";
+  if (edition.registration.enabled === false) return "paused";
   if (now.getTime() < Date.parse(edition.registration.opensAt))
     return "upcoming";
   return "open";

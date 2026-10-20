@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { staffRoles } from "../../src/db/schema";
+import { editionState, staffRoles } from "../../src/db/schema";
 import { seedSession } from "./session";
 test.describe("browser-managed authoritative tournament editions", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
@@ -224,6 +224,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
       const pub = await (
         await guest.request.get(`/api/tournaments/${slug}`)
       ).json();
+      expect(pub.registration.state).toBe("paused");
       expect(JSON.stringify(pub)).not.toMatch(
         /questions|actorId|configurationVersion|applications|answers/,
       );
@@ -241,6 +242,23 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await expect(page.getByRole("status")).toContainText("saved");
       state = await current();
       expect(state.edition.registration.enabled).toBe(true);
+      expect(
+        (await (await guest.request.get(`/api/tournaments/${slug}`)).json())
+          .registration.state,
+      ).toBe("open");
+      await db()
+        .update(editionState)
+        .set({ lockedAt: new Date() })
+        .where(eq(editionState.slug, slug));
+      expect(
+        (await (await guest.request.get(`/api/tournaments/${slug}`)).json())
+          .registration.state,
+      ).toBe("closed");
+      await db()
+        .update(editionState)
+        .set({ lockedAt: null })
+        .where(eq(editionState.slug, slug));
+
       await player.addCookies([await seedSession(playerId)]);
       const playerPage = await player.newPage();
       await playerPage.goto(`/tournaments/${slug}/register`);

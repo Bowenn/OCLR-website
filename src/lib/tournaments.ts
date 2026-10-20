@@ -208,10 +208,10 @@ export async function tournamentList(actor: User) {
         published: row.edition.published,
         registrationState: !row.edition.registration
           ? "not_configured"
-          : row.edition.registration.enabled === false
-            ? "paused"
-            : row.locked
-              ? "closed"
+          : row.locked || row.edition.status === "completed"
+            ? "closed"
+            : row.edition.registration.enabled === false
+              ? "paused"
               : enrollmentState(row.edition) === "open" && !privacyReady()
                 ? "unavailable"
                 : enrollmentState(row.edition),
@@ -504,7 +504,10 @@ export async function tournamentCommand(
   return tournamentForAdmin(actor, slug);
 }
 
-export function publicEditionSummary(e: Edition) {
+export function publicEditionSummary(
+  e: Edition,
+  availability: ReturnType<typeof enrollmentState> | "unavailable",
+) {
   return {
     slug: e.slug,
     name: e.name,
@@ -521,10 +524,7 @@ export function publicEditionSummary(e: Edition) {
           opensAt: e.registration.opensAt,
           closesAt: e.registration.closesAt,
           withdrawUntil: e.registration.withdrawUntil,
-          state:
-            enrollmentState(e) === "open" && !privacyReady()
-              ? "unavailable"
-              : enrollmentState(e),
+          state: availability,
         }
       : null,
   };

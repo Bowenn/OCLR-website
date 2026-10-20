@@ -14,6 +14,12 @@ describe("edition configuration", () => {
       editionSchema.safeParse({ ...edition, timeZone: "invalid" }).success,
     ).toBe(false);
     expect(
+      editionSchema.safeParse({ ...edition, timeZone: "+08:00" }).success,
+    ).toBe(false);
+    expect(
+      editionSchema.safeParse({ ...edition, timeZone: "Etc/GMT+8" }).success,
+    ).toBe(true);
+    expect(
       editionSchema.safeParse({
         ...edition,
         registration: {
@@ -39,6 +45,27 @@ describe("edition configuration", () => {
     );
     expect(enrollmentState(edition, new Date("2099-01-01T00:00:00Z"))).toBe(
       "closed",
+    );
+  });
+  it("distinguishes paused registration from missing configuration and completed editions", () => {
+    expect(
+      enrollmentState(
+        {
+          ...edition,
+          registration: { ...edition.registration!, enabled: false },
+        },
+        new Date("2026-01-01T00:00:00Z"),
+      ),
+    ).toBe("paused");
+    expect(
+      enrollmentState({
+        ...edition,
+        status: "completed",
+        registration: { ...edition.registration!, enabled: false },
+      }),
+    ).toBe("closed");
+    expect(enrollmentState({ ...edition, registration: null })).toBe(
+      "unannounced",
     );
   });
   it("shows an explicit configured timezone and TBA", () => {
