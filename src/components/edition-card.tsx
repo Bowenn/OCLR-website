@@ -1,15 +1,12 @@
 import { registrationAvailability } from "@/lib/registrations";
 import { Action, Badge } from "./ui";
+import { EditionArtwork } from "./edition-artwork";
 import { formatDate, type Edition } from "@/lib/editions";
 export async function EditionCard({ edition }: { edition: Edition }) {
   const state = await registrationAvailability(edition);
   return (
     <article className="featured-edition">
-      <div className="edition-art" aria-hidden="true">
-        <span>
-          OCLR<small>THE ROOKIE STAGE</small>
-        </span>
-      </div>
+      <EditionArtwork slug={edition.slug} />
       <div className="edition-copy">
         <Badge>Registration: {state}</Badge>
         <h3>{edition.name}</h3>

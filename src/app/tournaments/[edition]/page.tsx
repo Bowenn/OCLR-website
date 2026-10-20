@@ -1,4 +1,5 @@
 import { registrationAvailability } from "@/lib/registrations";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
@@ -25,6 +26,16 @@ export default async function Overview({
       <PageHeading eyebrow="TOURNAMENT OVERVIEW" title={edition.name}>
         {edition.summary}
       </PageHeading>
+      {edition.slug === "s11" && (
+        <Image
+          className="edition-key-visual"
+          src="/oclr-s11-key-visual.webp"
+          alt="OCLR Season 11 key visual"
+          width={1672}
+          height={941}
+          sizes="(max-width: 760px) 100vw, 900px"
+        />
+      )}
       <div className="panel">
         <Badge>{edition.status}</Badge>
         <h2 className="spaced">Individual entry. Team competition.</h2>

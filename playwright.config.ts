@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { announcements } from "./tests/fixtures/announcements";
 import { edition } from "./tests/fixtures/edition";
+import preparedEditions from "./src/content/editions.json" with { type: "json" };
 const announcementsPath = join(
   tmpdir(),
   `oclr-e2e-announcements-${process.pid}.json`,
@@ -22,6 +23,7 @@ if (process.env.TEST_DATABASE_URL) {
   writeFileSync(
     fixturePath,
     JSON.stringify([
+      ...preparedEditions.filter((e) => e.slug === "s11"),
       edition,
       {
         ...edition,

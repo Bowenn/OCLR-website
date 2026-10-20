@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EditionArtwork } from "@/components/edition-artwork";
 import { Action, Badge } from "@/components/ui";
 import { getPublicEditions } from "@/lib/content";
 import { EditionCard } from "@/components/edition-card";
@@ -26,7 +27,7 @@ export default function Home() {
         <div className="hero-shade" aria-hidden="true" />
         <div className="container hero-content">
           <p className="eyebrow hero-kicker">
-            <span /> THE ROOKIE STAGE
+            <span /> SEASON 11 · THE ROOKIE STAGE
           </p>
           <h1 id="hero-title">
             OCLR<span>osu! Chinese League Rookie</span>
@@ -86,11 +87,7 @@ export default function Home() {
             <EditionCard edition={featured} />
           ) : (
             <div className="featured-edition">
-              <div className="edition-art" aria-hidden="true">
-                <span>
-                  OCLR<small>THE ROOKIE STAGE</small>
-                </span>
-              </div>
+              <EditionArtwork slug="s11" />
               <div className="edition-copy">
                 <Badge>Awaiting announcement</Badge>
                 <h3>{site.announcement}</h3>

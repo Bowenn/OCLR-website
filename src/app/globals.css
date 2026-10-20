@@ -409,7 +409,7 @@ button:hover {
   position: absolute;
   inset: 0;
   z-index: -3;
-  background: url("/rookie-stage.svg") center 58% / cover;
+  background: url("/oclr-s11-website-background.webp") center 52% / cover;
   animation: art-in 1.2s ease-out both;
 }
 .hero-shade {
@@ -685,15 +685,24 @@ button:hover {
     min-height: 610px;
   }
   .hero-content {
-    padding-top: 3.5rem;
+    padding-top: 1.5rem;
   }
   .hero-art {
-    background-position: 65% center;
+    position: relative;
+    inset: auto;
+    aspect-ratio: 32 / 15;
+    background-size: contain;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
+  .hero-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, #11172a, transparent 35%);
   }
   .hero-shade {
-    background:
-      linear-gradient(90deg, #090d19ed, #090d1966),
-      linear-gradient(0deg, #090c17, transparent 40%);
+    background: linear-gradient(0deg, #090c17, transparent 65%);
   }
   .hero h1 {
     font-size: 6.5rem;
@@ -1651,4 +1660,26 @@ body:has(.presenter-view) .site-footer,
 }
 .profile-summary time {
   overflow-wrap: anywhere;
+}
+
+.edition-art-s11 {
+  background: transparent;
+}
+.edition-art-s11 img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.edition-key-visual {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-block: 0 2rem;
+  border-radius: 1rem;
+}
+@media (max-width: 760px) {
+  .edition-art-s11 {
+    width: min(100%, 240px);
+    margin-inline: auto;
+  }
 }

@@ -51,6 +51,14 @@ Registration code is locally verified against PostgreSQL and browser tests. Actu
 
 Issues #12–#15 are implemented and covered by mixed captain-direct/staff-on-behalf concurrency/replay tests, publication isolation, process reconstruction and a synthetic multi-browser rehearsal. The live draft gate in #10 still requires organizer rehearsal with actual approved rules, hosting ingress and event scale before streaming. Do not close #10 on automated fixtures alone.
 
+## Season 11 preparation and profile verification
+
+The committed `s11` edition is **unpublished**. Rules, eligibility, registration windows and schedule are unset. `UTC` is a neutral display default while all times are TBA; replace it with the organizer-approved IANA zone when entering actual times. Artwork does not publish the edition or enable registration. The homepage uses the supplied text-free background with HTML content; the square logo appears on S11 edition cards and the full key visual is prepared for its overview. Mobile keeps the complete background composition and intrinsic image ratios. Review approved content in Git or the existing mounted edition file before changing publication.
+
+Apply migration `0011` before enabling profile pages. `release:check` verifies the cache columns as well as existing operational tables. Using actual server-side API credentials, an authorized Admin should open `/admin/profiles` and submit `https://osu.ppy.sh/users/651307/osu`. Confirm official username/ID, source/time, optional fields and selected ruleset; switch rulesets and check refresh throttling. This lookup must not create an account, approve an application or publish participation. For an explicitly published staging participant, verify anonymous profile access and then withdraw publication: cached statistics must become inaccessible on the next public request. Exercise provider failure with a saved snapshot and confirm the stale label without logging tokens.
+
+Live user `651307` remains unverified: no API credentials were configured, and an unauthenticated official request returned HTTP 403. Real OAuth consent/callback (#5), live profile/beatmap/MP reads, approved S11 rules and privacy/contact/retention, hosting/HTTPS/secrets/database backups, and the organizer's hosted staging rehearsal remain release gates in #10. The visible privacy page is a baseline notice awaiting organizer policy, not evidence of policy approval. Keep #5/#10 open until those checks are actually recorded.
+
 ## Draft operator runbook and rehearsal
 
 Confirm actual captain/team counts, eligibility, maximum roster capacity (including captain), full turn sequence, pool visibility, on-air publication timing and correction policy with organizers. None of these are inferred from the mockup. Keep substitutions/post-finalization changes unavailable until approved rules exist.
