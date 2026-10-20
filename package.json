@@ -23,6 +23,7 @@
     "db:import-editions": "tsx scripts/import-editions.ts"
   },
   "dependencies": {
+    "@next/env": "16.4.2",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.2",
     "pg": "^8.23.1",
