@@ -34,15 +34,25 @@ const applicationInput = z
     rulesAcknowledged: z.literal(true),
     eligibilityAcknowledged: z.literal(true),
     rulesVersion: z.string().min(1).max(80),
+    configurationVersion: z.number().int().nonnegative(),
     answers: z.record(z.string(), z.string()).default({}),
   })
   .strict();
-export function validateApplication(edition: Edition, input: unknown) {
+export function validateApplication(
+  edition: Edition,
+  input: unknown,
+  configurationVersion: number,
+) {
   const result = applicationInput.safeParse(input);
   if (!result.success)
     throw new HttpError(
       400,
       "Acknowledge the rules and eligibility requirements, and check your answers.",
+    );
+  if (result.data.configurationVersion !== configurationVersion)
+    throw new HttpError(
+      409,
+      "The tournament application changed. Refresh and review the current questions and rules.",
     );
   if (result.data.rulesVersion !== edition.rules?.version)
     throw new HttpError(
@@ -80,7 +90,11 @@ export async function submitRegistration(
       .for("update");
     const edition = state && storedEdition(state)?.edition;
     if (!edition?.published) throw new HttpError(404, "Tournament not found.");
-    const values = validateApplication(edition, input);
+    const values = validateApplication(
+      edition,
+      input,
+      state.configurationVersion,
+    );
     if (state.lockedAt || enrollmentState(edition) !== "open")
       throw new HttpError(409, "Registration is not open.");
     const [registration] = await tx

@@ -35,7 +35,7 @@ import {
   staffAccess,
 } from "./auth/staff";
 import type { User } from "./auth/sessions";
-import { getEditions } from "./content";
+import { getEdition } from "./content";
 import {
   groupConfigurationSchema,
   scoringRulesSchema,
@@ -158,7 +158,7 @@ async function officialTeams(reader: Reader, slug: string) {
   }));
 }
 async function configuredEdition(slug: string) {
-  const edition = (await getEditions()).find((e) => e.slug === slug);
+  const edition = await getEdition(slug);
   if (!edition) throw new HttpError(404, "Edition not found.");
   return edition;
 }

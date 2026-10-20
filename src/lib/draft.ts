@@ -15,7 +15,7 @@ import {
 import { assertCapability, hasCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { hashToken } from "./auth/tokens";
-import { getEditions, getPublicEdition } from "./content";
+import { getEdition, getPublicEdition } from "./content";
 import { HttpError } from "./http";
 import type {
   CaptainBoard,
@@ -136,8 +136,7 @@ function board(data: Data): DraftBoard {
 }
 export async function staffDraft(actor: User, slug: string) {
   await assertCapability(actor, "manage_draft", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
       const data = await draftData(tx, slug);
@@ -246,8 +245,7 @@ const commandSchema = z
   .strict();
 export async function draftCommand(actor: User, slug: string, input: unknown) {
   await assertCapability(actor, "manage_draft", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Confirm a valid draft command.");

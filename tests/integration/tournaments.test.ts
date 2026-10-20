@@ -234,6 +234,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     });
     const saved = await submitRegistration(player, "s12", {
       rulesAcknowledged: true,
+      configurationVersion: current.revision,
       eligibilityAcknowledged: true,
       rulesVersion: "s12-v1",
       answers: { answer: "accepted" },
@@ -279,6 +280,16 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       },
       existingApplicationsPolicy: "retain_existing",
     });
+    current = await change(current.revision, "registration", {
+      registration: { ...registration, questions: [] },
+      existingApplicationsPolicy: "retain_existing",
+    });
+    await expect(
+      change(current.revision, "registration", {
+        registration,
+        existingApplicationsPolicy: "retain_existing",
+      }),
+    ).rejects.toMatchObject({ status: 409 });
     const [snapshot] = await db()
       .select()
       .from(editionRevisions)
@@ -374,5 +385,57 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       );
       await db().execute(sql`DROP FUNCTION oclr_test_reject_edition_event()`);
     }
+  });
+  it("does not manufacture configuration changes or audit events for identical saves", async () => {
+    await create();
+    const same = await change(0, "general", { ...fields, status: "upcoming" });
+    expect(same.revision).toBe(0);
+    expect(same.events).toHaveLength(1);
+    expect(
+      (
+        await change(0, "publication", {
+          published: false,
+          contentApproved: true,
+        })
+      ).revision,
+    ).toBe(0);
+  });
+  it("serializes application submission against configuration edits and never acknowledges the wrong snapshot", async () => {
+    const submitted = {
+      rulesAcknowledged: true,
+      eligibilityAcknowledged: true,
+      rulesVersion: edition.rules!.version,
+      configurationVersion: 0,
+      answers: {},
+    };
+    const results = await Promise.allSettled([
+      submitRegistration(player, "test-cup", submitted),
+      tournamentCommand(admin, "test-cup", {
+        expectedRevision: 0,
+        confirmed: true,
+        action: "general",
+        name: "Changed synthetic name",
+        season: null,
+        summary: edition.summary,
+        timeZone: edition.timeZone,
+        branding: edition.branding,
+        status: edition.status,
+      }),
+    ]);
+    expect(results[1].status).toBe("fulfilled");
+    const records = await db().select().from(registrations);
+    if (results[0].status === "fulfilled") {
+      expect(records).toHaveLength(1);
+      expect(records[0]).toMatchObject({
+        configurationVersion: 0,
+        rulesVersion: "test-v1",
+      });
+    } else {
+      expect(results[0].reason).toMatchObject({ status: 409 });
+      expect(records).toEqual([]);
+    }
+    await expect(
+      submitRegistration(player, "test-cup", submitted),
+    ).rejects.toMatchObject({ status: 409 });
   });
 });

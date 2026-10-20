@@ -1,7 +1,20 @@
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { editionState } from "@/db/schema";
 import { editionSchema } from "./editions";
+import { z } from "zod";
+import {
+  editionEvents,
+  editionRevisions,
+  registrations,
+  draftSessions,
+  teams,
+} from "@/db/schema";
+import { assertCapability, staffAccess, permits } from "./auth/staff";
+import type { User } from "./auth/sessions";
+import { privacyReady } from "./auth/config";
+import { HttpError } from "./http";
+import { enrollmentState, type Edition } from "./editions";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 export function storedEdition(row: typeof editionState.$inferSelect) {
   if (!row.configuration) return undefined;
@@ -45,24 +58,10 @@ export async function readTournaments(publicOnly = false) {
           : undefined,
       ),
     )
-    .orderBy(editionState.configurationUpdatedAt, editionState.slug);
+    .orderBy(desc(editionState.configurationUpdatedAt), editionState.slug);
   return rows.map((row) => storedEdition(row)!);
 }
 
-import { desc } from "drizzle-orm";
-import { z } from "zod";
-import {
-  editionEvents,
-  editionRevisions,
-  registrations,
-  draftSessions,
-  teams,
-} from "@/db/schema";
-import { assertCapability, staffAccess, permits } from "./auth/staff";
-import type { User } from "./auth/sessions";
-import { privacyReady } from "./auth/config";
-import { HttpError } from "./http";
-import { enrollmentState, type Edition } from "./editions";
 const shape = editionSchema.shape;
 const identity = {
   name: shape.name,
@@ -207,7 +206,15 @@ export async function tournamentList(actor: User) {
         season: row.edition.season,
         status: row.edition.status,
         published: row.edition.published,
-        registrationState: row.locked ? "closed" : enrollmentState(row.edition),
+        registrationState: !row.edition.registration
+          ? "not_configured"
+          : row.edition.registration.enabled === false
+            ? "paused"
+            : row.locked
+              ? "closed"
+              : enrollmentState(row.edition) === "open" && !privacyReady()
+                ? "unavailable"
+                : enrollmentState(row.edition),
         registration: row.edition.registration
           ? {
               opensAt: row.edition.registration.opensAt,
@@ -219,6 +226,26 @@ export async function tournamentList(actor: User) {
         links: tournamentLinks(grants, row.edition.slug),
       })),
   };
+}
+async function configurationFrozen(
+  slug: string,
+  locked: boolean,
+  reader: Reader,
+) {
+  if (locked) return true;
+  const [session] = await reader
+    .select({ state: draftSessions.state })
+    .from(draftSessions)
+    .where(eq(draftSessions.editionSlug, slug));
+  const [finalTeam] = await reader
+    .select({ id: teams.id })
+    .from(teams)
+    .where(and(eq(teams.editionSlug, slug), isNotNull(teams.finalizedAt)))
+    .limit(1);
+  return (
+    Boolean(finalTeam) ||
+    Boolean(session && !["setup", "aborted"].includes(session.state))
+  );
 }
 export async function tournamentForAdmin(actor: User, slug: string) {
   await assertCapability(actor, "configure_tournament", slug);
@@ -239,11 +266,13 @@ export async function tournamentForAdmin(actor: User, slug: string) {
     .select({ count: sql<number>`count(*)::int` })
     .from(registrations)
     .where(eq(registrations.editionSlug, slug));
+  const frozen = await configurationFrozen(slug, row.locked, db());
   return {
     ...row,
+    frozen,
     events,
     applications: applications.count,
-    readiness: tournamentReadiness(row.edition, row.locked),
+    readiness: tournamentReadiness(row.edition, frozen),
     links: tournamentLinks(await staffAccess(actor), slug),
   };
 }
@@ -315,19 +344,7 @@ export async function tournamentCommand(
         409,
         "Tournament settings changed. Refresh before saving your changes.",
       );
-    const [session] = await tx
-      .select({ state: draftSessions.state })
-      .from(draftSessions)
-      .where(eq(draftSessions.editionSlug, slug));
-    const [finalTeam] = await tx
-      .select({ id: teams.id })
-      .from(teams)
-      .where(and(eq(teams.editionSlug, slug), isNotNull(teams.finalizedAt)))
-      .limit(1);
-    const frozen =
-      current.locked ||
-      Boolean(finalTeam) ||
-      Boolean(session && !["setup", "aborted"].includes(session.state));
+    const frozen = await configurationFrozen(slug, current.locked, tx);
     if (frozen && ["rules", "registration", "schedule"].includes(c.action))
       throw new HttpError(
         409,
@@ -352,6 +369,10 @@ export async function tournamentCommand(
         status: c.status,
         timeZone: c.timeZone,
         branding: c.branding,
+        registration:
+          e.registration && c.status === "completed"
+            ? { ...e.registration, enabled: false }
+            : e.registration,
       };
     if (c.action === "rules") {
       const changed =
@@ -448,8 +469,7 @@ export async function tournamentCommand(
     next = editionSchema.parse(next);
     const { slug: _slug, ...configuration } = next;
     void _slug;
-    if (JSON.stringify(configuration) === JSON.stringify(state.configuration))
-      return;
+    if (JSON.stringify(next) === JSON.stringify(e)) return;
     const revision = current.revision + 1;
     await tx
       .insert(editionRevisions)
@@ -501,7 +521,10 @@ export function publicEditionSummary(e: Edition) {
           opensAt: e.registration.opensAt,
           closesAt: e.registration.closesAt,
           withdrawUntil: e.registration.withdrawUntil,
-          state: enrollmentState(e),
+          state:
+            enrollmentState(e) === "open" && !privacyReady()
+              ? "unavailable"
+              : enrollmentState(e),
         }
       : null,
   };

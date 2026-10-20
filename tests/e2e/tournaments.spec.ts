@@ -1,0 +1,432 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { sql } from "drizzle-orm";
+import { db, closeDb } from "../../src/db";
+import { staffRoles } from "../../src/db/schema";
+import { seedSession } from "./session";
+test.describe("browser-managed authoritative tournament editions", () => {
+  test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
+  test.setTimeout(90000);
+  test.afterAll(async () => closeDb());
+  test("creates, configures and publishes without files, preserving saved acknowledgments and staff boundaries", async ({
+    page,
+    context,
+    browser,
+    isMobile,
+  }, info) => {
+    const adminId = isMobile ? 70001 : 60001;
+    const playerId = isMobile ? 340101 : 340001;
+    const slug = isMobile ? "managed-mobile-test" : "managed-desktop-test";
+    await seedSession(adminId); // Assert the isolated DB before a destructive fixture reset.
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await context.addCookies([await seedSession(adminId)]);
+    const guest = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    const player = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    const limited = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+    });
+    const headers = { origin: "http://127.0.0.1:3100" };
+    const endpoint = `/api/admin/tournaments/${slug}`;
+    const current = async () => (await context.request.get(endpoint)).json();
+    const tab = (name: string) =>
+      page
+        .getByRole("navigation", { name: "Tournament settings", exact: true })
+        .getByRole("button", { name, exact: true })
+        .click();
+    try {
+      expect((await guest.request.get("/api/admin/tournaments")).status()).toBe(
+        401,
+      );
+      expect(
+        (
+          await guest.request.post("/api/admin/tournaments", {
+            headers,
+            data: {},
+          })
+        ).status(),
+      ).toBe(401);
+      await page.goto("/admin/tournaments");
+      await expect(
+        page.getByRole("heading", { name: "OCLR Season 11", exact: true }),
+      ).toBeVisible();
+      await page
+        .getByRole("link", { name: "Create tournament", exact: true })
+        .click();
+      await page
+        .getByLabel("Tournament name", { exact: true })
+        .fill("Synthetic managed edition");
+      await page.getByLabel("Season identifier (optional)").fill("12");
+      await page
+        .getByLabel("Summary", { exact: true })
+        .fill(
+          "Synthetic browser-managed configuration, never production content.",
+        );
+      await page
+        .getByLabel("IANA time zone", { exact: true })
+        .fill("Asia/Taipei");
+      await page.getByLabel("Permanent slug", { exact: true }).fill(slug);
+      await page
+        .getByRole("button", { name: "Create tournament", exact: true })
+        .click();
+      await expect(page).toHaveURL(new RegExp(`/admin/tournaments/${slug}$`));
+      await expect(
+        page.getByRole("heading", {
+          name: "Synthetic managed edition",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("textbox", { name: /reason|Permanent slug/i }),
+      ).toHaveCount(0);
+      expect(
+        (await guest.request.get(`/api/tournaments/${slug}`)).status(),
+      ).toBe(404);
+      let state = await current();
+      expect(state.edition).toMatchObject({
+        published: false,
+        registration: null,
+        rules: null,
+        schedule: [],
+      });
+      const duplicate = {
+        slug,
+        name: state.edition.name,
+        season: "12",
+        summary: state.edition.summary,
+        timeZone: "Asia/Taipei",
+        branding: state.edition.branding,
+        confirmed: true,
+      };
+      expect(
+        (
+          await context.request.post("/api/admin/tournaments", {
+            headers,
+            data: duplicate,
+          })
+        ).status(),
+      ).toBe(409);
+      await page
+        .getByLabel("Tournament name", { exact: true })
+        .fill("Synthetic approved edition");
+      await page
+        .getByRole("button", { name: "Save general settings", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await tab("Rules & eligibility");
+      await page
+        .getByLabel("Configure approved rules", { exact: true })
+        .check();
+      await page
+        .getByLabel("Rules version", { exact: true })
+        .fill("synthetic-v1");
+      await page
+        .getByLabel("Section 1 heading", { exact: true })
+        .fill("Original synthetic rules");
+      await page
+        .getByLabel("Section 1 content", { exact: true })
+        .fill("Original synthetic conditions acknowledged by applicants.");
+      await page
+        .getByLabel("Eligibility disclosure", { exact: true })
+        .fill("Synthetic approved disclosure for isolated tests.");
+      await page
+        .getByRole("button", { name: "Save rules & eligibility", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      await tab("Milestones");
+      await page
+        .getByRole("button", { name: "Add milestone", exact: true })
+        .click();
+      await page
+        .getByLabel("Milestone 1 label", { exact: true })
+        .fill("Synthetic captain announcement");
+      await page
+        .getByRole("button", { name: "Add milestone", exact: true })
+        .click();
+      await page
+        .getByLabel("Milestone 2 label", { exact: true })
+        .fill("Synthetic competition start");
+      await page.getByLabel(/^Milestone 2 time/).fill("2027-04-20T20:30");
+      await page
+        .getByRole("button", { name: "Move milestone 2 up", exact: true })
+        .click();
+      await expect(page.getByLabel(/^Milestone 1 time/)).toHaveValue(
+        "2027-04-20T20:30",
+      );
+      await page
+        .getByRole("button", { name: "Save milestones", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      state = await current();
+      expect(state.edition.schedule).toEqual([
+        {
+          label: "Synthetic competition start",
+          at: "2027-04-20T12:30:00.000Z",
+        },
+        { label: "Synthetic captain announcement", at: null },
+      ]);
+      await tab("Registration");
+      await page
+        .getByLabel("Configure registration window", { exact: true })
+        .check();
+      await page.getByLabel(/^Registration opens \(/).fill("2025-01-01T12:00");
+      await page.getByLabel(/^Registration closes \(/).fill("2099-01-01T20:00");
+      await page.getByLabel(/^Withdrawal deadline \(/).fill("2099-01-01T19:00");
+      await page
+        .getByRole("button", { name: "Add question", exact: true })
+        .click();
+      await page
+        .getByLabel("Question 1 label", { exact: true })
+        .fill("Original availability");
+      await page.getByLabel("Question 1 is required", { exact: true }).check();
+      await page
+        .getByLabel("Question 1 maximum length", { exact: true })
+        .fill("20");
+      await page
+        .getByRole("button", {
+          name: "Save registration settings",
+          exact: true,
+        })
+        .click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      await tab("Publication");
+      await page
+        .getByRole("button", { name: "Publish tournament", exact: true })
+        .click();
+      await page
+        .getByRole("dialog")
+        .getByLabel(/I confirm this visibility change/)
+        .check();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(page.getByRole("status")).toHaveText("Publication updated.");
+      const guestPage = await guest.newPage();
+      await guestPage.goto(`/tournaments/${slug}/rules`);
+      await expect(
+        guestPage.getByRole("heading", { name: "Original synthetic rules" }),
+      ).toBeVisible();
+      await guestPage.goto(`/tournaments/${slug}/schedule`);
+      await expect(
+        guestPage.getByRole("heading", {
+          name: "Synthetic captain announcement",
+        }),
+      ).toBeVisible();
+      await expect(
+        guestPage.getByText("To be announced", { exact: true }),
+      ).toBeVisible();
+      await guestPage.goto(`/tournaments/${slug}/register`);
+      await expect(
+        guestPage.getByRole("heading", { name: "Registration is not open" }),
+      ).toBeVisible();
+      const pub = await (
+        await guest.request.get(`/api/tournaments/${slug}`)
+      ).json();
+      expect(JSON.stringify(pub)).not.toMatch(
+        /questions|actorId|configurationVersion|applications|answers/,
+      );
+      await tab("Registration");
+      await page
+        .getByLabel("Enable registration during this window", { exact: true })
+        .check();
+      await page
+        .getByRole("button", {
+          name: "Save registration settings",
+          exact: true,
+        })
+        .click();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      state = await current();
+      expect(state.edition.registration.enabled).toBe(true);
+      await player.addCookies([await seedSession(playerId)]);
+      const playerPage = await player.newPage();
+      await playerPage.goto(`/tournaments/${slug}/register`);
+      const questionId = state.edition.registration.questions[0].id;
+      const body = {
+        rulesAcknowledged: true,
+        eligibilityAcknowledged: true,
+        rulesVersion: "synthetic-v1",
+        configurationVersion: state.revision,
+        answers: { [questionId]: "Evenings" },
+      };
+      expect(
+        (
+          await player.request.post(`/api/tournaments/${slug}/registrations`, {
+            headers,
+            data: { ...body, configurationVersion: state.revision - 1 },
+          })
+        ).status(),
+      ).toBe(409);
+      await playerPage
+        .getByLabel("Original availability (required)", { exact: true })
+        .fill("Evenings");
+      await playerPage.getByLabel(/I have read and agree/).check();
+      await playerPage.getByLabel(/I have read the eligibility/).check();
+      await playerPage
+        .getByRole("button", { name: "Submit individual application" })
+        .click();
+      await expect(playerPage).toHaveURL(/\/dashboard\?submitted=1$/);
+      const application = (
+        await (await player.request.get("/api/registrations")).json()
+      ).find((r: { editionSlug: string }) => r.editionSlug === slug);
+      expect(application.configurationVersion).toBe(state.revision);
+      await page.reload();
+      await tab("Registration");
+      await page
+        .getByLabel("Enable registration during this window", { exact: true })
+        .uncheck();
+      await page
+        .getByRole("button", {
+          name: "Save registration settings",
+          exact: true,
+        })
+        .click();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      await tab("Rules & eligibility");
+      await page
+        .getByLabel("Rules version", { exact: true })
+        .fill("synthetic-v2");
+      await page
+        .getByLabel("Section 1 heading", { exact: true })
+        .fill("Revised synthetic rules");
+      await page.getByLabel(/I have organizer approval to retain/).check();
+      await page
+        .getByRole("button", { name: "Save rules & eligibility", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      await tab("Registration");
+      await page
+        .getByLabel("Question 1 label", { exact: true })
+        .fill("Revised availability");
+      await page.getByLabel(/I have organizer approval to retain/).check();
+      await page
+        .getByRole("button", {
+          name: "Save registration settings",
+          exact: true,
+        })
+        .click();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(page.getByRole("status")).toContainText("saved");
+      await playerPage.reload();
+      await playerPage
+        .getByText("My acknowledged rules and application", { exact: true })
+        .click();
+      await expect(
+        playerPage.getByRole("heading", { name: "Original synthetic rules" }),
+      ).toBeVisible();
+      await expect(
+        playerPage.getByText("Original availability", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        playerPage.getByText("Revised availability", { exact: true }),
+      ).toHaveCount(0);
+      const reviewPage = await context.newPage();
+      await reviewPage.goto(`/admin/registrations/${application.id}`);
+      await expect(
+        reviewPage.getByText("Original availability", { exact: true }),
+      ).toBeVisible();
+      await reviewPage.close();
+      await guestPage.goto(`/tournaments/${slug}/rules`);
+      await expect(
+        guestPage.getByRole("heading", { name: "Revised synthetic rules" }),
+      ).toBeVisible();
+      await limited.addCookies([await seedSession(playerId + 1)]);
+      for (const role of ["mappooler", "referee"] as const)
+        await db()
+          .insert(staffRoles)
+          .values({
+            userId: playerId + 1,
+            role,
+            editionSlug: slug,
+            grantedBy: adminId,
+          });
+      expect((await limited.request.get(endpoint)).status()).toBe(403);
+      expect(
+        (
+          await limited.request.post(endpoint, {
+            headers,
+            data: {
+              action: "publication",
+              expectedRevision: (await current()).revision,
+              confirmed: true,
+              contentApproved: true,
+              published: false,
+            },
+          })
+        ).status(),
+      ).toBe(403);
+      const limitedPage = await limited.newPage();
+      await limitedPage.goto(`/admin/tournaments/${slug}`);
+      await expect(
+        limitedPage.getByRole("link", { name: "Mappools", exact: true }).last(),
+      ).toBeVisible();
+      await expect(
+        limitedPage.getByRole("navigation", {
+          name: "Tournament settings",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      await page
+        .getByRole("link", { name: "Staff assignments", exact: true })
+        .last()
+        .click();
+      await expect(
+        page.getByRole("combobox", { name: "Scope", exact: true }),
+      ).toHaveValue(slug);
+      await page.goto(`/admin/tournaments/${slug}`);
+      expect(
+        (
+          await new AxeBuilder({ page })
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+            .analyze()
+        ).violations,
+      ).toEqual([]);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: info.outputPath("tournament-workspace.png"),
+        fullPage: true,
+        animations: "disabled",
+      });
+      await tab("Publication");
+      await page
+        .getByRole("button", { name: "Unpublish tournament", exact: true })
+        .click();
+      await page
+        .getByRole("dialog")
+        .getByLabel(/I confirm this visibility change/)
+        .check();
+      await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      await expect(page.getByRole("status")).toHaveText("Publication updated.");
+      expect(
+        (await guest.request.get(`/api/tournaments/${slug}`)).status(),
+      ).toBe(404);
+      const audit = await current();
+      expect(
+        audit.events.every(
+          (event: { actorId: number; reason: string | null }) =>
+            event.actorId === adminId && event.reason === null,
+        ),
+      ).toBe(true);
+      expect(
+        (await guest.request.get(`/api/players/${playerId}`)).status(),
+      ).toBe(404);
+      expect(
+        (
+          await guest.request.get(`/api/admin/registrations/${application.id}`)
+        ).status(),
+      ).toBe(404); // No public application-by-ID route.
+    } finally {
+      await guest.close();
+      await player.close();
+      await limited.close();
+    }
+  });
+});

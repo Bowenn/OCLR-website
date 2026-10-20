@@ -3,7 +3,7 @@ const instant = z.iso.datetime({ offset: true });
 export const questionSchema = z
   .object({
     id: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/),
-    label: z.string().min(1).max(200),
+    label: z.string().trim().min(1).max(200),
     required: z.boolean(),
     maxLength: z.number().int().min(1).max(2000).default(500),
   })
@@ -26,7 +26,7 @@ export const editionSchema = z
       .default({ logo: null, background: null, keyVisual: null }),
     published: z.boolean(),
     status: z.enum(["upcoming", "live", "completed"]),
-    summary: z.string().min(1).max(2000),
+    summary: z.string().trim().min(1).max(2000),
     timeZone: z.string().refine((value) => {
       try {
         new Intl.DateTimeFormat("en", { timeZone: value });
@@ -52,7 +52,7 @@ export const editionSchema = z
       })
       .strict()
       .nullable(),
-    eligibility: z.string().min(1).max(4000).nullable(),
+    eligibility: z.string().trim().min(1).max(4000).nullable(),
     registration: z
       .object({
         enabled: z.boolean().default(true),

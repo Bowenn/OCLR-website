@@ -29,6 +29,7 @@ const a = { osuId: 20001, username: "Synthetic Registration A" };
 const b = { osuId: 20002, username: "Synthetic Registration B" };
 const valid = {
   rulesAcknowledged: true,
+  configurationVersion: 0,
   eligibilityAcknowledged: true,
   rulesVersion: "test-v1",
   answers: {},

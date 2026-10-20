@@ -23,6 +23,9 @@ export default async function StaffLayout({
       slug: e.slug,
       name: e.name,
       links: [
+        ...(can("configure_tournament", e.slug)
+          ? [{ path: "", label: "Overview & settings" }]
+          : []),
         ...(can("manage_fixtures", e.slug) || can("record_results", e.slug)
           ? [{ path: "matches", label: "Fixtures & results" }]
           : []),

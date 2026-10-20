@@ -1683,3 +1683,16 @@ body:has(.presenter-view) .site-footer,
     margin-inline: auto;
   }
 }
+
+.readiness-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.65rem 1.5rem;
+  padding-left: 1.25rem;
+  margin-block: 1.25rem;
+  color: var(--color-muted);
+}
+
+.tournament-slug {
+  overflow-wrap: anywhere;
+}

@@ -17,7 +17,8 @@ export function StaffNavigation({
   const pathname = usePathname();
   return (
     <nav aria-label="Staff navigation">
-      <Link href="/admin">Operations</Link>
+      <Link href="/admin/tournaments">Tournaments</Link>
+      <Link href="/admin">Registration review</Link>
       {canLookupProfiles && (
         <Link href="/admin/profiles">osu! profile lookup</Link>
       )}
@@ -27,17 +28,20 @@ export function StaffNavigation({
         <details
           className="staff-edition-nav"
           key={e.slug}
-          open={pathname.startsWith(`/admin/tournaments/${e.slug}/`)}
+          open={
+            pathname === `/admin/tournaments/${e.slug}` ||
+            pathname.startsWith(`/admin/tournaments/${e.slug}/`)
+          }
         >
           <summary>{e.name}</summary>
           <div>
             {e.links.map((link) => (
               <Link
                 key={link.path}
-                href={`/admin/tournaments/${e.slug}/${link.path}`}
+                href={`/admin/tournaments/${e.slug}${link.path ? `/${link.path}` : ""}`}
                 aria-current={
                   pathname.startsWith(
-                    `/admin/tournaments/${e.slug}/${link.path}`,
+                    `/admin/tournaments/${e.slug}${link.path ? `/${link.path}` : ""}`,
                   )
                     ? "page"
                     : undefined

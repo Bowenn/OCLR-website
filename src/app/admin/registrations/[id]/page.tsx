@@ -1,7 +1,7 @@
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
 import { applicationDetails } from "@/lib/staff";
-import { getEditions } from "@/lib/content";
+import { getEdition } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
 import { ReviewForm } from "@/components/review-form";
@@ -15,7 +15,7 @@ export default async function Application({
     const { id } = await params;
     const data = await applicationDetails(actor, id);
     const { registration: r, username, events } = data;
-    const edition = (await getEditions()).find((e) => e.slug === r.editionSlug);
+    const edition = await getEdition(r.editionSlug);
     return (
       <>
         <PageHeading eyebrow={edition?.name ?? r.editionSlug} title={username}>
@@ -37,13 +37,7 @@ export default async function Application({
                 <dt>
                   {data.acknowledgedConfiguration?.registration?.questions.find(
                     (q) => q.id === key,
-                  )?.label ??
-                    (edition?.rules?.version === r.rulesVersion
-                      ? edition.registration?.questions.find(
-                          (q) => q.id === key,
-                        )?.label
-                      : null) ??
-                    key}
+                  )?.label ?? key}
                 </dt>
                 <dd className="preserve-lines">{value || "No answer"}</dd>
               </div>

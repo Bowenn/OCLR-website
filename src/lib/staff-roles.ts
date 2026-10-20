@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { editionState, staffRoles, staffRoleEvents, users } from "@/db/schema";
 import { assertCapability, capabilityScope, roles } from "./auth/staff";
 import type { User } from "./auth/sessions";
-import { getEditions } from "./content";
+import { getEdition } from "./content";
 import { HttpError } from "./http";
 const confirmation = {
   confirmed: z.literal(true),
@@ -60,10 +60,7 @@ export async function changeStaffRole(actor: User, input: unknown) {
         c.editionSlug ?? undefined,
         tx,
       );
-      if (
-        c.editionSlug &&
-        !(await getEditions()).some((e) => e.slug === c.editionSlug)
-      )
+      if (c.editionSlug && !(await getEdition(c.editionSlug)))
         throw new HttpError(404, "Edition not found.");
       const [user] = await tx
         .select()

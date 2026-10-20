@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { getPublicEdition } from "@/lib/content";
+import { db } from "@/db";
+import { readTournament } from "@/lib/tournaments";
 import { currentUser } from "@/lib/auth/user";
 import {
   ownRegistrations,
@@ -14,7 +15,10 @@ export default async function Register({
   params: Promise<{ edition: string }>;
 }) {
   const { edition: slug } = await params;
-  const edition = await getPublicEdition(slug);
+  const record = process.env.DATABASE_URL
+    ? await readTournament(slug, db(), true)
+    : undefined;
+  const edition = record?.edition;
   if (!edition) notFound();
   const availability = await registrationAvailability(edition);
   const user = await currentUser();
@@ -54,7 +58,11 @@ export default async function Register({
             <h2>Eligibility</h2>
             <p>{edition.eligibility}</p>
           </section>
-          <ApplicationForm edition={edition} username={user.username} />
+          <ApplicationForm
+            edition={edition}
+            username={user.username}
+            configurationVersion={record!.revision}
+          />
         </>
       )}
     </>

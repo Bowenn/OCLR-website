@@ -4,13 +4,15 @@ import { ConfirmMutation } from "./confirm-mutation";
 export function StaffRoleForm({
   editions,
   scopes,
+  initialEdition = "",
 }: {
   editions: { slug: string; name: string }[];
   scopes: string[] | null;
+  initialEdition?: string;
 }) {
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState("mappooler");
-  const [scope, setScope] = useState(scopes?.[0] ?? "");
+  const [scope, setScope] = useState(initialEdition || scopes?.[0] || "");
 
   return (
     <div className="panel form-stack">

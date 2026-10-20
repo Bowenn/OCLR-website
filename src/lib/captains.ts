@@ -10,7 +10,7 @@ import {
   teams,
   memberships,
 } from "@/db/schema";
-import { getEditions, getPublicEdition } from "./content";
+import { getEdition, getPublicEdition } from "./content";
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { HttpError } from "./http";
@@ -53,8 +53,7 @@ const commandSchema = z
   .strict();
 export async function captainSetup(actor: User, slug: string) {
   await assertCapability(actor, "manage_captains", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
       const [state] = await tx
@@ -126,8 +125,7 @@ export async function updateCaptains(
   input: unknown,
 ) {
   await assertCapability(actor, "manage_captains", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Confirm a valid captain setup action.");

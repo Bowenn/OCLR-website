@@ -13,7 +13,7 @@ import {
 } from "@/db/schema";
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
-import { getEditions, getPublicEdition } from "./content";
+import { getEdition, getPublicEdition } from "./content";
 import { fetchBeatmap } from "./osu-beatmaps";
 import { HttpError } from "./http";
 import {
@@ -137,8 +137,7 @@ const poolFields = {
 };
 export async function mappoolWorkspace(actor: User, slug: string) {
   await assertCapability(actor, "manage_mappools", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
       const rounds = await tx
@@ -186,8 +185,7 @@ export async function previewBeatmap(
   input: unknown,
 ) {
   await assertCapability(actor, "manage_mappools", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   const parsed = z
     .object({ beatmap: z.string().trim().min(1).max(250) })
     .strict()
@@ -206,8 +204,7 @@ export async function mappoolCommand(
   input: unknown,
 ) {
   await assertCapability(actor, "manage_mappools", slug);
-  if (!(await getEditions()).some((e) => e.slug === slug))
-    throw new HttpError(404, "Edition not found.");
+  if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Confirm a valid mappool change.");

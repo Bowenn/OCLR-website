@@ -36,6 +36,7 @@ test.describe("player registration with persistent sessions", () => {
     const apiUrl = "/api/tournaments/test-cup/registrations";
     const valid = {
       rulesAcknowledged: true,
+      configurationVersion: 0,
       eligibilityAcknowledged: true,
       rulesVersion: "test-v1",
       answers: {},

@@ -49,6 +49,11 @@ export default async function Admin({
           Review individual applications. Acceptance does not appoint a captain
           or assign a team.
         </PageHeading>
+        <div className="actions">
+          <Link className="button secondary" href="/admin/tournaments">
+            Tournament management →
+          </Link>
+        </div>
         <div className="section-title">
           <p className="muted small">
             {total} matching application{total === 1 ? "" : "s"}

@@ -6,9 +6,11 @@ import type { Edition } from "@/lib/editions";
 export function ApplicationForm({
   edition,
   username,
+  configurationVersion,
 }: {
   edition: Edition;
   username: string;
+  configurationVersion: number;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -34,6 +36,7 @@ export function ApplicationForm({
             rulesAcknowledged: form.get("rules") === "on",
             eligibilityAcknowledged: form.get("eligibility") === "on",
             rulesVersion: edition.rules!.version,
+            configurationVersion,
             answers,
           }),
         },
