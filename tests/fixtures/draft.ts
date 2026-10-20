@@ -97,7 +97,6 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
   await updateCaptains(staff, slug, {
     command: { action: "lock" },
     expectedVersion: version,
-
     confirmed: true,
   });
   const ordered = (await captainSetup(staff, slug)).captains;
@@ -116,7 +115,6 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
     await draftCommand(staff, slug, {
       command: { action },
       expectedVersion: session.version,
-
       confirmed: true,
     });
   }

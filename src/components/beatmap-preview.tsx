@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { BeatmapSnapshot } from "@/lib/mappool-model";
 import { BeatmapDetails } from "./beatmap-details";
 export function BeatmapPreview({
@@ -16,10 +16,6 @@ export function BeatmapPreview({
     error?: string;
   } | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const onReadyRef = useRef(onReady);
-  useEffect(() => {
-    onReadyRef.current = onReady;
-  }, [onReady]);
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
@@ -40,7 +36,7 @@ export function BeatmapPreview({
           );
         if (active) {
           setResult({ snapshot: data });
-          onReadyRef.current(data);
+          onReady(data);
         }
       } catch (error) {
         if (active) {
@@ -50,7 +46,7 @@ export function BeatmapPreview({
                 ? error.message
                 : "Beatmap lookup is unavailable. Please retry.",
           });
-          onReadyRef.current(null);
+          onReady(null);
         }
       }
     }, 400);
@@ -59,7 +55,7 @@ export function BeatmapPreview({
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [id, url, attempt]);
+  }, [id, url, attempt, onReady]);
   return (
     <div
       aria-label="Beatmap preview"
@@ -81,7 +77,7 @@ export function BeatmapPreview({
             type="button"
             className="secondary"
             onClick={() => {
-              onReadyRef.current(null);
+              onReady(null);
               setResult(null);
               setAttempt((a) => a + 1);
             }}
@@ -101,7 +97,7 @@ export function BeatmapPreview({
             type="button"
             className="secondary"
             onClick={() => {
-              onReadyRef.current(null);
+              onReady(null);
               setResult(null);
               setAttempt((a) => a + 1);
             }}

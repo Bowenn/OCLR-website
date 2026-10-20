@@ -39,6 +39,33 @@ function context(change: Record<string, unknown> = {}): MatchContext {
   };
 }
 describe("fixture-bound candidate scoring and explicit game review", () => {
+  it("requires substantive explanations only for exclusions and scoring warnings", async () => {
+    const source = await sourceOf([
+      syntheticApiGame(1),
+      syntheticApiGame(2, 100, 200),
+      syntheticApiGame(3),
+    ]);
+    const decisions = choices([1, 2, 3]).map((d) => ({ ...d, reason: "" }));
+    expect(previewMatch(source, context(), decisions).canSubmit).toBe(true);
+    source.games[0].scores[0].team = null;
+    const unresolved = previewMatch(source, context(), decisions);
+    expect(unresolved.canSubmit).toBe(false);
+    expect(unresolved.blockers).toContain(
+      "Game 1: document the warning or attribution resolution.",
+    );
+    decisions[0].reason =
+      "Roster identities resolve the missing provider color.";
+    expect(previewMatch(source, context(), decisions).canSubmit).toBe(true);
+    decisions[0] = { ...decisions[0], included: false, reason: "" };
+    expect(previewMatch(source, context(), decisions).blockers).toContain(
+      "Game 1: document the exclusion reason.",
+    );
+    decisions[0].reason = "Organizer reviewed this synthetic game as a warmup.";
+    expect(previewMatch(source, context(), decisions).blockers).not.toContain(
+      "Game 1: document the exclusion reason.",
+    );
+  });
+
   it("uses stable fixture roster IDs, never lobby-title team names, and requires explicit decisions", async () => {
     const source = await sourceOf([
       syntheticApiGame(1),

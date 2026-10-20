@@ -41,24 +41,24 @@ async function loadBeatmap(id: number): Promise<BeatmapSnapshot> {
       );
     const b = parsed.data;
     const fetchedAt = Date.now();
+    const metadata = {
+      setId: b.beatmapset_id,
+      title: b.beatmapset.title,
+      artist: b.beatmapset.artist,
+      mapper: b.beatmapset.creator,
+      difficulty: b.version,
+      stars: b.difficulty_rating,
+      bpm: b.bpm,
+      duration: b.total_length,
+    };
     const snapshot: BeatmapSnapshot = {
-      fingerprint: "",
       beatmapId: id,
       fetchedAt: new Date(fetchedAt).toISOString(),
-      metadata: {
-        setId: b.beatmapset_id,
-        title: b.beatmapset.title,
-        artist: b.beatmapset.artist,
-        mapper: b.beatmapset.creator,
-        difficulty: b.version,
-        stars: b.difficulty_rating,
-        bpm: b.bpm,
-        duration: b.total_length,
-      },
+      metadata,
+      fingerprint: createHash("sha256")
+        .update(JSON.stringify({ beatmapId: id, metadata }))
+        .digest("hex"),
     };
-    snapshot.fingerprint = createHash("sha256")
-      .update(JSON.stringify({ beatmapId: id, metadata: snapshot.metadata }))
-      .digest("hex");
     remember(id, { snapshot, expiresAt: fetchedAt + 60000 });
     return snapshot;
   } catch (error) {

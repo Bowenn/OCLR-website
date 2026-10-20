@@ -199,7 +199,6 @@ test.describe("published mappools and restricted editing", () => {
               poolId: pool.id,
               expectedVersion: 3,
               entryId: entry.id,
-
               confirmed: true,
             },
           })

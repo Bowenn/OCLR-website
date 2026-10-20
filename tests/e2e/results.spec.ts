@@ -1,7 +1,9 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { closeDb } from "../../src/db";
+import { and, eq } from "drizzle-orm";
+import { matchImports, matchGames } from "../../src/db/schema";
+import { db, closeDb } from "../../src/db";
 import { seedSession } from "./session";
 import { seedResultReview } from "../fixtures/results";
 test.describe("private referee review and Admin publication", () => {
@@ -22,6 +24,28 @@ test.describe("private referee review and Admin publication", () => {
       refereeId,
       isMobile ? 304000 : 303000,
     );
+    // Synthetic ambiguous provider colors still have authoritative roster identities.
+    // Inclusion requires a substantive review explanation, while ordinary games do not.
+    const source = structuredClone(seed.source);
+    source.games[0].scores[0].team = null;
+    source.fingerprint = createHash("sha256")
+      .update(JSON.stringify(source.games))
+      .digest("hex");
+    await db().transaction(async (tx) => {
+      await tx
+        .update(matchImports)
+        .set({ source, fingerprint: source.fingerprint })
+        .where(eq(matchImports.id, seed.importId));
+      await tx
+        .update(matchGames)
+        .set({ data: source.games[0] })
+        .where(
+          and(
+            eq(matchGames.importId, seed.importId),
+            eq(matchGames.externalGameId, source.games[0].id),
+          ),
+        );
+    });
     await context.addCookies([refCookie]);
     const endpoint = `/api/admin/tournaments/test-cup/matches/${seed.fixtureId}/results`;
     const route = `/admin/tournaments/test-cup/matches/${seed.fixtureId}`;
@@ -53,6 +77,21 @@ test.describe("private referee review and Admin publication", () => {
         await page
           .getByRole("combobox", { name: new RegExp(`^Game ${i} decision`) })
           .selectOption("true");
+        if (i === 1) {
+          const explanation = page.getByRole("textbox", {
+            name: "Game 1 scoring decision explanation",
+            exact: true,
+          });
+          await expect(explanation).toBeVisible();
+          await explanation.fill(
+            "Synthetic roster evidence resolves the missing provider color.",
+          );
+        } else
+          await expect(
+            page.getByRole("textbox", {
+              name: new RegExp(`^Game ${i} .*explanation`),
+            }),
+          ).toHaveCount(0);
         await page
           .getByLabel(
             `Game ${i}: I verified mods and the approved tournament rules`,
@@ -60,6 +99,24 @@ test.describe("private referee review and Admin publication", () => {
           )
           .check();
       }
+      await page
+        .getByRole("combobox", { name: /^Game 2 decision/ })
+        .selectOption("false");
+      await expect(
+        page.getByRole("textbox", {
+          name: "Game 2 exclusion explanation",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await page
+        .getByRole("combobox", { name: /^Game 2 decision/ })
+        .selectOption("true");
+      await expect(
+        page.getByRole("textbox", {
+          name: "Game 2 exclusion explanation",
+          exact: true,
+        }),
+      ).toHaveCount(0);
       await page
         .getByLabel(
           "I verified the configured scoring rules against the approved OCLR rules",
@@ -102,7 +159,6 @@ test.describe("private referee review and Admin publication", () => {
         expectedVersion: review.context.result.version,
         expectedFixtureVersion: review.context.fixture.version,
         confirmed: true,
-
         action: "approve",
         revision: 1,
       };
@@ -153,6 +209,7 @@ test.describe("private referee review and Admin publication", () => {
       const publicText = JSON.stringify(published);
       for (const secret of [
         "private audit note",
+        "Synthetic roster evidence",
         "SYNTHETIC_PRIVATE_CONTACT",
         "rosterSnapshot",
         "decisions",
@@ -160,6 +217,9 @@ test.describe("private referee review and Admin publication", () => {
         "approvedBy",
       ])
         expect(publicText).not.toContain(secret);
+      expect(review.published.proposal.decisions[0].reason).toBe(
+        "Synthetic roster evidence resolves the missing provider color.",
+      );
       expect(review.published.proposal.series).toMatchObject({
         homeWins: 2,
         awayWins: 1,

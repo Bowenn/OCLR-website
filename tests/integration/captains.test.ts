@@ -68,7 +68,6 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
   const command = (version: number, value: Record<string, unknown>) => ({
     command: value,
     expectedVersion: version,
-
     confirmed: true,
   });
   it("separates captain/staff/edition roles and excludes captains from the pool", async () => {
@@ -166,6 +165,50 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
         command(5, { action: "revoke", userId: a.osuId }),
       ),
     ).rejects.toMatchObject({ status: 409 });
+  });
+  it("requires a real draft-unavailability explanation without demanding reasons for routine appointments", async () => {
+    for (const extra of [{}, { unavailableExplanation: " " }])
+      await expect(
+        updateCaptains(
+          staff,
+          edition.slug,
+          command(0, {
+            action: "availability",
+            userId: player.osuId,
+            available: false,
+            ...extra,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 400 });
+    expect(await db().select().from(editionEvents)).toEqual([]);
+    await updateCaptains(
+      staff,
+      edition.slug,
+      command(0, {
+        action: "availability",
+        userId: player.osuId,
+        available: false,
+        unavailableExplanation: "Organizer verified the player is unavailable.",
+      }),
+    );
+    const excluded = (await db().select().from(registrations)).find(
+      (r) => r.userId === player.osuId,
+    )!;
+    expect(excluded.draftUnavailableReason).toBe(
+      "Organizer verified the player is unavailable.",
+    );
+    await updateCaptains(
+      staff,
+      edition.slug,
+      command(1, {
+        action: "availability",
+        userId: player.osuId,
+        available: true,
+      }),
+    );
+    expect(
+      (await captainSetup(staff, edition.slug)).pool.map((p) => p.userId),
+    ).toContain(player.osuId);
   });
   it("publishes only deliberately released captain fields and audits replacement/availability", async () => {
     await updateCaptains(

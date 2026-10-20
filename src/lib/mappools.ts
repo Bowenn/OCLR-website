@@ -504,7 +504,6 @@ export async function mappoolCommand(
         poolId: pool.id,
         actorId: actor.osuId,
         action: c.action,
-
         before,
         after: { pool: afterPool, entries: afterEntries },
       });

@@ -868,6 +868,23 @@ describe.skipIf(!url)(
       ).rejects.toMatchObject({ status: 400 });
       current = (await resultCommand(referee, "test-cup", fixtureId, payload))
         .review;
+      const beforeRejectedNotes = current.context.events.length;
+      for (const action of [
+        { action: "reject", revision: 1 },
+        { action: "void", progressionAcknowledged: true },
+      ]) {
+        for (const note of [{}, { decisionNote: " " }])
+          await expect(
+            resultCommand(admin, "test-cup", fixtureId, {
+              ...base(current),
+              ...action,
+              ...note,
+            }),
+          ).rejects.toMatchObject({ status: 400 });
+      }
+      expect(
+        (await matchReview(admin, "test-cup", fixtureId)).context.events,
+      ).toHaveLength(beforeRejectedNotes);
       for (const action of [
         { action: "approve", revision: 1 },
         { action: "publish", revision: 1, progressionAcknowledged: true },

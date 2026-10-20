@@ -38,7 +38,6 @@ function Operation({
         expectedFixtureVersion: data.context.fixture.version,
         confirmed: true,
         ...(needsExplanation ? { decisionNote } : {}),
-
         ...extra,
       }}
       onSuccess={() => {
@@ -233,10 +232,13 @@ function SourceReview({
                   <option value="false">Exclude from result</option>
                 </select>
               </label>
-              {decision?.included === false && (
+              {decision && (!decision.included || g.warnings.length > 0) && (
                 <label className="field">
                   <span>
-                    Game {i + 1} exclusion / scoring decision explanation
+                    Game {i + 1}{" "}
+                    {decision.included
+                      ? "scoring decision explanation"
+                      : "exclusion explanation"}
                   </span>
                   <textarea
                     maxLength={1000}

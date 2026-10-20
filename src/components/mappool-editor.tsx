@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import type { MappoolWorkspace } from "@/lib/mappools";
 import {
   categories,
@@ -180,10 +180,6 @@ function EntryForm({
   const [beatmap, setBeatmap] = useState(entry ? String(entry.beatmapId) : "");
   const id = parseBeatmapId(beatmap);
   const [preview, setPreview] = useState<BeatmapSnapshot | null>(null);
-  const ready = useCallback(
-    (snapshot: BeatmapSnapshot | null) => setPreview(snapshot),
-    [],
-  );
   const [mod, setMod] = useState(entry?.category ?? category);
   const [position, setPosition] = useState(String(entry?.position ?? 1));
   return (
@@ -212,7 +208,7 @@ function EntryForm({
           key={id}
           id={id}
           url={`${change.url}/preview`}
-          onReady={ready}
+          onReady={setPreview}
         />
       )}
       <label className="field">
