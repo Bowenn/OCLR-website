@@ -359,6 +359,7 @@ export const staffRoles = pgTable(
       .notNull()
       .defaultNow(),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    aboutPublished: boolean("about_published").notNull().default(false),
   },
   (t) => [
     uniqueIndex("staff_global_role_unique")
@@ -381,7 +382,9 @@ export const staffRoleEvents = pgTable(
     targetId: bigint("target_id", { mode: "number" }).notNull(),
     role: staffRole("role").notNull(),
     editionSlug: text("edition_slug"),
-    action: text("action").$type<"grant" | "revoke">().notNull(),
+    action: text("action")
+      .$type<"grant" | "revoke" | "publish_profile" | "hide_profile">()
+      .notNull(),
     reason: text("reason"),
     before: jsonb("before").$type<Record<string, unknown>>(),
     after: jsonb("after").$type<Record<string, unknown>>(),

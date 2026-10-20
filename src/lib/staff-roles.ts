@@ -13,6 +13,15 @@ const command = z.discriminatedUnion("action", [
   z
     .object({
       ...confirmation,
+      action: z.literal("visibility"),
+      grantId: z.uuid(),
+      published: z.boolean(),
+      expectedPublished: z.boolean(),
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
       action: z.literal("grant"),
       userId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
       role: z.enum(roles),
@@ -126,6 +135,32 @@ export async function changeStaffRole(actor: User, input: unknown) {
         409,
         "This role was already revoked. Refresh the role list.",
       );
+    if (c.action === "visibility") {
+      if (grant.aboutPublished !== c.expectedPublished)
+        throw new HttpError(
+          409,
+          "Public visibility changed. Refresh before saving.",
+        );
+      if (grant.aboutPublished === c.published) return grant;
+      const [updated] = await tx
+        .update(staffRoles)
+        .set({ aboutPublished: c.published })
+        .where(eq(staffRoles.id, grant.id))
+        .returning();
+      await tx
+        .insert(staffRoleEvents)
+        .values({
+          grantId: grant.id,
+          actorId: actor.osuId,
+          targetId: grant.userId,
+          role: grant.role,
+          editionSlug: grant.editionSlug,
+          action: c.published ? "publish_profile" : "hide_profile",
+          before: grant,
+          after: updated,
+        });
+      return updated;
+    }
     const [updated] = await tx
       .update(staffRoles)
       .set({ revokedAt: new Date() })

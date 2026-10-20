@@ -90,3 +90,34 @@ export function RevokeRole({
     </div>
   );
 }
+
+export function StaffPublicVisibility({
+  id,
+  username,
+  role,
+  scope,
+  published,
+}: {
+  id: string;
+  username: string;
+  role: string;
+  scope: string | null;
+  published: boolean;
+}) {
+  return (
+    <ConfirmMutation
+      label={published ? "Hide from About" : "Show on About"}
+      title="Show staff profile on About?"
+      description={`Publish ${username}'s osu! username, avatar/profile link and ${role} role for ${scope ?? "all editions"}. Edition-scoped roles appear only while that tournament is public. Other private grants stay hidden.`}
+      url="/api/admin/staff"
+      requireConfirmation={!published}
+      payload={{
+        action: "visibility",
+        grantId: id,
+        published: !published,
+        expectedPublished: published,
+        confirmed: true,
+      }}
+    />
+  );
+}

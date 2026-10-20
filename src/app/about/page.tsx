@@ -1,46 +1,79 @@
 import Link from "next/link";
 import { Action, PageHeading } from "@/components/ui";
+import { Avatar } from "@/components/avatar";
+import { publicStaff } from "@/lib/public-staff";
 import { site } from "@/content/site";
 export const metadata = { title: "About OCLR" };
-export default function About() {
+export const dynamic = "force-dynamic";
+export default async function About() {
+  const staff = await publicStaff();
   return (
     <div className="container page">
       <PageHeading
         eyebrow="THE ROOKIE STAGE"
         title="osu! Chinese League Rookie"
       >
-        Individual players. A shared team story.
+        An osu! community tournament: players enter individually, captains draft
+        their teams, and finalized rosters compete together.
       </PageHeading>
       <div className="about-layout">
-        <article className="prose">
-          <h2>Made for the osu! community.</h2>
-          <p className="muted">
-            OCLR is an osu! community tournament. Players apply individually
-            using their osu! identity; authorized staff review applications and
-            appoint team captains.
-          </p>
-          <h2>From individual entry to team competition.</h2>
-          <p className="muted">
-            Eligible players enter a captain-turn draft. The active captain can
-            select directly, and authorized staff can record a pick on that
-            captain’s behalf. Both methods follow the same authoritative turn
-            sequence.
-          </p>
-          <p className="muted">
-            Once rosters are finalized and published, the teams enter the
-            competition. Edition pages contain the approved rules, eligibility
-            requirements and dates.
-          </p>
-          <div className="actions">
-            <Action href="/tournaments">Explore tournaments →</Action>
+        <section aria-labelledby="staff-heading">
+          <h2 id="staff-heading">Staff & organizers</h2>
+          {staff.length ? (
+            <ul className="public-staff-list">
+              {staff.map((person) => (
+                <li key={person.osuId}>
+                  <Avatar osuId={person.osuId} username={person.username} />
+                  <div>
+                    <h3>
+                      <a
+                        className="text-link"
+                        href={`https://osu.ppy.sh/users/${person.osuId}`}
+                      >
+                        {person.username} ↗
+                      </a>
+                    </h3>
+                    <ul>
+                      {person.roles.map((grant) => (
+                        <li
+                          key={`${grant.role}-${grant.edition?.slug ?? "global"}`}
+                        >
+                          <span className="staff-role-name">{grant.role}</span>{" "}
+                          ·{" "}
+                          {grant.edition ? (
+                            <Link
+                              className="text-link"
+                              href={`/tournaments/${grant.edition.slug}`}
+                            >
+                              {grant.edition.name}
+                            </Link>
+                          ) : (
+                            "All editions"
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">
+              OCLR is run by its community organizing team. Public staff
+              profiles have not been announced.
+            </p>
+          )}
+          <div className="actions spaced">
+            <Action href="/tournaments" secondary>
+              Explore tournaments →
+            </Action>
             <Action href="/news" secondary>
-              Latest announcements
+              Latest news
             </Action>
           </div>
-        </article>
+        </section>
         <aside className="about-aside">
-          <p className="eyebrow">KEEP IN TOUCH</p>
-          <h2>Organizers & contact</h2>
+          <h2>Contact</h2>
           {site.contact ? (
             <p>
               <a href={site.contact.url} className="text-link">
@@ -49,8 +82,7 @@ export default function About() {
             </p>
           ) : (
             <p className="muted">
-              Organizer details and public contact methods have not yet been
-              published.
+              Public contact details have not been announced.
             </p>
           )}
           <p className="small muted">
@@ -60,7 +92,6 @@ export default function About() {
             </Link>
             .
           </p>
-          <hr />
           <p className="small muted">
             OCLR is a community event and is not affiliated with or endorsed by
             osu!.

@@ -1,0 +1,1 @@
+ALTER TABLE "staff_roles" ADD COLUMN "about_published" boolean DEFAULT false NOT NULL;

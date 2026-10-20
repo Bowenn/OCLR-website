@@ -1,4 +1,3 @@
-@import "tailwindcss";
 @theme {
   --color-background: #090c17;
   --color-surface: #121626;
@@ -409,7 +408,7 @@ button:hover {
   position: absolute;
   inset: 0;
   z-index: -3;
-  background: url("/oclr-s11-website-background.webp") center 52% / cover;
+  background: url("/rookie-stage.svg") center 52% / cover;
   animation: art-in 1.2s ease-out both;
 }
 .hero-shade {
@@ -473,60 +472,6 @@ button:hover {
   color: #b1b5ce;
   max-width: 450px;
   margin-bottom: 1.8rem;
-}
-.hero-caption {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  font-size: 0.56rem;
-  letter-spacing: 0.19em;
-  color: #9193b2;
-  margin-top: 3rem;
-}
-.caption-line {
-  width: 35px;
-  height: 1px;
-  background: #ba73d8;
-}
-.hero-coordinate {
-  position: absolute;
-  right: 3rem;
-  bottom: 3rem;
-  writing-mode: vertical-rl;
-  color: #e0b5dc88;
-  letter-spacing: 0.18em;
-  font-size: 0.55rem;
-}
-.highlights {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  border-bottom: 1px solid #25283a;
-  padding: 2.4rem 0;
-}
-.highlights > div {
-  display: flex;
-  gap: 1.2rem;
-}
-.highlight-number {
-  color: #b47cdb;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding-top: 0.2rem;
-}
-.highlights h2 {
-  font-size: 0.95rem;
-  letter-spacing: -0.01em;
-  margin: 0 0 0.5rem;
-}
-.highlights p {
-  color: #9399b2;
-  font-size: 0.75rem;
-  line-height: 1.5;
-  margin: 0;
-}
-.upcoming-section {
-  padding-block: 3.8rem;
 }
 .section-title {
   display: flex;
@@ -603,45 +548,6 @@ button:hover {
   font-size: 0.76rem;
   margin: 0.15rem 0 0;
 }
-.workflow-section {
-  padding: 2rem 0 6rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6rem;
-  scroll-margin-top: 110px;
-}
-.workflow-section h2 {
-  font-size: clamp(2rem, 3vw, 2.8rem);
-  line-height: 1.2;
-}
-.workflow-section > div > p:not(.eyebrow) {
-  font-size: 0.85rem;
-  margin-block: 1.5rem;
-}
-.workflow-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.workflow-list li {
-  display: flex;
-  gap: 1.4rem;
-  border-top: 1px solid #292b3c;
-  padding: 1.5rem 0;
-}
-.workflow-list li > span {
-  color: #c48be7;
-  font-size: 0.7rem;
-}
-.workflow-list h3 {
-  font-size: 0.95rem;
-  margin: 0 0 0.5rem;
-}
-.workflow-list p {
-  color: #989eb6;
-  font-size: 0.8rem;
-  margin: 0;
-}
 @keyframes rise-in {
   from {
     transform: translateY(14px);
@@ -675,9 +581,6 @@ button:hover {
   }
   .edition-facts > div + div {
     margin: 0;
-  }
-  .workflow-section {
-    gap: 3rem;
   }
 }
 @media (max-width: 760px) {
@@ -714,25 +617,6 @@ button:hover {
   .hero-copy {
     max-width: 300px;
   }
-  .hero-caption {
-    font-size: 0.5rem;
-    margin-top: 2.5rem;
-  }
-  .hero-coordinate,
-  .desktop-break {
-    display: none;
-  }
-  .highlights {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding-block: 2rem;
-  }
-  .highlights > div {
-    gap: 1.4rem;
-  }
-  .upcoming-section {
-    padding-block: 2.5rem;
-  }
   .featured-edition {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -747,11 +631,6 @@ button:hover {
     padding: 1rem 0.5rem 0;
     flex-wrap: wrap;
     gap: 1rem 2rem;
-  }
-  .workflow-section {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding-block: 1.5rem 4rem;
   }
   .section-title {
     align-items: center;
@@ -2736,4 +2615,39 @@ body:has(.presenter-view) .site-footer,
     border-top: 1px solid var(--color-border);
     padding: 1.5rem 0 0;
   }
+}
+.public-staff-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.public-staff-list > li {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-block: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+.public-staff-list h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+.public-staff-list ul {
+  list-style: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+.public-staff-list .avatar {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+}
+.staff-role-name {
+  text-transform: capitalize;
+}
+.public-staff-list > li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

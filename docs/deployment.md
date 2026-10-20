@@ -108,6 +108,10 @@ A separate local rehearsal also loaded the production application in **OBS 32.0.
 
 The final local recovery drill used `pg_dump` (custom format) and `pg_restore --no-owner --no-privileges --exit-on-error` to restore the separate synthetic broadcast database into a new UTF-8 test database. Ordered JSON fingerprints matched for all 12 application tables and the migration journal, including the finalized draft, rosters, picks, actor/mode history and test sessions; applying migrations again succeeded without changes. This verifies the local PostgreSQL backup/restore path. The production provider's backup retention, restore permissions, recovery time and operational restore rehearsal still require verification on the actual hosting environment.
 
+## Public Staff visibility
+
+Apply migration `0017` before deploying the public About roster. All existing and new grants default to private. Admins explicitly publish individual role/scope entries through **Show on About** in Staff Management; verify the person has approved public listing. Edition-scoped entries remain hidden while their edition is unpublished. Revoking or hiding a grant removes it on the next public read. Rollback can retain the additive column and audit records; do not promote existing grants or backfill public consent.
+
 ## Competition operations release rehearsal
 
 Apply migration `0015` before deploying quick referee assignment. It adds a separate assignment revision without changing fixture/result versions or existing assignments. Roll back application code if needed; retain the additive column and audit history. Referee changes are saved from each fixture card using active edition-authorized Referee/Admin accounts. They do not invalidate an ongoing result review.

@@ -4,7 +4,11 @@ import { requireUser } from "@/lib/auth/user";
 import { listStaffRoles } from "@/lib/staff-roles";
 import { getEditions } from "@/lib/content";
 import { PageHeading, EmptyState } from "@/components/ui";
-import { StaffRoleForm, RevokeRole } from "@/components/staff-role-form";
+import {
+  StaffRoleForm,
+  RevokeRole,
+  StaffPublicVisibility,
+} from "@/components/staff-role-form";
 export default async function StaffPage({
   searchParams,
 }: {
@@ -21,8 +25,8 @@ export default async function StaffPage({
     return (
       <>
         <PageHeading eyebrow="ACCESS CONTROL" title="Staff assignments">
-          Grant the minimum role and edition scope needed. All changes require
-          confirmation and are audited.
+          Grant scoped access and publish public staff profiles separately.
+          Changes are recorded automatically.
         </PageHeading>
         <StaffRoleForm
           key={selected?.slug ?? "all"}
@@ -56,17 +60,37 @@ export default async function StaffPage({
                   {g.role} · {g.editionSlug ?? "Global"} ·{" "}
                   {g.revokedAt ? "Revoked" : "Active"}
                 </p>
+                <p className="small muted">
+                  About:{" "}
+                  {g.aboutPublished && !g.revokedAt
+                    ? !g.editionSlug ||
+                      editions.some(
+                        (e) => e.slug === g.editionSlug && e.published,
+                      )
+                      ? "Public"
+                      : "Hidden until tournament publication"
+                    : "Private"}
+                </p>
                 <p className="muted small">
                   Granted by osu! ID {g.grantedBy} on{" "}
                   {g.grantedAt.toISOString()}
                 </p>
                 {!g.revokedAt && (
-                  <RevokeRole
-                    id={g.id}
-                    username={username}
-                    role={g.role}
-                    scope={g.editionSlug}
-                  />
+                  <div className="actions">
+                    <StaffPublicVisibility
+                      id={g.id}
+                      username={username}
+                      role={g.role}
+                      scope={g.editionSlug}
+                      published={g.aboutPublished}
+                    />
+                    <RevokeRole
+                      id={g.id}
+                      username={username}
+                      role={g.role}
+                      scope={g.editionSlug}
+                    />
+                  </div>
                 )}
               </article>
             ))}

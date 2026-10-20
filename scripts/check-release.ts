@@ -49,6 +49,7 @@ try {
     sql`SELECT eligibility_acknowledged FROM registrations LIMIT 0`,
   );
   await db().execute(sql`SELECT before, after FROM staff_role_events LIMIT 0`);
+  await db().execute(sql`SELECT about_published FROM staff_roles LIMIT 0`);
   await db().execute(
     sql`SELECT 1 FROM captains, teams, memberships, draft_sessions, draft_picks, edition_events LIMIT 0`,
   );
