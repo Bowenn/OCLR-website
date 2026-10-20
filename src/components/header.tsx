@@ -18,7 +18,7 @@ export function Header({
   const path = usePathname();
   return (
     <header className="site-header">
-      <div className="nav-wrap">
+      <div className={`nav-wrap${user?.staff ? " staff-header" : ""}`}>
         <Link href="/" className="brand" aria-label="OCLR home">
           <span className="brand-mark" aria-hidden="true">
             o!
@@ -45,7 +45,11 @@ export function Header({
               key={href}
               href={href}
               aria-current={
-                (href === "/" ? path === "/" : path.startsWith(href))
+                (
+                  href === "/"
+                    ? path === "/"
+                    : path === href || path.startsWith(`${href}/`)
+                )
                   ? "page"
                   : undefined
               }
@@ -54,23 +58,40 @@ export function Header({
               {label}
             </Link>
           ))}
+        </nav>
+        <div className="nav-actions" role="group" aria-label="Account actions">
           {user?.staff && (
             <Link
               href="/admin"
-              aria-current={path.startsWith("/admin") ? "page" : undefined}
+              className="button secondary nav-login"
+              aria-current={
+                path === "/admin" || path.startsWith("/admin/")
+                  ? "page"
+                  : undefined
+              }
               onClick={() => setOpen(false)}
             >
-              Staff
+              Staff dashboard
             </Link>
           )}
-        </nav>
-        <Link
-          href={user ? "/dashboard" : "/login"}
-          className="button nav-login"
-        >
-          {user ? "Player dashboard" : "Login with osu!"}{" "}
-          <span aria-hidden="true">↗</span>
-        </Link>
+          <Link
+            href={user ? "/dashboard" : "/login"}
+            className="button nav-login"
+            aria-current={
+              (
+                user
+                  ? path === "/dashboard" || path.startsWith("/dashboard/")
+                  : path === "/login"
+              )
+                ? "page"
+                : undefined
+            }
+            onClick={() => setOpen(false)}
+          >
+            {user ? "Player dashboard" : "Login with osu!"}
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
       </div>
     </header>
   );

@@ -85,7 +85,7 @@ export default async function Overview({
         <h2>Eligibility</h2>
         <p className="muted">
           {edition.eligibility ??
-            "Eligibility requirements are not yet published. Registration will remain unavailable until the rules are confirmed."}
+            "No additional eligibility disclosure has been published."}
         </p>
       </section>
     </>

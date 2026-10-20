@@ -331,48 +331,16 @@ button:hover {
     display: none;
   }
   .nav-wrap {
-    gap: 1.4rem;
+    gap: 1rem;
     padding-inline: 2rem;
   }
   .main-nav {
-    gap: 1.4rem;
+    gap: 1rem;
   }
 }
 @media (max-width: 760px) {
-  .nav-wrap {
-    padding-inline: 1.25rem;
-    height: 72px;
-    gap: 1rem;
-  }
   .brand {
     font-size: 1.4rem;
-  }
-  .menu-toggle {
-    display: inline-flex;
-    margin-left: auto;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.75rem;
-  }
-  .nav-login {
-    padding: 0.55rem 0.7rem;
-    font-size: 0.68rem;
-  }
-  .main-nav {
-    display: none;
-    position: absolute;
-    top: 72px;
-    left: 0;
-    right: 0;
-    background: #101322;
-    padding: 1.2rem;
-    border-bottom: 1px solid #343047;
-  }
-  .main-nav.open {
-    display: grid;
-    gap: 0.25rem;
-  }
-  .main-nav a {
-    padding: 0.8rem;
   }
   .container {
     width: calc(100% - 2.5rem);
@@ -1667,7 +1635,7 @@ body:has(.presenter-view) .site-footer,
   gap: 0.5rem;
   font-size: 0.75rem;
 }
-.readiness-outcome a {
+.readiness-outcome a:not(.button) {
   color: var(--color-accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
@@ -2650,4 +2618,111 @@ body:has(.presenter-view) .site-footer,
 .public-staff-list > li > div {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+/* Account workspaces are actions; public sections remain in the main navigation. */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.nav-actions a[aria-current="page"] {
+  border-color: #ce86f0;
+  box-shadow: inset 0 0 0 1px #ce86f066;
+}
+.button-compact {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+}
+.admin-context {
+  margin-block: 0.75rem 1rem;
+}
+.admin-context .badge {
+  margin-top: 0.5rem;
+}
+.admin-workspace .admin-nav-group {
+  margin-bottom: 0.65rem;
+}
+@media (max-width: 950px) {
+  .nav-wrap {
+    height: 72px;
+    padding-inline: 1.25rem;
+    gap: 0.75rem;
+  }
+  .menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.75rem;
+  }
+  .main-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    background: #101322;
+    padding: 1.2rem;
+    border-bottom: 1px solid #343047;
+  }
+  .main-nav.open {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .main-nav a {
+    padding: 0.8rem;
+  }
+  .nav-login {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.72rem;
+  }
+  .staff-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    height: auto;
+    padding-block: 0.65rem;
+    gap: 0.5rem 1rem;
+  }
+  .staff-header .nav-actions {
+    grid-column: 1 / -1;
+  }
+  .staff-header .nav-actions a {
+    flex: 1;
+  }
+}
+@media (max-width: 400px) {
+  .nav-wrap {
+    padding-inline: 1rem;
+    gap: 0.5rem;
+  }
+  .nav-wrap .brand {
+    font-size: 1.25rem;
+    gap: 0.5rem;
+  }
+  .nav-wrap .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+  .nav-login {
+    font-size: 0.65rem;
+    padding: 0.5rem 0.55rem;
+    gap: 0.3rem;
+  }
+  .menu-toggle {
+    padding: 0.5rem;
+  }
+}
+/* Shared accessible labels used by navigation, match cards and review actions. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

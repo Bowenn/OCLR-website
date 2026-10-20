@@ -42,7 +42,10 @@ export default async function Tournament({
               </Link>
             )}
             {row.published && (
-              <Link className="text-link" href={`/tournaments/${slug}`}>
+              <Link
+                className="button secondary button-compact"
+                href={`/tournaments/${slug}`}
+              >
                 View public tournament <span aria-hidden="true">↗</span>
               </Link>
             )}
@@ -62,11 +65,10 @@ export default async function Tournament({
               </span>
               {data && (
                 <Link
-                  className="text-link"
+                  className="button secondary button-compact"
                   href={`/admin/tournaments/${slug}/registrations`}
                 >
-                  {data.applications} application
-                  {data.applications === 1 ? "" : "s"}
+                  View applications ({data.applications})
                 </Link>
               )}
             </div>
@@ -108,6 +110,7 @@ export default async function Tournament({
                       <span className="readiness-outcome">
                         {!item.ready && item.label === "Registration dates" && (
                           <Link
+                            className="button secondary button-compact"
                             href={`/admin/tournaments/${slug}/settings?section=registration`}
                           >
                             Configure

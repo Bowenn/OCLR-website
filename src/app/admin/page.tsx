@@ -54,7 +54,7 @@ export default async function Admin({
               </p>
             </div>
             <Link
-              className="text-link"
+              className="button secondary button-compact"
               href="/admin/registrations?status=pending"
             >
               Review applications →

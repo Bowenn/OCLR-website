@@ -764,7 +764,7 @@ export function FixtureManager({
         </p>
         <div className="actions fixture-actions">
           <Link
-            className="text-link"
+            className="button secondary button-compact"
             href={`/admin/tournaments/${slug}/matches/${f.id}`}
           >
             Open match ↗

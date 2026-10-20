@@ -28,16 +28,13 @@ export default async function StaffLayout({
   return (
     <StaffNavigation
       globalLinks={globalLinks}
-      editions={data.rows.map(
-        ({ slug, name, season, status, published, links }) => ({
-          slug,
-          name,
-          season,
-          status,
-          published,
-          links,
-        }),
-      )}
+      editions={data.rows.map(({ slug, name, status, published, links }) => ({
+        slug,
+        name,
+        status,
+        published,
+        links,
+      }))}
       username={user.username}
     >
       {children}

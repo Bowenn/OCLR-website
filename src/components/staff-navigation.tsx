@@ -10,7 +10,6 @@ import {
 type Workspace = {
   slug: string;
   name: string;
-  season: string | null;
   status: string;
   published: boolean;
   links: AdminLink[];
@@ -41,13 +40,11 @@ export function StaffNavigation({
   return (
     <div className="container page workspace admin-workspace">
       <aside className="sidebar">
-        <p className="eyebrow">
-          {selected ? "TOURNAMENT WORKSPACE" : "ADMINISTRATION"}
-        </p>
+        <p className="eyebrow">{selected ? "TOURNAMENT" : "ADMINISTRATION"}</p>
         {selected ? (
           <div className="admin-context">
             <label className="field">
-              <span>Selected tournament</span>
+              <span className="sr-only">Selected tournament</span>
               <select
                 aria-label="Selected tournament"
                 value={selected.slug}
@@ -68,10 +65,11 @@ export function StaffNavigation({
                 ))}
               </select>
             </label>
-            <p className="muted small">
-              {selected.season ? `Season ${selected.season} · ` : ""}
-              {selected.status} · {selected.published ? "Published" : "Draft"}
-            </p>
+            {!selected.published ? (
+              <span className="badge">Draft</span>
+            ) : selected.status === "live" ? (
+              <span className="badge">Live</span>
+            ) : null}
           </div>
         ) : (
           <h2>OCLR operations</h2>
@@ -92,7 +90,9 @@ export function StaffNavigation({
           >
             {[...new Set(links.map((link) => link.group))].map((group) => (
               <div className="admin-nav-group" key={group}>
-                <p className="eyebrow">{group}</p>
+                {!(selected && group === "Tournament") && (
+                  <p className="eyebrow">{group}</p>
+                )}
                 {links
                   .filter((link) => link.group === group)
                   .map((link) => (

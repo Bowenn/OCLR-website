@@ -54,8 +54,8 @@ test.describe("staff registration review", () => {
     if (!isMobile)
       await expect(
         page
-          .getByRole("navigation", { name: "Main navigation" })
-          .getByRole("link", { name: "Staff", exact: true }),
+          .getByRole("group", { name: "Account actions" })
+          .getByRole("link", { name: "Staff dashboard", exact: true }),
       ).toBeVisible();
     if (!isMobile) {
       const original = page.viewportSize()!;

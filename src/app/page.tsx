@@ -65,9 +65,9 @@ export default async function Home() {
         <section aria-labelledby="latest-news-title">
           <div className="section-title">
             <h2 id="latest-news-title">Latest news</h2>
-            <Link className="text-link" href="/news">
+            <Action href="/news" secondary compact>
               All news ↗
-            </Link>
+            </Action>
           </div>
           {news.length ? (
             <ol className="home-news">

@@ -1,0 +1,256 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { eq, sql } from "drizzle-orm";
+import { db, closeDb } from "../../src/db";
+import { editionState } from "../../src/db/schema";
+import { assertTestDatabase } from "../database";
+import prepared from "../../drizzle/legacy-editions.json" with { type: "json" };
+import { seedEditions } from "../fixtures/editions";
+import { seedSession } from "./session";
+import { changeStaffRole } from "../../src/lib/staff-roles";
+test.describe("role-aware header actions and compact tournament context", () => {
+  test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
+  test.afterAll(async () => closeDb());
+  test.afterEach(async () => {
+    if (process.env.TEST_DATABASE_URL) await seedEditions(prepared);
+  });
+  test("keeps public navigation separate, offers authorized dashboard actions and preserves sidebar context", async ({
+    page,
+    context,
+    browser,
+    isMobile,
+  }, info) => {
+    assertTestDatabase(process.env.TEST_DATABASE_URL);
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    const adminId = isMobile ? 70001 : 60001;
+    const playerId = isMobile ? 497102 : 497002;
+    const staffId = playerId + 1;
+    const adminCookie = await seedSession(adminId);
+    const playerCookie = await seedSession(playerId);
+    const staffCookie = await seedSession(staffId);
+    process.env.ADMIN_OSU_IDS = String(adminId);
+    const actor = { osuId: adminId, username: "Synthetic Admin" };
+    const grant = await changeStaffRole(actor, {
+      action: "grant",
+      userId: staffId,
+      role: "mappooler",
+      editionSlug: "test-cup",
+      confirmed: true,
+    });
+    await page.goto("/");
+    const accounts = page.getByRole("group", {
+      name: "Account actions",
+      exact: true,
+    });
+    await expect(
+      accounts.getByRole("link", { name: "Staff dashboard", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      accounts.getByRole("link", { name: "Login with osu!", exact: true }),
+    ).toBeVisible();
+    if (isMobile)
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+    const publicNav = page.getByRole("navigation", {
+      name: "Main navigation",
+      exact: true,
+    });
+    expect(await publicNav.getByRole("link").allTextContents()).toEqual([
+      "Home",
+      "Tournaments",
+      "Players",
+      "News",
+      "About",
+    ]);
+    await expect(publicNav.getByRole("link", { name: /Staff/ })).toHaveCount(0);
+    if (isMobile)
+      await page.getByRole("button", { name: "Close", exact: true }).click();
+    await context.addCookies([playerCookie]);
+    await page.reload();
+    await expect(
+      accounts.getByRole("link", { name: "Player dashboard", exact: true }),
+    ).toBeVisible();
+    await expect(
+      accounts.getByRole("link", { name: "Staff dashboard", exact: true }),
+    ).toHaveCount(0);
+    expect((await context.request.get("/api/admin/staff")).status()).toBe(403);
+    await accounts
+      .getByRole("link", { name: "Player dashboard", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(
+      accounts.getByRole("link", { name: "Player dashboard", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    const staff = await browser.newContext({
+      baseURL: "http://127.0.0.1:3100",
+      viewport: page.viewportSize()!,
+    });
+    await staff.addCookies([staffCookie]);
+    try {
+      const operator = await staff.newPage();
+      await operator.goto("/");
+      const operatorActions = operator.getByRole("group", {
+        name: "Account actions",
+        exact: true,
+      });
+      await operatorActions
+        .getByRole("link", { name: "Staff dashboard", exact: true })
+        .click();
+      await expect(operator).toHaveURL(/\/admin$/);
+      await expect(
+        operatorActions.getByRole("link", {
+          name: "Staff dashboard",
+          exact: true,
+        }),
+      ).toHaveAttribute("aria-current", "page");
+      await expect(
+        operator
+          .getByRole("navigation", { name: "Main navigation", exact: true })
+          .locator('[aria-current="page"]'),
+      ).toHaveCount(0);
+      await changeStaffRole(actor, {
+        action: "revoke",
+        grantId: grant.id,
+        confirmed: true,
+      });
+      await operator.goto("/");
+      await expect(
+        operatorActions.getByRole("link", {
+          name: "Staff dashboard",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      expect(
+        (
+          await staff.request.get("/api/admin/tournaments/test-cup/mappools")
+        ).status(),
+      ).toBe(403);
+      await operator.close();
+    } finally {
+      await staff.close();
+    }
+    await context.clearCookies();
+    await context.addCookies([adminCookie]);
+    await page.goto("/admin/tournaments/s11");
+    for (const width of [320, 390, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const staffAction = await accounts
+        .getByRole("link", { name: "Staff dashboard", exact: true })
+        .boundingBox();
+      const playerAction = await accounts
+        .getByRole("link", { name: "Player dashboard", exact: true })
+        .boundingBox();
+      expect(staffAction!.x + staffAction!.width).toBeLessThanOrEqual(
+        playerAction!.x + 1,
+      );
+      expect(playerAction!.x + playerAction!.width).toBeLessThanOrEqual(width);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 900 });
+    const sidebar = page.locator(".sidebar");
+    await expect(sidebar.getByLabel("Selected tournament")).toHaveValue("s11");
+    await expect(sidebar.locator(".admin-context .sr-only")).toHaveCSS(
+      "clip-path",
+      "inset(50%)",
+    );
+    await expect(
+      sidebar.locator('.admin-context option[value="s11"]'),
+    ).toHaveCount(1);
+    expect(
+      (await sidebar.locator("p").allTextContents()).filter((text) =>
+        /Season 11/.test(text),
+      ),
+    ).toEqual([]);
+    expect(
+      (await sidebar.locator(".eyebrow").allTextContents()).filter(
+        (text) => text.toLowerCase() === "tournament",
+      ),
+    ).toHaveLength(1);
+    await expect(sidebar.locator(".admin-context .badge")).toHaveText("Draft");
+    await db()
+      .update(editionState)
+      .set({
+        configuration: sql`jsonb_set(jsonb_set(configuration, '{published}', 'true'), '{status}', '\"live\"')`,
+      })
+      .where(eq(editionState.slug, "s11"));
+    await page.reload();
+    await expect(sidebar.locator(".admin-context .badge")).toHaveText("Live");
+    expect(
+      await sidebar
+        .locator(".admin-context .badge")
+        .evaluate((node) => node.closest("a,button") === null),
+    ).toBe(true);
+    if (isMobile)
+      await page
+        .getByRole("button", { name: "Open administration menu", exact: true })
+        .click();
+    const tournamentNav = page.getByRole("navigation", {
+      name: "Tournament navigation",
+      exact: true,
+    });
+    await expect(tournamentNav.locator('[aria-current="page"]')).toHaveText(
+      "Dashboard",
+    );
+    await tournamentNav
+      .getByRole("link", { name: "Mappools", exact: true })
+      .click();
+    if (isMobile)
+      await page
+        .getByRole("button", { name: "Open administration menu", exact: true })
+        .click();
+    await expect(tournamentNav.locator('[aria-current="page"]')).toHaveText(
+      "Mappools",
+    );
+    const selector = sidebar.getByLabel("Selected tournament");
+    const nextValue = await selector
+      .locator("option")
+      .evaluateAll(
+        (options) =>
+          (options as HTMLOptionElement[]).find((o) =>
+            o.text.startsWith("Synthetic"),
+          )!.value,
+      );
+    await selector.focus();
+    await expect(selector).toBeFocused();
+    await selector.press("s");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(
+      new RegExp(`/admin/tournaments/${nextValue}$`),
+    );
+    await page.goto("/admin/tournaments/test-cup");
+    const publicAction = page.getByRole("link", {
+      name: "View public tournament",
+      exact: true,
+    });
+    await expect(publicAction).toHaveClass(/button secondary button-compact/);
+    const applications = page.getByRole("link", {
+      name: "View applications (0)",
+      exact: true,
+    });
+    await expect(applications).toHaveClass(/button-compact/);
+    expect(
+      await page
+        .locator(".registration-state")
+        .evaluate(
+          (node) => node.tagName === "SPAN" && !node.closest("a,button"),
+        ),
+    ).toBe(true);
+    await applications.click();
+    await expect(page).toHaveURL(/\/test-cup\/registrations$/);
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    await page.screenshot({
+      path: info.outputPath("dashboard-actions.png"),
+      fullPage: true,
+    });
+  });
+});
