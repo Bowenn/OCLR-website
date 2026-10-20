@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Edition } from "@/lib/editions";
 import type { tournamentForAdmin } from "@/lib/tournaments";
 import { ConfirmMutation } from "./confirm-mutation";
@@ -732,7 +732,15 @@ function Publication({ data, saved }: EditorProps) {
   );
 }
 export function TournamentEditor({ data }: { data: Workspace }) {
-  const [section, setSection] = useState("general");
+  const router = useRouter();
+  const requested = useSearchParams().get("section");
+  const section =
+    requested &&
+    ["general", "registration", "rules", "schedule", "publication"].includes(
+      requested,
+    )
+      ? requested
+      : "general";
   const [message, setMessage] = useState("");
   const props = { data, saved: setMessage };
   return (
@@ -751,7 +759,10 @@ export function TournamentEditor({ data }: { data: Workspace }) {
             className="secondary"
             aria-pressed={section === id}
             onClick={() => {
-              setSection(id);
+              router.replace(
+                `/admin/tournaments/${data.edition.slug}/settings?section=${id}`,
+                { scroll: false },
+              );
               setMessage("");
             }}
           >

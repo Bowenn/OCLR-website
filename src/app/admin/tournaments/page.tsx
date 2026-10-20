@@ -36,9 +36,6 @@ export default async function Tournaments({
           {data.canCreate && (
             <Action href="/admin/tournaments/new">Create tournament</Action>
           )}
-          <Action href="/admin" secondary>
-            Registration review
-          </Action>
         </div>
         <form className="filters spaced" method="get">
           <label className="field">

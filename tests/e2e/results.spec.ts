@@ -1,3 +1,4 @@
+import { openTournamentTool } from "./navigation";
 import { createHash, randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -69,7 +70,16 @@ test.describe("private referee review and Admin publication", () => {
         ).status(),
       ).toBe(405);
 
-      await page.goto(route);
+      await openTournamentTool(
+        page,
+        "test-cup",
+        "Fixtures & results",
+        isMobile,
+      );
+      await page.locator(`a[href="${route}"]`).click();
+      await expect(
+        page.getByLabel("osu! MP link or match ID", { exact: true }),
+      ).toBeVisible();
       for (let i = 1; i <= 3; i++) {
         await page
           .getByText(new RegExp(`^Game ${i} · Synthetic Map ${i}`))

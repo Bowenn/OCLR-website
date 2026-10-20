@@ -106,6 +106,25 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       revision: 0,
     });
   });
+  it("limits tournament navigation to the assigned role without exposing other editions", async () => {
+    const mapperRows = (await tournamentList(mapper)).rows;
+    expect(mapperRows.map((row) => row.slug)).toEqual(["test-cup"]);
+    expect(mapperRows[0].links.map((link) => link.label)).toEqual([
+      "Dashboard",
+      "Mappools",
+    ]);
+    const refereeRows = (await tournamentList(referee)).rows;
+    expect(refereeRows[0].links.map((link) => link.label)).toEqual([
+      "Dashboard",
+      "Fixtures & results",
+    ]);
+    await expect(tournamentList(player)).rejects.toMatchObject({ status: 403 });
+    expect(
+      (await tournamentList(admin)).rows
+        .find((row) => row.slug === "test-cup")
+        ?.links.map((link) => link.label),
+    ).toContain("Registrations");
+  });
   it("rejects primary-key slug changes at the database boundary", async () => {
     await expect(
       db().execute(

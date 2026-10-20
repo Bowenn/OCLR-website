@@ -1,5 +1,4 @@
 import { authorizedPage } from "@/lib/auth/page";
-import Link from "next/link";
 import { requireUser } from "@/lib/auth/user";
 import { matchReview } from "@/lib/results";
 import { MatchReviewPanel } from "@/components/match-review";
@@ -18,12 +17,6 @@ export default async function FixturePage({
     const data = review.context;
     return (
       <>
-        <Link
-          className="text-link"
-          href={`/admin/tournaments/${edition}/matches`}
-        >
-          ← Fixtures
-        </Link>
         <PageHeading
           eyebrow={`${data.round.stage === "group" ? "GROUP" : "KNOCKOUT"} STAGE / ${data.round.name}`}
           title={data.fixture.label}

@@ -50,7 +50,7 @@ test.describe("staff registration review", () => {
       ).status(),
     ).toBe(403);
     await context.addCookies([staffCookie]);
-    await page.goto("/admin");
+    await page.goto("/admin/registrations");
     if (!isMobile)
       await expect(
         page

@@ -92,6 +92,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
         rules: null,
         schedule: [],
       });
+      await page.getByRole("link", { name: /^Configure tournament/ }).click();
       const duplicate = {
         slug,
         name: state.edition.name,
@@ -380,7 +381,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
       const limitedPage = await limited.newPage();
       await limitedPage.goto(`/admin/tournaments/${slug}`);
       await expect(
-        limitedPage.getByRole("link", { name: "Mappools", exact: true }).last(),
+        limitedPage.getByRole("link", { name: /^Open mappools/ }),
       ).toBeVisible();
       await expect(
         limitedPage.getByRole("navigation", {
@@ -388,14 +389,11 @@ test.describe("browser-managed authoritative tournament editions", () => {
           exact: true,
         }),
       ).toHaveCount(0);
-      await page
-        .getByRole("link", { name: "Staff assignments", exact: true })
-        .last()
-        .click();
+      await page.goto(`/admin/staff?edition=${slug}`);
       await expect(
         page.getByRole("combobox", { name: "Scope", exact: true }),
       ).toHaveValue(slug);
-      await page.goto(`/admin/tournaments/${slug}`);
+      await page.goto(`/admin/tournaments/${slug}/settings`);
       expect(
         (
           await new AxeBuilder({ page })

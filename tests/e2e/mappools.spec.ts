@@ -1,3 +1,4 @@
+import { openTournamentTool } from "./navigation";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
@@ -58,7 +59,7 @@ test.describe("published mappools and restricted editing", () => {
           })
         ).status(),
       ).toBe(403);
-      await page.goto("/admin/tournaments/test-cup/mappools");
+      await openTournamentTool(page, "test-cup", "Mappools", isMobile);
       await page.getByText("Create a round", { exact: true }).click();
       await page
         .getByLabel("Round name", { exact: true })

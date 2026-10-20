@@ -15,6 +15,7 @@ import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
 import { HttpError } from "./http";
 import { enrollmentState, type Edition } from "./editions";
+import { tournamentNavigation } from "./admin-navigation";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 export function storedEdition(row: typeof editionState.$inferSelect) {
   if (!row.configuration) return undefined;
@@ -153,40 +154,16 @@ export function tournamentLinks(
 ) {
   const can = (cap: Parameters<typeof permits>[1]) =>
     permits(grants, cap, slug);
-  return [
-    ...(can("configure_tournament")
-      ? [{ href: `/admin/tournaments/${slug}`, label: "Tournament settings" }]
-      : []),
-    ...(can("manage_registrations")
-      ? [
-          { href: `/admin?edition=${slug}`, label: "Registrations" },
-          { href: `/players?edition=${slug}`, label: "Published players" },
-        ]
-      : []),
-    ...(can("manage_captains")
-      ? [{ href: `/admin/tournaments/${slug}/captains`, label: "Captains" }]
-      : []),
-    ...(can("manage_teams")
-      ? [{ href: `/admin/tournaments/${slug}/teams`, label: "Teams" }]
-      : []),
-    ...(can("manage_draft")
-      ? [{ href: `/admin/tournaments/${slug}/draft`, label: "Live draft" }]
-      : []),
-    ...(can("manage_mappools")
-      ? [{ href: `/admin/tournaments/${slug}/mappools`, label: "Mappools" }]
-      : []),
-    ...(can("manage_fixtures") || can("record_results")
-      ? [
-          {
-            href: `/admin/tournaments/${slug}/matches`,
-            label: "Fixtures & results",
-          },
-        ]
-      : []),
-    ...(can("manage_staff")
-      ? [{ href: `/admin/staff?edition=${slug}`, label: "Staff assignments" }]
-      : []),
-  ];
+  return tournamentNavigation.flatMap((group) =>
+    group.items
+      .filter((item) => !item.capabilities || item.capabilities.some(can))
+      .map((item) => ({
+        href: `/admin/tournaments/${slug}${item.path ? `/${item.path}` : ""}`,
+        label: item.label,
+        group: group.label,
+        exact: item.path === "",
+      })),
+  );
 }
 export async function tournamentList(actor: User) {
   const grants = await staffAccess(actor);

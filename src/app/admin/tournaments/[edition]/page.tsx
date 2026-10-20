@@ -1,20 +1,17 @@
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
-import { requireUser } from "@/lib/auth/user";
-import { staffAccess, permits } from "@/lib/auth/staff";
+import { requireStaff, staffAccess, permits } from "@/lib/auth/staff";
 import { tournamentForAdmin, tournamentList } from "@/lib/tournaments";
 import { HttpError } from "@/lib/http";
-import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
-import { TournamentEditor } from "@/components/tournament-editor";
-export const metadata = { title: "Tournament workspace" };
+export const metadata = { title: "Tournament dashboard" };
 export default async function Tournament({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
   return authorizedPage(async () => {
-    const actor = await requireUser();
+    const actor = await requireStaff();
     const { edition: slug } = await params;
     const grants = await staffAccess(actor);
     const row = (await tournamentList(actor)).rows.find((r) => r.slug === slug);
@@ -22,48 +19,41 @@ export default async function Tournament({
     const data = permits(grants, "configure_tournament", slug)
       ? await tournamentForAdmin(actor, slug)
       : null;
+    const primary = data
+      ? row.links.find((link) => link.label === "Settings")
+      : row.links.find((link) => link.group === "Competition");
     return (
       <>
-        <PageHeading eyebrow="TOURNAMENT WORKSPACE" title={row.name}>
+        <PageHeading eyebrow="TOURNAMENT DASHBOARD" title={row.name}>
           {row.season ? `Season ${row.season} · ` : ""}
           {row.published ? "Published" : "Draft"} · {row.status} ·{" "}
           {row.timeZone}
         </PageHeading>
         <div className="actions">
-          <Link className="button secondary" href="/admin/tournaments">
-            All tournaments
-          </Link>
+          {primary && (
+            <Link className="button" href={primary.href}>
+              {data
+                ? "Configure tournament"
+                : `Open ${primary.label.toLowerCase()}`}{" "}
+              →
+            </Link>
+          )}
           {row.published && (
-            <Link className="button secondary" href={`/tournaments/${slug}`}>
+            <Link className="text-link" href={`/tournaments/${slug}`}>
               View public tournament ↗
             </Link>
           )}
         </div>
-        <section className="section-space">
-          <h2>Competition operations</h2>
-          <nav className="actions spaced" aria-label="Tournament operations">
-            {row.links
-              .filter((l) => l.label !== "Tournament settings")
-              .map((l) => (
-                <Link className="button secondary" key={l.href} href={l.href}>
-                  {l.label}
-                </Link>
-              ))}
-          </nav>
-        </section>
-        {data ? (
-          <>
-            <section className="section-space panel">
-              <div className="section-title">
-                <h2>Registration readiness</h2>
-                <span className="badge">Revision {data.revision}</span>
-              </div>
-              <p className="muted">
-                {data.applications} applications ·{" "}
-                {data.edition.registration?.enabled
-                  ? "Registration enabled for the configured window"
-                  : "Registration paused / unconfigured"}
-              </p>
+        <section className="panel spaced">
+          <h2>Registration</h2>
+          <p className="muted small">
+            {row.registration ? row.registrationState : "Not configured"}
+            {data
+              ? ` · ${data.applications} application${data.applications === 1 ? "" : "s"}`
+              : ""}
+          </p>
+          {data && (
+            <>
               <ul className="readiness-list">
                 {data.readiness.map((item) => (
                   <li key={item.label}>
@@ -71,53 +61,17 @@ export default async function Tournament({
                   </li>
                 ))}
               </ul>
-              <p className="small muted">
-                Tournament publication is independent. Missing registration
-                prerequisites do not prevent announcing approved tournament
-                information.
+              <p className="muted small">
+                Publication and registration are separate. Registration remains
+                closed until its approved prerequisites and window are ready.
               </p>
-            </section>
-            <section className="section-space">
-              <TournamentEditor
-                data={{
-                  edition: data.edition,
-                  revision: data.revision,
-                  applications: data.applications,
-                  frozen: data.frozen,
-                }}
-              />
-            </section>
-            <details className="panel section-space">
-              <summary>Recent tournament configuration history</summary>
-              <ol className="schedule-list">
-                {data.events.map((event) => (
-                  <li key={event.id}>
-                    <div>
-                      <h3>
-                        {event.kind
-                          .replace("tournament_", "")
-                          .replaceAll("_", " ")}
-                      </h3>
-                      <p className="muted small">
-                        osu! ID {event.actorId ?? "system migration"} ·{" "}
-                        {formatDate(event.createdAt, "UTC")}
-                      </p>
-                      <details>
-                        <summary>Recorded changes</summary>
-                        <pre className="audit-json">
-                          {JSON.stringify(event.detail, null, 2)}
-                        </pre>
-                      </details>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </details>
-          </>
-        ) : (
-          <p className="notice spaced">
-            Your role grants access to the tools above. Tournament-wide settings
-            are managed by an Admin.
+            </>
+          )}
+        </section>
+        {!data && (
+          <p className="notice small spaced">
+            Use your tournament navigation to open authorized tools.
+            Tournament-wide settings are managed by an Admin.
           </p>
         )}
       </>

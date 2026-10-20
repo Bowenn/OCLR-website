@@ -95,12 +95,12 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       await operatorPage.goto("/admin");
       await expect(
         operatorPage.getByRole("heading", {
-          name: "OCLR operations",
+          name: "Administration overview",
           level: 1,
         }),
       ).toBeVisible();
       await expect(
-        operatorPage.getByRole("link", { name: "Staff assignments" }),
+        operatorPage.getByRole("link", { name: "Staff management" }),
       ).toHaveCount(0);
       await expect(
         operatorPage.getByRole("link", { name: /Captains$/ }),

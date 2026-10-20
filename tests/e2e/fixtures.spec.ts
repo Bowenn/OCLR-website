@@ -1,3 +1,4 @@
+import { openTournamentTool } from "./navigation";
 import { assertTestDatabase } from "../database";
 import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
@@ -99,7 +100,12 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       expect(
         (await (await referee.request.get(endpoint)).json()).fixtures,
       ).toEqual([]);
-      await page.goto("/admin/tournaments/test-cup/matches");
+      await openTournamentTool(
+        page,
+        "test-cup",
+        "Fixtures & results",
+        isMobile,
+      );
       await page.getByText("Create a fixture", { exact: true }).click();
       await page
         .getByLabel("Fixture label", { exact: true })
