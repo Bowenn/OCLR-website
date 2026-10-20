@@ -40,7 +40,7 @@ async function isolated(
   } finally {
     await closeDb();
     await pool?.end();
-    await admin.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+    await admin.query(`DROP DATABASE IF EXISTS ${name}`);
     await admin.end();
   }
 }
