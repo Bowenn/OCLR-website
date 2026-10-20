@@ -8,12 +8,10 @@ test("S11 artwork preserves its mobile composition while tournament information 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "osu! Chinese League Rookie",
   );
-  await expect(page.locator(".hero-kicker")).toHaveText(
-    "SEASON 11 · THE ROOKIE STAGE",
-  );
+  await expect(page.locator(".hero-kicker")).not.toContainText("SEASON 11");
   await expect(page.locator(".hero-art")).toHaveCSS(
     "background-image",
-    /oclr-s11-website-background\.webp/,
+    /rookie-stage\.svg/,
   );
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });

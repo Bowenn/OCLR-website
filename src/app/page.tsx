@@ -1,171 +1,111 @@
 import Link from "next/link";
-import { EditionArtwork } from "@/components/edition-artwork";
 import { Action, Badge } from "@/components/ui";
 import { getPublicEditions } from "@/lib/content";
-import { EditionCard } from "@/components/edition-card";
+import { publicAnnouncements } from "@/lib/announcements";
+import { nextConfirmedMilestone } from "@/lib/public-milestones";
+import { registrationAvailability } from "@/lib/registrations";
+import { formatDate } from "@/lib/editions";
 export const dynamic = "force-dynamic";
-import { site } from "@/content/site";
-const highlights = [
-  ["01", "Competitive spirit", "A team competition built around osu!."],
-  [
-    "02",
-    "Community first",
-    "Individual players, brought together on one stage.",
-  ],
-  [
-    "03",
-    "A new chapter",
-    "Captains choose their rosters in a live player draft.",
-  ],
-];
 export default async function Home() {
-  const featured = (await getPublicEditions()).find(
-    (e) => e.status !== "completed",
-  );
+  const now = new Date();
+  const editions = await getPublicEditions();
+  const featured =
+    editions.find((e) => e.status === "live") ??
+    editions.find((e) => e.status === "upcoming") ??
+    editions[0];
+  const availability = featured
+    ? await registrationAvailability(featured)
+    : null;
+  const news = publicAnnouncements(now).slice(0, 3);
+  const milestone = nextConfirmedMilestone(editions, now);
   return (
     <>
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-art" aria-hidden="true" />
+      <section className="hero home-hero" aria-labelledby="hero-title">
+        <div
+          className="hero-art"
+          style={{
+            backgroundImage: `url("${featured?.branding.background ?? "/rookie-stage.svg"}")`,
+          }}
+          aria-hidden="true"
+        />
         <div className="hero-shade" aria-hidden="true" />
         <div className="container hero-content">
           <p className="eyebrow hero-kicker">
-            <span /> SEASON 11 · THE ROOKIE STAGE
+            <span />
+            {featured?.name ?? "THE ROOKIE STAGE"}
           </p>
           <h1 id="hero-title">
             OCLR<span>osu! Chinese League Rookie</span>
           </h1>
-          <p className="hero-tagline">
-            Every player starts somewhere.
-            <br />
-            Make this your stage.
-          </p>
+          <p className="hero-tagline">Individual players. One team stage.</p>
           <p className="hero-copy">
-            An osu! community tournament. Register individually.
-            <br className="desktop-break" /> Come together through the captain
-            draft. Compete as a team.
+            {featured
+              ? featured.summary
+              : "The next edition has not been announced yet."}
           </p>
+          {featured && <Badge>Registration: {availability}</Badge>}
           <div className="actions">
-            <Action href="/tournaments">
-              View tournament <span aria-hidden="true">↗</span>
+            {availability === "open" && (
+              <Action href={`/tournaments/${featured!.slug}/register`}>
+                Register individually →
+              </Action>
+            )}
+            <Action
+              href={featured ? `/tournaments/${featured.slug}` : "/tournaments"}
+              secondary={availability === "open"}
+            >
+              View tournament ↗
             </Action>
-            <Action href="#the-oclr-way" secondary>
-              Learn more
-            </Action>
-          </div>
-          <div className="hero-caption">
-            <span className="caption-line" /> RHYTHM. CONNECTION. COMPETITION.
-          </div>
-        </div>
-        <span className="hero-coordinate" aria-hidden="true">
-          OCLR / THE NEXT CHAPTER
-        </span>
-      </section>
-      <div className="container">
-        <section className="highlights" aria-label="The OCLR experience">
-          {highlights.map(([number, title, copy]) => (
-            <div key={number}>
-              <span className="highlight-number">{number}</span>
-              <div>
-                <h2>{title}</h2>
-                <p>{copy}</p>
-              </div>
-            </div>
-          ))}
-        </section>
-        <section
-          className="upcoming-section"
-          aria-labelledby="upcoming-heading"
-        >
-          <div className="section-title">
-            <div>
-              <p className="eyebrow">WHAT’S NEXT</p>
-              <h2 id="upcoming-heading">The next stage</h2>
-            </div>
-            <Link className="text-link" href="/tournaments">
-              All tournaments ↗
+            <Link className="text-link" href="/about">
+              About OCLR
             </Link>
           </div>
-          {featured ? (
-            <EditionCard edition={featured} />
+        </div>
+      </section>
+      <div className="container home-updates">
+        <section aria-labelledby="latest-news-title">
+          <div className="section-title">
+            <h2 id="latest-news-title">Latest news</h2>
+            <Link className="text-link" href="/news">
+              All news ↗
+            </Link>
+          </div>
+          {news.length ? (
+            <ol className="home-news">
+              {news.map((item) => (
+                <li key={item.slug}>
+                  <p className="muted small">
+                    {formatDate(item.publishedAt, "UTC")}
+                  </p>
+                  <h3>
+                    <Link className="text-link" href={`/news/${item.slug}`}>
+                      {item.title} ↗
+                    </Link>
+                  </h3>
+                  <p className="muted small">{item.summary}</p>
+                </li>
+              ))}
+            </ol>
           ) : (
-            <div className="featured-edition">
-              <EditionArtwork slug="s11" />
-              <div className="edition-copy">
-                <Badge>Awaiting announcement</Badge>
-                <h3>{site.announcement}</h3>
-                <p className="muted">
-                  Edition details, rules and registration dates will be
-                  published once confirmed.
-                </p>
-                <Action href="/tournaments" secondary>
-                  View tournament information →
-                </Action>
-              </div>
-              <dl className="edition-facts">
-                <div>
-                  <dt>Registration</dt>
-                  <dd>Not announced</dd>
-                </div>
-                <div>
-                  <dt>Tournament dates</dt>
-                  <dd>To be announced</dd>
-                </div>
-                <div>
-                  <dt>Entry</dt>
-                  <dd>Individual registration</dd>
-                </div>
-              </dl>
-            </div>
+            <p className="muted">No announcements yet.</p>
           )}
         </section>
-        <section
-          id="the-oclr-way"
-          className="workflow-section"
-          aria-labelledby="workflow-heading"
-        >
-          <div>
-            <p className="eyebrow">INDIVIDUAL ENTRY. TEAM COMPETITION.</p>
-            <h2 id="workflow-heading">
-              Find your rhythm.
-              <br />
-              Build your team story.
-            </h2>
-            <p className="muted">
-              Players apply individually. Staff review applications and appoint
-              captains. A live captain-turn draft brings the teams together
-              before competition begins.
-            </p>
-            <Action href="/about" secondary>
-              About OCLR ↗
-            </Action>
-          </div>
-          <ol className="workflow-list">
-            <li>
-              <span>01</span>
-              <div>
-                <h3>Register as a player</h3>
-                <p>Apply with your osu! identity when registration opens.</p>
-              </div>
-            </li>
-            <li>
-              <span>02</span>
-              <div>
-                <h3>Follow the live draft</h3>
-                <p>
-                  Staff appoint captains, who take turns selecting eligible
-                  players.
-                </p>
-              </div>
-            </li>
-            <li>
-              <span>03</span>
-              <div>
-                <h3>Take the stage together</h3>
-                <p>Published, finalized rosters become the competing teams.</p>
-              </div>
-            </li>
-          </ol>
-        </section>
+        <aside aria-labelledby="next-milestone-title">
+          <p className="eyebrow">COMING UP</p>
+          <h2 id="next-milestone-title">Next milestone</h2>
+          {milestone ? (
+            <>
+              <p className="muted small">{milestone.edition}</p>
+              <h3>{milestone.label}</h3>
+              <p>{formatDate(milestone.at, milestone.timeZone)}</p>
+              <Action href={milestone.url} secondary>
+                View schedule details ↗
+              </Action>
+            </>
+          ) : (
+            <p className="muted">No future milestone has been confirmed.</p>
+          )}
+        </aside>
       </div>
     </>
   );

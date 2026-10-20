@@ -29,17 +29,25 @@ test("landing page has honest CTAs and readable original artwork", async ({
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "osu! Chinese League Rookie",
   );
+  await expect(
+    page.locator(".highlights, .workflow-section, .featured-edition"),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Latest news", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Next milestone", exact: true }),
+  ).toBeVisible();
   if (process.env.TEST_DATABASE_URL) {
-    const name = await page.locator(".featured-edition h3").textContent();
+    const name = (await page.locator(".hero-kicker").textContent())?.trim();
     const published = await (await page.request.get("/api/tournaments")).json();
     expect(
       published.some((edition: { name: string }) => edition.name === name),
     ).toBe(true);
-  } else await expect(page.getByText("Awaiting announcement")).toBeVisible();
-  await page.getByRole("link", { name: "Learn more", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: /Find your rhythm/ }),
-  ).toBeVisible();
+  } else
+    await expect(
+      page.getByText("The next edition has not been announced yet."),
+    ).toBeVisible();
   await page.goto("/");
   await page.screenshot({
     path: testInfo.outputPath("home.png"),
@@ -50,7 +58,7 @@ test("landing page has honest CTAs and readable original artwork", async ({
     .getByRole("link", { name: "View tournament", exact: false })
     .first()
     .click();
-  await expect(page).toHaveURL(/\/tournaments$/);
+  await expect(page).toHaveURL(/\/tournaments(?:\/[a-z0-9-]+)?$/);
 });
 test("news is approved content only and about uses the official identity", async ({
   page,
