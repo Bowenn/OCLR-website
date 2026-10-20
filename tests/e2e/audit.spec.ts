@@ -33,16 +33,52 @@ test.describe("central Admin audit browser", () => {
           createdAt: new Date("2026-01-02T12:00:00Z"),
         })),
       );
+    await db()
+      .insert(editionEvents)
+      .values({
+        editionSlug: "test-cup",
+        actorId: admin,
+        kind: "captain_appoint",
+        detail: {
+          entity: { type: "captain_setup", id: "test-cup" },
+          before: [],
+          after: [{ userId: admin }],
+        },
+        createdAt: new Date("2026-01-03T12:00:00Z"),
+      });
     await page.goto("/admin/audit");
     await expect(
       page.getByRole("heading", { name: "Audit log", exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("article")).toHaveCount(25);
+    const events = page
+      .getByRole("list", { name: "Audit events", exact: true })
+      .getByRole("listitem");
+    const tabs = page.getByRole("tablist", {
+      name: "Audit modules",
+      exact: true,
+    });
+    await expect(events).toHaveCount(25);
+    await expect(
+      tabs.getByRole("tab", { name: "All activity", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator(".audit-event[open]")).toHaveCount(0);
+    await expect(
+      page.getByLabel("Actor osu! ID", { exact: true }),
+    ).not.toBeVisible();
+    const row = await events.first().boundingBox();
+    expect(row!.height).toBeLessThan(160);
+    await tabs.getByRole("tab", { name: "Tournament", exact: true }).click();
+    await expect(
+      page.getByText("28 events · Page 1", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      tabs.getByRole("tab", { name: "Tournament", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await page.getByText("More filters", { exact: true }).click();
     await page
-      .getByLabel("Tournament", { exact: true })
+      .getByRole("combobox", { name: "Tournament", exact: true })
       .selectOption("test-cup");
     await page.getByLabel("Actor osu! ID", { exact: true }).fill(String(admin));
-    await page.getByLabel("Module", { exact: true }).selectOption("tournament");
     await page
       .getByLabel("Action type", { exact: true })
       .fill("tournament_general");
@@ -52,14 +88,64 @@ test.describe("central Admin audit browser", () => {
     await expect(
       page.getByText("28 events · Page 1", { exact: true }),
     ).toBeVisible();
-    await page
-      .getByRole("article")
+    await events.first().locator("summary").first().focus();
+    await events.first().locator("summary").first().press("Enter");
+    await expect(
+      events
+        .first()
+        .getByRole("heading", { name: "1 changed field", exact: true }),
+    ).toBeVisible();
+    await expect(events.first().locator(".detail-list")).toContainText(
+      "Old → New",
+    );
+    await expect(events.first().locator(".audit-json")).not.toBeVisible();
+    await events
       .first()
-      .getByText("1 changed field", { exact: true })
+      .getByText("Raw details (redacted)", { exact: true })
       .click();
-    await expect(page.getByRole("article").first()).toContainText("Old → New");
+    await expect(events.first().locator(".audit-json")).toBeVisible();
+    await events.first().locator("summary").first().press("Enter");
+    await expect(page.locator(".audit-event[open]")).toHaveCount(0);
     await page.getByRole("link", { name: "Next →", exact: true }).click();
-    await expect(page.getByRole("article")).toHaveCount(3);
+    await expect(events).toHaveCount(3);
+    await expect(page).toHaveURL(/module=tournament.*page=2/);
+    await page.getByText("More filters", { exact: true }).click();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({
+      path: test.info().outputPath("audit-log.png"),
+      fullPage: true,
+    });
+    await tabs.getByRole("tab", { name: "Captains", exact: true }).click();
+    await expect(
+      page.getByText("No matching audit events.", { exact: true }),
+    ).toBeVisible();
+    const scopedUrl = new URL(page.url());
+    expect(scopedUrl.searchParams.get("page")).toBeNull();
+    expect(scopedUrl.searchParams.get("actor")).toBe(String(admin));
+    expect(scopedUrl.searchParams.get("edition")).toBe("test-cup");
+    expect(scopedUrl.searchParams.get("from")).toBe("2026-01-02");
+    await page
+      .getByRole("link", { name: "Reset filters", exact: true })
+      .click();
+    await expect(events).toHaveCount(1);
+    await expect(events.first()).toContainText("captain appoint");
+    await expect(
+      page.getByRole("combobox", { name: "Tournament", exact: true }),
+    ).toHaveValue("");
+    await page.reload();
+    await expect(
+      tabs.getByRole("tab", { name: "Captains", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await tabs.getByRole("tab", { name: "Captains", exact: true }).focus();
+    await tabs
+      .getByRole("tab", { name: "Captains", exact: true })
+      .press("Home");
+    await expect(
+      tabs.getByRole("tab", { name: "All activity", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByText("29 events · Page 1", { exact: true }),
+    ).toBeVisible();
     expect(await page.content()).not.toContain("PRIVATE_REGISTRATION_ANSWER");
     expect(
       (

@@ -1087,6 +1087,193 @@ body:has(.presenter-view) .site-footer,
     display: none;
   }
 }
+.audit-workspace .page-heading {
+  margin-bottom: 1rem;
+}
+.audit-workspace .page-heading > .muted {
+  font-size: 0.85rem;
+}
+.audit-module-tabs .workspace-tabs button {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.8rem;
+}
+.audit-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 24rem) 1fr;
+  align-items: end;
+  gap: 0.5rem 0.75rem;
+  margin-block: 1rem;
+}
+.audit-filters .field {
+  min-width: 0;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+.audit-filters input,
+.audit-filters select {
+  min-height: 2.5rem;
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+}
+.audit-filter-actions {
+  align-items: center;
+  gap: 0.75rem;
+}
+.audit-more-filters {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+}
+.audit-more-filters > summary {
+  width: fit-content;
+  padding-block: 0.35rem;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+.audit-filter-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+}
+.audit-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-block: 1rem 0.5rem;
+}
+.audit-list-heading p {
+  margin: 0;
+}
+.audit-columns,
+.audit-event-summary {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 2fr) minmax(0, 1.25fr) minmax(
+      0,
+      1fr
+    ) 1rem;
+  gap: 1rem;
+  padding: 0.75rem;
+}
+.audit-columns {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--color-border);
+}
+.audit-events {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.audit-event {
+  border-bottom: 1px solid var(--color-border);
+}
+.audit-event-summary {
+  align-items: start;
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.audit-event-summary::-webkit-details-marker {
+  display: none;
+}
+.audit-event-summary:hover,
+.audit-event[open] {
+  background: #b666df08;
+}
+.audit-event-summary > *,
+.audit-event-summary > * > span {
+  min-width: 0;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.audit-event-summary .muted,
+.audit-event-time {
+  font-size: 0.72rem;
+}
+.audit-event-activity strong {
+  text-transform: capitalize;
+}
+.audit-event-toggle {
+  color: var(--color-accent);
+  text-align: center;
+}
+.audit-event[open] > summary .audit-event-toggle {
+  transform: rotate(180deg);
+}
+.audit-event-detail {
+  padding: 0.5rem 1rem 1rem 9.25rem;
+  overflow-wrap: anywhere;
+}
+.audit-workspace .audit-event-detail h2 {
+  margin: 0;
+  font-size: 0.85rem;
+}
+.audit-event-detail .detail-list {
+  margin-block: 0.5rem 1rem;
+}
+.audit-event-detail .detail-list > div {
+  padding-block: 0.5rem;
+  font-size: 0.75rem;
+}
+.audit-event-detail > details {
+  font-size: 0.75rem;
+}
+@media (max-width: 760px) {
+  .audit-filter-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .audit-columns {
+    display: none;
+  }
+  .audit-event-summary {
+    grid-template-columns: 5rem minmax(0, 1fr) 1rem;
+    grid-template-areas: "time activity toggle" "time actor toggle" "time edition toggle";
+    gap: 0.25rem 0.75rem;
+    padding: 0.75rem 0.25rem;
+  }
+  .audit-event-time {
+    grid-area: time;
+  }
+  .audit-event-activity {
+    grid-area: activity;
+  }
+  .audit-event-actor {
+    grid-area: actor;
+  }
+  .audit-event-actor > span {
+    display: inline;
+  }
+  .audit-event-actor > span + span::before {
+    content: " · ";
+  }
+  .audit-event-edition {
+    grid-area: edition;
+  }
+  .audit-event-toggle {
+    grid-area: toggle;
+  }
+  .audit-event-detail {
+    padding: 0.5rem 0.75rem 1rem;
+  }
+}
+@media (max-width: 500px) {
+  .audit-filters {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .audit-filter-actions {
+    flex-direction: column;
+    align-items: start;
+    gap: 0.35rem;
+  }
+  .audit-list-heading > span {
+    display: none;
+  }
+}
 .audit-json {
   overflow: auto;
   max-height: 360px;
