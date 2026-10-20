@@ -118,6 +118,32 @@ test.describe("automatic staff auditing", () => {
       await expect(page.locator(`[data-captain-id="${id}"]`)).toHaveCount(1);
       await expect(page.getByRole("dialog")).toHaveCount(0);
     }
+    const unappointed = page.locator(`[data-captain-id="${base + 1}"]`);
+    await unappointed
+      .getByRole("button", { name: "Unappoint", exact: true })
+      .click();
+    const removal = page.getByRole("dialog", {
+      name: "Unappoint Synthetic Setup 1?",
+      exact: true,
+    });
+    await expect(removal).toBeVisible();
+    await removal.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(unappointed).toHaveCount(1);
+    expect(await db().select().from(editionEvents)).toHaveLength(2);
+    await unappointed
+      .getByRole("button", { name: "Unappoint", exact: true })
+      .click();
+    await removal.getByRole("button", { name: "Confirm", exact: true }).click();
+    await expect(unappointed).toHaveCount(0);
+    const returned = page.locator(`[data-player-id="${base + 1}"]`);
+    await expect(returned).toBeVisible();
+    await returned
+      .getByRole("button", {
+        name: "Appoint Synthetic Setup 1 as captain",
+        exact: true,
+      })
+      .click();
+    await expect(unappointed).toHaveCount(1);
     await page.goto("/admin/tournaments/test-cup/teams");
     await expect(page.getByRole("textbox", { name: /reason/i })).toHaveCount(0);
     await expect(
@@ -171,6 +197,10 @@ test.describe("automatic staff auditing", () => {
     await expect(
       page.getByText("Unsaved captain order.", { exact: true }),
     ).toBeVisible();
+    for (const card of [first, second])
+      await expect(
+        card.getByRole("button", { name: "Unappoint", exact: true }),
+      ).toBeDisabled();
     await page
       .getByRole("button", { name: "Save captain order", exact: true })
       .click();
@@ -226,6 +256,10 @@ test.describe("automatic staff auditing", () => {
     await expect(page.locator('.captain-board [draggable="true"]')).toHaveCount(
       0,
     );
+    for (const card of [first, second])
+      await expect(
+        card.getByRole("button", { name: "Unappoint", exact: true }),
+      ).toBeDisabled();
     await expect(
       page.getByRole("button", { name: "Save captain order", exact: true }),
     ).toHaveCount(0);
@@ -254,7 +288,7 @@ test.describe("automatic staff auditing", () => {
       page.getByRole("button", { name: "Freeze draft setup" }),
     ).toBeVisible();
     const events = await db().select().from(editionEvents);
-    expect(events).toHaveLength(6);
+    expect(events).toHaveLength(8);
     for (const event of events) {
       expect(event.actorId).toBe(adminId);
       expect(event.reason).toBeNull();
@@ -266,6 +300,7 @@ test.describe("automatic staff auditing", () => {
     expect(events.map((e) => e.kind)).toEqual(
       expect.arrayContaining([
         "captain_appoint",
+        "captain_revoke",
         "team_configure",
         "captain_order",
         "captain_lock",

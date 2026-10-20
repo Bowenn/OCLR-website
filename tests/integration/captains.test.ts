@@ -11,13 +11,15 @@ import {
   it,
   vi,
 } from "vitest";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
   editionState,
   registrations,
   users,
   editionEvents,
+  teams,
+  memberships,
 } from "../../src/db/schema";
 import {
   captainSetup,
@@ -161,6 +163,120 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
       ),
     ).rejects.toMatchObject({ status: 409 });
   });
+  it("unappoints a captain, archives their empty team and preserves their application and audit history", async () => {
+    await updateCaptains(
+      staff,
+      edition.slug,
+      command(0, { action: "appoint", userId: a.osuId }),
+    );
+    await updateTeams(
+      staff,
+      edition.slug,
+      command(1, {
+        action: "configure",
+        teams: [{ captainId: a.osuId, name: "Synthetic A", capacity: null }],
+      }),
+    );
+    await updateCaptains(
+      staff,
+      edition.slug,
+      command(2, { action: "appoint", userId: b.osuId }),
+    );
+    const originalApplications = await db().select().from(registrations);
+    const originalMembers = await db().select().from(memberships);
+    const result = await updateCaptains(
+      staff,
+      edition.slug,
+      command(3, { action: "revoke", userId: a.osuId }),
+    );
+    expect(result.version).toBe(4);
+    expect(result.captains.map((c) => c.userId)).toEqual([b.osuId]);
+    expect(result.pool.map((p) => p.userId)).toContain(a.osuId);
+    expect(await captainAppointment(a.osuId, edition.slug)).toBeNull();
+    expect(await db().select().from(registrations)).toEqual(
+      originalApplications,
+    );
+    const [archived] = await db().select().from(teams);
+    expect(archived.archivedAt).toBeInstanceOf(Date);
+    expect(archived.identityPublished).toBe(false);
+    expect(archived.rosterPublished).toBe(false);
+    const [member] = await db().select().from(memberships);
+    expect(member.id).toBe(originalMembers[0].id);
+    expect(member.leftAt).toBeInstanceOf(Date);
+    const events = await db().select().from(editionEvents);
+    expect(events).toHaveLength(4);
+    const removal = events.find((e) => e.kind === "captain_revoke")!;
+    expect(removal.actorId).toBe(staff.osuId);
+    expect(removal.reason).toBeNull();
+    expect(removal.detail).toMatchObject({
+      fromVersion: 3,
+      toVersion: 4,
+      rosterChange: {
+        before: { team: { id: archived.id, archivedAt: null } },
+        after: { team: { id: archived.id, archivedAt: expect.any(String) } },
+      },
+    });
+    await expect(
+      updateCaptains(
+        staff,
+        edition.slug,
+        command(3, { action: "revoke", userId: b.osuId }),
+      ),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      updateCaptains(
+        b,
+        edition.slug,
+        command(4, { action: "revoke", userId: b.osuId }),
+      ),
+    ).rejects.toMatchObject({ status: 403 });
+    expect(await db().select().from(editionEvents)).toHaveLength(4);
+  });
+  it.each(["populated", "finalized"])(
+    "rejects unappointment of a %s roster without changing records or auditing success",
+    async (state) => {
+      await updateCaptains(
+        staff,
+        edition.slug,
+        command(0, { action: "appoint", userId: a.osuId }),
+      );
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(1, {
+          action: "configure",
+          teams: [{ captainId: a.osuId, name: "Synthetic A", capacity: null }],
+        }),
+      );
+      const [team] = await db().select().from(teams);
+      if (state === "populated")
+        await db().insert(memberships).values({
+          teamId: team.id,
+          editionSlug: edition.slug,
+          userId: player.osuId,
+          origin: "draft",
+        });
+      else
+        await db()
+          .update(teams)
+          .set({ finalizedAt: new Date() })
+          .where(eq(teams.id, team.id));
+      const beforeTeams = await db().select().from(teams);
+      const beforeMembers = await db().select().from(memberships);
+      await expect(
+        updateCaptains(
+          staff,
+          edition.slug,
+          command(2, { action: "revoke", userId: a.osuId }),
+        ),
+      ).rejects.toMatchObject({ status: 409 });
+      expect(await db().select().from(teams)).toEqual(beforeTeams);
+      expect(await db().select().from(memberships)).toEqual(beforeMembers);
+      expect((await captainSetup(staff, edition.slug)).version).toBe(2);
+      expect(await captainAppointment(a.osuId, edition.slug)).not.toBeNull();
+      expect(await db().select().from(editionEvents)).toHaveLength(2);
+    },
+  );
   it("requires a real draft-unavailability explanation without demanding reasons for routine appointments", async () => {
     for (const extra of [{}, { unavailableExplanation: " " }])
       await expect(

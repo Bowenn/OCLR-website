@@ -244,25 +244,43 @@ export function CaptainManager({
                       username={c.username}
                       identity={identities[c.userId]}
                     />
-                    <div className="captain-move-actions">
-                      <button
-                        className="secondary"
-                        type="button"
-                        disabled={!editable || index === 0}
-                        aria-label={`Move ${c.username} up`}
-                        onClick={() => move(c.userId, order[index - 1])}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        className="secondary"
-                        type="button"
-                        disabled={!editable || index === order.length - 1}
-                        aria-label={`Move ${c.username} down`}
-                        onClick={() => move(c.userId, order[index + 1])}
-                      >
-                        ↓
-                      </button>
+                    <div className="captain-card-actions">
+                      <div className="captain-move-actions">
+                        <button
+                          className="secondary"
+                          type="button"
+                          disabled={!editable || index === 0}
+                          aria-label={`Move ${c.username} up`}
+                          onClick={() => move(c.userId, order[index - 1])}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          className="secondary"
+                          type="button"
+                          disabled={!editable || index === order.length - 1}
+                          aria-label={`Move ${c.username} down`}
+                          onClick={() => move(c.userId, order[index + 1])}
+                        >
+                          ↓
+                        </button>
+                      </div>
+                      <ConfirmMutation
+                        label="Unappoint"
+                        title={`Unappoint ${c.username}?`}
+                        description={`Remove ${c.username}'s captain appointment and keep their registration.${c.teamId ? " Their empty captain team will be archived. Teams with other players or finalized rosters cannot be removed here." : ""}`}
+                        disabled={!editable || changed}
+                        url={`/api/admin/tournaments/${slug}/captains`}
+                        payload={{
+                          command: { action: "revoke", userId: c.userId },
+                          expectedVersion: setup.version,
+                          confirmed: true,
+                        }}
+                        onSuccess={() => {
+                          setError("");
+                          setNotice(`${c.username} is no longer a captain.`);
+                        }}
+                      />
                     </div>
                   </li>
                 ))}
@@ -373,16 +391,14 @@ export function CaptainManager({
           <label className="field">
             <span>Action</span>
             <select value={action} onChange={(e) => setAction(e.target.value)}>
-              {["replace", "revoke", "availability", "lock", "publish"].map(
-                (a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ),
-              )}
+              {["replace", "availability", "lock", "publish"].map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
             </select>
           </label>
-          {["replace", "revoke", "availability"].includes(action) && (
+          {["replace", "availability"].includes(action) && (
             <label className="field">
               <span>Player</span>
               <select
@@ -456,7 +472,6 @@ export function CaptainManager({
               "publish",
               "lock",
               "replace",
-              "revoke",
               "availability",
             ].includes(action)}
             disabled={

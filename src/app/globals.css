@@ -1941,6 +1941,18 @@ body:has(.presenter-view) .site-footer,
   touch-action: none;
   user-select: none;
 }
+.captain-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.captain-card-actions > button {
+  min-height: 2.5rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+}
 .captain-move-actions {
   display: flex;
   gap: 0.3rem;
@@ -1953,7 +1965,12 @@ body:has(.presenter-view) .site-footer,
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  .captain-order .captain-move-actions {
+  .captain-order .captain-card-actions {
+    flex: 1 0 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
     margin-left: auto;
   }
   .captain-player-card > button {
