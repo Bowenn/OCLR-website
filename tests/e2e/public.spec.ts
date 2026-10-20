@@ -84,3 +84,48 @@ test("news is approved content only and about uses the official identity", async
       page.getByRole("heading", { name: "No announcements yet" }),
     ).toBeVisible();
 });
+
+test("Privacy and About share one explicit osu! contact without publishing the admin allowlist", async ({
+  page,
+  context,
+}, info) => {
+  test.skip(
+    !process.env.TEST_DATABASE_URL,
+    "Requires synthetic contact configuration",
+  );
+  await page.goto("/privacy");
+  const contact = page.getByRole("link", {
+    name: "Contact OCLR Admin on osu!",
+    exact: false,
+  });
+  await expect(contact).toHaveCount(1);
+  await expect(contact).toHaveAttribute(
+    "href",
+    "https://osu.ppy.sh/users/60001",
+  );
+  await expect(
+    page.getByText("Synthetic isolated browser-test policy.", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
+  const html = await page.content();
+  for (const hidden of [
+    "70001",
+    "110001",
+    "120001",
+    "synthetic-browser-provider-secret",
+  ])
+    expect(html).not.toContain(hidden);
+  expect(await context.cookies()).toEqual([]);
+  await page.screenshot({
+    path: info.outputPath("privacy-osu-contact.png"),
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page.goto("/about");
+  await expect(
+    page.getByRole("link", {
+      name: "Contact OCLR Admin on osu!",
+      exact: false,
+    }),
+  ).toHaveAttribute("href", "https://osu.ppy.sh/users/60001");
+});

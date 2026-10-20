@@ -61,7 +61,7 @@ export default defineConfig({
           APP_URL: "http://127.0.0.1:3100",
           OCLR_BRACKETS_FILE: bracketsPath,
           OCLR_ANNOUNCEMENTS_FILE: announcementsPath,
-          PRIVACY_CONTACT_EMAIL: "privacy@example.test",
+          PRIVACY_CONTACT_OSU_ID: "60001",
           PRIVACY_RETENTION_NOTICE: "Synthetic isolated browser-test policy.",
         }
       : {},

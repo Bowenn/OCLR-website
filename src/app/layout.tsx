@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/content/site";
 import { isStaff } from "@/lib/auth/staff";
 import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
@@ -69,9 +68,6 @@ export default async function RootLayout({
             <Link href="/tournaments">Tournaments</Link>
             <Link href="/about">About OCLR</Link>
             <Link href="/privacy">Privacy</Link>
-            {site.contact && (
-              <a href={site.contact.url}>{site.contact.label}</a>
-            )}
           </nav>
           <span className="footer-note">PLAY. CONNECT. GROW.</span>
         </footer>

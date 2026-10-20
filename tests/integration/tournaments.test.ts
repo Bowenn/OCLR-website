@@ -58,7 +58,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     assertTestDatabase(url);
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
-    vi.stubEnv("PRIVACY_CONTACT_EMAIL", "privacy@example.test");
+    vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
     vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic test policy.");
   });
   beforeEach(async () => {

@@ -38,7 +38,7 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
   beforeAll(() => {
     assertTestDatabase(testUrl);
     vi.stubEnv("DATABASE_URL", testUrl!);
-    vi.stubEnv("PRIVACY_CONTACT_EMAIL", "privacy@example.test");
+    vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
     vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
   });
   beforeEach(async () => {
@@ -68,6 +68,34 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
       }),
     ).rejects.toThrow();
     expect(await db().select().from(registrationEvents)).toHaveLength(1);
+  });
+  it("fails closed for missing privacy configuration without changing existing applications", async () => {
+    await submitRegistration(a, edition.slug, valid);
+    const saved = await ownRegistrations(a.osuId);
+    try {
+      for (const contact of ["", "invalid", "60001,70001"]) {
+        vi.stubEnv("PRIVACY_CONTACT_OSU_ID", contact);
+        expect(await registrationAvailability(edition)).toBe("unavailable");
+        await expect(
+          submitRegistration(b, edition.slug, valid),
+        ).rejects.toMatchObject({ status: 503 });
+      }
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
+      vi.stubEnv("PRIVACY_RETENTION_NOTICE", " \n ");
+      await expect(
+        submitRegistration(b, edition.slug, valid),
+      ).rejects.toMatchObject({ status: 503 });
+      expect(await ownRegistrations(a.osuId)).toEqual(saved);
+      expect(await ownRegistrations(b.osuId)).toHaveLength(0);
+      expect(await db().select().from(registrationEvents)).toHaveLength(1);
+    } finally {
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
+      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
+    }
+    expect(await registrationAvailability(edition)).toBe("open");
+    expect((await submitRegistration(b, edition.slug, valid)).status).toBe(
+      "pending",
+    );
   });
   it("rejects forged identities/status, stale rules, invalid answers and closed windows", async () => {
     await expect(

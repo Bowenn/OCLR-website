@@ -1,9 +1,25 @@
 import { z } from "zod";
 import { appUrl, HttpError } from "../http";
+const privacyContactId = z
+  .string()
+  .trim()
+  .regex(/^[1-9]\d*$/)
+  .transform(Number)
+  .pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER));
+/** One explicitly approved public contact; never infer it from private role grants. */
+export function privacyContact() {
+  const parsed = privacyContactId.safeParse(process.env.PRIVACY_CONTACT_OSU_ID);
+  return parsed.success
+    ? {
+        osuId: parsed.data,
+        url: `https://osu.ppy.sh/users/${parsed.data}`,
+        label: "Contact OCLR Admin on osu!",
+      }
+    : null;
+}
 export function privacyReady() {
-  return (
-    z.email().safeParse(process.env.PRIVACY_CONTACT_EMAIL).success &&
-    Boolean(process.env.PRIVACY_RETENTION_NOTICE?.trim())
+  return Boolean(
+    privacyContact() && process.env.PRIVACY_RETENTION_NOTICE?.trim(),
   );
 }
 export function authReady() {

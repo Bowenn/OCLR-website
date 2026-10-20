@@ -1,7 +1,8 @@
 import { PageHeading } from "@/components/ui";
-import { privacyReady } from "@/lib/auth/config";
+import { privacyContact, privacyReady } from "@/lib/auth/config";
 export const metadata = { title: "Privacy" };
 export default function Privacy() {
+  const contact = privacyContact();
   return (
     <div className="container page prose">
       <PageHeading eyebrow="YOUR DATA" title="Privacy at OCLR">
@@ -54,21 +55,18 @@ export default function Privacy() {
         or analytics cookies are used.
       </p>
       <h2>Retention and requests</h2>
-      {privacyReady() ? (
+      {privacyReady() && contact ? (
         <>
           <p className="preserve-lines">
             {process.env.PRIVACY_RETENTION_NOTICE}
           </p>
           <p>
-            For access, correction or deletion requests, contact{" "}
-            <a
-              className="text-link"
-              href={`mailto:${process.env.PRIVACY_CONTACT_EMAIL}`}
-            >
-              {process.env.PRIVACY_CONTACT_EMAIL}
-            </a>
-            .
+            For access, correction or deletion requests, contact the designated
+            OCLR administrator using their osu! profile.
           </p>
+          <a className="button secondary" href={contact.url}>
+            {contact.label} →
+          </a>
         </>
       ) : (
         <p className="notice">

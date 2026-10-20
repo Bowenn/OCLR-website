@@ -2,11 +2,12 @@ import Link from "next/link";
 import { Action, PageHeading } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { publicStaff } from "@/lib/public-staff";
-import { site } from "@/content/site";
+import { privacyContact } from "@/lib/auth/config";
 export const metadata = { title: "About OCLR" };
 export const dynamic = "force-dynamic";
 export default async function About() {
   const staff = await publicStaff();
+  const contact = privacyContact();
   return (
     <div className="container page">
       <PageHeading
@@ -74,10 +75,10 @@ export default async function About() {
         </section>
         <aside className="about-aside">
           <h2>Contact</h2>
-          {site.contact ? (
+          {contact ? (
             <p>
-              <a href={site.contact.url} className="text-link">
-                {site.contact.label} ↗
+              <a href={contact.url} className="text-link">
+                {contact.label} →
               </a>
             </p>
           ) : (

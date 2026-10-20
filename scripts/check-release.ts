@@ -1,6 +1,5 @@
-import { z } from "zod";
 import { appUrl } from "../src/lib/http";
-import { authReady, oauthConfig } from "../src/lib/auth/config";
+import { authReady, oauthConfig, privacyContact } from "../src/lib/auth/config";
 import { getAnnouncements } from "../src/lib/announcements";
 import { getBrackets } from "../src/lib/brackets";
 import { db, closeDb } from "../src/db";
@@ -40,7 +39,16 @@ try {
     );
   getBrackets();
   getAnnouncements();
-  z.email().parse(process.env.PRIVACY_CONTACT_EMAIL);
+  const contact = privacyContact()!; // authReady() already validated the explicit contact.
+  if (!ids.some((id) => Number(id) === contact.osuId)) {
+    const admin = await db().execute(sql`SELECT 1 FROM staff_roles
+      WHERE user_id = ${contact.osuId} AND role = 'admin'
+      AND edition_slug IS NULL AND revoked_at IS NULL LIMIT 1`);
+    if (!admin.rows.length)
+      throw new Error(
+        "The designated privacy contact must be a verified global Admin.",
+      );
+  }
   await db().execute(sql`SELECT 1 FROM users LIMIT 0`);
   await db().execute(
     sql`SELECT osu_id, mode, profile, attempted_at, retry_at, refresh_token, error_status FROM user_profile_cache LIMIT 0`,

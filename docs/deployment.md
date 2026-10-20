@@ -12,7 +12,7 @@ See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` pr
 | `DATABASE_URL`                       | PostgreSQL connection; use verified TLS for remote servers, a least-privilege runtime role and a separate migration role where supported |
 | `OSU_CLIENT_ID`, `OSU_CLIENT_SECRET` | Organizer-owned OAuth application, exact callback `APP_URL/auth/osu/callback`                                                            |
 | `ADMIN_OSU_IDS`                      | Explicitly verified bootstrap global Admin IDs; legacy STAFF_OSU_IDS grants no access. Persistent grants are managed at /admin/staff     |
-| `PRIVACY_CONTACT_EMAIL`              | Approved operational privacy contact                                                                                                     |
+| `PRIVACY_CONTACT_OSU_ID`             | Explicit single approved public osu! Admin ID (positive safe integer)                                                                    |
 | `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                               |
 | `OCLR_BRACKETS_FILE`                 | Optional absolute path to legacy bracket JSON (ignored for editions with DB fixtures); default is bundled `src/content/brackets.json`    |
 | `OCLR_ANNOUNCEMENTS_FILE`            | Optional absolute path to approved announcement JSON; default is bundled `src/content/announcements.json`                                |
@@ -47,6 +47,14 @@ Migration `0014` makes registration rule versions nullable and adds a nullable e
 8. Rate-limit login/callback, metadata/import and mutation routes at ingress. Limit JSON bodies to 32 KiB, except the per-fixture `/results` review and `/api/admin/tournaments/[edition]` settings POSTs, which accept at most 512 KiB for explicit game decisions and structured rules respectively. Redact callback query strings and never log cookies, tokens, Authorization headers or private answer bodies. Restrict health/DB administration to operators.
 9. Verify staging with two real osu! accounts: authorize, decline, retry, sign out, expired session, own-data isolation, individual submission, duplicate prevention, permitted withdrawal, staff review and CSV. Check privacy/contact links, keyboard/mobile navigation, approved rules/timezone and a failed database response. Record results in #5/#10.
 10. Only after those checks, configure the production environment independently, apply reviewed migrations and verify the actual deployed URL. A passing local build is not evidence of a successful deployment. Keep registration unpublished/closed until the organizer authorizes collection.
+
+## Privacy contact setup
+
+Set `PRIVACY_CONTACT_OSU_ID` to one explicitly approved Admin's positive numeric osu! user ID in private `.env.local` (or the hosting secret/environment configuration). Do not use a comma-separated list, derive the first `ADMIN_OSU_IDS` entry, or publish other bootstrap IDs. About and Privacy share the canonical `https://osu.ppy.sh/users/{id}` contact; no direct-message URL is invented. The public link does not grant any staff permissions.
+
+Verify the designated account is a global Admin, either explicitly provisioned through `ADMIN_OSU_IDS` or an active persistent global Admin grant. `release:check` checks this against the configured allowlist/database; ordinary privacy readiness validates the single ID and retention text without exposing or querying role assignments. Organizers must confirm the profile is reachable and the account can actually receive and handle privacy inquiries. A profile link alone does not establish legal compliance.
+
+When upgrading, replace the old email contact setting with `PRIVACY_CONTACT_OSU_ID`, remove the unused email variable, and restart the application. Inspect your **private** `PRIVACY_RETENTION_NOTICE`: it may itself contain an email address and must be edited/approved locally if that should no longer be public. The application displays approved policy text unchanged; it does not silently scrub contact strings. No private environment values belong in commits or issue comments. Without a valid new contact and nonblank retention notice, new sign-in and registration remain unavailable; existing users, sessions and registration records are not deleted or disabled by this configuration change.
 
 ## Backups, rollback and privacy operations
 

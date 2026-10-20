@@ -27,7 +27,7 @@ describe.skipIf(!testUrl)(
       vi.stubEnv("APP_URL", "https://oclr.example.test");
       vi.stubEnv("OSU_CLIENT_ID", "123");
       vi.stubEnv("OSU_CLIENT_SECRET", "synthetic-provider-secret");
-      vi.stubEnv("PRIVACY_CONTACT_EMAIL", "privacy@example.test");
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
       vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic fixture policy.");
     });
     beforeEach(async () => {
@@ -135,6 +135,10 @@ describe.skipIf(!testUrl)(
       const b = await createSession(10002);
       expect((await readSession(a.token))?.osuId).toBe(10001);
       expect((await readSession(b.token))?.osuId).toBe(10002);
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "");
+      expect((await readSession(a.token))?.osuId).toBe(10001);
+      expect((await readSession(b.token))?.osuId).toBe(10002);
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
       const headers = {
         cookie: `__Host-oclr_session=${a.token}`,
         origin: "https://evil.example.test",
