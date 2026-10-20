@@ -79,14 +79,27 @@ describe("explicit osu! privacy contact", () => {
     expect(authReady()).toBe(false);
     expect(html()).not.toContain('href="https://osu.ppy.sh/users/');
   });
-  it("keeps approved policy text intact rather than silently scrubbing it", () => {
+  it("hides email addresses in public policy text without changing stored retention terms", () => {
     const notice =
       "Synthetic approved policy context: archive@example.test <retention>";
     vi.stubEnv("PRIVACY_RETENTION_NOTICE", notice);
     const page = html();
-    expect(page).toContain("archive@example.test &lt;retention&gt;");
-    expect(page.match(/archive@example.test/g)).toHaveLength(1);
+    expect(page).toContain("the designated osu! contact &lt;retention&gt;");
+    expect(page).not.toContain("archive@example.test");
+    expect(process.env.PRIVACY_RETENTION_NOTICE).toBe(notice);
     expect(page).not.toContain("mailto:");
+  });
+  it("removes multiple email contacts and mailto prefixes while retaining policy dates", () => {
+    vi.stubEnv(
+      "PRIVACY_RETENTION_NOTICE",
+      "Keep applications for 30 days. Contact: mailto:first+privacy@example.test or SECOND@EXAMPLE.ORG.",
+    );
+    const page = html();
+    expect(page).toContain("Keep applications for 30 days.");
+    expect(page).not.toMatch(/mailto:|first\+privacy@|SECOND@/);
+    expect(
+      page.match(/href="https:\/\/osu.ppy.sh\/users\/60001"/g),
+    ).toHaveLength(1);
   });
   it("accepts a single trimmed safe numeric ID and does not grant staff access", () => {
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", ` ${Number.MAX_SAFE_INTEGER} `);

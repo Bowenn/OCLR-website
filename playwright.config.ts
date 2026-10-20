@@ -62,7 +62,8 @@ export default defineConfig({
           OCLR_BRACKETS_FILE: bracketsPath,
           OCLR_ANNOUNCEMENTS_FILE: announcementsPath,
           PRIVACY_CONTACT_OSU_ID: "60001",
-          PRIVACY_RETENTION_NOTICE: "Synthetic isolated browser-test policy.",
+          PRIVACY_RETENTION_NOTICE:
+            "Synthetic isolated browser-test policy. Contact mailto:private-contact@example.test.",
         }
       : {},
   },

@@ -3,66 +3,58 @@ import { privacyContact, privacyReady } from "@/lib/auth/config";
 export const metadata = { title: "Privacy" };
 export default function Privacy() {
   const contact = privacyContact();
+  // Keep stored policy terms intact; public contact is exclusively through osu!.
+  const retentionNotice = process.env.PRIVACY_RETENTION_NOTICE?.replace(
+    /(?:mailto:)?[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi,
+    "the designated osu! contact",
+  );
   return (
     <div className="container page prose">
       <PageHeading eyebrow="YOUR DATA" title="Privacy at OCLR">
-        osu! Chinese League Rookie
+        How osu! Chinese League Rookie uses your information.
       </PageHeading>
-      <h2>What we collect</h2>
+      <h2>Your account and applications</h2>
       <p>
-        Signing in stores your stable osu! user ID, current display name and a
-        secure session record. We do not receive your osu! password. OAuth
-        access and refresh tokens are not retained.
-      </p>
-      <h2>Tournament applications</h2>
-      <p>
-        Applications contain your osu! identity, answers to the edition’s
-        approved questions, rules acknowledgment, status and timestamps. Staff
-        with registration permissions can review them. Applications are private;
-        acceptance does not automatically publish your identity or assign you to
-        a team.
-      </p>
-      <h2>Published competition information</h2>
-      <p>
-        Approved participant identities, captain status and finalized team
-        rosters become public only after explicit publication. Released mappools
-        and approved published match results, team scores and multiplayer source
-        links can be read without signing in.
-      </p>
-      <h2>Competition records and staff actions</h2>
-      <p>
-        Published participant profiles can display dated public osu! metadata
-        and ruleset statistics. A compact server-side snapshot is cached for 30
-        minutes, with a maximum of 1,000 ID/ruleset combinations. Temporary
-        provider failures retain the last successful snapshot with a stale
-        label. Staff with registration permissions can look up public osu!
-        profiles; lookup does not publish an application or determine
-        eligibility.
+        We store your osu! ID, display name and a secure login session. We never
+        receive your osu! password or retain your OAuth access and refresh
+        tokens.
       </p>
       <p>
-        Assigned referees and administrators can review multiplayer snapshots
-        containing player IDs and game scores. Unreviewed imports, internal
-        review reasons and individual score evidence stay in the protected staff
-        workspace. Staff-role changes and competition actions retain actor IDs,
-        reasons, timestamps and revision history for accountability. Public
-        match pages contain approved team totals and public result notes.
+        Applications include your answers, any rules or eligibility
+        acknowledgment, status and submission dates. Only authorized staff can
+        review them. Acceptance alone does not publish your application or
+        assign you a team.
       </p>
-      <h2>Cookies and external services</h2>
+      <h2>What becomes public</h2>
       <p>
-        Essential HTTP-only cookies support login, callback security and your
-        session. Sessions expire after seven days. Profile avatars and beatmap
-        covers, when displayed, load from osu!’s image services. No advertising
-        or analytics cookies are used.
+        Participant identities, captains and finalized rosters appear only after
+        explicit publication. Released mappools and approved, published results,
+        scores and multiplayer source links are visible without signing in.
+      </p>
+      <p>
+        Published profiles may include public osu! statistics, cached with an
+        update time. Older data is labeled when osu! is unavailable. Staff
+        profile lookups do not publish applications or determine eligibility.
+      </p>
+      <h2>Staff access and services</h2>
+      <p>
+        Authorized referees and administrators review player IDs and game
+        scores. Unreviewed imports, internal notes and score evidence stay
+        private. Staff actions are logged with the operator, changes and time
+        for accountability.
+      </p>
+      <p>
+        Essential cookies secure sign-in and sessions, which expire after seven
+        days. Avatars and beatmap covers load from osu! image services. We use
+        no advertising or analytics cookies.
       </p>
       <h2>Retention and requests</h2>
       {privacyReady() && contact ? (
         <>
-          <p className="preserve-lines">
-            {process.env.PRIVACY_RETENTION_NOTICE}
-          </p>
+          <p className="preserve-lines">{retentionNotice}</p>
           <p>
-            For access, correction or deletion requests, contact the designated
-            OCLR administrator using their osu! profile.
+            To request access, correction or deletion of your information,
+            contact the OCLR Admin on osu!.
           </p>
           <a className="button secondary" href={contact.url}>
             {contact.label} →

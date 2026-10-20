@@ -305,7 +305,7 @@ button:hover {
 .prose {
   max-width: 760px;
 }
-.prose a,
+.prose a:not(.button),
 .text-link {
   color: #dfabfb;
   text-decoration: underline;

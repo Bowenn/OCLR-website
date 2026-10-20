@@ -104,7 +104,7 @@ test("Privacy and About share one explicit osu! contact without publishing the a
     "https://osu.ppy.sh/users/60001",
   );
   await expect(
-    page.getByText("Synthetic isolated browser-test policy.", { exact: true }),
+    page.getByText("Synthetic isolated browser-test policy."),
   ).toBeVisible();
   await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
   const html = await page.content();
@@ -113,6 +113,7 @@ test("Privacy and About share one explicit osu! contact without publishing the a
     "110001",
     "120001",
     "synthetic-browser-provider-secret",
+    "private-contact@example.test",
   ])
     expect(html).not.toContain(hidden);
   expect(await context.cookies()).toEqual([]);
