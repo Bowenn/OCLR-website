@@ -81,8 +81,26 @@ async function clientToken() {
     requestingToken = undefined;
   }
 }
-export async function osuApi(path: string): Promise<unknown> {
+export async function osuApi(
+  path: string,
+  attributes?: {
+    mods: string[];
+    ruleset: "osu" | "taiko" | "fruits" | "mania";
+  },
+): Promise<unknown> {
+  if (attributes) {
+    const valid = z
+      .object({
+        mods: z.array(z.enum(["HD", "HR", "DT", "EZ", "HT"])).max(3),
+        ruleset: z.enum(["osu", "taiko", "fruits", "mania"]),
+      })
+      .strict()
+      .safeParse(attributes);
+    if (!/^\/beatmaps\/[1-9]\d*\/attributes$/.test(path) || !valid.success)
+      throw new HttpError(400, "Invalid beatmap attribute request.");
+  }
   if (
+    !attributes &&
     !/^\/(?:beatmaps\/[1-9]\d*|users\/[1-9]\d*\/(?:osu|taiko|fruits|mania)\?key=id|matches\/[1-9]\d*(?:\?(?:before|after)=\d+&limit=100|\?limit=100)?)$/.test(
       path,
     ) &&
@@ -91,10 +109,14 @@ export async function osuApi(path: string): Promise<unknown> {
     throw new HttpError(400, "Invalid osu! API resource.");
   for (let attempt = 0; attempt < 2; attempt++) {
     const response = await providerFetch(`https://osu.ppy.sh/api/v2${path}`, {
+      ...(attributes
+        ? { method: "POST", body: JSON.stringify(attributes) }
+        : {}),
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${await clientToken()}`,
         "x-api-version": "20220705",
+        ...(attributes ? { "Content-Type": "application/json" } : {}),
       },
     });
     if (response.status === 401 && attempt === 0) {

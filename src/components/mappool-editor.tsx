@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { MappoolWorkspace } from "@/lib/mappools";
 import {
   categories,
+  difficultyConfigurations,
+  type DifficultyConfiguration,
   categoryNames,
   slotLabel,
   parseBeatmapId,
@@ -178,6 +180,10 @@ function EntryForm({
   category: string;
   entry?: Entry;
 }) {
+  const [difficultyConfiguration, setDifficultyConfiguration] =
+    useState<DifficultyConfiguration | null>(
+      entry?.metadata.attributes?.configuration ?? null,
+    );
   const [beatmap, setBeatmap] = useState(entry ? String(entry.beatmapId) : "");
   const id = parseBeatmapId(beatmap);
   const [preview, setPreview] = useState<BeatmapSnapshot | null>(null);
@@ -204,9 +210,35 @@ function EntryForm({
           Enter a numeric beatmap ID or an official osu! difficulty URL.
         </p>
       )}
+      <label className="field">
+        <span>Difficulty calculation mods</span>
+        <select
+          aria-label="Difficulty calculation mods"
+          value={difficultyConfiguration ?? ""}
+          onChange={(e) => {
+            setPreview(null);
+            setDifficultyConfiguration(
+              (e.target.value as DifficultyConfiguration) || null,
+            );
+          }}
+        >
+          <option value="">Variable / unconfigured</option>
+          {difficultyConfigurations.map((mods) => (
+            <option key={mods} value={mods}>
+              {mods}
+              {mods.includes("DT")
+                ? " · standard DT speed"
+                : mods === "HT"
+                  ? " · standard HT speed"
+                  : ""}
+            </option>
+          ))}
+        </select>
+      </label>
       {id && (
         <BeatmapPreview
-          key={id}
+          key={`${id}-${difficultyConfiguration}`}
+          difficultyConfiguration={difficultyConfiguration}
           id={id}
           url={`${change.url}/preview`}
           onReady={setPreview}
@@ -239,6 +271,7 @@ function EntryForm({
         description={`Save beatmap ${beatmap || "(required)"} in ${slotLabel(mod, Number(position))}. Official metadata is verified again when saving. Provider errors preserve saved records.`}
         payload={{
           action: "entry_save",
+          difficultyConfiguration,
           expectedMetadataFingerprint: preview?.fingerprint,
           poolId: pool.id,
           expectedVersion: pool.version,

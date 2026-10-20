@@ -33,6 +33,12 @@ export type BeatmapMetadata = {
   stars: number;
   bpm: number;
   duration: number;
+  mode?: "osu" | "taiko" | "fruits" | "mania";
+  ar?: number | null;
+  od?: number | null;
+  cs?: number | null;
+  hp?: number | null;
+  attributes?: BeatmapAttributes;
 };
 export type BeatmapSnapshot = {
   beatmapId: number;
@@ -86,3 +92,39 @@ export function parseMappoolRows(text: string): BulkRow[] {
     return { line, category, position, beatmapId, error, warning };
   });
 }
+
+// Explicit standard mod combinations. FM/TB never select one automatically.
+export const difficultyConfigurations = [
+  "NM",
+  "HD",
+  "HR",
+  "DT",
+  "HDHR",
+  "HDDT",
+  "HRDT",
+  "HDHRDT",
+  "EZ",
+  "HT",
+] as const;
+export type DifficultyConfiguration = (typeof difficultyConfigurations)[number];
+export const difficultyMods: Record<DifficultyConfiguration, string[]> = {
+  NM: [],
+  HD: ["HD"],
+  HR: ["HR"],
+  DT: ["DT"],
+  HDHR: ["HD", "HR"],
+  HDDT: ["HD", "DT"],
+  HRDT: ["HR", "DT"],
+  HDHRDT: ["HD", "HR", "DT"],
+  EZ: ["EZ"],
+  HT: ["HT"],
+};
+export type BeatmapAttributes = {
+  configuration: DifficultyConfiguration;
+  mods: string[];
+  ruleset: NonNullable<BeatmapMetadata["mode"]>;
+  stars: number;
+  maxCombo: number | null;
+  values: Record<string, number>;
+  fetchedAt: string;
+};

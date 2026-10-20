@@ -2,7 +2,12 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { osuApi } from "./osu-api";
 import { HttpError } from "./http";
-import type { BeatmapSnapshot } from "./mappool-model";
+import {
+  difficultyMods,
+  type DifficultyConfiguration,
+  type BeatmapAttributes,
+  type BeatmapSnapshot,
+} from "./mappool-model";
 const positiveId = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const beatmap = z.object({
   id: positiveId,
@@ -11,6 +16,11 @@ const beatmap = z.object({
   difficulty_rating: z.number().finite().nonnegative(),
   bpm: z.number().finite().nonnegative(),
   total_length: z.number().int().nonnegative(),
+  mode: z.enum(["osu", "taiko", "fruits", "mania"]).optional(),
+  ar: z.number().finite().nonnegative().nullable().optional(),
+  accuracy: z.number().finite().nonnegative().nullable().optional(),
+  cs: z.number().finite().nonnegative().nullable().optional(),
+  drain: z.number().finite().nonnegative().nullable().optional(),
   beatmapset: z.object({
     title: z.string().trim().min(1).max(500),
     artist: z.string().trim().min(1).max(500),
@@ -49,6 +59,11 @@ function normalizeBeatmap(value: unknown, id: number): BeatmapSnapshot {
     stars: b.difficulty_rating,
     bpm: b.bpm,
     duration: b.total_length,
+    ...(b.mode === undefined ? {} : { mode: b.mode }),
+    ...(b.ar === undefined ? {} : { ar: b.ar }),
+    ...(b.accuracy === undefined ? {} : { od: b.accuracy }),
+    ...(b.cs === undefined ? {} : { cs: b.cs }),
+    ...(b.drain === undefined ? {} : { hp: b.drain }),
   };
   const snapshot: BeatmapSnapshot = {
     beatmapId: id,
@@ -174,4 +189,109 @@ export async function fetchBeatmaps(
     }),
   );
   return new Map<number, BeatmapSnapshot | HttpError>(rows);
+}
+
+const attributesCache = new Map<
+  string,
+  { value: BeatmapAttributes; expiresAt: number }
+>();
+const attributesPending = new Map<string, Promise<BeatmapAttributes>>();
+export async function withBeatmapAttributes(
+  snapshot: BeatmapSnapshot,
+  configuration: DifficultyConfiguration | null,
+): Promise<BeatmapSnapshot> {
+  if (configuration === null) return snapshot;
+  const ruleset = snapshot.metadata.mode;
+  if (!ruleset)
+    throw new HttpError(
+      502,
+      "osu! did not supply the map ruleset; adjusted attributes cannot be verified.",
+    );
+  const key = `${snapshot.beatmapId}:${ruleset}:${configuration}:${snapshot.fingerprint}`;
+  const cached = attributesCache.get(key);
+  let attributes: BeatmapAttributes;
+  if (cached && cached.expiresAt > Date.now()) attributes = cached.value;
+  else {
+    let pending = attributesPending.get(key);
+    if (!pending) {
+      if (attributesPending.size >= 4)
+        throw new HttpError(429, "Difficulty lookup is busy. Retry shortly.");
+      pending = (async () => {
+        const parsed = z
+          .object({
+            attributes: z
+              .object({
+                star_rating: z.number().finite().nonnegative(),
+                max_combo: z.number().int().nonnegative().nullable().optional(),
+              })
+              .catchall(z.unknown()),
+          })
+          .safeParse(
+            await osuApi(`/beatmaps/${snapshot.beatmapId}/attributes`, {
+              mods: difficultyMods[configuration],
+              ruleset,
+            }),
+          );
+        if (!parsed.success)
+          throw new HttpError(
+            502,
+            "osu! returned incomplete difficulty attributes. Saved data was preserved.",
+          );
+        const a = parsed.data.attributes;
+        const values: Record<string, number> = {};
+        for (const field of [
+          "aim_difficulty",
+          "speed_difficulty",
+          "flashlight_difficulty",
+          "approach_rate",
+          "overall_difficulty",
+          "great_hit_window",
+          "stamina_difficulty",
+          "rhythm_difficulty",
+          "colour_difficulty",
+          "peak_difficulty",
+          "score_multiplier",
+        ]) {
+          const value = a[field];
+          if (typeof value === "number" && Number.isFinite(value))
+            values[field] = value;
+        }
+        const value: BeatmapAttributes = {
+          configuration,
+          mods: [...difficultyMods[configuration]],
+          ruleset,
+          stars: a.star_rating,
+          maxCombo: a.max_combo ?? null,
+          values,
+          fetchedAt: new Date().toISOString(),
+        };
+        if (attributesCache.size >= 200)
+          attributesCache.delete(attributesCache.keys().next().value!);
+        attributesCache.set(key, { value, expiresAt: Date.now() + 15 * 60000 });
+        return value;
+      })();
+      attributesPending.set(key, pending);
+    }
+    try {
+      attributes = await pending;
+    } finally {
+      attributesPending.delete(key);
+    }
+  }
+  const metadata = { ...snapshot.metadata, attributes };
+  return {
+    ...snapshot,
+    metadata,
+    fingerprint: createHash("sha256")
+      .update(
+        JSON.stringify({
+          beatmapId: snapshot.beatmapId,
+          metadata: {
+            ...metadata,
+            attributes: { ...attributes, fetchedAt: undefined },
+          },
+        }),
+      )
+      .digest("hex"),
+  };
 }

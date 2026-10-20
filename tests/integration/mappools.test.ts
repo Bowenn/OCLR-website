@@ -29,6 +29,9 @@ import {
   publicMappools,
 } from "../../src/lib/mappools";
 import { fetchBeatmap, fetchBeatmaps } from "../../src/lib/osu-beatmaps";
+import { osuApi } from "../../src/lib/osu-api";
+import { syntheticScoringRules } from "../fixtures/match";
+vi.mock("../../src/lib/osu-api", () => ({ osuApi: vi.fn() }));
 import { HttpError } from "../../src/lib/http";
 import { edition } from "../fixtures/edition";
 vi.mock("../../src/lib/osu-beatmaps", async (original) => ({
@@ -742,5 +745,99 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     });
     data = await command("batch_remove");
     expect(data.entries).toEqual([]);
+  });
+  it("persists explicit attributes, preserves them on refresh failure and leaves FM/TB unconfigured", async () => {
+    vi.mocked(fetchBeatmap).mockImplementation(async (id) => ({
+      beatmapId: id,
+      metadata: { ...metadata, mode: "osu", ar: 9, od: 8, cs: 4, hp: null },
+      fetchedAt: new Date().toISOString(),
+      fingerprint: "d".repeat(64),
+    }));
+    vi.mocked(osuApi)
+      .mockReset()
+      .mockResolvedValue({
+        attributes: { star_rating: 6.75, max_combo: 1234, approach_rate: 10.3 },
+      });
+    const pool = await create();
+    const preview = await previewBeatmap(mapper, edition.slug, {
+      beatmap: "123",
+      difficultyConfiguration: "DT",
+    });
+    let data = await mappoolCommand(mapper, edition.slug, {
+      ...add(pool.id, 0),
+      difficultyConfiguration: "DT",
+      expectedMetadataFingerprint: preview.fingerprint,
+    });
+    expect(data.entries[0].metadata).toEqual(preview.metadata);
+    expect(data.entries[0].metadata).toMatchObject({
+      stars: 4.5,
+      bpm: 180,
+      attributes: { configuration: "DT", stars: 6.75 },
+    });
+    const entry = data.entries[0];
+    data = await mappoolCommand(
+      mapper,
+      edition.slug,
+      add(pool.id, 1, 1, "TB", "456"),
+    );
+    expect(
+      data.entries.find((e) => e.category === "TB")?.metadata.attributes,
+    ).toBeUndefined();
+    await db()
+      .update(mappoolEntries)
+      .set({ metadataFetchedAt: new Date(0) })
+      .where(eq(mappoolEntries.id, entry.id));
+    vi.mocked(fetchBeatmap).mockResolvedValue({
+      beatmapId: 123,
+      metadata: { ...metadata, mode: "osu", title: "Changed provider map" },
+      fetchedAt: new Date().toISOString(),
+      fingerprint: "e".repeat(64),
+    });
+    vi.mocked(osuApi).mockRejectedValue(
+      new HttpError(502, "Synthetic attributes outage"),
+    );
+    await expect(
+      mappoolCommand(mapper, edition.slug, {
+        ...confirm,
+        action: "entry_refresh",
+        poolId: pool.id,
+        expectedVersion: 2,
+        entryId: entry.id,
+      }),
+    ).rejects.toMatchObject({ status: 502 });
+    expect(
+      (await mappoolWorkspace(mapper, edition.slug)).entries.find(
+        (e) => e.id === entry.id,
+      )?.metadata,
+    ).toEqual(entry.metadata);
+    expect(
+      (await mappoolWorkspace(mapper, edition.slug)).pools[0].version,
+    ).toBe(2);
+  });
+  it("rejects maps from another ruleset only when the round explicitly configures one", async () => {
+    const pool = await create();
+    await db()
+      .update(tournamentRounds)
+      .set({ scoringRules: syntheticScoringRules })
+      .where(eq(tournamentRounds.id, pool.roundId));
+    vi.mocked(fetchBeatmap).mockResolvedValue({
+      beatmapId: 123,
+      metadata: { ...metadata, mode: "taiko" },
+      fetchedAt: new Date().toISOString(),
+      fingerprint: "a".repeat(64),
+    });
+    expect(
+      (
+        await previewMappoolBatch(mapper, edition.slug, {
+          poolId: pool.id,
+          expectedVersion: 0,
+          text: "NM1 123",
+        })
+      ).rows[0].error,
+    ).toContain("ruleset");
+    await expect(
+      mappoolCommand(mapper, edition.slug, add(pool.id, 0)),
+    ).rejects.toMatchObject({ status: 400 });
+    expect((await mappoolWorkspace(mapper, edition.slug)).entries).toEqual([]);
   });
 });

@@ -31,6 +31,18 @@ globalThis.fetch = async (input, init) => {
     }
     return Response.json({ beatmaps });
   }
+  if (
+    /^\/api\/v2\/beatmaps\/[1-9]\d*\/attributes$/.test(url.pathname) &&
+    init?.method === "POST"
+  )
+    return Response.json({
+      attributes: {
+        star_rating: 6.75,
+        max_combo: 1234,
+        aim_difficulty: 3.21,
+        approach_rate: 10.3,
+      },
+    });
   const match = /^\/api\/v2\/beatmaps\/([1-9]\d*)$/.exec(url.pathname);
   if (match) {
     const id = Number(match[1]);
@@ -48,6 +60,11 @@ globalThis.fetch = async (input, init) => {
         difficulty_rating: id === 123 ? 4.5 : 5.25,
         bpm: 180,
         total_length: 123,
+        mode: "osu",
+        ar: 9.2,
+        accuracy: 8.5,
+        cs: 4,
+        drain: 5,
         beatmapset: {
           artist: "Synthetic Artist",
           title:

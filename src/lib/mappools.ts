@@ -14,10 +14,15 @@ import {
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { getEdition, getPublicEdition } from "./content";
-import { fetchBeatmap, fetchBeatmaps } from "./osu-beatmaps";
+import {
+  fetchBeatmap,
+  fetchBeatmaps,
+  withBeatmapAttributes,
+} from "./osu-beatmaps";
 import { HttpError } from "./http";
 import {
   categories,
+  difficultyConfigurations,
   parseBeatmapId,
   parseMappoolRows,
   type BeatmapSnapshot,
@@ -131,6 +136,10 @@ const commandSchema = z.discriminatedUnion("action", [
       ...confirmation,
       ...versioned,
       action: z.literal("entry_save"),
+      difficultyConfiguration: z
+        .enum(difficultyConfigurations)
+        .nullable()
+        .default(null),
       expectedMetadataFingerprint: z
         .string()
         .regex(/^[a-f0-9]{64}$/)
@@ -231,7 +240,13 @@ export async function previewBeatmap(
   await assertCapability(actor, "manage_mappools", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   const parsed = z
-    .object({ beatmap: z.string().trim().min(1).max(250) })
+    .object({
+      beatmap: z.string().trim().min(1).max(250),
+      difficultyConfiguration: z
+        .enum(difficultyConfigurations)
+        .nullable()
+        .default(null),
+    })
     .strict()
     .safeParse(input);
   const id = parsed.success ? parseBeatmapId(parsed.data.beatmap) : null;
@@ -240,7 +255,10 @@ export async function previewBeatmap(
       400,
       "Enter an osu! beatmap ID or canonical difficulty URL.",
     );
-  return fetchBeatmap(id);
+  return withBeatmapAttributes(
+    await fetchBeatmap(id),
+    parsed.data!.difficultyConfiguration,
+  );
 }
 export async function previewMappoolBatch(
   actor: User,
@@ -269,6 +287,10 @@ export async function previewMappoolBatch(
     throw new HttpError(400, "Enter between 1 and 50 map rows.");
   }
   const existing = data.entries.filter((e) => e.poolId === pool.id);
+  const [round] = await db()
+    .select({ rules: tournamentRounds.scoringRules })
+    .from(tournamentRounds)
+    .where(eq(tournamentRounds.id, pool.roundId));
   rows = rows.map((r) => ({
     ...r,
     error:
@@ -298,7 +320,14 @@ export async function previewMappoolBatch(
         ...r,
         snapshot: snapshot instanceof HttpError ? null : (snapshot ?? null),
         error:
-          r.error ?? (snapshot instanceof HttpError ? snapshot.message : null),
+          r.error ??
+          (snapshot instanceof HttpError
+            ? snapshot.message
+            : snapshot &&
+                round.rules &&
+                snapshot.metadata.mode !== round.rules.mode
+              ? "Beatmap ruleset does not match the configured round."
+              : null),
       };
     }),
   };
@@ -321,6 +350,7 @@ export async function mappoolCommand(
   let beatmapId: number | undefined;
   let metadataFetchedAt: Date | undefined;
   const batchMetadata = new Map<number, BeatmapSnapshot>();
+  const refreshedEntries = new Map<string, BeatmapSnapshot>();
   if (c.action === "batch_import" || c.action === "batch_refresh") {
     const [pool] = await db()
       .select()
@@ -333,6 +363,7 @@ export async function mappoolCommand(
         "Refresh the pool. Published or locked pools cannot be edited.",
       );
     let ids: number[];
+    let refreshEntries: (typeof mappoolEntries.$inferSelect)[] = [];
     if (c.action === "batch_import") {
       const rows = parseMappoolRows(
         c.rows.map((r) => `${r.category}${r.position} ${r.beatmap}`).join("\n"),
@@ -357,12 +388,21 @@ export async function mappoolCommand(
       )
         throw new HttpError(429, "Wait one minute between metadata refreshes.");
       ids = entries.map((e) => e.beatmapId);
+      refreshEntries = entries;
     }
     const snapshots = await fetchBeatmaps(ids);
     for (const [id, value] of snapshots) {
       if (value instanceof HttpError) throw value;
       batchMetadata.set(id, value);
     }
+    for (const entry of refreshEntries)
+      refreshedEntries.set(
+        entry.id,
+        await withBeatmapAttributes(
+          batchMetadata.get(entry.beatmapId)!,
+          entry.metadata.attributes?.configuration ?? null,
+        ),
+      );
     if (
       c.action === "batch_import" &&
       c.rows.some(
@@ -418,7 +458,12 @@ export async function mappoolCommand(
         429,
         "Wait at least one minute between metadata refreshes.",
       );
-    const snapshot = await fetchBeatmap(beatmapId);
+    const snapshot = await withBeatmapAttributes(
+      await fetchBeatmap(beatmapId),
+      c.action === "entry_save"
+        ? c.difficultyConfiguration
+        : (entry?.metadata.attributes?.configuration ?? null),
+    );
     if (
       c.action === "entry_save" &&
       c.expectedMetadataFingerprint &&
@@ -574,6 +619,21 @@ export async function mappoolCommand(
         .from(mappoolEntries)
         .where(eq(mappoolEntries.poolId, pool.id));
       const before = { pool, entries };
+      const [roundConfiguration] = await tx
+        .select({ rules: tournamentRounds.scoringRules })
+        .from(tournamentRounds)
+        .where(eq(tournamentRounds.id, pool.roundId));
+      const snapshots = [
+        ...(metadata ? [metadata] : []),
+        ...Array.from(batchMetadata.values(), (snapshot) => snapshot.metadata),
+      ];
+      const configuredMode = roundConfiguration.rules?.mode;
+      if (configuredMode && snapshots.some((m) => m.mode !== configuredMode))
+        throw new HttpError(
+          400,
+          "Beatmap ruleset does not match the configured round. No maps were saved.",
+        );
+
       if (c.action === "batch_import") {
         for (const row of c.rows) {
           const id = parseBeatmapId(row.beatmap)!;
@@ -591,16 +651,14 @@ export async function mappoolCommand(
           if (row.category === "FM" && !pool.fmMode)
             throw new HttpError(409, "Configure FM before importing FM slots.");
           const snapshot = batchMetadata.get(id)!;
-          await tx
-            .insert(mappoolEntries)
-            .values({
-              poolId: pool.id,
-              category: row.category,
-              position: row.position,
-              beatmapId: id,
-              metadata: snapshot.metadata,
-              metadataFetchedAt: new Date(snapshot.fetchedAt),
-            });
+          await tx.insert(mappoolEntries).values({
+            poolId: pool.id,
+            category: row.category,
+            position: row.position,
+            beatmapId: id,
+            metadata: snapshot.metadata,
+            metadataFetchedAt: new Date(snapshot.fetchedAt),
+          });
         }
       } else if (
         c.action === "batch_remove" ||
@@ -621,7 +679,7 @@ export async function mappoolCommand(
             .where(inArray(mappoolEntries.id, c.entryIds));
         else if (c.action === "batch_refresh") {
           for (const entry of selected) {
-            const snapshot = batchMetadata.get(entry!.beatmapId)!;
+            const snapshot = refreshedEntries.get(entry!.id)!;
             await tx
               .update(mappoolEntries)
               .set({

@@ -32,6 +32,45 @@ export function BeatmapDetails({
           {Math.floor(m.duration / 60)}:
           {String(m.duration % 60).padStart(2, "0")}
         </p>
+        {(m.ar !== undefined ||
+          m.od !== undefined ||
+          m.cs !== undefined ||
+          m.hp !== undefined) && (
+          <p className="small muted">
+            Base AR {m.ar ?? "—"} · OD {m.od ?? "—"} · CS {m.cs ?? "—"} · HP{" "}
+            {m.hp ?? "—"}
+          </p>
+        )}
+        {m.attributes ? (
+          <div className="small">
+            <p>
+              {m.attributes.configuration} · {m.attributes.stars.toFixed(2)} ★
+              official adjusted · {m.attributes.ruleset}
+              {m.attributes.maxCombo !== null
+                ? ` · ${m.attributes.maxCombo} max combo`
+                : ""}
+            </p>
+            {Object.keys(m.attributes.values).length > 0 && (
+              <details>
+                <summary>Official ruleset attributes</summary>
+                <dl className="detail-list">
+                  {Object.entries(m.attributes.values).map(([key, value]) => (
+                    <div key={key}>
+                      <dt>{key.replaceAll("_", " ")}</dt>
+                      <dd>{Number(value.toFixed(3))}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            )}
+          </div>
+        ) : (
+          label && (
+            <p className="muted small">
+              Mod-adjusted difficulty: variable / unconfigured.
+            </p>
+          )
+        )}
         {fetchedAt && (
           <p className="muted small">
             Official osu! API · Beatmap {beatmapId} / Set {m.setId} · Fetched{" "}

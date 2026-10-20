@@ -1,13 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
-import type { BeatmapSnapshot } from "@/lib/mappool-model";
+import type {
+  BeatmapSnapshot,
+  DifficultyConfiguration,
+} from "@/lib/mappool-model";
 import { BeatmapDetails } from "./beatmap-details";
 export function BeatmapPreview({
   id,
   url,
   onReady,
+  difficultyConfiguration = null,
 }: {
   id: number;
+  difficultyConfiguration?: DifficultyConfiguration | null;
   url: string;
   onReady: (snapshot: BeatmapSnapshot | null) => void;
 }) {
@@ -24,7 +29,10 @@ export function BeatmapPreview({
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ beatmap: String(id) }),
+          body: JSON.stringify({
+            beatmap: String(id),
+            difficultyConfiguration,
+          }),
           signal: controller.signal,
         });
         const data = await response.json();
@@ -55,7 +63,7 @@ export function BeatmapPreview({
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [id, url, attempt, onReady]);
+  }, [id, url, attempt, onReady, difficultyConfiguration]);
   return (
     <div
       aria-label="Beatmap preview"
@@ -90,8 +98,8 @@ export function BeatmapPreview({
         <>
           <BeatmapDetails {...result.snapshot} />
           <p className="muted small">
-            Base ratings are shown; selected mods may change difficulty and
-            timing.
+            Base ratings and any explicitly configured official attributes are
+            labeled separately. BPM and duration describe the base map.
           </p>
           <button
             type="button"

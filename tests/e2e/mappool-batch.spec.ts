@@ -79,6 +79,7 @@ test.describe("bulk mappool operations", () => {
     await page
       .getByRole("button", { name: "Move / renumber selected", exact: true })
       .click();
+    await expect(page.getByLabel("Select DT3", { exact: true })).toBeAttached();
     await page.getByText("Manage multiple map slots", { exact: true }).click();
     await expect(page.getByLabel("Select DT3", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Select DT4", { exact: true })).toBeVisible();
@@ -94,6 +95,28 @@ test.describe("bulk mappool operations", () => {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+
+    await page.getByRole("button", { name: /^DT \(2\)$/ }).click();
+    await page.getByText("Edit or replace DT3", { exact: true }).click();
+    const editor = page
+      .locator("details")
+      .filter({ has: page.getByText("Edit or replace DT3", { exact: true }) });
+    await editor
+      .getByLabel("Difficulty calculation mods", { exact: true })
+      .selectOption("DT");
+    await expect(editor.getByLabel("Beatmap preview")).toContainText(
+      "6.75 ★ official adjusted",
+    );
+    await editor
+      .getByRole("button", { name: "Save map slot", exact: true })
+      .click();
+    await expect(
+      page.getByText("DT · 6.75 ★ official adjusted", { exact: false }).first(),
+    ).toBeVisible();
+    await page.screenshot({
+      path: test.info().outputPath("bulk-mappool-editor.png"),
+      fullPage: true,
+    });
     data = await (await page.request.get(api)).json();
     data = await change({
       action: "pool_publish",
@@ -109,7 +132,14 @@ test.describe("bulk mappool operations", () => {
         `/api/tournaments/test-cup/mappools/${pool}`,
       );
       expect(response.status()).toBe(200);
-      expect((await response.json()).entries).toHaveLength(2);
+      const published = await response.json();
+      expect(published.entries).toHaveLength(2);
+      expect(
+        published.entries.some(
+          (e: { metadata: { attributes?: { stars: number } } }) =>
+            e.metadata.attributes?.stars === 6.75,
+        ),
+      ).toBe(true);
     } finally {
       await guest.close();
     }

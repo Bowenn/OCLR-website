@@ -158,3 +158,41 @@ describe("official beatmap parsing and server API boundaries", () => {
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 });
+
+describe("official attribute POST transport", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+  it("posts only validated mod settings to a fixed official endpoint with a server token", async () => {
+    vi.resetModules();
+    vi.stubEnv("OSU_CLIENT_ID", "123");
+    vi.stubEnv("OSU_CLIENT_SECRET", "synthetic-secret");
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(token())
+      .mockResolvedValueOnce(
+        Response.json({ attributes: { star_rating: 6.75 } }),
+      );
+    vi.stubGlobal("fetch", fetch);
+    const { osuApi } = await import("../../src/lib/osu-api");
+    await osuApi("/beatmaps/123/attributes", { mods: ["HR"], ruleset: "osu" });
+    expect(fetch.mock.calls[1][0]).toBe(
+      "https://osu.ppy.sh/api/v2/beatmaps/123/attributes",
+    );
+    expect(fetch.mock.calls[1][1]).toMatchObject({
+      method: "POST",
+      body: JSON.stringify({ mods: ["HR"], ruleset: "osu" }),
+      headers: {
+        Authorization: "Bearer synthetic-provider-token",
+        "Content-Type": "application/json",
+      },
+    });
+    await expect(
+      osuApi("https://example.com/123", { mods: [], ruleset: "osu" }),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(osuApi("/beatmaps/123/attributes")).rejects.toMatchObject({
+      status: 400,
+    });
+  });
+});
