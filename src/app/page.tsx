@@ -65,7 +65,7 @@ export default async function Home() {
         <section aria-labelledby="latest-news-title">
           <div className="section-title">
             <h2 id="latest-news-title">Latest news</h2>
-            <Action href="/news" secondary compact>
+            <Action href="/news" secondary>
               All news ↗
             </Action>
           </div>

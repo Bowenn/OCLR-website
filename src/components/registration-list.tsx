@@ -48,7 +48,7 @@ export async function RegistrationList({
           </p>
           {total > 0 && (
             <a
-              className="button secondary button-compact"
+              className="button secondary"
               href={`/api/admin/registrations/export?${query}`}
             >
               Export CSV ↓
@@ -144,7 +144,7 @@ export async function RegistrationList({
                     <td>{formatDate(r.createdAt, "UTC")}</td>
                     <td>
                       <Link
-                        className="button secondary button-compact"
+                        className="button secondary"
                         href={`/admin/tournaments/${r.editionSlug}/registrations/${r.id}`}
                       >
                         Review<span className="sr-only"> {r.username}</span> ↗

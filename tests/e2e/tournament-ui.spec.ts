@@ -132,6 +132,24 @@ test.describe("registration readiness and confirmation layout", () => {
       .getByRole("button", { name: "Publish tournament", exact: true })
       .click();
     const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    const dialogButtons = await dialog
+      .getByRole("button")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const style = getComputedStyle(node);
+          return [
+            node.getBoundingClientRect().height,
+            style.fontSize,
+            style.padding,
+            style.borderRadius,
+          ];
+        }),
+      );
+    expect(
+      new Set(dialogButtons.map((style) => JSON.stringify(style))).size,
+    ).toBe(1);
+    expect(dialogButtons[0][0]).toBe(44);
     const centered = async () => {
       await expect(dialog).toBeVisible();
       const bounds = (await dialog.boundingBox())!;

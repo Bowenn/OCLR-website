@@ -79,10 +79,10 @@ export default async function Overview({
                 Register individually →
               </Action>
             )}
-            <Action href={`/tournaments/${slug}/rules`} secondary compact>
+            <Action href={`/tournaments/${slug}/rules`} secondary>
               Read the rules
             </Action>
-            <Action href={`/tournaments/${slug}/schedule`} secondary compact>
+            <Action href={`/tournaments/${slug}/schedule`} secondary>
               View schedule
             </Action>
           </div>

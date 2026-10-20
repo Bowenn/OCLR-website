@@ -80,7 +80,7 @@ export default async function Audit({
               </select>
             </label>
             <div className="actions audit-filter-actions">
-              <button className="secondary button-compact">Filter</button>
+              <button className="secondary">Filter</button>
               {(f.edition || moreFilters) && (
                 <Link
                   className="text-link small"
@@ -240,7 +240,7 @@ export default async function Audit({
           <nav className="actions spaced" aria-label="Audit pages">
             {f.page > 1 && (
               <Link
-                className="button secondary button-compact"
+                className="button secondary"
                 href={`/admin/audit?${query}&page=${f.page - 1}`}
                 scroll={false}
               >
@@ -249,7 +249,7 @@ export default async function Audit({
             )}
             {f.page * 25 < data.total && (
               <Link
-                className="button secondary button-compact"
+                className="button secondary"
                 href={`/admin/audit?${query}&page=${f.page + 1}`}
                 scroll={false}
               >

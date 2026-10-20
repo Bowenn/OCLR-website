@@ -131,6 +131,31 @@ test.describe("role-aware header actions and compact tournament context", () => 
     }
     await context.clearCookies();
     await context.addCookies([adminCookie]);
+    await page.goto("/admin");
+    const overviewActions = page.locator(".nav-actions .button, main .button");
+    const appearance = await overviewActions.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const style = getComputedStyle(node);
+        return {
+          height: node.getBoundingClientRect().height,
+          font: style.fontSize,
+          weight: style.fontWeight,
+          line: style.lineHeight,
+          padding: style.padding,
+          radius: style.borderRadius,
+        };
+      }),
+    );
+    expect(appearance.length).toBeGreaterThan(3);
+    expect(new Set(appearance.map((style) => JSON.stringify(style))).size).toBe(
+      1,
+    );
+    expect(appearance[0].height).toBe(44);
+    await page.screenshot({
+      path: info.outputPath("consistent-overview-buttons.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
     await page.goto("/admin/tournaments/s11");
     for (const width of [320, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
@@ -226,12 +251,20 @@ test.describe("role-aware header actions and compact tournament context", () => 
       name: "View public tournament",
       exact: true,
     });
-    await expect(publicAction).toHaveClass(/button secondary button-compact/);
+    await expect(publicAction).toHaveClass(/button secondary/);
     const applications = page.getByRole("link", {
       name: "View applications (0)",
       exact: true,
     });
-    await expect(applications).toHaveClass(/button-compact/);
+    await expect(applications).toHaveClass(/button secondary/);
+    const publicSize = await publicAction.evaluate(
+      (node) => node.getBoundingClientRect().height,
+    );
+    expect(
+      await applications.evaluate(
+        (node) => node.getBoundingClientRect().height,
+      ),
+    ).toBe(publicSize);
     expect(
       await page
         .locator(".registration-state")

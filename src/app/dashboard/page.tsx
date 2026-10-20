@@ -218,14 +218,12 @@ export default async function Dashboard({
                         {edition && captainAssigned && (
                           <>
                             <Action
-                              compact
                               href={`/tournaments/${edition.slug}/team`}
                               secondary
                             >
                               My captain team
                             </Action>
                             <Action
-                              compact
                               href={`/tournaments/${edition.slug}/draft/captain`}
                             >
                               Captain draft room
@@ -234,7 +232,6 @@ export default async function Dashboard({
                         )}
                         {edition && (
                           <Action
-                            compact
                             href={`/tournaments/${edition.slug}`}
                             secondary
                           >

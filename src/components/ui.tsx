@@ -4,18 +4,13 @@ export function Action({
   href,
   children,
   secondary = false,
-  compact = false,
 }: {
   href: string;
   children: ReactNode;
   secondary?: boolean;
-  compact?: boolean;
 }) {
   return (
-    <Link
-      className={`button${secondary ? " secondary" : ""}${compact ? " button-compact" : ""}`}
-      href={href}
-    >
+    <Link className={`button${secondary ? " secondary" : ""}`} href={href}>
       {children}
     </Link>
   );

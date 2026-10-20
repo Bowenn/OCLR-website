@@ -16,6 +16,10 @@
   --space-page: clamp(2rem, 4vw, 3rem);
   --space-panel: 1.5rem;
   --space-workspace: 2rem;
+  --button-height: 2.75rem;
+  --button-padding: 0.625rem 0.75rem;
+  --button-font-size: 0.8125rem;
+  --button-radius: 0.45rem;
 }
 :root {
   color-scheme: dark;
@@ -173,12 +177,13 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  min-height: var(--button-height);
   border: 1px solid #d68cf54d;
-  border-radius: 0.45rem;
-  padding: 0.8rem 1.25rem;
+  border-radius: var(--button-radius);
+  padding: var(--button-padding);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: var(--button-font-size);
   line-height: 1.5;
   color: #fff;
   background: linear-gradient(120deg, #8847d1, #b034ac);
@@ -200,8 +205,6 @@ button:hover {
 }
 .nav-login {
   white-space: nowrap;
-  padding: 0.6rem 1rem;
-  font-size: 0.78rem;
 }
 .menu-toggle {
   display: none;
@@ -451,7 +454,7 @@ button:hover {
 .section-title h2 {
   margin: 0;
 }
-.section-title > a {
+.section-title > a:not(.button) {
   font-size: 0.75rem;
 }
 .edition-card {
@@ -811,10 +814,6 @@ textarea {
   gap: 0.5rem;
   margin-top: 1rem;
 }
-.player-workspace .registration-details .actions button {
-  padding: 0.55rem 0.8rem;
-  font-size: 0.75rem;
-}
 
 .avatar {
   width: 88px;
@@ -994,10 +993,6 @@ dialog::backdrop {
   }
   .player-workspace .sidebar .spaced {
     margin-top: 0.5rem;
-  }
-  .player-workspace .sidebar button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
   }
 }
 .filters {
@@ -1249,11 +1244,6 @@ body:has(.presenter-view) .site-footer,
 }
 .audit-workspace .page-heading > .muted {
   font-size: 0.85rem;
-}
-.audit-module-tabs .workspace-tabs button {
-  min-height: 2.75rem;
-  padding: 0.65rem 0.85rem;
-  font-size: 0.8rem;
 }
 .audit-filters {
   display: grid;
@@ -1981,10 +1971,6 @@ body:has(.presenter-view) .site-footer,
   align-items: center;
   gap: 0.75rem 1.25rem;
 }
-.tournament-dashboard-heading .button {
-  padding: 0.65rem 1rem;
-  font-size: 0.85rem;
-}
 .tournament-dashboard-heading .text-link {
   font-size: 0.85rem;
 }
@@ -2381,17 +2367,13 @@ body:has(.presenter-view) .site-footer,
   gap: 0.5rem;
   margin-left: auto;
 }
-.captain-card-actions > button {
-  min-height: 2.5rem;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.8rem;
-}
 .captain-move-actions {
   display: flex;
   gap: 0.3rem;
 }
 .captain-move-actions button {
-  padding: 0.35rem 0.6rem;
+  width: var(--button-height);
+  padding-inline: 0;
 }
 @media (max-width: 480px) {
   .captain-order > li {
@@ -2460,11 +2442,6 @@ body:has(.presenter-view) .site-footer,
 .mappool-workbench .actions {
   margin: 0;
   gap: 0.5rem;
-}
-.mappool-workbench button {
-  padding: 0.55rem 0.8rem;
-  font-size: 0.8rem;
-  min-height: 2.5rem;
 }
 .workspace-tabs {
   display: flex;
@@ -2819,10 +2796,6 @@ body:has(.presenter-view) .site-footer,
   margin: 0;
   gap: 0.5rem;
 }
-.draft-pending-pick button {
-  padding: 0.6rem 0.8rem;
-  font-size: 0.8rem;
-}
 .draft-pick-status {
   margin: 0.75rem 0 0;
   color: #e7b5ff;
@@ -2858,11 +2831,6 @@ body:has(.presenter-view) .site-footer,
 /* Settings use the same compact tab strip as the mappool workspace. */
 .tournament-settings > .workspace-tabs {
   margin-bottom: 1.25rem;
-}
-.tournament-settings .workspace-tabs button {
-  padding: 0.65rem 1rem;
-  min-height: 2.75rem;
-  font-size: 0.85rem;
 }
 .tournament-settings > [role="tabpanel"] > .panel {
   margin-top: 0;
@@ -2921,14 +2889,6 @@ body:has(.presenter-view) .site-footer,
 .fixture-actions {
   gap: 0.65rem;
   margin-top: 1rem;
-}
-.fixture-actions button,
-.fixture-actions a {
-  font-size: 0.8rem;
-}
-.fixture-actions button {
-  min-height: 2.5rem;
-  padding: 0.5rem 0.65rem;
 }
 .fixture-round-filter {
   max-width: 24rem;
@@ -3067,11 +3027,6 @@ body:has(.presenter-view) .site-footer,
   border-color: #ce86f0;
   box-shadow: inset 0 0 0 1px #ce86f066;
 }
-.button-compact {
-  min-height: 2.5rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8rem;
-}
 .admin-context {
   margin-block: 0.75rem 1rem;
 }
@@ -3090,8 +3045,6 @@ body:has(.presenter-view) .site-footer,
   .menu-toggle {
     display: inline-flex;
     margin-left: auto;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.75rem;
   }
   .main-nav {
     display: none;
@@ -3110,10 +3063,6 @@ body:has(.presenter-view) .site-footer,
   }
   .main-nav a {
     padding: 0.8rem;
-  }
-  .nav-login {
-    padding: 0.55rem 0.7rem;
-    font-size: 0.72rem;
   }
   .staff-header {
     display: grid;
@@ -3138,13 +3087,8 @@ body:has(.presenter-view) .site-footer,
     font-size: 1.25rem;
     gap: 0.5rem;
   }
-  .nav-login {
-    font-size: 0.65rem;
-    padding: 0.5rem 0.55rem;
-    gap: 0.3rem;
-  }
-  .menu-toggle {
-    padding: 0.5rem;
+  .nav-login > span {
+    display: none;
   }
 }
 /* Shared accessible labels used by navigation, match cards and review actions. */

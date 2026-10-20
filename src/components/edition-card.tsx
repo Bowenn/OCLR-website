@@ -13,11 +13,11 @@ export async function EditionCard({ edition }: { edition: Edition }) {
         <p className="muted">{edition.summary}</p>
         <div className="actions">
           {state === "open" && (
-            <Action href={`/tournaments/${edition.slug}/register`} compact>
+            <Action href={`/tournaments/${edition.slug}/register`}>
               Register individually →
             </Action>
           )}
-          <Action href={`/tournaments/${edition.slug}`} secondary compact>
+          <Action href={`/tournaments/${edition.slug}`} secondary>
             View tournament →
           </Action>
         </div>
