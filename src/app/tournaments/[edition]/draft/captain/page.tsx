@@ -20,8 +20,7 @@ export default async function CaptainRoom({
   return (
     <>
       <PageHeading eyebrow="CAPTAIN WORKSPACE" title="Captain draft room">
-        Select for your own team on your published live turn. Staff controls
-        remain separate.
+        Choose a player for your team when it is your turn.
       </PageHeading>
       <LiveDraft
         slug={edition}

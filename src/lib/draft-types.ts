@@ -19,6 +19,8 @@ export type DraftBoard = {
   pool: DraftIdentity[] | null;
 };
 export type CaptainBoard = DraftBoard & {
+  // Optional for snapshots published before roster capacity was included.
+  capacities?: Record<string, number | null>;
   engineRevision: number;
   turnSequence: string[];
   eligiblePool: DraftIdentity[];

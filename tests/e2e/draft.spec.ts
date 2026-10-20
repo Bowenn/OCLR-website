@@ -57,7 +57,14 @@ test.describe("isolated multi-captain rehearsal", () => {
         },
       ]);
     }
-    return { context, page: await context.newPage() };
+    const page = await context.newPage();
+    await page.route("https://a.ppy.sh/**", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88"><rect width="88" height="88" rx="12" fill="#574066"/><circle cx="44" cy="32" r="14" fill="#d5b1eb"/><path d="M18 78a26 26 0 0 1 52 0" fill="#d5b1eb"/></svg>',
+      }),
+    );
+    return { context, page };
   }
   async function publish(page: Page) {
     await page
@@ -105,7 +112,7 @@ test.describe("isolated multi-captain rehearsal", () => {
     ).toBeVisible();
     await expect(
       b.page.getByRole("button", { name: "Confirm Pick", exact: true }),
-    ).toHaveCount(0);
+    ).toBeDisabled();
     const initial = await (
       await b.context.request.get(`/api/tournaments/${slug}/draft/captain`)
     ).json();
@@ -136,15 +143,92 @@ test.describe("isolated multi-captain rehearsal", () => {
         await a.context.request.get(`/api/admin/tournaments/${slug}/draft`)
       ).status(),
     ).toBe(403);
+    const choose = a.page.getByRole("button", {
+      name: `Choose ${fixture.players[0].username}`,
+      exact: true,
+    });
+    await expect(
+      a.page.getByRole("region", { name: "My team", exact: true }),
+    ).toContainText(fixture.a.username);
+    await expect(
+      b.page.getByRole("region", { name: "My team", exact: true }),
+    ).toContainText(fixture.b.username);
+    await expect(
+      b.page.getByRole("button", {
+        name: `Choose ${fixture.players[0].username}`,
+        exact: true,
+      }),
+    ).toBeDisabled();
+    await expect(
+      b.page.getByText("Waiting for your turn.", { exact: true }).first(),
+    ).toBeVisible();
     await a.page
-      .getByLabel("Eligible player", { exact: true })
-      .selectOption(String(fixture.players[0].osuId));
+      .getByRole("searchbox", { name: "Search eligible players", exact: true })
+      .fill(String(fixture.players[0].osuId));
+    await expect(
+      a.page
+        .getByRole("list", { name: "Eligible players", exact: true })
+        .locator("li"),
+    ).toHaveCount(1);
+    if (isMobile) await choose.tap();
+    else {
+      await choose.focus();
+      await choose.press("Enter");
+    }
+    await expect(
+      a.page.getByRole("button", { name: "Confirm Pick", exact: true }),
+    ).toBeFocused();
+    await a.page
+      .getByRole("button", { name: "Cancel selection", exact: true })
+      .click();
+    await expect(choose).toBeFocused();
+    await a.page
+      .getByRole("searchbox", { name: "Search eligible players", exact: true })
+      .fill("");
+    if (isMobile) await choose.tap();
+    else
+      await a.page
+        .locator(`[data-player-id="${fixture.players[0].osuId}"]`)
+        .dragTo(a.page.getByRole("region", { name: "My team", exact: true }));
+    await expect(
+      a.page.getByLabel("Pending selection", { exact: true }),
+    ).toContainText(fixture.players[0].username);
+    expect(await db().select().from(draftPicks)).toHaveLength(0);
+    await expect(
+      a.page
+        .getByRole("list", { name: "My team roster", exact: true })
+        .locator("li"),
+    ).toHaveCount(1);
+    await expect(choose.locator("img")).toHaveAttribute(
+      "src",
+      `https://a.ppy.sh/${fixture.players[0].osuId}`,
+    );
+    expect(
+      (
+        await new AxeBuilder({ page: a.page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    expect(
+      await a.page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await a.page.evaluate(() => {
+      window.scrollTo(0, 0);
+      if (document.activeElement instanceof HTMLElement)
+        document.activeElement.blur();
+    });
+    await a.page.screenshot({
+      path: testInfo.outputPath("captain-pending-pick.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
     await a.page
       .getByRole("button", { name: "Confirm Pick", exact: true })
       .click();
-    await a.page
-      .getByRole("button", { name: "Commit pick", exact: true })
-      .click();
+
     await expect(a.page.getByText(/Pick committed to/).first()).toBeVisible();
     await expect(
       staff.page.getByText("Committed changes await publication.", {
@@ -160,24 +244,40 @@ test.describe("isolated multi-captain rehearsal", () => {
     ).toHaveLength(0);
     await expect(
       b.page.getByRole("button", { name: "Confirm Pick", exact: true }),
-    ).toHaveCount(0);
+    ).toBeDisabled();
+    await expect(
+      a.page
+        .getByRole("list", { name: "My team roster", exact: true })
+        .locator("li"),
+    ).toHaveCount(1);
+    await expect(choose).toBeVisible(); // A confirmed but unpublished pick is not an optimistic roster edit.
     await publish(staff.page);
+    await expect(
+      a.page
+        .getByRole("list", { name: "My team roster", exact: true })
+        .locator("li"),
+    ).toHaveCount(2);
+    await expect(choose).toHaveCount(0);
     await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(1);
     await expect(
-      b.page.getByRole("button", { name: "Confirm Pick", exact: true }),
-    ).toBeVisible();
+      b.page.getByRole("button", {
+        name: `Choose ${fixture.players[1].username}`,
+        exact: true,
+      }),
+    ).toBeEnabled();
     await staff.page
-      .getByLabel("Eligible player", { exact: true })
-      .selectOption(String(fixture.players[1].osuId));
+      .getByRole("button", {
+        name: `Choose ${fixture.players[1].username}`,
+        exact: true,
+      })
+      .click();
     await staff.page
       .getByRole("button", {
         name: `Select for Captain ${fixture.b.username}`,
         exact: true,
       })
       .click();
-    await staff.page
-      .getByRole("button", { name: "Commit pick", exact: true })
-      .click();
+
     await expect(
       staff.page.getByText("Committed changes await publication.", {
         exact: false,
@@ -400,24 +500,24 @@ test.describe("isolated multi-captain rehearsal", () => {
     await a.page.goto(`/tournaments/${slug}/draft/captain`);
     await staff.page.goto(`/admin/tournaments/${slug}/draft`);
     await a.page
-      .getByLabel("Eligible player", { exact: true })
-      .selectOption(String(fixture.players[0].osuId));
-    await staff.page
-      .getByLabel("Eligible player", { exact: true })
-      .selectOption(String(fixture.players[1].osuId));
-    await a.page
-      .getByRole("button", { name: "Confirm Pick", exact: true })
+      .getByRole("button", {
+        name: `Choose ${fixture.players[0].username}`,
+        exact: true,
+      })
       .click();
     await staff.page
       .getByRole("button", {
-        name: `Select for Captain ${fixture.a.username}`,
+        name: `Choose ${fixture.players[0].username}`,
         exact: true,
       })
       .click();
     await Promise.all([
-      a.page.getByRole("button", { name: "Commit pick", exact: true }).click(),
+      a.page.getByRole("button", { name: "Confirm Pick", exact: true }).click(),
       staff.page
-        .getByRole("button", { name: "Commit pick", exact: true })
+        .getByRole("button", {
+          name: `Select for Captain ${fixture.a.username}`,
+          exact: true,
+        })
         .click(),
     ]);
     await expect
@@ -447,7 +547,75 @@ test.describe("isolated multi-captain rehearsal", () => {
       }),
     ).toBeVisible();
     await expect(
-      staff.page.getByLabel("Eligible player", { exact: true }),
-    ).toHaveValue("");
+      staff.page.getByRole("button", {
+        name: `Select for Captain ${fixture.b.username}`,
+        exact: true,
+      }),
+    ).toBeDisabled();
+  });
+  test("discards unconfirmed picks on disconnect and retries a lost receipt with the same idempotency key", async ({
+    browser,
+    isMobile,
+  }) => {
+    const slug = isMobile ? "draft-mobile-test" : "draft-desktop-test";
+    const fixture = await prepareDraft(slug, isMobile ? 120001 : 110001);
+    const a = await actor(browser, fixture.a.osuId, isMobile);
+    await a.page.goto(`/tournaments/${slug}/draft/captain`);
+    const choose = a.page.getByRole("button", {
+      name: `Choose ${fixture.players[0].username}`,
+      exact: true,
+    });
+    await choose.click();
+    await a.context.setOffline(true);
+    await expect(
+      a.page.getByRole("status").filter({ hasText: "Reconnecting ·" }),
+    ).toBeVisible({ timeout: 10000 });
+    await expect(
+      a.page.getByLabel("Pending selection", { exact: true }),
+    ).not.toContainText(fixture.players[0].username);
+    await a.context.setOffline(false);
+    await expect(choose).toBeEnabled({ timeout: 10000 });
+    await expect(
+      a.page.getByRole("button", { name: "Confirm Pick", exact: true }),
+    ).toBeDisabled();
+    await choose.focus();
+    await choose.press("Enter");
+    const payloads: object[] = [];
+    await a.page.route(
+      `**/api/tournaments/${slug}/draft/picks`,
+      async (route) => {
+        payloads.push(route.request().postDataJSON());
+        if (payloads.length === 1) {
+          const response = await route.fetch();
+          expect(response.status()).toBe(200);
+          await route.abort("failed");
+        } else await route.continue();
+      },
+    );
+    await a.page
+      .getByRole("button", { name: "Confirm Pick", exact: true })
+      .click();
+    await expect(
+      a.page.getByText(/Connection interrupted/).first(),
+    ).toBeVisible();
+    await expect(
+      a.page.getByRole("button", {
+        name: `Choose ${fixture.players[1].username}`,
+        exact: true,
+      }),
+    ).toBeDisabled();
+    await a.page
+      .getByRole("button", { name: "Retry confirmed pick", exact: true })
+      .dblclick();
+    await expect(a.page.getByText(/Pick committed to/).first()).toBeVisible();
+    expect(payloads).toHaveLength(2);
+    expect(payloads[1]).toEqual(payloads[0]);
+    expect(await db().select().from(draftPicks)).toHaveLength(1);
+    await expect(
+      a.page
+        .getByRole("list", { name: "My team roster", exact: true })
+        .locator("li"),
+    ).toHaveCount(1);
+    await expect(a.page.getByRole("dialog")).toHaveCount(0);
   });
 });

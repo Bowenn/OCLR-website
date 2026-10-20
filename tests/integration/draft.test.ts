@@ -252,6 +252,38 @@ describe.skipIf(!url)(
         snapshot.members.filter((m) => m.membership.origin === "draft"),
       ).toHaveLength(1);
     });
+    it("allows only one active-captain pick when two independently authorized captains race for the same player", async () => {
+      const value = await input();
+      const results = await Promise.allSettled([
+        pickPlayer(fixture.a, edition.slug, value),
+        pickPlayer(fixture.b, edition.slug, {
+          ...value,
+          idempotencyKey: randomUUID(),
+        }),
+      ]);
+      expect(results[0].status).toBe("fulfilled");
+      expect(results[1].status).toBe("rejected");
+      expect(await db().select().from(draftPicks)).toHaveLength(1);
+      expect(
+        (await staffDraft(fixture.staff, edition.slug)).session?.turnIndex,
+      ).toBe(1);
+    });
+    it("publishes actual roster capacities only in the authorized captain snapshot", async () => {
+      await db()
+        .update(teams)
+        .set({ capacity: 4 })
+        .where(eq(teams.id, fixture.sequence[0]));
+      expect(
+        (await captainDraft(fixture.a, edition.slug))?.capacities,
+      ).not.toHaveProperty(fixture.sequence[0], 4);
+      await command("publish");
+      expect(
+        (await captainDraft(fixture.b, edition.slug))?.capacities?.[
+          fixture.sequence[0]
+        ],
+      ).toBe(4);
+      expect(await publicDraft(edition.slug)).not.toHaveProperty("capacities");
+    });
     it("enforces database active-turn/player uniqueness in addition to service locks", async () => {
       await pickPlayer(fixture.a, edition.slug, await input());
       const [row] = await db().select().from(draftPicks);

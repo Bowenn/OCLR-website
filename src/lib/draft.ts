@@ -322,6 +322,9 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       const snapshot = board(data);
       const captainSnapshot: CaptainBoard = {
         ...snapshot,
+        capacities: Object.fromEntries(
+          data.teams.map(({ team }) => [team.id, team.capacity]),
+        ),
         engineRevision: session.version,
         turnSequence: session.turnSequence,
         eligiblePool: availablePool(data),

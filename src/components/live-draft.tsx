@@ -46,10 +46,8 @@ export function LiveDraft({
     );
   return (
     <div className={presenter ? "presenter-view" : ""}>
-      <div className="section-title">
-        <p className="eyebrow">
-          OCLR / {captainId ? "CAPTAIN DRAFT ROOM" : "LIVE DRAFT"}
-        </p>
+      <div className={captainId ? "draft-room-connection" : "section-title"}>
+        {!captainId && <p className="eyebrow">OCLR / LIVE DRAFT</p>}
         <p className="connection-state small" role="status">
           {connected
             ? "Connected · updates every 2s"
@@ -80,48 +78,53 @@ export function LiveDraft({
               .
             </p>
           )}
-          <DraftBoardView board={board} />
-          {captainId && !canPick && "eligiblePool" in board && (
-            <section className="section-space" aria-label="Eligible draft pool">
-              <h2>Eligible draft pool</h2>
-              <p className="muted small">
-                Read-only while you wait for your turn. This is the last
-                published captain snapshot.
-              </p>
-              <ul className="public-pool">
-                {board.eligiblePool.map((p) => (
-                  <li key={p.osuId}>
-                    {p.username} ({p.osuId})
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {captainId && (
-            <section className="section-space">
-              {canPick && board.activeTeam && "eligiblePool" in board ? (
-                <DraftPick
-                  key={`${board.sessionId}:${board.engineRevision}`}
-                  slug={slug}
-                  sessionId={board.sessionId}
-                  revision={board.engineRevision}
-                  turnIndex={board.turnIndex}
-                  team={board.activeTeam}
-                  pool={board.eligiblePool}
-                  staff={false}
-                  enabled={canPick}
-                  onFeedback={(message) =>
-                    setFeedback({ message, version: board.version })
-                  }
-                />
+          {captainId && "eligiblePool" in board ? (
+            (() => {
+              const own = board.rosters.find(
+                (r) => r.team.captain.osuId === captainId,
+              );
+              return own ? (
+                <>
+                  <p className="draft-room-turn">
+                    <span className="badge">{board.state}</span>{" "}
+                    {board.activeTeam
+                      ? `Pick ${board.turnIndex + 1} of ${board.turnCount} · Captain ${board.activeTeam.captain.username}`
+                      : "No active turn"}
+                  </p>
+                  <DraftPick
+                    key={`${board.sessionId}:${board.engineRevision}:${board.version}:${own.team.id}`}
+                    slug={slug}
+                    sessionId={board.sessionId}
+                    revision={board.engineRevision}
+                    turnIndex={board.turnIndex}
+                    team={own.team}
+                    players={own.players}
+                    capacity={board.capacities?.[own.team.id]}
+                    pool={board.eligiblePool}
+                    staff={false}
+                    enabled={canPick}
+                    unavailableMessage={
+                      !connected
+                        ? "Reconnecting. Selection is unavailable until the snapshot refreshes."
+                        : board.state === "live"
+                          ? "Waiting for your turn."
+                          : "Picking is unavailable in the current published state."
+                    }
+                    onFeedback={(message) =>
+                      setFeedback({ message, version: board.version })
+                    }
+                  />
+                  <details className="section-space">
+                    <summary>Published draft board and pick history</summary>
+                    <DraftBoardView board={{ ...board, pool: null }} />
+                  </details>
+                </>
               ) : (
-                <p className="notice">
-                  {board.state === "live"
-                    ? "Waiting for your published captain turn."
-                    : "Picking is unavailable in the current published state."}
-                </p>
-              )}
-            </section>
+                <p className="notice">Your team is awaiting publication.</p>
+              );
+            })()
+          ) : (
+            <DraftBoardView board={board} />
           )}
         </>
       ) : (

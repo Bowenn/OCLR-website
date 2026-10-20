@@ -154,11 +154,6 @@ export function StaffDraftRoom({
         )}
       {session && session.state !== "setup" && (
         <>
-          <h2 className="section-space">Staff preview</h2>
-          <p className="muted small">
-            Private operational state. This preview is not the public broadcast.
-          </p>
-          {preview && <DraftBoardView board={preview} privatePreview />}
           {currentTeam && session && (
             <DraftPick
               key={`pick:${session.id}:${session.version}`}
@@ -167,6 +162,19 @@ export function StaffDraftRoom({
               revision={session.version}
               turnIndex={session.turnIndex}
               team={currentTeam}
+              players={
+                preview?.rosters.find((r) => r.team.id === currentTeam.id)
+                  ?.players ?? []
+              }
+              capacity={
+                data.teams.find((t) => t.team.id === currentTeam.id)?.team
+                  .capacity
+              }
+              unavailableMessage={
+                !connected
+                  ? "Reconnecting. Wait for the authoritative snapshot."
+                  : "Picking is unavailable until the live turn is published."
+              }
               pool={data.availablePool}
               staff
               enabled={canPick}
@@ -175,6 +183,11 @@ export function StaffDraftRoom({
               }
             />
           )}
+          <h2 className="section-space">Staff preview</h2>
+          <p className="muted small">
+            Private operational state. This preview is not the public broadcast.
+          </p>
+          {preview && <DraftBoardView board={preview} privatePreview />}
         </>
       )}
       <Controls

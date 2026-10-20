@@ -2388,3 +2388,172 @@ body:has(.presenter-view) .site-footer,
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Captain and staff selections share one provisional pool-to-team workspace. */
+.draft-pick-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 2rem;
+  margin-block: 1.5rem;
+  align-items: start;
+}
+.draft-room-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.draft-room-heading h2,
+.draft-own-team h3 {
+  margin: 0;
+}
+.draft-player-pool,
+.draft-own-team {
+  min-width: 0;
+}
+.draft-player-pool .field {
+  margin: 0 0 0.75rem;
+}
+.draft-player-list,
+.draft-team-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.draft-player-list {
+  max-height: 32rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem;
+}
+.draft-player-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  text-align: left;
+}
+.draft-player-identity > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.draft-player-identity small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+}
+.draft-player-identity .avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+}
+.draft-player-identity .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.draft-player-list button {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: #131626;
+  box-shadow: none;
+  justify-content: flex-start;
+  color: var(--color-foreground);
+  font-size: 0.9rem;
+}
+.draft-player-list button[aria-pressed="true"] {
+  border-color: #cc89ec;
+  background: #a45bd524;
+}
+.draft-player-list button:disabled {
+  opacity: 1;
+  color: var(--color-muted);
+}
+.draft-player-list li[draggable="true"] {
+  cursor: grab;
+}
+.draft-player-list li[draggable="true"] button {
+  cursor: grab;
+}
+.draft-player-list button:hover {
+  transform: none;
+}
+.draft-own-team {
+  border: 1px dashed #676078;
+  border-radius: 0.65rem;
+  padding: 1.25rem;
+  background: #14162580;
+}
+.draft-own-team.is-dragging {
+  border-color: #d591f4;
+  background: #a45bd522;
+}
+.draft-team-list {
+  margin-block: 1rem;
+}
+.draft-team-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.draft-team-list li > .draft-player-identity {
+  flex: 1 1 12rem;
+}
+.draft-pending-pick {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+.draft-pending-pick .draft-player-identity {
+  margin-bottom: 0.75rem;
+}
+.draft-pending-pick .actions {
+  margin: 0;
+  gap: 0.5rem;
+}
+.draft-pending-pick button {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.8rem;
+}
+.draft-pick-status {
+  margin: 0.75rem 0 0;
+  color: #e7b5ff;
+}
+.draft-pick-status:empty {
+  display: none;
+}
+.draft-room-turn {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: none;
+}
+@media (max-width: 760px) {
+  .draft-pick-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  .draft-player-list {
+    max-height: 22rem;
+  }
+}
+.draft-room-connection {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+.draft-room-connection p {
+  margin: 0;
+}
