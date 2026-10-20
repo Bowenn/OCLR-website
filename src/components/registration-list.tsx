@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Avatar } from "@/components/avatar";
 import { authorizedPage } from "@/lib/auth/page";
 import type { User } from "@/lib/auth/sessions";
 import { permits, staffAccess } from "@/lib/auth/staff";
@@ -34,7 +35,9 @@ export async function RegistrationList({
       permits(access, "manage_registrations", e.slug),
     );
     return (
-      <>
+      <section
+        className={`registration-review${editionSlug ? " edition-registration-review" : ""}`}
+      >
         <PageHeading eyebrow="REGISTRATION REVIEW" title="Registrations">
           Review individual applications. Acceptance does not appoint a captain
           or assign a team.
@@ -45,7 +48,7 @@ export async function RegistrationList({
           </p>
           {total > 0 && (
             <a
-              className="button secondary"
+              className="button secondary button-compact"
               href={`/api/admin/registrations/export?${query}`}
             >
               Export CSV ↓
@@ -106,7 +109,7 @@ export async function RegistrationList({
                   {[
                     "Player",
                     "osu! ID",
-                    "Edition",
+                    ...(!editionSlug ? ["Edition"] : []),
                     "Status",
                     "Submitted",
                     "Review",
@@ -120,12 +123,19 @@ export async function RegistrationList({
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id}>
-                    <td>{r.username}</td>
-                    <td>{r.userId}</td>
                     <td>
-                      {editions.find((e) => e.slug === r.editionSlug)?.name ??
-                        r.editionSlug}
+                      <div className="registration-player">
+                        <Avatar osuId={r.userId} username={r.username} />
+                        <span>{r.username}</span>
+                      </div>
                     </td>
+                    <td>{r.userId}</td>
+                    {!editionSlug && (
+                      <td>
+                        {editions.find((e) => e.slug === r.editionSlug)?.name ??
+                          r.editionSlug}
+                      </td>
+                    )}
                     <td>
                       <span className={`badge status-${r.status}`}>
                         {r.status}
@@ -170,7 +180,7 @@ export async function RegistrationList({
             </Link>
           )}
         </nav>
-      </>
+      </section>
     );
   });
 }

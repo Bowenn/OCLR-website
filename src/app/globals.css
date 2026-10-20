@@ -367,7 +367,7 @@ button:hover {
 }
 .hero {
   position: relative;
-  min-height: 600px;
+  min-height: 0;
   overflow: hidden;
   isolation: isolate;
   background: #11172a;
@@ -394,14 +394,14 @@ button:hover {
     linear-gradient(0deg, #090c17, transparent 26%);
 }
 .hero-content {
-  padding-block: 5rem 3.5rem;
+  padding-block: clamp(2rem, 5vw, 3.5rem);
   animation: rise-in 0.7s ease-out both;
 }
 .hero-kicker {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.1rem;
   color: #ecc2f9;
 }
 .hero-kicker > span {
@@ -412,11 +412,11 @@ button:hover {
   box-shadow: 0 0 14px #e992fa;
 }
 .hero h1 {
-  font-size: clamp(5.5rem, 10vw, 9rem);
+  font-size: clamp(5rem, 8vw, 7rem);
   line-height: 0.92;
   letter-spacing: -0.075em;
   font-weight: 900;
-  margin-bottom: 1.7rem;
+  margin-bottom: 1.25rem;
 }
 .hero h1 > span {
   display: block;
@@ -429,7 +429,7 @@ button:hover {
   color: #d0bed9;
 }
 .hero-tagline {
-  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
   line-height: 1.35;
   letter-spacing: -0.025em;
   font-weight: 600;
@@ -553,7 +553,7 @@ button:hover {
 }
 @media (max-width: 760px) {
   .hero {
-    min-height: 610px;
+    min-height: 0;
   }
   .hero-content {
     padding-top: 1.5rem;
@@ -576,7 +576,7 @@ button:hover {
     background: linear-gradient(0deg, #090c17, transparent 65%);
   }
   .hero h1 {
-    font-size: 6.5rem;
+    font-size: 4.75rem;
   }
   .hero h1 > span {
     font-size: 0.62rem;
@@ -751,21 +751,69 @@ textarea {
   color: #ffb8c6;
 }
 .identity-panel {
-  display: flex;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  padding: 1.5rem;
 }
 .identity-panel h2 {
-  margin-bottom: 0.5rem;
-  font-size: 1.7rem;
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
   overflow-wrap: anywhere;
 }
 .identity-panel p {
   margin-bottom: 0.4rem;
 }
-.identity-panel > .badge {
+.player-statistics {
+  min-width: 0;
   margin-left: auto;
+  border-left: 1px solid var(--color-border);
+  padding-left: 1.5rem;
 }
+.player-statistics > .eyebrow {
+  font-size: 0.6rem;
+}
+.player-statistics dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 0.5rem 0;
+}
+.player-statistics dt {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+}
+.player-statistics dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.player-statistics > .small {
+  font-size: 0.65rem;
+}
+.player-workspace .page-heading {
+  margin-bottom: 1.5rem;
+}
+.player-workspace .page-heading h1 {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+}
+.player-workspace .section-space {
+  margin-top: 2rem;
+}
+.player-workspace .section-title {
+  margin-bottom: 1rem;
+}
+.player-workspace .registration-details .actions {
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.player-workspace .registration-details .actions button {
+  padding: 0.55rem 0.8rem;
+  font-size: 0.75rem;
+}
+
 .avatar {
   width: 88px;
   height: 88px;
@@ -784,11 +832,15 @@ textarea {
 }
 .registration-card {
   display: flex;
-  gap: 1.7rem;
-  align-items: stretch;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  align-items: flex-start;
 }
 .registration-cover {
-  min-width: 145px;
+  width: 100px;
+  min-width: 100px;
+  height: 100px;
+  overflow: hidden;
   border-radius: 0.5rem;
   background:
     linear-gradient(#261b4411, #0d142640),
@@ -798,6 +850,11 @@ textarea {
   font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: -0.06em;
+}
+.registration-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .registration-details {
   flex: 1;
@@ -864,14 +921,33 @@ dialog::backdrop {
 #registrations {
   scroll-margin-top: 110px;
 }
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
+  .identity-panel .avatar {
+    width: 64px;
+    height: 64px;
+  }
   .identity-panel {
-    flex-wrap: wrap;
+    grid-template-columns: 64px minmax(0, 1fr);
     gap: 1rem;
+    padding: 1.25rem;
   }
-  .identity-panel > .badge {
-    margin: 0;
+  .player-statistics {
+    grid-column: 1 / -1;
+    margin: 0.5rem 0 0;
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 0 0;
   }
+  .player-statistics dl {
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .player-statistics dd {
+    font-size: 1.1rem;
+  }
+}
+@media (max-width: 760px) {
   .identity-panel h2 {
     font-size: 1.4rem;
   }
@@ -880,10 +956,46 @@ dialog::backdrop {
     height: 64px;
   }
   .registration-card {
-    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
   }
   .registration-cover {
-    min-height: 130px;
+    width: 64px;
+    min-width: 64px;
+    height: 64px;
+    font-size: 1.2rem;
+  }
+  .registration-details .section-title {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .registration-details h3 {
+    font-size: 1rem;
+  }
+  .player-workspace .sidebar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding-bottom: 1rem;
+  }
+  .player-workspace .sidebar .eyebrow {
+    grid-column: 1 / -1;
+  }
+  .player-workspace .sidebar h2 {
+    display: none;
+  }
+  .player-workspace .sidebar .eyebrow {
+    margin-bottom: 0.5rem;
+  }
+  .player-workspace .sidebar nav {
+    gap: 0.25rem;
+  }
+  .player-workspace .sidebar .spaced {
+    margin-top: 0.5rem;
+  }
+  .player-workspace .sidebar button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
   }
 }
 .filters {
@@ -892,6 +1004,49 @@ dialog::backdrop {
   gap: 1rem;
   align-items: end;
   margin-block: 2rem;
+}
+.registration-review .page-heading {
+  margin-bottom: 1.25rem;
+}
+.registration-review .filters {
+  margin-block: 1rem 1.25rem;
+  gap: 0.75rem;
+}
+.registration-review .section-title {
+  margin-bottom: 0.5rem;
+}
+.registration-review .filters input,
+.registration-review .filters select {
+  padding: 0.6rem 0.75rem;
+  min-height: 44px;
+}
+.edition-registration-review .filters {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+}
+.registration-review td,
+.registration-review th {
+  padding: 0.65rem 0.8rem;
+}
+.registration-review table {
+  min-width: 700px;
+}
+.registration-player {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.registration-player .avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 0.65rem;
+}
+@media (max-width: 760px) {
+  .edition-registration-review .filters {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .edition-registration-review .filters > .field:first-child {
+    grid-column: 1 / -1;
+  }
 }
 .table-scroll {
   position: relative;
@@ -1150,10 +1305,9 @@ body:has(.presenter-view) .site-footer,
 .audit-columns,
 .audit-event-summary {
   display: grid;
-  grid-template-columns: 7.5rem minmax(0, 2fr) minmax(0, 1.25fr) minmax(
-      0,
-      1fr
-    ) 1rem;
+  grid-template-columns:
+    7.5rem minmax(0, 2fr) minmax(0, 1.25fr) minmax(0, 1fr)
+    1rem;
   gap: 1rem;
   padding: 0.75rem;
 }
@@ -1286,7 +1440,7 @@ body:has(.presenter-view) .site-footer,
   display: flex;
   gap: 0.7rem;
   flex-wrap: wrap;
-  margin-block: 2rem 1rem;
+  margin-block: 1.25rem 0.75rem;
 }
 .bracket-scroll {
   overflow: auto;
@@ -1294,34 +1448,34 @@ body:has(.presenter-view) .site-footer,
   border: 1px solid #292d43;
   border-radius: 0.6rem;
   background: #0d1120;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 .bracket-frame {
   display: flex;
-  gap: 3.5rem;
+  gap: 2.5rem;
   width: max-content;
-  min-height: 360px;
+  min-height: 220px;
   position: relative;
   padding-bottom: 1rem;
 }
 .bracket-round {
   display: flex;
   flex-direction: column;
-  width: 240px;
+  width: 224px;
   position: relative;
   z-index: 1;
 }
 .bracket-round > h2 {
   font-size: 0.8rem;
   color: #c9bfdb;
-  padding-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
   text-align: center;
 }
 .round-matches {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  gap: 2rem;
+  gap: 1.25rem;
   flex: 1;
 }
 .match-card {
@@ -1336,7 +1490,7 @@ body:has(.presenter-view) .site-footer,
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.65rem 0.8rem;
+  padding: 0.5rem 0.65rem;
   border-bottom: 1px solid #2c3045;
 }
 .match-meta h3 {
@@ -1353,7 +1507,7 @@ body:has(.presenter-view) .site-footer,
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  padding: 0.8rem;
+  padding: 0.6rem 0.65rem;
   font-size: 0.8rem;
 }
 .match-slot + .match-slot {
@@ -1364,7 +1518,14 @@ body:has(.presenter-view) .site-footer,
   overflow-wrap: anywhere;
 }
 .match-slot strong {
+  flex-shrink: 0;
+  min-width: 1.5rem;
+  text-align: center;
+  font-size: 1rem;
   color: #b7bfd6;
+}
+.match-loser {
+  color: #b7bbd1;
 }
 .match-winner {
   background: #75409926;
@@ -1389,14 +1550,14 @@ body:has(.presenter-view) .site-footer,
 }
 .bracket-connectors path {
   stroke: #b16bd3;
-  stroke-width: 1.5;
+  stroke-width: 2;
   fill: none;
-  opacity: 0.7;
+  opacity: 0.9;
 }
 .match-alternative {
   border: 1px solid #363348;
   border-radius: 0.5rem;
-  padding: 1.2rem;
+  padding: 0.8rem 1rem;
 }
 .match-alternative summary {
   cursor: pointer;
@@ -2743,7 +2904,7 @@ body:has(.presenter-view) .site-footer,
   min-height: 0;
 }
 .home-hero .hero-content {
-  padding-block: clamp(2rem, 6vw, 4.5rem);
+  padding-block: clamp(1.5rem, 5vw, 3.5rem);
 }
 .home-hero .actions {
   margin-top: 1.25rem;

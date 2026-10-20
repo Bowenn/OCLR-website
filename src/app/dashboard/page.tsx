@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import { getOsuUserProfile } from "@/lib/osu-profiles";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/user";
 import { playerApplications, statusCopy } from "@/lib/dashboard";
@@ -17,17 +19,29 @@ export default async function Dashboard({
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
-  const applications = await playerApplications(user.osuId);
+  const [applications, snapshot] = await Promise.all([
+    playerApplications(user.osuId),
+    getOsuUserProfile(user.osuId, "osu").catch(() => null),
+  ]);
+  const profile = snapshot?.profile;
+  const country = profile?.countryCode;
+  const flag = country
+    ? String.fromCodePoint(
+        ...[...country].map((letter) => letter.charCodeAt(0) + 127397),
+      )
+    : null;
+  const stats = profile?.statistics;
+  const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
   const params = await searchParams;
   return (
-    <div className="container page workspace">
+    <div className="container page workspace player-workspace">
       <aside className="sidebar">
         <p className="eyebrow">PLAYER CENTER</p>
         <h2>Your OCLR</h2>
         <nav aria-label="Player navigation">
-          <Link href="/dashboard">Dashboard</Link>
-          <a href="#identity">My identity</a>
-          <a href="#registrations">My registrations</a>
+          <Link href="/dashboard" aria-current="page">
+            Dashboard
+          </Link>
           <Link href="/tournaments">Tournaments</Link>
         </nav>
         <form className="spaced" action="/auth/logout" method="post">
@@ -48,8 +62,12 @@ export default async function Dashboard({
           id="identity"
           aria-label="osu! identity"
         >
-          <Avatar osuId={user.osuId} username={user.username} />
-          <div>
+          <Avatar
+            osuId={user.osuId}
+            username={user.username}
+            avatarUrl={profile?.avatarUrl ?? undefined}
+          />
+          <div className="player-identity">
             <p className="eyebrow">OSU! IDENTITY</p>
             <h2>
               <a
@@ -66,9 +84,53 @@ export default async function Dashboard({
                 </span>
               </a>
             </h2>
-            <p className="muted">osu! ID: {user.osuId}</p>
+            <p className="muted small">osu! ID: {user.osuId}</p>
+            {country && (
+              <p className="small">
+                <span
+                  role="img"
+                  aria-label={`${profile?.countryName ?? country} flag`}
+                >
+                  {flag}
+                </span>{" "}
+                {profile?.countryName ?? country}
+              </p>
+            )}
           </div>
-          <span className="badge">Connected with osu!</span>
+          <div className="player-statistics">
+            <p className="eyebrow">
+              OSU! · {snapshot?.stale ? "SAVED SNAPSHOT" : "PROFILE"}
+            </p>
+            <dl>
+              <div>
+                <dt>Global rank</dt>
+                <dd>
+                  {stats?.globalRank != null
+                    ? `#${number.format(stats.globalRank)}`
+                    : "Unavailable"}
+                </dd>
+              </div>
+              <div>
+                <dt>PP</dt>
+                <dd>
+                  {stats?.pp != null ? number.format(stats.pp) : "Unavailable"}
+                </dd>
+              </div>
+              <div>
+                <dt>Accuracy</dt>
+                <dd>
+                  {stats?.accuracy != null
+                    ? `${number.format(stats.accuracy)}%`
+                    : "Unavailable"}
+                </dd>
+              </div>
+            </dl>
+            <p className="muted small">
+              {profile
+                ? `Updated ${formatDate(profile.fetchedAt, "UTC")}${snapshot?.stale ? " · Refresh temporarily unavailable" : ""}`
+                : "osu! statistics are temporarily unavailable."}
+            </p>
+          </div>
         </section>
         <section className="section-space" id="registrations">
           <div className="section-title">
@@ -89,7 +151,17 @@ export default async function Dashboard({
                 }) => (
                   <article className="panel registration-card" key={r.id}>
                     <div className="registration-cover" aria-hidden="true">
-                      OCLR
+                      {edition?.branding?.logo ? (
+                        <Image
+                          src={edition.branding.logo}
+                          alt=""
+                          width={120}
+                          height={120}
+                          unoptimized
+                        />
+                      ) : (
+                        <span>OCLR</span>
+                      )}
                     </div>
                     <div className="registration-details">
                       <div className="section-title">
@@ -108,55 +180,52 @@ export default async function Dashboard({
                           Staff explanation: {r.statusReason}
                         </p>
                       )}
-                      <p className="muted small">
-                        {r.rulesVersion
-                          ? `Acknowledged rules: ${r.rulesVersion}.`
-                          : "No rules were configured when you applied."}{" "}
-                        Existing acknowledgments remain associated with their
-                        saved version.
-                      </p>
-                      {acknowledgedConfiguration && (
-                        <details className="spaced">
-                          <summary>
-                            My acknowledged rules and application
-                          </summary>
-                          {acknowledgedConfiguration.rules?.sections.map(
-                            (s, i) => (
-                              <section key={i}>
-                                <h4>{s.heading}</h4>
-                                <p className="preserve-lines small">{s.body}</p>
-                              </section>
-                            ),
-                          )}
-                          <p className="preserve-lines small">
-                            {acknowledgedConfiguration.eligibility}
-                          </p>
-                          <dl className="detail-list">
-                            {Object.entries(r.answers).map(([key, value]) => (
-                              <div key={key}>
-                                <dt>
-                                  {acknowledgedConfiguration.registration?.questions.find(
-                                    (q) => q.id === key,
-                                  )?.label ?? key}
-                                </dt>
-                                <dd className="preserve-lines">
-                                  {value || "No answer"}
-                                </dd>
-                              </div>
-                            ))}
-                          </dl>
-                        </details>
-                      )}
+                      <details className="spaced">
+                        <summary>My acknowledged rules and application</summary>
+                        <p className="muted small">
+                          {r.rulesVersion
+                            ? `Acknowledged rules: ${r.rulesVersion}.`
+                            : "No rules were configured when you applied."}{" "}
+                          Saved acknowledgments are preserved.
+                        </p>
+                        {acknowledgedConfiguration?.rules?.sections.map(
+                          (s, i) => (
+                            <section key={i}>
+                              <h4>{s.heading}</h4>
+                              <p className="preserve-lines small">{s.body}</p>
+                            </section>
+                          ),
+                        )}
+                        <p className="preserve-lines small">
+                          {acknowledgedConfiguration?.eligibility}
+                        </p>
+                        <dl className="detail-list">
+                          {Object.entries(r.answers).map(([key, value]) => (
+                            <div key={key}>
+                              <dt>
+                                {acknowledgedConfiguration?.registration?.questions.find(
+                                  (q) => q.id === key,
+                                )?.label ?? key}
+                              </dt>
+                              <dd className="preserve-lines">
+                                {value || "No answer"}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </details>
                       <div className="actions">
                         {edition && captainAssigned && (
                           <>
                             <Action
+                              compact
                               href={`/tournaments/${edition.slug}/team`}
                               secondary
                             >
                               My captain team
                             </Action>
                             <Action
+                              compact
                               href={`/tournaments/${edition.slug}/draft/captain`}
                             >
                               Captain draft room
@@ -165,6 +234,7 @@ export default async function Dashboard({
                         )}
                         {edition && (
                           <Action
+                            compact
                             href={`/tournaments/${edition.slug}`}
                             secondary
                           >

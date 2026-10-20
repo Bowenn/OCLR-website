@@ -128,7 +128,7 @@ export function BracketView({
                           <div
                             key={index}
                             data-bracket-slot
-                            className={`match-slot ${match.winnerSlot === index ? "match-winner" : ""}`}
+                            className={`match-slot ${match.winnerSlot === index ? "match-winner" : match.status === "completed" && match.winnerSlot !== null ? "match-loser" : ""}`}
                           >
                             <span>
                               {slot.teamId ? (

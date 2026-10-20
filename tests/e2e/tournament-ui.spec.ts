@@ -290,6 +290,9 @@ test.describe("registration readiness and confirmation layout", () => {
         .getByRole("button", { name: "Submit individual application" })
         .click();
       await expect(applicant).toHaveURL(/dashboard\?submitted=1$/);
+      await applicant
+        .getByText("My acknowledged rules and application", { exact: true })
+        .click();
       await expect(
         applicant.getByText("No rules were configured when you applied.", {
           exact: false,
@@ -305,6 +308,9 @@ test.describe("registration readiness and confirmation layout", () => {
         eligibility: "Synthetic later eligibility.",
       });
       await applicant.reload();
+      await applicant
+        .getByText("My acknowledged rules and application", { exact: true })
+        .click();
       await expect(
         applicant.getByText("No rules were configured when you applied.", {
           exact: false,
