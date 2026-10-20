@@ -14,7 +14,12 @@ import { captainSetup, updateCaptains } from "../../src/lib/captains";
 import { updateTeams } from "../../src/lib/teams";
 import { draftCommand, staffDraft } from "../../src/lib/draft";
 // Fixture provisioner for isolated databases only; never imported by application code.
-export async function prepareDraft(slug: string, base: number, turns = 2) {
+export async function prepareDraft(
+  slug: string,
+  base: number,
+  turns = 2,
+  start = true,
+) {
   assertTestDatabase(process.env.TEST_DATABASE_URL);
   const staff = { osuId: base, username: `Synthetic Operator ${base}` };
   const a = { osuId: base + 1, username: `Synthetic Captain A ${base}` };
@@ -108,12 +113,17 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
     (_, i) => ordered[i % ordered.length].teamId!,
   );
   await draftCommand(staff, slug, {
-    command: { action: "configure", turnSequence: sequence },
+    command: {
+      action: "configure",
+      turnSequence: sequence,
+      expectedSetupVersion: (await staffDraft(staff, slug)).edition!
+        .setupVersion,
+    },
     expectedVersion: 0,
 
     confirmed: true,
   });
-  for (const action of ["ready", "start", "publish"]) {
+  for (const action of start ? ["ready", "start", "publish"] : []) {
     const session = (await staffDraft(staff, slug)).session!;
     await draftCommand(staff, slug, {
       command: { action },

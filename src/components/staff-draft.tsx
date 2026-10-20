@@ -5,15 +5,12 @@ import type { DraftBoard, DraftTeam } from "@/lib/draft-types";
 import { usePoll } from "./use-poll";
 import { DraftPick } from "./draft-pick";
 import { ConfirmMutation } from "./confirm-mutation";
+import { DraftOrderEditor } from "./draft-order-editor";
 import { DraftBoardView } from "./draft-board";
 function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
-  const [sequence, setSequence] = useState<string[]>(
-    data.session?.turnSequence ?? [],
-  );
   const state = data.session?.state ?? "setup";
   const version = data.session?.version ?? 0;
   const allowed = [
-    ...(state === "setup" && data.session ? ["ready"] : []),
     ...(state === "ready" ? ["start"] : []),
     ...(state === "live" ? ["pause"] : []),
     ...(state === "paused"
@@ -49,69 +46,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
     <section className="panel form-stack">
       <h2>Staff controls</h2>
 
-      {state === "setup" && (
-        <>
-          <h3>Explicit full turn sequence</h3>
-          <p className="muted small">
-            Append the reviewed captain order as many times as approved, or
-            select each turn individually. No rounds, snake order, pick clocks
-            or roster sizes are assumed.
-          </p>
-          <ol className="turn-editor">
-            {sequence.map((teamId, i) => (
-              <li key={i}>
-                <label className="field">
-                  <span>Turn {i + 1}</span>
-                  <select
-                    value={teamId}
-                    onChange={(e) =>
-                      setSequence(
-                        sequence.map((id, n) =>
-                          n === i ? e.target.value : id,
-                        ),
-                      )
-                    }
-                  >
-                    {data.teams.map((t) => (
-                      <option key={t.team.id} value={t.team.id}>
-                        {t.team.name} — {t.captainName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  className="secondary"
-                  aria-label={`Remove turn ${i + 1}`}
-                  onClick={() =>
-                    setSequence(sequence.filter((_, n) => n !== i))
-                  }
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ol>
-          <button
-            className="secondary"
-            onClick={() =>
-              setSequence([...sequence, ...data.teams.map((t) => t.team.id)])
-            }
-          >
-            Append captain order
-          </button>
-          <ConfirmMutation
-            requireConfirmation={false}
-            label="Save turn sequence"
-            title="Save the full draft turn sequence?"
-            description="This is the complete planned order. Review team capacities and eligible pool before freezing."
-            url={`/api/admin/tournaments/${slug}/draft`}
-            payload={{
-              ...actionPayload("configure"),
-              command: { action: "configure", turnSequence: sequence },
-            }}
-          />
-        </>
-      )}
+      {state === "setup" && <DraftOrderEditor slug={slug} data={data} />}
       <div className="actions">
         {allowed.map((action) => (
           <ConfirmMutation
@@ -209,35 +144,41 @@ export function StaffDraftRoom({
           {feedback.message}
         </p>
       )}
-      {session && session.version !== session.publishedRevision && (
-        <p className="notice">
-          Committed changes await publication. The spectator board still shows
-          the last approved snapshot.
-        </p>
-      )}
-      <h2 className="section-space">Staff preview</h2>
-      <p className="muted small">
-        Private operational state. This preview is not the public broadcast.
-      </p>
-      {preview && <DraftBoardView board={preview} privatePreview />}
-      {currentTeam && session && (
-        <DraftPick
-          key={`pick:${session.id}:${session.version}`}
-          slug={slug}
-          sessionId={session.id}
-          revision={session.version}
-          turnIndex={session.turnIndex}
-          team={currentTeam}
-          pool={data.availablePool}
-          staff
-          enabled={canPick}
-          onFeedback={(message) =>
-            setFeedback({ message, version: session.publicVersion })
-          }
-        />
+      {session &&
+        session.state !== "setup" &&
+        session.version !== session.publishedRevision && (
+          <p className="notice">
+            Committed changes await publication. The spectator board still shows
+            the last approved snapshot.
+          </p>
+        )}
+      {session && session.state !== "setup" && (
+        <>
+          <h2 className="section-space">Staff preview</h2>
+          <p className="muted small">
+            Private operational state. This preview is not the public broadcast.
+          </p>
+          {preview && <DraftBoardView board={preview} privatePreview />}
+          {currentTeam && session && (
+            <DraftPick
+              key={`pick:${session.id}:${session.version}`}
+              slug={slug}
+              sessionId={session.id}
+              revision={session.version}
+              turnIndex={session.turnIndex}
+              team={currentTeam}
+              pool={data.availablePool}
+              staff
+              enabled={canPick}
+              onFeedback={(message) =>
+                setFeedback({ message, version: session.publicVersion })
+              }
+            />
+          )}
+        </>
       )}
       <Controls
-        key={`controls:${session?.id ?? "new"}:${session?.version ?? 0}`}
+        key={`controls:${session?.id ?? "new"}:${session?.version ?? 0}:${data.edition?.setupVersion}`}
         slug={slug}
         data={data}
       />

@@ -23,6 +23,7 @@ import type {
   DraftIdentity,
   DraftTeam,
 } from "./draft-types";
+import { turnSequenceProblem } from "./draft-order";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 async function draftData(tx: Reader, slug: string) {
   const [session] = await tx
@@ -134,13 +135,49 @@ function board(data: Data): DraftBoard {
     pool: data.edition?.poolPublished ? availablePool(data) : null,
   };
 }
+async function acceptedPlayers(tx: Reader, slug: string) {
+  return tx
+    .select()
+    .from(registrations)
+    .where(
+      and(
+        eq(registrations.editionSlug, slug),
+        eq(registrations.status, "accepted"),
+        isNull(registrations.draftUnavailableReason),
+      ),
+    );
+}
+function unassignedPlayers(
+  accepted: Awaited<ReturnType<typeof acceptedPlayers>>,
+  data: Data,
+) {
+  return accepted.filter(
+    (p) =>
+      !data.teams.some((t) => t.team.captainId === p.userId) &&
+      !data.members.some((m) => m.membership.userId === p.userId),
+  );
+}
+function sequenceTeams(data: Data) {
+  return data.teams.map(({ team }) => ({
+    id: team.id,
+    capacity: team.capacity,
+    members: data.members.filter((m) => m.membership.teamId === team.id).length,
+  }));
+}
 export async function staffDraft(actor: User, slug: string) {
   await assertCapability(actor, "manage_draft", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
       const data = await draftData(tx, slug);
-      return { ...data, availablePool: availablePool(data) };
+      return {
+        ...data,
+        availablePool: availablePool(data),
+        setupPoolSize:
+          !data.session || data.session.state === "setup"
+            ? unassignedPlayers(await acceptedPlayers(tx, slug), data).length
+            : null,
+      };
     },
     { isolationLevel: "repeatable read" },
   );
@@ -219,6 +256,7 @@ const commandSchema = z
       z
         .object({
           action: z.literal("configure"),
+          expectedSetupVersion: z.number().int().nonnegative(),
           turnSequence: z.array(z.uuid()).max(4096),
         })
         .strict(),
@@ -326,31 +364,24 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
           409,
           "Lock reviewed captain/team setup before configuring the draft.",
         );
-      const data = await draftData(tx, slug);
-      if (
-        command.turnSequence.some(
-          (id) => !data.teams.some((t) => t.team.id === id),
-        )
-      )
+      if (command.expectedSetupVersion !== edition.setupVersion)
         throw new HttpError(
-          400,
-          "Every turn must reference a current edition team.",
+          409,
+          "Captain/team setup changed. Refresh before saving the order.",
         );
+      const data = await draftData(tx, slug);
+      const problem = turnSequenceProblem(
+        command.turnSequence,
+        sequenceTeams(data),
+        unassignedPlayers(await acceptedPlayers(tx, slug), data).length,
+      );
+      if (problem) throw new HttpError(409, problem);
       update.turnSequence = command.turnSequence;
     } else if (command.action === "ready") {
       if (session.state !== "setup" || !edition.lockedAt)
         throw new HttpError(409, "Draft setup is not ready to freeze.");
       const data = await draftData(tx, slug);
-      const accepted = await tx
-        .select()
-        .from(registrations)
-        .where(
-          and(
-            eq(registrations.editionSlug, slug),
-            eq(registrations.status, "accepted"),
-            isNull(registrations.draftUnavailableReason),
-          ),
-        );
+      const accepted = await acceptedPlayers(tx, slug);
       const appointed = await tx
         .select()
         .from(captains)
@@ -381,21 +412,12 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
             !data.members.some((m) => m.membership.userId === p.userId),
         )
         .map((p) => p.userId);
-      if (session.turnSequence.length > pool.length)
-        throw new HttpError(
-          409,
-          "The configured turns exceed the eligible pool.",
-        );
-      for (const { team } of data.teams)
-        if (
-          team.capacity !== null &&
-          1 + session.turnSequence.filter((id) => id === team.id).length >
-            team.capacity
-        )
-          throw new HttpError(
-            409,
-            "The turn sequence exceeds an approved team capacity.",
-          );
+      const problem = turnSequenceProblem(
+        session.turnSequence,
+        sequenceTeams(data),
+        pool.length,
+      );
+      if (problem) throw new HttpError(409, problem);
       update.state = "ready";
       update.pool = pool;
     } else if (command.action === "start") {

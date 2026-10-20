@@ -15,10 +15,11 @@ import {
   vi,
 } from "vitest";
 import { randomUUID } from "node:crypto";
-import { isNull, sql } from "drizzle-orm";
+import { eq, isNull, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import {
   draftPicks,
+  editionEvents,
   draftSessions,
   memberships,
   teams,
@@ -30,6 +31,7 @@ import {
   publicDraft,
   staffDraft,
 } from "../../src/lib/draft";
+import { generateTurnSequence } from "../../src/lib/draft-order";
 import { prepareDraft } from "../fixtures/draft";
 import { edition } from "../fixtures/edition";
 const url = process.env.TEST_DATABASE_URL;
@@ -71,6 +73,123 @@ describe.skipIf(!url)(
         confirmed: true,
       });
     }
+    async function reopenSetup() {
+      await command("pause");
+      await command("abort");
+      await command("recover");
+      const state = await staffDraft(fixture.staff, edition.slug);
+      await updateCaptains(fixture.staff, edition.slug, {
+        command: { action: "lock" },
+        expectedVersion: state.edition!.setupVersion,
+        confirmed: true,
+      });
+      return staffDraft(fixture.staff, edition.slug);
+    }
+    it.each(["snake", "forward", "custom"] as const)(
+      "rehearses a complete %s sequence using the same authoritative turns",
+      async (strategy) => {
+        const state = await reopenSetup();
+        const ids = state.teams.map((t) => t.team.id);
+        const sequence =
+          strategy === "custom"
+            ? [ids[1], ids[0], ids[0], ids[1], ids[0], ids[1]]
+            : generateTurnSequence(ids, 3, strategy);
+        await draftCommand(fixture.staff, edition.slug, {
+          expectedVersion: state.session!.version,
+          confirmed: true,
+          command: {
+            action: "configure",
+            expectedSetupVersion: state.edition!.setupVersion,
+            turnSequence: sequence,
+          },
+        });
+        await command("ready");
+        await command("start");
+        await command("publish");
+        for (let i = 0; i < sequence.length; i++) {
+          const active = state.teams.find((t) => t.team.id === sequence[i])!;
+          const actor =
+            i % 2
+              ? fixture.staff
+              : { osuId: active.team.captainId, username: active.captainName };
+          const result = await pickPlayer(
+            actor,
+            edition.slug,
+            await input(fixture.players[i].osuId),
+          );
+          expect(result.teamId).toBe(sequence[i]);
+          await command("publish");
+        }
+        const final = await staffDraft(fixture.staff, edition.slug);
+        expect(final.session?.state).toBe("completed");
+        expect(
+          final.picks.filter((p) => !p.voidedAt).map((p) => p.teamId),
+        ).toEqual(sequence);
+        expect(
+          (await publicDraft(edition.slug))?.picks.map((p) => p.team.id),
+        ).toEqual(sequence);
+        await expect(
+          draftCommand(fixture.staff, edition.slug, {
+            expectedVersion: final.session!.version,
+            confirmed: true,
+            command: {
+              action: "configure",
+              expectedSetupVersion: final.edition!.setupVersion,
+              turnSequence: sequence,
+            },
+          }),
+        ).rejects.toMatchObject({ status: 409 });
+      },
+    );
+    it("rejects stale setup/draft revisions, invalid teams, insufficient players and capacity violations without successful audit events", async () => {
+      const state = await reopenSetup();
+      const sequence = state.teams.map((t) => t.team.id);
+      const request = {
+        expectedVersion: state.session!.version,
+        confirmed: true,
+        command: {
+          action: "configure",
+          expectedSetupVersion: state.edition!.setupVersion,
+          turnSequence: sequence,
+        },
+      };
+      const count = (await db().select().from(editionEvents)).length;
+      for (const value of [
+        { ...request, expectedVersion: request.expectedVersion - 1 },
+        {
+          ...request,
+          command: {
+            ...request.command,
+            expectedSetupVersion: request.command.expectedSetupVersion - 1,
+          },
+        },
+        {
+          ...request,
+          command: { ...request.command, turnSequence: [randomUUID()] },
+        },
+        {
+          ...request,
+          command: {
+            ...request.command,
+            turnSequence: Array(9).fill(sequence[0]),
+          },
+        },
+      ])
+        await expect(
+          draftCommand(fixture.staff, edition.slug, value),
+        ).rejects.toMatchObject({ status: 409 });
+      await db()
+        .update(teams)
+        .set({ capacity: 1 })
+        .where(eq(teams.id, sequence[0]));
+      await expect(
+        draftCommand(fixture.staff, edition.slug, request),
+      ).rejects.toMatchObject({ status: 409 });
+      expect((await db().select().from(editionEvents)).length).toBe(count);
+      expect(
+        (await staffDraft(fixture.staff, edition.slug)).session?.version,
+      ).toBe(request.expectedVersion);
+    });
     it("allows only the active captain and records staff-on-behalf as the on-clock captain’s pick", async () => {
       const value = await input();
       await expect(

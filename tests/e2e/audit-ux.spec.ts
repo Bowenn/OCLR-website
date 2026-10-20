@@ -244,6 +244,9 @@ test.describe("automatic staff auditing", () => {
       .click();
     await expect(page).toHaveURL(/\/test-cup\/draft$/);
     await expect(page.getByRole("textbox", { name: /reason/i })).toHaveCount(0);
+    await page
+      .getByRole("combobox", { name: "Order mode", exact: true })
+      .selectOption("custom");
     await page.getByRole("button", { name: "Append captain order" }).click();
     await page.getByRole("button", { name: "Remove turn 2" }).click();
     await page.getByRole("button", { name: "Save turn sequence" }).click();
