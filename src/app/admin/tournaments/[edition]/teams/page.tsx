@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
 import { captainSetup } from "@/lib/captains";
@@ -17,10 +18,50 @@ export default async function Teams({
     const data = await staffTeams(actor, edition);
     return (
       <>
-        <PageHeading eyebrow={edition} title="Team management">
-          Staff-configured captain teams. Membership comes from the
-          authoritative draft.
+        <PageHeading eyebrow="PARTICIPANTS" title="Team management">
+          Configure captain teams, review rosters and manage public visibility.
         </PageHeading>
+        {data.locked && (
+          <p className="notice small" role="status">
+            Team configuration is locked for the draft. Names and roster
+            capacities cannot be edited here.{" "}
+            <Link
+              className="text-link"
+              href={`/admin/tournaments/${edition}/draft`}
+            >
+              Open live draft →
+            </Link>
+          </p>
+        )}
+        {!data.locked && !data.teams.length && !setup.captains.length && (
+          <section
+            className="panel form-stack"
+            aria-labelledby="team-setup-heading"
+          >
+            <h2 id="team-setup-heading">No teams yet</h2>
+            <p className="muted small">
+              Appoint captains from accepted registrations, then configure their
+              team names and optional roster capacities here. Players join the
+              teams through the live draft.
+            </p>
+            <div className="actions">
+              <Link
+                className="button"
+                href={`/admin/tournaments/${edition}/captains`}
+              >
+                Appoint captains →
+              </Link>
+              {!setup.candidates.length && (
+                <Link
+                  className="button secondary"
+                  href={`/admin/tournaments/${edition}/registrations`}
+                >
+                  Review registrations
+                </Link>
+              )}
+            </div>
+          </section>
+        )}
         <div className="stack">
           {data.teams.map((t) => (
             <article className="panel" key={t.id}>

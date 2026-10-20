@@ -58,6 +58,8 @@ Staff enter `/admin` for a role-aware overview, then select a tournament at `/ad
 
 ## Captains and eligible pool
 
+The captain workspace shows eligible players and appointed captains as avatar/country cards. Drag an eligible player into the captain area or use its Appoint button. Reorder captains with the grip (mouse/touch) or labeled move buttons, then Save captain order. Publication, replacement, revocation, availability and locking remain under advanced controls. Country details use existing cached official profiles; only visible missing identities are lazily requested through the existing protected profile endpoint, serially, with unavailable data labeled honestly. Team setup links guide organizers from accepted applications to captains and team configuration instead of leaving an empty page.
+
 Staff use `/admin/tournaments/[edition]/captains` to appoint/revoke/replace accepted, available individual players, save a complete captain order, mark a noncaptain unavailable with a reason, and lock reviewed setup. There are no assumed captain counts, roster sizes, clocks or snake rounds. Commands validate the current setup revision; routine saves do not require a written reason or extra dialog, while publication and consequential changes require confirmation; edition locks and database uniqueness protect concurrent actions. Captains cannot withdraw themselves or gain staff powers. Captain/pool identities remain private until an explicit staff publication approval. Locked setup rejects normal changes; supervised recovery must be handled through the draft controls rather than silent edits.
 
 ## Teams

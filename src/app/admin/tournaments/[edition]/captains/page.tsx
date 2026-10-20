@@ -1,8 +1,12 @@
+import { desc, inArray, sql } from "drizzle-orm";
+import { db } from "@/db";
+import { userProfileCache } from "@/db/schema";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
 import { captainSetup } from "@/lib/captains";
-import { PageHeading, EmptyState } from "@/components/ui";
+import { PageHeading } from "@/components/ui";
 import { CaptainManager } from "@/components/captain-manager";
+import type { CaptainIdentity } from "@/components/captain-player-card";
 export default async function Captains({
   params,
 }: {
@@ -12,50 +16,40 @@ export default async function Captains({
     const actor = await requireStaff();
     const { edition } = await params;
     const setup = await captainSetup(actor, edition);
+    const ids = [
+      ...new Set([...setup.captains, ...setup.pool].map((p) => p.userId)),
+    ];
+    // Private, authorized workspace: one cached identity query, without provider fan-out on page reads.
+    const cached = ids.length
+      ? await db()
+          .select({
+            osuId: userProfileCache.osuId,
+            profile: userProfileCache.profile,
+          })
+          .from(userProfileCache)
+          .where(
+            sql`${inArray(userProfileCache.osuId, ids)} AND ${userProfileCache.errorStatus} IS DISTINCT FROM 404`,
+          )
+          .orderBy(desc(userProfileCache.attemptedAt))
+      : [];
+    const identities: Record<number, CaptainIdentity> = {};
+    for (const row of cached)
+      if (row.profile && !identities[row.osuId])
+        identities[row.osuId] = {
+          avatarUrl: row.profile.avatarUrl,
+          countryCode: row.profile.countryCode,
+          countryName: row.profile.countryName,
+        };
     return (
       <>
-        <PageHeading eyebrow={edition} title="Captains & player pool">
-          Accepted individual applicants, staff appointments and a reviewed
-          captain order.
+        <PageHeading eyebrow="PARTICIPANTS" title="Captains & player pool">
+          Appoint captains and arrange their selection order.
         </PageHeading>
-        <p className="notice">
+        <p className="small muted">
           Setup {setup.locked ? "locked" : "unlocked"} · revision{" "}
-          {setup.version}. Captain counts and roster sizes are set by approved
-          event rules.
+          {setup.version}
         </p>
-        {setup.captains.length ? (
-          <ol className="schedule-list">
-            {setup.captains.map((c, index) => (
-              <li key={c.userId}>
-                <span className="eyebrow">{index + 1}</span>
-                <div>
-                  <h2>{c.username}</h2>
-                  <p className="muted small">
-                    osu! ID {c.userId} · {c.published ? "published" : "private"}{" "}
-                    ·{c.teamName ?? "team not configured"}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <EmptyState title="No captains appointed">
-            Appoint accepted, available individual players.
-          </EmptyState>
-        )}
-        <h2 className="section-space">Eligible remaining pool</h2>
-        <p className="muted">
-          {setup.pool.length} eligible player(s). Captains and unavailable
-          applicants are excluded.
-        </p>
-        <ul>
-          {setup.pool.map((p) => (
-            <li key={p.userId}>
-              {p.username} <span className="muted">({p.userId})</span>
-            </li>
-          ))}
-        </ul>
-        <CaptainManager key={setup.version} slug={edition} setup={setup} />
+        <CaptainManager slug={edition} setup={setup} identities={identities} />
       </>
     );
   });
