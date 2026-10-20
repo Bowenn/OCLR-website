@@ -36,7 +36,7 @@ const player = { osuId: 90004, username: "Synthetic Pool Player" };
 const command = (expectedVersion: number, value: Record<string, unknown>) => ({
   command: value,
   expectedVersion,
-  reason: "Synthetic approved test change.",
+
   confirmed: true,
 });
 describe.skipIf(!url)(

@@ -219,7 +219,6 @@ export async function captainDraft(
 const commandSchema = z
   .object({
     expectedVersion: z.number().int().nonnegative(),
-    reason: z.string().trim().min(1).max(1000),
     confirmed: z.literal(true),
     command: z.discriminatedUnion("action", [
       z
@@ -250,8 +249,8 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
-    throw new HttpError(400, "Confirm a valid draft command and reason.");
-  const { expectedVersion, reason, command } = parsed.data;
+    throw new HttpError(400, "Confirm a valid draft command.");
+  const { expectedVersion, command } = parsed.data;
   await db().transaction(async (tx) => {
     const [edition] = await tx
       .select()
@@ -279,6 +278,10 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       state: session.state,
       version: session.version,
       turnIndex: session.turnIndex,
+      turnSequence: session.turnSequence,
+      pool: session.pool,
+      publishedRevision: session.publishedRevision,
+      publicVersion: session.publicVersion,
     };
     if (command.action === "publish") {
       if (session.state === "setup")
@@ -304,8 +307,16 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         editionSlug: slug,
         actorId: actor.osuId,
         kind: "draft_publish",
-        reason,
         detail: {
+          entity: { type: "draft_session", id: session.id },
+          before: {
+            publicVersion: session.publicVersion,
+            publishedRevision: session.publishedRevision,
+          },
+          after: {
+            publicVersion: snapshot.version,
+            publishedRevision: session.version,
+          },
           revision: session.version,
           publicVersion: snapshot.version,
         },
@@ -443,8 +454,8 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         editionSlug: slug,
         actorId: actor.osuId,
         kind: "draft_pick_voided",
-        reason,
         detail: {
+          entity: { type: "draft_pick", id: last.id },
           before: last,
           after: { voided: true, turnIndex: last.turnIndex },
         },
@@ -481,8 +492,8 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         editionSlug: slug,
         actorId: actor.osuId,
         kind: "draft_abort_picks",
-        reason,
         detail: {
+          entity: { type: "draft_session", id: session.id },
           before: data.picks.filter((p) => !p.voidedAt),
           after: { activePicks: [] },
         },
@@ -551,8 +562,12 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       editionSlug: slug,
       actorId: actor.osuId,
       kind: `draft_${command.action}`,
-      reason,
-      detail: { before, after: { ...before, ...update }, command },
+      detail: {
+        entity: { type: "draft_session", id: session.id },
+        before,
+        after: { ...before, ...update },
+        command,
+      },
     });
   });
   return staffDraft(actor, slug);
@@ -724,8 +739,8 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       editionSlug: slug,
       actorId: actor.osuId,
       kind: "draft_pick",
-      reason: "Confirmed captain-turn player selection.",
       detail: {
+        entity: { type: "draft_pick", id: pick.id },
         pickId: pick.id,
         mode,
         actorRole: staff ? "staff" : "captain",

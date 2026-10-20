@@ -68,7 +68,7 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
   const command = (version: number, value: Record<string, unknown>) => ({
     command: value,
     expectedVersion: version,
-    reason: "Synthetic approved test change.",
+
     confirmed: true,
   });
   it("separates captain/staff/edition roles and excludes captains from the pool", async () => {
@@ -188,6 +188,8 @@ describe.skipIf(!url)("captain setup, publication and eligibility", () => {
       edition.slug,
       command(2, {
         action: "availability",
+        unavailableExplanation:
+          "Synthetic player unavailable by organizer decision.",
         userId: player.osuId,
         available: false,
       }),

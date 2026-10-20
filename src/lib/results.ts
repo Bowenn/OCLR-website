@@ -39,7 +39,6 @@ const common = {
   expectedVersion: z.number().int().nonnegative(),
   expectedFixtureVersion: z.number().int().nonnegative(),
   confirmed: z.literal(true),
-  reason: z.string().trim().min(1).max(1000),
 };
 const sourceDiffSchema = z
   .object({
@@ -75,6 +74,7 @@ const commandSchema = z.discriminatedUnion("action", [
     .object({
       ...common,
       action: z.literal("reject"),
+      decisionNote: z.string().trim().min(1).max(1000),
       revision: z.number().int().positive(),
     })
     .strict(),
@@ -91,6 +91,7 @@ const commandSchema = z.discriminatedUnion("action", [
     .object({
       ...common,
       action: z.literal("void"),
+      decisionNote: z.string().trim().min(1).max(1000),
       progressionAcknowledged: z.literal(true),
     })
     .strict(),
@@ -360,10 +361,7 @@ export async function importFixtureMatch(
   const before = await fixtureForReview(actor, slug, fixtureId);
   const parsed = importSchema.safeParse(input);
   if (!parsed.success)
-    throw new HttpError(
-      400,
-      "Confirm a valid MP link, current version and import reason.",
-    );
+    throw new HttpError(400, "Confirm a valid MP link and current versions.");
   const c = parsed.data;
   const hash = commandHash({ action: "import", ...c });
   if (await replay(db(), actor, fixtureId, c.requestKey, hash))
@@ -461,8 +459,13 @@ export async function importFixtureMatch(
       action: didChange ? "source_imported" : "source_checked",
       requestKey: c.requestKey,
       requestHash: hash,
-      reason: c.reason,
       detail: {
+        entity: { type: "match_import", id: importId },
+        before: {
+          latestImportId: context.result?.latestImportId ?? null,
+          version: context.result?.version ?? 0,
+        },
+        after: { latestImportId: importId, version },
         importId,
         externalMatchId: source.match.id,
         fingerprint: source.fingerprint,
@@ -557,7 +560,6 @@ export async function resultCommand(
           revision,
           importId: record.id,
           proposal,
-          reason: c.reason,
           createdBy: actor.osuId,
         });
         await tx
@@ -706,7 +708,6 @@ export async function resultCommand(
                 poolId: pool.id,
                 actorId: actor.osuId,
                 action: "completed_fixture_lock",
-                reason: "Mappool frozen after fixture approval.",
                 before: { pool },
                 after: { pool: locked, fixtureId, revision: c.revision },
               });
@@ -796,10 +797,15 @@ export async function resultCommand(
         fixtureId,
         actorId: actor.osuId,
         action: `result_${c.action}`,
+        reason: "decisionNote" in c ? c.decisionNote : null,
         requestKey: c.requestKey,
         requestHash: hash,
-        reason: c.reason,
-        detail: { before, after, ...detail },
+        detail: {
+          entity: { type: "fixture_result", id: fixtureId },
+          before,
+          after,
+          ...detail,
+        },
       });
     });
   } catch (error) {

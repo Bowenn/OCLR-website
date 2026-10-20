@@ -68,7 +68,6 @@ const mapper = { osuId: 290003, username: "Synthetic Result Mappooler" };
 const outsider = { osuId: 290004, username: "Synthetic Ordinary Player" };
 const confirm = {
   confirmed: true,
-  reason: "Synthetic controlled result rehearsal",
 };
 describe.skipIf(!url)(
   "authoritative MP import, review, approval and publication",
@@ -556,6 +555,7 @@ describe.skipIf(!url)(
       await resultCommand(admin, "test-cup", child.id, {
         ...base(savedChild),
         action: "void",
+        decisionNote: "Synthetic competition adjudication explanation.",
         progressionAcknowledged: true,
       });
       await fixtureCommand(admin, "test-cup", {
@@ -871,9 +871,17 @@ describe.skipIf(!url)(
       for (const action of [
         { action: "approve", revision: 1 },
         { action: "publish", revision: 1, progressionAcknowledged: true },
-        { action: "reject", revision: 1 },
+        {
+          action: "reject",
+          decisionNote: "Synthetic competition adjudication explanation.",
+          revision: 1,
+        },
         { action: "unpublish" },
-        { action: "void", progressionAcknowledged: true },
+        {
+          action: "void",
+          decisionNote: "Synthetic competition adjudication explanation.",
+          progressionAcknowledged: true,
+        },
       ])
         await expect(
           resultCommand(referee, "test-cup", fixtureId, {
@@ -919,6 +927,7 @@ describe.skipIf(!url)(
         await resultCommand(admin, "test-cup", fixtureId, {
           ...base(view),
           action: "reject",
+          decisionNote: "Synthetic competition adjudication explanation.",
           revision: 1,
         })
       ).review;
@@ -939,6 +948,7 @@ describe.skipIf(!url)(
         await resultCommand(admin, "test-cup", fixtureId, {
           ...base(view),
           action: "void",
+          decisionNote: "Synthetic competition adjudication explanation.",
           progressionAcknowledged: true,
         })
       ).review;

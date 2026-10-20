@@ -16,7 +16,7 @@ export function TeamManager({
   }[];
 }) {
   const [values, setValues] = useState(captains);
-  const [reason, setReason] = useState("");
+
   return (
     <section className="panel form-stack">
       <h2>Configure captain teams</h2>
@@ -68,17 +68,9 @@ export function TeamManager({
           </label>
         </fieldset>
       ))}
-      <label className="field">
-        <span>Reason</span>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          maxLength={1000}
-          rows={2}
-        />
-      </label>
       <ConfirmMutation
-        label="Review team configuration"
+        requireConfirmation={false}
+        label="Save team configuration"
         title="Save these team identities?"
         description="This assigns exactly one team to each appointed captain. Rosters stay private until finalized and explicitly published."
         url={`/api/admin/tournaments/${slug}/teams`}
@@ -92,7 +84,6 @@ export function TeamManager({
             })),
           },
           expectedVersion: version,
-          reason,
           confirmed: true,
         }}
       />

@@ -45,7 +45,6 @@ import {
 import { HttpError } from "./http";
 const confirmation = {
   confirmed: z.literal(true),
-  reason: z.string().trim().min(1).max(1000),
 };
 const fixtureFields = {
   label: z.string().trim().min(1).max(100),
@@ -425,10 +424,7 @@ export async function fixtureCommand(
   configuredEdition(slug);
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
-    throw new HttpError(
-      400,
-      "Confirm valid fixture fields, rules and a reason.",
-    );
+    throw new HttpError(400, "Confirm valid fixture fields and rules.");
   const c = parsed.data;
   try {
     await db().transaction(async (tx) => {
@@ -481,15 +477,16 @@ export async function fixtureCommand(
           })
           .where(eq(tournamentStages.id, stage.id))
           .returning();
-        await tx
-          .insert(editionEvents)
-          .values({
-            editionSlug: slug,
-            actorId: actor.osuId,
-            kind: "competition_groups",
-            reason: c.reason,
-            detail: { before: stage, after },
-          });
+        await tx.insert(editionEvents).values({
+          editionSlug: slug,
+          actorId: actor.osuId,
+          kind: "competition_groups",
+          detail: {
+            entity: { type: "tournament_stage", id: stage.id },
+            before: stage,
+            after,
+          },
+        });
         return;
       }
       if (c.action === "round_rules") {
@@ -559,8 +556,11 @@ export async function fixtureCommand(
           editionSlug: slug,
           actorId: actor.osuId,
           kind: "competition_round_rules",
-          reason: c.reason,
-          detail: { before: round, after: updated },
+          detail: {
+            entity: { type: "tournament_round", id: round.id },
+            before: round,
+            after: updated,
+          },
         });
         return;
       }
@@ -605,8 +605,7 @@ export async function fixtureCommand(
           fixtureId: after.id,
           actorId: actor.osuId,
           action: c.published ? "fixture_publish" : "fixture_unpublish",
-          reason: c.reason,
-          detail: { before, after },
+          detail: { entity: { type: "fixture", id: after.id }, before, after },
         });
         return;
       }
@@ -756,8 +755,8 @@ export async function fixtureCommand(
         fixtureId: after.id,
         actorId: actor.osuId,
         action: before ? "fixture_amend" : "fixture_create",
-        reason: c.reason,
         detail: {
+          entity: { type: "fixture", id: after.id },
           before: before ?? null,
           after,
           priorReferees: oldAssignments.map((r) => r.userId),

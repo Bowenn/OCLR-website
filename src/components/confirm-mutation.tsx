@@ -1,5 +1,6 @@
 "use client";
 import { useId, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 export function ConfirmMutation({
   label,
@@ -9,6 +10,10 @@ export function ConfirmMutation({
   payload,
   onSuccess,
   onError,
+  requireConfirmation = true,
+  canConfirm = true,
+  disabled = false,
+  children,
 }: {
   label: string;
   title: string;
@@ -17,6 +22,10 @@ export function ConfirmMutation({
   payload: Record<string, unknown>;
   onSuccess?: () => void;
   onError?: (message: string) => void;
+  requireConfirmation?: boolean;
+  canConfirm?: boolean;
+  disabled?: boolean;
+  children?: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const id = useId();
@@ -55,44 +64,55 @@ export function ConfirmMutation({
   return (
     <>
       <button
+        type="button"
         className="secondary"
+        disabled={disabled || pending || (!requireConfirmation && !canConfirm)}
         onClick={() => {
           setError("");
-          dialog.current?.showModal();
+          if (requireConfirmation) dialog.current?.showModal();
+          else void confirm();
         }}
       >
-        {label}
+        {pending ? "Saving…" : label}
       </button>
-      <dialog
-        ref={dialog}
-        aria-labelledby={`${id}-title`}
-        aria-describedby={`${id}-description`}
-        onCancel={(event) => {
-          if (pending) event.preventDefault();
-        }}
-      >
-        <h2 id={`${id}-title`}>{title}</h2>
-        <p id={`${id}-description`} className="muted">
-          {description}
+      {!requireConfirmation && error && (
+        <p role="alert" className="notice error-text">
+          {error}
         </p>
-        {error && (
-          <p role="alert" className="notice error-text">
-            {error}
+      )}
+      {requireConfirmation && (
+        <dialog
+          ref={dialog}
+          aria-labelledby={`${id}-title`}
+          aria-describedby={`${id}-description`}
+          onCancel={(event) => {
+            if (pending) event.preventDefault();
+          }}
+        >
+          <h2 id={`${id}-title`}>{title}</h2>
+          <p id={`${id}-description`} className="muted">
+            {description}
           </p>
-        )}
-        <div className="actions">
-          <button disabled={pending} onClick={confirm}>
-            {pending ? "Saving…" : "Confirm"}
-          </button>
-          <button
-            className="secondary"
-            disabled={pending}
-            onClick={() => dialog.current?.close()}
-          >
-            Cancel
-          </button>
-        </div>
-      </dialog>
+          {children}
+          {error && (
+            <p role="alert" className="notice error-text">
+              {error}
+            </p>
+          )}
+          <div className="actions">
+            <button disabled={pending || !canConfirm} onClick={confirm}>
+              {pending ? "Saving…" : "Confirm"}
+            </button>
+            <button
+              className="secondary"
+              disabled={pending}
+              onClick={() => dialog.current?.close()}
+            >
+              Cancel
+            </button>
+          </div>
+        </dialog>
+      )}
     </>
   );
 }

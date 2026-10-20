@@ -32,6 +32,7 @@ const commands = z.discriminatedUnion("action", [
       action: z.literal("availability"),
       userId: id,
       available: z.boolean(),
+      unavailableExplanation: z.string().trim().min(1).max(1000).optional(),
     })
     .strict(),
   z.object({ action: z.literal("lock") }).strict(),
@@ -47,7 +48,6 @@ const commandSchema = z
   .object({
     command: commands,
     expectedVersion: z.number().int().nonnegative(),
-    reason: z.string().trim().min(1).max(1000),
     confirmed: z.literal(true),
   })
   .strict();
@@ -130,11 +130,17 @@ export async function updateCaptains(
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
+    throw new HttpError(400, "Confirm a valid captain setup action.");
+  const { command, expectedVersion } = parsed.data;
+  if (
+    command.action === "availability" &&
+    !command.available &&
+    !command.unavailableExplanation
+  )
     throw new HttpError(
       400,
-      "Confirm a valid captain setup action and reason.",
+      "Explain why this player is unavailable for the draft.",
     );
-  const { command, expectedVersion, reason } = parsed.data;
   await db().transaction(async (tx) => {
     await tx.insert(editionState).values({ slug }).onConflictDoNothing();
     const [state] = await tx
@@ -154,6 +160,8 @@ export async function updateCaptains(
       .from(captains)
       .where(eq(captains.editionSlug, slug))
       .orderBy(captains.position);
+    let rosterChange: Record<string, unknown> | undefined;
+    let availabilityChange: Record<string, unknown> | undefined;
     if (command.action === "revoke" || command.action === "replace") {
       const previousId =
         command.action === "revoke" ? command.userId : command.previousUserId;
@@ -185,7 +193,7 @@ export async function updateCaptains(
             409,
             "Assigned rosters require supervised draft correction.",
           );
-        await tx
+        const changedMembers = await tx
           .update(memberships)
           .set({ leftAt: new Date() })
           .where(
@@ -193,15 +201,21 @@ export async function updateCaptains(
               eq(memberships.teamId, assigned.id),
               isNull(memberships.leftAt),
             ),
-          );
-        await tx
+          )
+          .returning();
+        const [changedTeam] = await tx
           .update(teams)
           .set({
             archivedAt: new Date(),
             identityPublished: false,
             rosterPublished: false,
           })
-          .where(eq(teams.id, assigned.id));
+          .where(eq(teams.id, assigned.id))
+          .returning();
+        rosterChange = {
+          before: { team: assigned, members },
+          after: { team: changedTeam, members: changedMembers },
+        };
       }
     }
     if (command.action === "appoint" || command.action === "replace") {
@@ -283,10 +297,24 @@ export async function updateCaptains(
           409,
           "Revoke the captain appointment before changing availability.",
         );
+      const [prior] = await tx
+        .select({
+          userId: registrations.userId,
+          unavailableExplanation: registrations.draftUnavailableReason,
+        })
+        .from(registrations)
+        .where(
+          and(
+            eq(registrations.editionSlug, slug),
+            eq(registrations.userId, command.userId),
+          ),
+        );
       const rows = await tx
         .update(registrations)
         .set({
-          draftUnavailableReason: command.available ? null : reason,
+          draftUnavailableReason: command.available
+            ? null
+            : command.unavailableExplanation!,
           updatedAt: new Date(),
         })
         .where(
@@ -296,9 +324,13 @@ export async function updateCaptains(
             eq(registrations.status, "accepted"),
           ),
         )
-        .returning();
+        .returning({
+          userId: registrations.userId,
+          unavailableExplanation: registrations.draftUnavailableReason,
+        });
       if (!rows.length)
         throw new HttpError(409, "Accepted application not found.");
+      availabilityChange = { before: prior, after: rows[0] };
     } else if (command.action === "lock") {
       const configured = await tx
         .select()
@@ -328,10 +360,11 @@ export async function updateCaptains(
         .set({ poolPublished: command.poolPublished })
         .where(eq(editionState.slug, slug));
     }
-    await tx
+    const [setupAfter] = await tx
       .update(editionState)
       .set({ setupVersion: state.setupVersion + 1 })
-      .where(eq(editionState.slug, slug));
+      .where(eq(editionState.slug, slug))
+      .returning();
     const after = await tx
       .select()
       .from(captains)
@@ -341,10 +374,14 @@ export async function updateCaptains(
       editionSlug: slug,
       actorId: actor.osuId,
       kind: `captain_${command.action}`,
-      reason,
       detail: {
+        entity: { type: "captain_setup", id: slug },
         before,
         after,
+        setupBefore: state,
+        setupAfter,
+        ...(rosterChange ? { rosterChange } : {}),
+        ...(availabilityChange ? { availabilityChange } : {}),
         command,
         fromVersion: expectedVersion,
         toVersion: expectedVersion + 1,

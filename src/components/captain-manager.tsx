@@ -16,7 +16,8 @@ export function CaptainManager({
   const [order, setOrder] = useState(
     setup.captains.map((c) => c.userId).join(", "),
   );
-  const [reason, setReason] = useState("");
+
+  const [unavailableExplanation, setExplanation] = useState("");
   const [published, setPublished] = useState(false);
   const [poolPublished, setPoolPublished] = useState(false);
   const command =
@@ -33,15 +34,20 @@ export function CaptainManager({
                 previousUserId: Number(previousUserId),
               }
             : action === "availability"
-              ? { action, userId: Number(userId), available: published }
+              ? {
+                  action,
+                  userId: Number(userId),
+                  available: published,
+                  ...(!published ? { unavailableExplanation } : {}),
+                }
               : { action, userId: Number(userId) };
   return (
     <section className="panel form-stack">
       <h2>Captain and pool controls</h2>
       <p className="muted small">
-        Changes require a reason and confirmation. Publication releases only
-        approved osu! identity fields. Locked setup cannot be changed through
-        normal controls.
+        Changes are recorded automatically. Publication releases only approved
+        osu! identity fields. Locked setup cannot be changed through normal
+        controls.
       </p>
       <label className="field">
         <span>Action</span>
@@ -122,24 +128,36 @@ export function CaptainManager({
           </span>
         </label>
       )}
-      <label className="field">
-        <span>Reason / publication approval</span>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          maxLength={1000}
-          rows={2}
-        />
-      </label>
+
+      {action === "availability" && !published && (
+        <label className="field">
+          <span>Draft unavailability explanation</span>
+          <textarea
+            value={unavailableExplanation}
+            onChange={(e) => setExplanation(e.target.value)}
+            maxLength={1000}
+          />
+        </label>
+      )}
       <ConfirmMutation
-        label="Review setup change"
+        requireConfirmation={[
+          "publish",
+          "lock",
+          "replace",
+          "revoke",
+          "availability",
+        ].includes(action)}
+        label={
+          ["appoint", "order"].includes(action)
+            ? "Save captain setup"
+            : "Review setup change"
+        }
         title="Apply this captain setup change?"
         description="Review player IDs and publication approval carefully. This change is audited and can affect draft eligibility."
         url={`/api/admin/tournaments/${slug}/captains`}
         payload={{
           command,
           expectedVersion: setup.version,
-          reason,
           confirmed: true,
         }}
       />

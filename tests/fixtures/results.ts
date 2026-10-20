@@ -45,7 +45,6 @@ export async function seedResultReview(
   const actor = { osuId: adminId, username: "Synthetic Admin" };
   const confirm = {
     confirmed: true,
-    reason: "Synthetic isolated browser rehearsal",
   };
   const maps = await mappoolCommand(actor, "test-cup", {
     ...confirm,

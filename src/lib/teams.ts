@@ -24,7 +24,6 @@ const teamInput = z
 const commandSchema = z
   .object({
     expectedVersion: z.number().int().nonnegative(),
-    reason: z.string().trim().min(1).max(1000),
     confirmed: z.literal(true),
     command: z.discriminatedUnion("action", [
       z
@@ -90,8 +89,8 @@ export async function updateTeams(actor: User, slug: string, input: unknown) {
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
-    throw new HttpError(400, "Confirm valid team configuration and a reason.");
-  const { command, expectedVersion, reason } = parsed.data;
+    throw new HttpError(400, "Confirm valid team configuration.");
+  const { command, expectedVersion } = parsed.data;
   await db().transaction(async (tx) => {
     const [state] = await tx
       .select()
@@ -196,8 +195,8 @@ export async function updateTeams(actor: User, slug: string, input: unknown) {
       editionSlug: slug,
       actorId: actor.osuId,
       kind: `team_${command.action}`,
-      reason,
       detail: {
+        entity: { type: "team_setup", id: slug },
         before,
         after,
         fromVersion: expectedVersion,

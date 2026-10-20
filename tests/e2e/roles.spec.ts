@@ -52,7 +52,6 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
                 role: "admin",
                 editionSlug: "test-cup",
                 confirmed: true,
-                reason: "Synthetic scoped Admin publication check",
               },
             })
           ).status(),
@@ -80,9 +79,6 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       await page
         .getByRole("combobox", { name: /^Scope/ })
         .selectOption("test-cup");
-      await page
-        .getByLabel("Reason for grant")
-        .fill("Synthetic browser role rehearsal");
       await page.getByRole("button", { name: "Review role grant" }).click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
@@ -164,7 +160,6 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
               action: "revoke",
               grantId: grant.id,
               confirmed: true,
-              reason: "No origin",
             },
           })
         ).status(),
@@ -186,9 +181,6 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
         fullPage: true,
         animations: "disabled",
       });
-      await assignment
-        .getByLabel(/Revocation reason/)
-        .fill("Synthetic browser immediate revocation");
       await assignment.getByRole("button", { name: "Revoke role" }).click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(

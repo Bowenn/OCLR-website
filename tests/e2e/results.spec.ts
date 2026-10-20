@@ -46,9 +46,6 @@ test.describe("private referee review and Admin publication", () => {
       ).toBe(405);
 
       await page.goto(route);
-      await page
-        .getByLabel("Internal operation reason")
-        .fill("Synthetic reviewed game evidence; private audit note");
       for (let i = 1; i <= 3; i++) {
         await page
           .getByText(new RegExp(`^Game ${i} · Synthetic Map ${i}`))
@@ -56,9 +53,6 @@ test.describe("private referee review and Admin publication", () => {
         await page
           .getByRole("combobox", { name: new RegExp(`^Game ${i} decision`) })
           .selectOption("true");
-        await page
-          .getByLabel(`Game ${i} review reason`, { exact: true })
-          .fill("Synthetic map confirmed against fixture evidence");
         await page
           .getByLabel(
             `Game ${i}: I verified mods and the approved tournament rules`,
@@ -108,7 +102,7 @@ test.describe("private referee review and Admin publication", () => {
         expectedVersion: review.context.result.version,
         expectedFixtureVersion: review.context.fixture.version,
         confirmed: true,
-        reason: "Synthetic unauthorized approval",
+
         action: "approve",
         revision: 1,
       };
@@ -124,9 +118,6 @@ test.describe("private referee review and Admin publication", () => {
       ).toBe(401);
       await context.addCookies([adminCookie]);
       await page.reload();
-      await page
-        .getByLabel("Internal operation reason")
-        .fill("Synthetic Admin approval after review");
       await page
         .getByRole("button", { name: "Approve proposed result", exact: true })
         .click();

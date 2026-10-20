@@ -171,7 +171,7 @@ export const editionEvents = pgTable(
       { onDelete: "set null" },
     ),
     kind: text("kind").notNull(),
-    reason: text("reason").notNull(),
+    reason: text("reason"),
     detail: jsonb("detail").$type<Record<string, unknown>>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -346,7 +346,9 @@ export const staffRoleEvents = pgTable(
     role: staffRole("role").notNull(),
     editionSlug: text("edition_slug"),
     action: text("action").$type<"grant" | "revoke">().notNull(),
-    reason: text("reason").notNull(),
+    reason: text("reason"),
+    before: jsonb("before").$type<Record<string, unknown>>(),
+    after: jsonb("after").$type<Record<string, unknown>>(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -469,7 +471,7 @@ export const mappoolEvents = pgTable(
     poolId: uuid("pool_id").references(() => mappools.id),
     actorId: bigint("actor_id", { mode: "number" }).notNull(),
     action: text("action").notNull(),
-    reason: text("reason").notNull(),
+    reason: text("reason"),
     before: jsonb("before").$type<Record<string, unknown>>(),
     after: jsonb("after").$type<Record<string, unknown>>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -642,7 +644,7 @@ export const resultRevisions = pgTable(
     revision: integer("revision").notNull(),
     importId: uuid("import_id").notNull(),
     proposal: jsonb("proposal").$type<unknown>().notNull(),
-    reason: text("reason").notNull(),
+    reason: text("reason"),
     createdBy: bigint("created_by", { mode: "number" }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -674,7 +676,7 @@ export const resultAuditEvents = pgTable(
     action: text("action").notNull(),
     requestKey: uuid("request_key"),
     requestHash: text("request_hash"),
-    reason: text("reason").notNull(),
+    reason: text("reason"),
     detail: jsonb("detail").$type<Record<string, unknown>>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

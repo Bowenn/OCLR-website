@@ -55,7 +55,7 @@ export default async function Teams({
                       rosterPublished: false,
                     },
                     expectedVersion: data.version,
-                    reason: "Staff confirmed team identity publication change.",
+
                     confirmed: true,
                   }}
                 />
@@ -77,8 +77,7 @@ export default async function Teams({
                         rosterPublished: !t.rosterPublished,
                       },
                       expectedVersion: data.version,
-                      reason:
-                        "Staff confirmed finalized roster publication change.",
+
                       confirmed: true,
                     }}
                   />

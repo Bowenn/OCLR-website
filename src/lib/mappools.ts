@@ -19,7 +19,6 @@ import { HttpError } from "./http";
 import { categories } from "./mappool-model";
 const confirmation = {
   confirmed: z.literal(true),
-  reason: z.string().trim().min(1).max(500),
 };
 const versioned = {
   poolId: z.uuid(),
@@ -182,10 +181,7 @@ export async function mappoolCommand(
     throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success)
-    throw new HttpError(
-      400,
-      "Confirm a valid mappool change and provide a reason.",
-    );
+    throw new HttpError(400, "Confirm a valid mappool change.");
   const c = parsed.data;
   let metadata: Awaited<ReturnType<typeof fetchBeatmap>> | undefined;
   let beatmapId: number | undefined;
@@ -324,7 +320,7 @@ export async function mappoolCommand(
           editionSlug: slug,
           actorId: actor.osuId,
           action: c.action,
-          reason: c.reason,
+
           before,
           after: round,
         });
@@ -351,7 +347,7 @@ export async function mappoolCommand(
           poolId: pool.id,
           actorId: actor.osuId,
           action: c.action,
-          reason: c.reason,
+
           after: pool,
         });
         return;
@@ -468,7 +464,7 @@ export async function mappoolCommand(
         poolId: pool.id,
         actorId: actor.osuId,
         action: c.action,
-        reason: c.reason,
+
         before,
         after: { pool: afterPool, entries: afterEntries },
       });

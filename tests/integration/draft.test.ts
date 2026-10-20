@@ -72,7 +72,7 @@ describe.skipIf(!url)(
       return draftCommand(fixture.staff, edition.slug, {
         command: { action },
         expectedVersion: session.version,
-        reason: "Synthetic supervised test command.",
+
         confirmed: true,
       });
     }
@@ -219,7 +219,7 @@ describe.skipIf(!url)(
         updateCaptains(fixture.staff, edition.slug, {
           command: { action: "publish", published: true, poolPublished },
           expectedVersion,
-          reason: "Synthetic pool publication approval change.",
+
           confirmed: true,
         });
       await change(setup.setupVersion, true);

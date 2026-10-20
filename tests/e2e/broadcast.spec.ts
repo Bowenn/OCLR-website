@@ -67,7 +67,6 @@ test.describe("published OBS browser-source rehearsal", () => {
           command: { action },
           expectedVersion: session.version,
           confirmed: true,
-          reason: "Synthetic private broadcast approval/recovery reason.",
         },
       });
       expect(response.status()).toBe(200);
@@ -282,7 +281,6 @@ test.describe("published OBS browser-source rehearsal", () => {
         },
         expectedVersion: setup.version,
         confirmed: true,
-        reason: "Synthetic publication retraction.",
       },
     });
     expect(hidden.status()).toBe(200);

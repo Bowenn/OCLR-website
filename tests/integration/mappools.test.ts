@@ -49,7 +49,7 @@ const admin = { osuId: 190001, username: "Synthetic Admin" };
 const mapper = { osuId: 190002, username: "Synthetic Mappooler" };
 const referee = { osuId: 190003, username: "Synthetic Referee" };
 const player = { osuId: 190004, username: "Synthetic Player" };
-const confirm = { confirmed: true, reason: "Synthetic map rehearsal" };
+const confirm = { confirmed: true };
 describe.skipIf(!url)("edition mappool integrity and publication", () => {
   let scratch: string;
   beforeAll(() => {
@@ -136,6 +136,89 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     category,
     position,
     beatmap,
+  });
+  it("automatically records actor, target, versions and map changes without a reason", async () => {
+    const pool = await create();
+    let data = await mappoolCommand(mapper, edition.slug, add(pool.id, 0));
+    const entry = data.entries[0];
+    data = await mappoolCommand(mapper, edition.slug, {
+      ...add(pool.id, 1, 1, "NM", "456"),
+      entryId: entry.id,
+    });
+    const event = data.events.find(
+      (e) =>
+        e.action === "entry_save" &&
+        (e.after.pool as { version: number } | undefined)?.version === 2,
+    )!;
+    expect(event).toMatchObject({
+      actorId: mapper.osuId,
+      editionSlug: edition.slug,
+      poolId: pool.id,
+      reason: null,
+    });
+    expect(event.createdAt).toBeInstanceOf(Date);
+    expect(event.before).toMatchObject({
+      pool: { version: 1 },
+      entries: [{ id: entry.id, beatmapId: 123 }],
+    });
+    expect(event.after).toMatchObject({
+      pool: { version: 2 },
+      entries: [{ id: entry.id, beatmapId: 456 }],
+    });
+    const count = data.events.length;
+    for (const forged of [
+      { actorId: admin.osuId },
+      { createdAt: new Date().toISOString() },
+      { reason: "Client-supplied generic audit explanation" },
+    ])
+      await expect(
+        mappoolCommand(mapper, edition.slug, {
+          ...add(pool.id, 2, 2),
+          ...forged,
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      mappoolCommand(mapper, edition.slug, add(pool.id, 0, 2)),
+    ).rejects.toMatchObject({ status: 409 });
+    expect((await mappoolWorkspace(mapper, edition.slug)).events).toHaveLength(
+      count,
+    );
+  });
+  it("rolls back the mutation when its transactional audit write fails and retains historical notes", async () => {
+    const pool = await create();
+    await db()
+      .insert(mappoolEvents)
+      .values({
+        editionSlug: edition.slug,
+        poolId: pool.id,
+        actorId: admin.osuId,
+        action: "historical_review",
+        reason: "Historical organizer explanation",
+        after: { id: pool.id },
+      });
+    const before = await mappoolWorkspace(mapper, edition.slug);
+    await db().execute(
+      sql`CREATE FUNCTION oclr_test_fail_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic unavailable audit sink'; END $$`,
+    );
+    try {
+      await db().execute(
+        sql`CREATE TRIGGER oclr_test_fail_audit BEFORE INSERT ON mappool_events FOR EACH ROW EXECUTE FUNCTION oclr_test_fail_audit()`,
+      );
+      await expect(
+        mappoolCommand(mapper, edition.slug, add(pool.id, 0)),
+      ).rejects.toThrow();
+      const after = await mappoolWorkspace(mapper, edition.slug);
+      expect(after.pools).toEqual(before.pools);
+      expect(after.entries).toEqual(before.entries);
+      expect(after.events).toEqual(before.events);
+      expect(
+        after.events.some(
+          (e) => e.reason === "Historical organizer explanation",
+        ),
+      ).toBe(true);
+    } finally {
+      await db().execute(sql`DROP FUNCTION oclr_test_fail_audit() CASCADE`);
+    }
   });
   it("allows scoped Mappoolers and Admins while denying Referees, players and cross-edition access", async () => {
     expect((await mappoolWorkspace(mapper, edition.slug)).pools).toEqual([]);

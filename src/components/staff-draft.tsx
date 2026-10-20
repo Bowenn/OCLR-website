@@ -8,7 +8,6 @@ import { ConfirmMutation } from "./confirm-mutation";
 import { DraftBoardView } from "./draft-board";
 import { formatDate } from "@/lib/editions";
 function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
-  const [reason, setReason] = useState("");
   const [sequence, setSequence] = useState<string[]>(
     data.session?.turnSequence ?? [],
   );
@@ -44,22 +43,13 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
     return {
       command: { action },
       expectedVersion: version,
-      reason,
       confirmed: true,
     };
   }
   return (
     <section className="panel form-stack">
       <h2>Staff controls</h2>
-      <label className="field">
-        <span>Operator reason / publication approval</span>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          maxLength={1000}
-          rows={2}
-        />
-      </label>
+
       {state === "setup" && (
         <>
           <h3>Explicit full turn sequence</h3>
@@ -111,6 +101,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
             Append captain order
           </button>
           <ConfirmMutation
+            requireConfirmation={false}
             label="Save turn sequence"
             title="Save the full draft turn sequence?"
             description="This is the complete planned order. Review team capacities and eligible pool before freezing."
@@ -126,12 +117,13 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
         {allowed.map((action) => (
           <ConfirmMutation
             key={action}
+            requireConfirmation={!["pause", "resume"].includes(action)}
             label={labels[action]}
             title={`${labels[action]}?`}
             description={
               action === "publish"
                 ? "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick."
-                : "This staff action is revision-checked and audited with your reason. Review the current state before confirming."
+                : "Review the current state before confirming. This action is revision-checked and recorded automatically."
             }
             url={`/api/admin/tournaments/${slug}/draft`}
             payload={actionPayload(action)}
@@ -263,7 +255,7 @@ export function StaffDraftRoom({
                     Actor osu! ID {e.actorId ?? "removed"} ·{" "}
                     {formatDate(e.createdAt, "UTC")}
                   </p>
-                  <p className="small">{e.reason}</p>
+                  {e.reason && <p className="small">{e.reason}</p>}
                   <details>
                     <summary>Before/after record</summary>
                     <pre className="audit-json">

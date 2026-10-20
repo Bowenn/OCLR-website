@@ -85,6 +85,13 @@
       "when": 1792466040433,
       "tag": "0011_nosy_black_tom",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792472822641,
+      "tag": "0012_freezing_giant_girl",
+      "breakpoints": true
     }
   ]
 }

@@ -56,7 +56,6 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         name: `Synthetic Fixture Round ${base}`,
         position: isMobile ? 802 : 801,
         confirmed: true,
-        reason: "Synthetic fixture setup",
       },
     );
     const round = maps.rounds.find(
@@ -70,7 +69,6 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         roundId: round.id,
         name: `Synthetic Fixture Pool ${base}`,
         confirmed: true,
-        reason: "Synthetic fixture setup",
       },
     );
     const pool = maps.pools.find((p) => p.roundId === round.id)!;
@@ -102,9 +100,6 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         (await (await referee.request.get(endpoint)).json()).fixtures,
       ).toEqual([]);
       await page.goto("/admin/tournaments/test-cup/matches");
-      await page
-        .getByLabel("Reason for fixture changes")
-        .fill("Synthetic fixture scheduling approval");
       await page.getByText("Create a fixture", { exact: true }).click();
       await page
         .getByLabel("Fixture label", { exact: true })
@@ -127,7 +122,6 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       await page
         .getByRole("button", { name: "Create fixture", exact: true })
         .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
         page.getByRole("heading", {
           name: `Synthetic HTTP Fixture ${base} ↗`,
@@ -155,7 +149,6 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         expectedVersion: 0,
         expectedFixtureVersion: fixture.version,
         confirmed: true,
-        reason: "Synthetic direct API permission rehearsal",
       };
       const reportUrl = `${endpoint}/${fixture.id}/results`;
       const importUrl = `${endpoint}/${fixture.id}/imports`;
@@ -286,7 +279,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
               fixtureId: fixture.id,
               expectedVersion: 1,
               published: false,
-              reason: "No CSRF origin",
+
               confirmed: true,
             },
           })

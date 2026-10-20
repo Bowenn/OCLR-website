@@ -8,7 +8,6 @@ import { getEditions } from "./content";
 import { HttpError } from "./http";
 const confirmation = {
   confirmed: z.literal(true),
-  reason: z.string().trim().min(1).max(500),
 };
 const command = z.discriminatedUnion("action", [
   z
@@ -49,8 +48,7 @@ export async function listStaffRoles(actor: User) {
 export async function changeStaffRole(actor: User, input: unknown) {
   await capabilityScope(actor, "manage_staff");
   const parsed = command.safeParse(input);
-  if (!parsed.success)
-    throw new HttpError(400, "Confirm a valid role change and give a reason.");
+  if (!parsed.success) throw new HttpError(400, "Confirm a valid role change.");
   const c = parsed.data;
   return db().transaction(async (tx) => {
     // Serialize grants/revocations so duplicate requests cannot create competing active grants.
@@ -112,7 +110,8 @@ export async function changeStaffRole(actor: User, input: unknown) {
         role: grant.role,
         editionSlug: grant.editionSlug,
         action: "grant",
-        reason: c.reason,
+        before: null,
+        after: grant,
       });
       return grant;
     }
@@ -145,7 +144,8 @@ export async function changeStaffRole(actor: User, input: unknown) {
       role: grant.role,
       editionSlug: grant.editionSlug,
       action: "revoke",
-      reason: c.reason,
+      before: grant,
+      after: updated,
     });
     return updated;
   });

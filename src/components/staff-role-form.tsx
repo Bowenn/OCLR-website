@@ -11,7 +11,7 @@ export function StaffRoleForm({
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState("mappooler");
   const [scope, setScope] = useState(scopes?.[0] ?? "");
-  const [reason, setReason] = useState("");
+
   return (
     <div className="panel form-stack">
       <h2>Grant a role</h2>
@@ -49,14 +49,6 @@ export function StaffRoleForm({
             ))}
         </select>
       </label>
-      <label className="field">
-        <span>Reason for grant</span>
-        <input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          maxLength={500}
-        />
-      </label>
       <ConfirmMutation
         label="Review role grant"
         title="Grant staff access?"
@@ -67,7 +59,6 @@ export function StaffRoleForm({
           userId: Number(userId),
           role,
           editionSlug: scope || null,
-          reason,
           confirmed: true,
         }}
       />
@@ -85,25 +76,14 @@ export function RevokeRole({
   role: string;
   scope: string | null;
 }) {
-  const [reason, setReason] = useState("");
   return (
     <div className="form-stack">
-      <label className="field">
-        <span>
-          Revocation reason for {username} ({role}, {scope ?? "global"})
-        </span>
-        <input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          maxLength={500}
-        />
-      </label>
       <ConfirmMutation
         label="Revoke role"
         title="Revoke staff access?"
         description={`Remove ${username}'s ${role} role for ${scope ?? "all editions"}. Other grants remain active. This applies to existing sessions on the next authorization check.`}
         url="/api/admin/staff"
-        payload={{ action: "revoke", grantId: id, reason, confirmed: true }}
+        payload={{ action: "revoke", grantId: id, confirmed: true }}
       />
     </div>
   );

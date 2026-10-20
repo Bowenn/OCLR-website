@@ -43,7 +43,6 @@ test.describe("anonymous tournament competition center", () => {
           expectedVersion: review.context.result.version,
           expectedFixtureVersion: review.context.fixture.version,
           confirmed: true,
-          reason: "Synthetic anonymous-publication rehearsal private note",
         },
       });
       expect(response.status()).toBe(200);

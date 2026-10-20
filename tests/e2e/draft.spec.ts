@@ -59,13 +59,7 @@ test.describe("isolated multi-captain rehearsal", () => {
     }
     return { context, page: await context.newPage() };
   }
-  async function publish(
-    page: Page,
-    reason = "Synthetic rehearsal approved publication.",
-  ) {
-    await page
-      .getByLabel("Operator reason / publication approval")
-      .fill(reason);
+  async function publish(page: Page) {
     await page
       .getByRole("button", { name: "Publish current state", exact: true })
       .click();
@@ -209,9 +203,6 @@ test.describe("isolated multi-captain rehearsal", () => {
     await spectator.page.reload();
     await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(2);
     expect(await db().select().from(draftPicks)).toHaveLength(2);
-    await staff.page
-      .getByLabel("Operator reason / publication approval")
-      .fill("Synthetic final roster integrity review.");
     await staff.page
       .getByRole("button", { name: "Finalize rosters", exact: true })
       .click();

@@ -9,12 +9,10 @@ function FixtureForm({
   slug,
   data,
   fixture,
-  reason,
 }: {
   slug: string;
   data: FixtureWorkspace;
   fixture?: Fixture;
-  reason: string;
 }) {
   const [label, setLabel] = useState(fixture?.label ?? "");
   const [roundId, setRound] = useState(
@@ -62,7 +60,6 @@ function FixtureForm({
     ...(fixture
       ? { fixtureId: fixture.id, expectedVersion: fixture.version }
       : {}),
-    reason,
     confirmed: true,
   };
   const teamOptions = data.teams.map((t) => (
@@ -144,7 +141,6 @@ function FixtureForm({
                 stage={s}
                 slug={slug}
                 data={data}
-                reason={reason}
               />
             ))}
           {data.rounds.map((r) => (
@@ -240,6 +236,7 @@ function FixtureForm({
         </details>
       )}
       <ConfirmMutation
+        requireConfirmation={false}
         label={fixture ? "Save fixture amendment" : "Create fixture"}
         title={fixture ? "Amend fixture?" : "Create fixture?"}
         description={`${fixture ? "Amend" : "Create"} ${label || "the fixture"}. Times are entered in UTC and displayed in ${timeZone || "the configured zone"}. Referee assignments and all changes are audited.`}
@@ -249,15 +246,7 @@ function FixtureForm({
     </div>
   );
 }
-function RoundRules({
-  slug,
-  entry,
-  reason,
-}: {
-  slug: string;
-  entry: Round;
-  reason: string;
-}) {
+function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
   const { round, stage } = entry;
   const rules = round.scoringRules;
   const standings = round.standingsRules;
@@ -591,7 +580,6 @@ function RoundRules({
                   tiebreakers: tiebreakers.split(",").map((v) => v.trim()),
                 }
               : null,
-          reason,
           confirmed: true,
         }}
       />
@@ -602,12 +590,10 @@ function StageGroups({
   slug,
   data,
   stage,
-  reason,
 }: {
   slug: string;
   data: FixtureWorkspace;
   stage: FixtureWorkspace["stages"][number];
-  reason: string;
 }) {
   const [groups, setGroups] = useState(stage.groupConfiguration?.groups ?? []);
   const [version, setVersion] = useState(
@@ -723,7 +709,6 @@ function StageGroups({
           expectedVersion: stage.version,
           configuration: groups.length ? { version, groups } : null,
           published,
-          reason,
           confirmed: true,
         }}
       />
@@ -737,7 +722,6 @@ export function FixtureManager({
   slug: string;
   data: FixtureWorkspace;
 }) {
-  const [reason, setReason] = useState("");
   const [stage, setStage] = useState("");
   const matches = data.fixtures.filter(
     (f) =>
@@ -749,18 +733,11 @@ export function FixtureManager({
       {data.canManage && (
         <div className="panel form-stack">
           <h2>Fixture configuration</h2>
-          <label className="field">
-            <span>Reason for fixture changes</span>
-            <input
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              maxLength={1000}
-            />
-          </label>
+
           {data.rounds.length && data.teams.length >= 2 ? (
             <details>
               <summary>Create a fixture</summary>
-              <FixtureForm slug={slug} data={data} reason={reason} />
+              <FixtureForm slug={slug} data={data} />
             </details>
           ) : (
             <p className="notice">
@@ -776,7 +753,6 @@ export function FixtureManager({
                 stage={s}
                 slug={slug}
                 data={data}
-                reason={reason}
               />
             ))}
           {data.rounds.map((r) => (
@@ -786,7 +762,6 @@ export function FixtureManager({
                 key={`${r.round.id}-${r.round.version}`}
                 slug={slug}
                 entry={r}
-                reason={reason}
               />
             </details>
           ))}
@@ -860,7 +835,6 @@ export function FixtureManager({
                   expectedVersion: f.version,
                   published: !f.publishedAt,
                   confirmed: true,
-                  reason,
                 }}
               />
               {!f.publishedAt && (
@@ -871,7 +845,6 @@ export function FixtureManager({
                     slug={slug}
                     data={data}
                     fixture={f}
-                    reason={reason}
                   />
                 </details>
               )}

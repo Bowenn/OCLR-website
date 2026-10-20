@@ -11,7 +11,6 @@ function Operation({
   action,
   data,
   slug,
-  reason,
   extra = {},
   onError,
 }: {
@@ -19,16 +18,18 @@ function Operation({
   action: string;
   data: MatchReview;
   slug: string;
-  reason: string;
   extra?: Record<string, unknown>;
   onError: (message: string) => void;
 }) {
   const [requestKey, setKey] = useState(() => crypto.randomUUID());
+  const [decisionNote, setDecisionNote] = useState("");
+  const needsExplanation = action === "reject" || action === "void";
   return (
     <ConfirmMutation
+      canConfirm={!needsExplanation || Boolean(decisionNote.trim())}
       label={label}
       title={label}
-      description={`Fixture: ${data.context.fixture.label}. ${action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "This operation is recorded with your osu! identity and reason."}`}
+      description={`Fixture: ${data.context.fixture.label}. ${action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "This operation is recorded automatically with your osu! identity."}`}
       url={`/api/admin/tournaments/${slug}/matches/${data.context.fixture.id}/results`}
       payload={{
         action,
@@ -36,7 +37,8 @@ function Operation({
         expectedVersion: data.context.result?.version ?? 0,
         expectedFixtureVersion: data.context.fixture.version,
         confirmed: true,
-        reason,
+        ...(needsExplanation ? { decisionNote } : {}),
+
         ...extra,
       }}
       onSuccess={() => {
@@ -44,18 +46,32 @@ function Operation({
         onError("");
       }}
       onError={onError}
-    />
+    >
+      {needsExplanation && (
+        <label className="field">
+          <span>
+            {action === "reject"
+              ? "Proposal rejection explanation"
+              : "Result withdrawal explanation"}
+          </span>
+          <textarea
+            value={decisionNote}
+            onChange={(e) => setDecisionNote(e.target.value)}
+            maxLength={1000}
+            required
+          />
+        </label>
+      )}
+    </ConfirmMutation>
   );
 }
 function SourceReview({
   data,
   slug,
-  reason,
   onError,
 }: {
   data: MatchReview;
   slug: string;
-  reason: string;
   onError: (message: string) => void;
 }) {
   const source = data.source!;
@@ -217,16 +233,20 @@ function SourceReview({
                   <option value="false">Exclude from result</option>
                 </select>
               </label>
-              <label className="field">
-                <span>Game {i + 1} review reason</span>
-                <textarea
-                  maxLength={1000}
-                  value={decision?.reason ?? ""}
-                  onChange={(e) =>
-                    update(g.game.id, { reason: e.target.value })
-                  }
-                />
-              </label>
+              {decision?.included === false && (
+                <label className="field">
+                  <span>
+                    Game {i + 1} exclusion / scoring decision explanation
+                  </span>
+                  <textarea
+                    maxLength={1000}
+                    value={decision?.reason ?? ""}
+                    onChange={(e) =>
+                      update(g.game.id, { reason: e.target.value })
+                    }
+                  />
+                </label>
+              )}
               <label className="check-label">
                 <input
                   type="checkbox"
@@ -355,16 +375,12 @@ function SourceReview({
           />
           I reviewed the current source snapshot and all reported changes
         </label>
-        {preview.canSubmit &&
-        rulesConfirmed &&
-        sourceConfirmed &&
-        reason.trim() ? (
+        {preview.canSubmit && rulesConfirmed && sourceConfirmed ? (
           <Operation
             label="Submit proposed result"
             action="submit"
             data={data}
             slug={slug}
-            reason={reason}
             extra={{
               importId: data.importId,
               decisions: list,
@@ -392,7 +408,7 @@ export function MatchReviewPanel({
   slug: string;
 }) {
   const [match, setMatch] = useState("");
-  const [reason, setReason] = useState("");
+
   const [requestKey, setKey] = useState(() => crypto.randomUUID());
   const [notice, setNotice] = useState("");
   const [progression, setProgression] = useState(false);
@@ -413,14 +429,6 @@ export function MatchReviewPanel({
           are private snapshots; they never publish scores automatically.
         </p>
         <label className="field">
-          <span>Internal operation reason</span>
-          <input
-            maxLength={1000}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-        </label>
-        <label className="field">
           <span>osu! MP link or match ID</span>
           <input
             type="text"
@@ -432,6 +440,7 @@ export function MatchReviewPanel({
           />
         </label>
         <ConfirmMutation
+          requireConfirmation={false}
           label="Retrieve match data"
           title="Import an official osu! match snapshot"
           description="The provider snapshot will be stored for staff review. Any existing published result stays unchanged."
@@ -441,7 +450,6 @@ export function MatchReviewPanel({
             expectedVersion: state?.version ?? 0,
             expectedFixtureVersion: context.fixture.version,
             match,
-            reason,
             confirmed: true,
           }}
           onSuccess={() => {
@@ -516,7 +524,7 @@ export function MatchReviewPanel({
           key={`${data.importId}-${context.fixture.version}-${context.round.version}-${context.pool?.version ?? 0}`}
           data={data}
           slug={slug}
-          reason={reason}
+
           onError={setNotice}
         />
       )}
@@ -569,69 +577,63 @@ export function MatchReviewPanel({
               I reviewed the effect on dependent fixtures and public standings
               or brackets
             </label>
-            {reason.trim() && (
-              <div className="actions">
-                {state?.state === "submitted" && (
-                  <>
-                    <Operation
-                      label="Approve proposed result"
-                      action="approve"
-                      data={data}
-                      slug={slug}
-                      reason={reason}
-                      extra={{ revision: state.currentRevision }}
-                      onError={setNotice}
-                    />
-                    <Operation
-                      label="Reject proposed result"
-                      action="reject"
-                      data={data}
-                      slug={slug}
-                      reason={reason}
-                      extra={{ revision: state.currentRevision }}
-                      onError={setNotice}
-                    />
-                  </>
-                )}
-                {state?.state === "approved" &&
-                  progression &&
-                  state.currentRevision !== state.publishedRevision && (
-                    <Operation
-                      label="Publish approved result"
-                      action="publish"
-                      data={data}
-                      slug={slug}
-                      reason={reason}
-                      extra={{
-                        revision: state.currentRevision,
-                        progressionAcknowledged: true,
-                      }}
-                      onError={setNotice}
-                    />
-                  )}
-                {state?.publishedRevision && (
+            <div className="actions">
+              {state?.state === "submitted" && (
+                <>
                   <Operation
-                    label="Unpublish result"
-                    action="unpublish"
+                    label="Approve proposed result"
+                    action="approve"
                     data={data}
                     slug={slug}
-                    reason={reason}
+                    extra={{ revision: state.currentRevision }}
+                    onError={setNotice}
+                  />
+                  <Operation
+                    label="Reject proposed result"
+                    action="reject"
+                    data={data}
+                    slug={slug}
+                    extra={{ revision: state.currentRevision }}
+                    onError={setNotice}
+                  />
+                </>
+              )}
+              {state?.state === "approved" &&
+                progression &&
+                state.currentRevision !== state.publishedRevision && (
+                  <Operation
+                    label="Publish approved result"
+                    action="publish"
+                    data={data}
+                    slug={slug}
+                    extra={{
+                      revision: state.currentRevision,
+                      progressionAcknowledged: true,
+                    }}
                     onError={setNotice}
                   />
                 )}
-                {state && state.currentRevision > 0 && progression && (
-                  <Operation
-                    label="Withdraw official result"
-                    action="void"
-                    data={data}
-                    slug={slug}
-                    reason={reason}
-                    extra={{ progressionAcknowledged: true }}
-                    onError={setNotice}
-                  />
-                )}
-              </div>
-            )}
+              {state?.publishedRevision && (
+                <Operation
+                  label="Unpublish result"
+                  action="unpublish"
+                  data={data}
+                  slug={slug}
+
+                  onError={setNotice}
+                />
+              )}
+              {state && state.currentRevision > 0 && progression && (
+                <Operation
+                  label="Withdraw official result"
+                  action="void"
+                  data={data}
+                  slug={slug}
+                  extra={{ progressionAcknowledged: true }}
+                  onError={setNotice}
+                />
+              )}
+            </div>
             <p className="muted">
               Withdrawing retains the audit trail and source history. It does
               not award a forfeit or change team rosters. Publish the fixture
@@ -653,7 +655,7 @@ export function MatchReviewPanel({
                 Revision {r.revision} · osu! ID {r.createdBy} ·{" "}
                 {r.approvedAt ? "Approved" : "Unapproved"}
               </summary>
-              <p>{r.reason}</p>
+              {r.reason && <p>{r.reason}</p>}
               <p>{new Date(r.createdAt).toISOString()}</p>
               {r.proposal && (
                 <p>
@@ -677,7 +679,13 @@ export function MatchReviewPanel({
             <li key={e.id}>
               {e.action} · osu! ID {e.actorId} ·{" "}
               {new Date(e.createdAt).toISOString()}
-              <p>{e.reason}</p>
+              {e.reason && <p>{e.reason}</p>}
+              <details>
+                <summary>Recorded changes</summary>
+                <pre className="audit-json">
+                  {JSON.stringify(e.detail, null, 2)}
+                </pre>
+              </details>
             </li>
           ))}
         </ul>

@@ -40,7 +40,7 @@ const referee = { osuId: 250002, username: "Synthetic Assigned Referee" };
 const otherRef = { osuId: 250003, username: "Synthetic Unassigned Referee" };
 const mapper = { osuId: 250004, username: "Synthetic Mappooler" };
 const player = { osuId: 250005, username: "Synthetic Player" };
-const confirm = { confirmed: true, reason: "Synthetic fixture rehearsal" };
+const confirm = { confirmed: true };
 const rules = {
   version: "synthetic-v1",
   mode: "osu",
@@ -284,9 +284,7 @@ describe.skipIf(!url)(
       const events = await db().select().from(resultAuditEvents);
       expect(events).toHaveLength(3);
       expect(
-        events.every(
-          (e) => e.actorId === admin.osuId && e.reason === confirm.reason,
-        ),
+        events.every((e) => e.actorId === admin.osuId && e.reason === null),
       ).toBe(true);
     });
     it("requires explicit publication/amendments and preserves UTC instants and timezone labels", async () => {

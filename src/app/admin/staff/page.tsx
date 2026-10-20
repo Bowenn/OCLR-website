@@ -61,7 +61,19 @@ export default async function StaffPage() {
                 {e.action} · {e.role} · osu! ID {e.targetId} ·{" "}
                 {e.editionSlug ?? "Global"}
               </p>
-              <p>{e.reason}</p>
+              {e.reason && <p>{e.reason}</p>}
+              {e.after && (
+                <details>
+                  <summary>Assignment changes</summary>
+                  <pre className="audit-json">
+                    {JSON.stringify(
+                      { before: e.before, after: e.after },
+                      null,
+                      2,
+                    )}
+                  </pre>
+                </details>
+              )}
               <p className="muted small">
                 Actor {e.actorId} · {e.createdAt.toISOString()}
               </p>

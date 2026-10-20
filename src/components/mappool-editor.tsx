@@ -8,7 +8,7 @@ import { BeatmapCover } from "./beatmap-cover";
 type Pool = MappoolWorkspace["pools"][number];
 type Entry = MappoolWorkspace["entries"][number];
 type Round = MappoolWorkspace["rounds"][number];
-type Change = { url: string; reason: string };
+type Change = { url: string };
 function Save({
   change,
   label,
@@ -22,11 +22,14 @@ function Save({
 }) {
   return (
     <ConfirmMutation
+      requireConfirmation={["pool_publish", "entry_remove"].includes(
+        String(payload.action),
+      )}
       label={label}
       title={label}
       description={description}
       url={change.url}
-      payload={{ ...payload, reason: change.reason, confirmed: true }}
+      payload={{ ...payload, confirmed: true }}
     />
   );
 }
@@ -225,7 +228,7 @@ export function MappoolEditor({
   const [roundId, setRoundId] = useState("");
   const [poolId, setPoolId] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("NM");
-  const [reason, setReason] = useState("");
+
   const rounds = data.rounds.filter((r) => r.stage === stage);
   const round = rounds.find((r) => r.id === roundId) ?? rounds[0];
   const pools = data.pools.filter((p) => p.roundId === round?.id);
@@ -233,21 +236,12 @@ export function MappoolEditor({
   const entries = data.entries
     .filter((e) => e.poolId === pool?.id && e.category === category)
     .sort((a, b) => a.position - b.position);
-  const change = { url: `/api/admin/tournaments/${slug}/mappools`, reason };
+  const change = { url: `/api/admin/tournaments/${slug}/mappools` };
   const editable = pool && !pool.publishedAt && !pool.lockedAt;
   return (
     <div className="stack">
       <div className="panel form-stack">
         <h2>Edition workspace</h2>
-        <label className="field">
-          <span>Reason for changes</span>
-          <input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            maxLength={500}
-            placeholder="Required for the audit history"
-          />
-        </label>
         <div className="filters">
           <label className="field">
             <span>Stage</span>
@@ -529,7 +523,7 @@ export function MappoolEditor({
         {data.events.map((e) => (
           <article key={e.id} className="spaced">
             <h3>{e.action}</h3>
-            <p>{e.reason}</p>
+            {e.reason && <p>{e.reason}</p>}
             <p className="small muted">
               osu! ID {e.actorId} · {e.createdAt.toISOString()}
             </p>

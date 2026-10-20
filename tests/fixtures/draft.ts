@@ -41,13 +41,13 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
   await updateCaptains(staff, slug, {
     command: { action: "appoint", userId: a.osuId },
     expectedVersion: 0,
-    reason: "Synthetic rehearsal appointment.",
+
     confirmed: true,
   });
   await updateCaptains(staff, slug, {
     command: { action: "appoint", userId: b.osuId },
     expectedVersion: 1,
-    reason: "Synthetic rehearsal appointment.",
+
     confirmed: true,
   });
   await updateTeams(staff, slug, {
@@ -67,13 +67,13 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
       ],
     },
     expectedVersion: 2,
-    reason: "Synthetic rehearsal team identities.",
+
     confirmed: true,
   });
   await updateCaptains(staff, slug, {
     command: { action: "publish", published: true, poolPublished: false },
     expectedVersion: 3,
-    reason: "Synthetic identity publication approval.",
+
     confirmed: true,
   });
   const teamRows = await db()
@@ -90,14 +90,14 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
         rosterPublished: false,
       },
       expectedVersion: version++,
-      reason: "Synthetic team publication approval.",
+
       confirmed: true,
     });
   }
   await updateCaptains(staff, slug, {
     command: { action: "lock" },
     expectedVersion: version,
-    reason: "Synthetic reviewed order/pool lock.",
+
     confirmed: true,
   });
   const ordered = (await captainSetup(staff, slug)).captains;
@@ -108,7 +108,7 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
   await draftCommand(staff, slug, {
     command: { action: "configure", turnSequence: sequence },
     expectedVersion: 0,
-    reason: "Explicit synthetic turn sequence.",
+
     confirmed: true,
   });
   for (const action of ["ready", "start", "publish"]) {
@@ -116,7 +116,7 @@ export async function prepareDraft(slug: string, base: number, turns = 2) {
     await draftCommand(staff, slug, {
       command: { action },
       expectedVersion: session.version,
-      reason: "Synthetic isolated rehearsal.",
+
       confirmed: true,
     });
   }

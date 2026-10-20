@@ -43,7 +43,7 @@ const grant = (
   userId: operator.osuId,
   role,
   editionSlug,
-  reason: "Synthetic role grant",
+
   confirmed: true,
 });
 describe.skipIf(!url)("persistent role authorization", () => {
@@ -157,7 +157,6 @@ describe.skipIf(!url)("persistent role authorization", () => {
         action: "revoke",
         grantId: global.id,
         confirmed: true,
-        reason: "Attempt",
       }),
     ).rejects.toMatchObject({ status: 403 });
     expect(
@@ -174,7 +173,7 @@ describe.skipIf(!url)("persistent role authorization", () => {
     await changeStaffRole(admin, {
       action: "revoke",
       grantId: role.id,
-      reason: "Synthetic revoke",
+
       confirmed: true,
     });
     expect(await hasCapability(operator, "manage_mappools", edition.slug)).toBe(
@@ -185,6 +184,18 @@ describe.skipIf(!url)("persistent role authorization", () => {
       .from(staffRoleEvents)
       .where(eq(staffRoleEvents.grantId, role.id));
     expect(events.map((e) => e.action).sort()).toEqual(["grant", "revoke"]);
+    const granted = events.find((e) => e.action === "grant")!;
+    const revoked = events.find((e) => e.action === "revoke")!;
+    expect(granted.reason).toBeNull();
+    expect(granted.before).toBeNull();
+    expect(granted.after).toMatchObject({
+      id: role.id,
+      userId: operator.osuId,
+      role: "mappooler",
+      revokedAt: null,
+    });
+    expect(revoked.before).toMatchObject({ id: role.id, revokedAt: null });
+    expect(revoked.after?.revokedAt).toBeTruthy();
     expect(
       events.every(
         (e) =>

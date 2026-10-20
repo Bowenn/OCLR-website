@@ -54,9 +54,6 @@ test.describe("published mappools and restricted editing", () => {
         ).status(),
       ).toBe(403);
       await page.goto("/admin/tournaments/test-cup/mappools");
-      await page
-        .getByLabel("Reason for changes")
-        .fill("Synthetic mappool browser rehearsal");
       await page.getByText("Create a round", { exact: true }).click();
       await page
         .getByLabel("Round name", { exact: true })
@@ -64,14 +61,12 @@ test.describe("published mappools and restricted editing", () => {
       await page
         .getByRole("button", { name: "Create round", exact: true })
         .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
         page.getByRole("combobox", { name: /^Round/ }),
       ).toContainText("Synthetic Group Round");
       await page.getByText("Create a mappool", { exact: true }).click();
       await page.getByLabel("New pool name").fill("Synthetic Browser Pool");
       await page.getByRole("button", { name: "Create draft pool" }).click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
         page.getByRole("heading", { name: "Synthetic Browser Pool" }),
       ).toBeVisible();
@@ -83,7 +78,6 @@ test.describe("published mappools and restricted editing", () => {
         .getByLabel("Approved FM restrictions")
         .fill("Synthetic test restrictions — not tournament rules");
       await page.getByRole("button", { name: "Save pool settings" }).click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(page.getByText("Draft · v1", { exact: true })).toBeVisible();
       const data = await (await context.request.get(url)).json();
       const pool = data.pools[0];
@@ -121,9 +115,6 @@ test.describe("published mappools and restricted editing", () => {
         })
         .returning();
       await page.reload();
-      await page
-        .getByLabel("Reason for changes")
-        .fill("Synthetic release approval");
       await page.getByRole("button", { name: "FM (1)", exact: true }).click();
       await expect(
         page.getByRole("heading", { name: /Synthetic Browser Song/ }),
@@ -144,7 +135,7 @@ test.describe("published mappools and restricted editing", () => {
               poolId: pool.id,
               expectedVersion: 2,
               entryId: entry.id,
-              reason: "Must unpublish",
+
               confirmed: true,
             },
           })
