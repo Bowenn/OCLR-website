@@ -208,13 +208,17 @@ test.describe("concept-aligned tournament surfaces", () => {
       await expect(page.getByText("#12,345", { exact: true })).toBeVisible();
       await expect(page.getByText("1,234.56", { exact: true })).toBeVisible();
       await expect(page.getByText("97.25%", { exact: true })).toBeVisible();
-      await page
-        .getByText("My acknowledged rules and application", { exact: true })
-        .click();
+      await page.getByText("My application", { exact: true }).click();
       await expect(
         page.getByText("VISUAL_PRIVATE_ANSWER", { exact: true }),
       ).toBeVisible();
-      await expect(page.getByText(/Acknowledged rules: test-v1/)).toBeVisible();
+      await expect(page.locator(".registration-card")).not.toContainText(
+        "Acknowledged rules",
+      );
+      const [savedApplication] = await (
+        await page.request.get("/api/registrations")
+      ).json();
+      expect(savedApplication.rulesVersion).toBe("test-v1");
       // Missing provider fields stay unavailable, and a query cannot select another identity.
       await db()
         .update(userProfileCache)

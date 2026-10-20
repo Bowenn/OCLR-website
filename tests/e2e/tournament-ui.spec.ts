@@ -308,14 +308,13 @@ test.describe("registration readiness and confirmation layout", () => {
         .getByRole("button", { name: "Submit individual application" })
         .click();
       await expect(applicant).toHaveURL(/dashboard\?submitted=1$/);
-      await applicant
-        .getByText("My acknowledged rules and application", { exact: true })
-        .click();
-      await expect(
-        applicant.getByText("No rules were configured when you applied.", {
-          exact: false,
-        }),
-      ).toBeVisible();
+      await expect(applicant.locator(".registration-card details")).toHaveCount(
+        0,
+      );
+      const [savedApplication] = await (
+        await applicant.request.get("/api/registrations")
+      ).json();
+      expect(savedApplication.rulesVersion).toBeNull();
       await command("rules", {
         rules: {
           version: "later-v1",
@@ -326,14 +325,16 @@ test.describe("registration readiness and confirmation layout", () => {
         eligibility: "Synthetic later eligibility.",
       });
       await applicant.reload();
-      await applicant
-        .getByText("My acknowledged rules and application", { exact: true })
-        .click();
-      await expect(
-        applicant.getByText("No rules were configured when you applied.", {
-          exact: false,
-        }),
-      ).toBeVisible();
+      await expect(applicant.locator(".registration-card details")).toHaveCount(
+        0,
+      );
+      const [afterRulesChanged] = await (
+        await applicant.request.get("/api/registrations")
+      ).json();
+      expect(afterRulesChanged.rulesVersion).toBeNull();
+      expect(afterRulesChanged.configurationVersion).toBe(
+        savedApplication.configurationVersion,
+      );
     } finally {
       await player.close();
     }

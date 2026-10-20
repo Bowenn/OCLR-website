@@ -323,12 +323,17 @@ test.describe("browser-managed authoritative tournament editions", () => {
         .click();
       await expect(page.getByRole("status")).toContainText("saved");
       await playerPage.reload();
-      await playerPage
-        .getByText("My acknowledged rules and application", { exact: true })
-        .click();
+      await playerPage.getByText("My application", { exact: true }).click();
       await expect(
         playerPage.getByRole("heading", { name: "Original synthetic rules" }),
-      ).toBeVisible();
+      ).toHaveCount(0);
+      const savedApplication = (
+        await (await player.request.get("/api/registrations")).json()
+      ).find((r: { id: string }) => r.id === application.id);
+      expect(savedApplication.rulesVersion).toBe("synthetic-v1");
+      expect(savedApplication.configurationVersion).toBe(
+        application.configurationVersion,
+      );
       await expect(
         playerPage.getByText("Original availability", { exact: true }),
       ).toBeVisible();

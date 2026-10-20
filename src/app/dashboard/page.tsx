@@ -180,40 +180,25 @@ export default async function Dashboard({
                           Staff explanation: {r.statusReason}
                         </p>
                       )}
-                      <details className="spaced">
-                        <summary>My acknowledged rules and application</summary>
-                        <p className="muted small">
-                          {r.rulesVersion
-                            ? `Acknowledged rules: ${r.rulesVersion}.`
-                            : "No rules were configured when you applied."}{" "}
-                          Saved acknowledgments are preserved.
-                        </p>
-                        {acknowledgedConfiguration?.rules?.sections.map(
-                          (s, i) => (
-                            <section key={i}>
-                              <h4>{s.heading}</h4>
-                              <p className="preserve-lines small">{s.body}</p>
-                            </section>
-                          ),
-                        )}
-                        <p className="preserve-lines small">
-                          {acknowledgedConfiguration?.eligibility}
-                        </p>
-                        <dl className="detail-list">
-                          {Object.entries(r.answers).map(([key, value]) => (
-                            <div key={key}>
-                              <dt>
-                                {acknowledgedConfiguration?.registration?.questions.find(
-                                  (q) => q.id === key,
-                                )?.label ?? key}
-                              </dt>
-                              <dd className="preserve-lines">
-                                {value || "No answer"}
-                              </dd>
-                            </div>
-                          ))}
-                        </dl>
-                      </details>
+                      {Object.keys(r.answers).length > 0 && (
+                        <details className="spaced">
+                          <summary>My application</summary>
+                          <dl className="detail-list">
+                            {Object.entries(r.answers).map(([key, value]) => (
+                              <div key={key}>
+                                <dt>
+                                  {acknowledgedConfiguration?.registration?.questions.find(
+                                    (q) => q.id === key,
+                                  )?.label ?? key}
+                                </dt>
+                                <dd className="preserve-lines">
+                                  {value || "No answer"}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </details>
+                      )}
                       <div className="actions">
                         {edition && captainAssigned && (
                           <>
