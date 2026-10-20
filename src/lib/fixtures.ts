@@ -2,8 +2,11 @@ import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
   and,
+  or,
+  sql,
   eq,
   inArray,
+  notInArray,
   isNotNull,
   isNull,
   getTableColumns,
@@ -12,6 +15,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import {
   captains,
+  staffRoles,
   editionState,
   editionEvents,
   resultRevisions,
@@ -29,6 +33,7 @@ import {
 } from "@/db/schema";
 import {
   assertCapability,
+  bootstrapAdminIds,
   hasCapability,
   permits,
   staffAccess,
@@ -59,11 +64,11 @@ const fixtureFields = {
   homeSourceOutcome: z.enum(["winner", "loser"]).nullable(),
   awaySourceId: z.uuid().nullable(),
   awaySourceOutcome: z.enum(["winner", "loser"]).nullable(),
-  refereeIds: z
-    .array(z.number().int().positive().max(Number.MAX_SAFE_INTEGER))
-    .max(50)
-    .refine((ids) => new Set(ids).size === ids.length),
 };
+const refereeIdsSchema = z
+  .array(z.number().int().positive().max(Number.MAX_SAFE_INTEGER))
+  .max(50)
+  .refine((ids) => new Set(ids).size === ids.length);
 const commandSchema = z.discriminatedUnion("action", [
   z
     .object({
@@ -76,7 +81,12 @@ const commandSchema = z.discriminatedUnion("action", [
     })
     .strict(),
   z
-    .object({ ...confirmation, ...fixtureFields, action: z.literal("create") })
+    .object({
+      ...confirmation,
+      ...fixtureFields,
+      refereeIds: refereeIdsSchema.default([]),
+      action: z.literal("create"),
+    })
     .strict(),
   z
     .object({
@@ -160,6 +170,124 @@ async function configuredEdition(slug: string) {
   const edition = await getEdition(slug);
   if (!edition) throw new HttpError(404, "Edition not found.");
   return edition;
+}
+async function eligibleReferees(reader: Reader, slug: string) {
+  // Existing policy permits Referee and Admin substitutes, including bootstrapped administrators.
+  return reader
+    .select({ osuId: users.osuId, username: users.username })
+    .from(users)
+    .leftJoin(
+      staffRoles,
+      and(
+        eq(staffRoles.userId, users.osuId),
+        isNull(staffRoles.revokedAt),
+        inArray(staffRoles.role, ["referee", "admin"]),
+        or(isNull(staffRoles.editionSlug), eq(staffRoles.editionSlug, slug)),
+      ),
+    )
+    .where(
+      or(isNotNull(staffRoles.id), inArray(users.osuId, bootstrapAdminIds())),
+    )
+    .groupBy(users.osuId, users.username)
+    .orderBy(users.username);
+}
+const assignmentInput = z
+  .object({
+    expectedAssignmentRevision: z.number().int().nonnegative(),
+    refereeIds: refereeIdsSchema,
+  })
+  .strict();
+export async function assignFixtureReferees(
+  actor: User,
+  slug: string,
+  id: string,
+  input: unknown,
+) {
+  await assertCapability(actor, "manage_fixtures", slug);
+  await configuredEdition(slug);
+  if (!z.uuid().safeParse(id).success)
+    throw new HttpError(404, "Fixture not found.");
+  const parsed = assignmentInput.safeParse(input);
+  if (!parsed.success)
+    throw new HttpError(
+      400,
+      "Choose a valid list of referees and the current assignment revision.",
+    );
+  await db().transaction(async (tx) => {
+    // Share the role-management lock so a concurrent revocation cannot pass a stale eligibility check.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(17301)`);
+    await assertCapability(actor, "manage_fixtures", slug, tx);
+    const [fixture] = await tx
+      .select()
+      .from(fixtures)
+      .where(and(eq(fixtures.id, id), eq(fixtures.editionSlug, slug)))
+      .for("update");
+    if (!fixture) throw new HttpError(404, "Fixture not found.");
+    if (fixture.assignmentRevision !== parsed.data.expectedAssignmentRevision)
+      throw new HttpError(
+        409,
+        "Referee assignments changed. Refresh and review the current assignments.",
+      );
+    const eligible = await eligibleReferees(tx, slug);
+    if (
+      parsed.data.refereeIds.some(
+        (userId) => !eligible.some((u) => u.osuId === userId),
+      )
+    )
+      throw new HttpError(
+        400,
+        "Every referee must have an active Referee or Admin role for this edition.",
+      );
+    const before = await tx
+      .select()
+      .from(fixtureReferees)
+      .where(eq(fixtureReferees.fixtureId, id));
+    const previousIds = before.map((r) => r.userId).sort((a, b) => a - b);
+    const nextIds = [...parsed.data.refereeIds].sort((a, b) => a - b);
+    if (isDeepStrictEqual(previousIds, nextIds)) return;
+    await tx
+      .delete(fixtureReferees)
+      .where(
+        and(
+          eq(fixtureReferees.fixtureId, id),
+          nextIds.length
+            ? notInArray(fixtureReferees.userId, nextIds)
+            : undefined,
+        ),
+      );
+    const added = nextIds.filter((userId) => !previousIds.includes(userId));
+    if (added.length)
+      await tx
+        .insert(fixtureReferees)
+        .values(
+          added.map((userId) => ({
+            fixtureId: id,
+            userId,
+            assignedBy: actor.osuId,
+          })),
+        );
+    await tx
+      .update(fixtures)
+      .set({ assignmentRevision: fixture.assignmentRevision + 1 })
+      .where(eq(fixtures.id, id));
+    await tx.insert(resultAuditEvents).values({
+      fixtureId: id,
+      actorId: actor.osuId,
+      action: "fixture_referees",
+      detail: {
+        entity: { type: "fixture", id },
+        before: {
+          refereeIds: previousIds,
+          assignmentRevision: fixture.assignmentRevision,
+        },
+        after: {
+          refereeIds: nextIds,
+          assignmentRevision: fixture.assignmentRevision + 1,
+        },
+      },
+    });
+  });
+  return staffFixtures(actor, slug);
 }
 export async function staffFixtures(actor: User, slug: string) {
   const access = await staffAccess(actor);
@@ -247,12 +375,32 @@ export async function staffFixtures(actor: User, slug: string) {
             .from(tournamentStages)
             .where(eq(tournamentStages.editionSlug, slug))
         : [];
+      const refereeNames = assignments.length
+        ? await tx
+            .select({ osuId: users.osuId, username: users.username })
+            .from(users)
+            .where(
+              inArray(
+                users.osuId,
+                assignments.map((a) => a.userId),
+              ),
+            )
+        : [];
       return {
+        eligibleReferees: canManage ? await eligibleReferees(tx, slug) : [],
         stages,
         canManage,
         timeZone: edition.timeZone,
         fixtures: rows.map((f) => ({
           ...f,
+          referees: assignments
+            .filter((a) => a.fixtureId === f.id)
+            .map((a) => ({
+              osuId: a.userId,
+              username:
+                refereeNames.find((u) => u.osuId === a.userId)?.username ??
+                String(a.userId),
+            })),
           refereeIds: assignments
             .filter((a) => a.fixtureId === f.id)
             .map((a) => a.userId),
@@ -640,7 +788,7 @@ export async function fixtureCommand(
             "Choose a mappool from this fixture's edition and round.",
           );
       }
-      for (const userId of c.refereeIds) {
+      for (const userId of c.action === "create" ? c.refereeIds : []) {
         const [user] = await tx
           .select()
           .from(users)
@@ -711,6 +859,7 @@ export async function fixtureCommand(
             id: candidateId,
             editionSlug: slug,
             publishedAt: before?.publishedAt ?? null,
+            assignmentRevision: before?.assignmentRevision ?? 0,
             version: before?.version ?? 0,
           },
         ],
@@ -726,23 +875,16 @@ export async function fixtureCommand(
             .insert(fixtures)
             .values({ ...values, id: candidateId, editionSlug: slug })
             .returning();
-      const oldAssignments = before
-        ? await tx
-            .select()
-            .from(fixtureReferees)
-            .where(eq(fixtureReferees.fixtureId, before.id))
-        : [];
-      await tx
-        .delete(fixtureReferees)
-        .where(eq(fixtureReferees.fixtureId, after.id));
-      if (c.refereeIds.length)
-        await tx.insert(fixtureReferees).values(
-          c.refereeIds.map((userId) => ({
-            fixtureId: after.id,
-            userId,
-            assignedBy: actor.osuId,
-          })),
-        );
+      if (c.action === "create" && c.refereeIds.length)
+        await tx
+          .insert(fixtureReferees)
+          .values(
+            c.refereeIds.map((userId) => ({
+              fixtureId: after.id,
+              userId,
+              assignedBy: actor.osuId,
+            })),
+          );
       await tx.insert(resultAuditEvents).values({
         fixtureId: after.id,
         actorId: actor.osuId,
@@ -751,8 +893,7 @@ export async function fixtureCommand(
           entity: { type: "fixture", id: after.id },
           before: before ?? null,
           after,
-          priorReferees: oldAssignments.map((r) => r.userId),
-          refereeIds: c.refereeIds,
+          ...(c.action === "create" ? { refereeIds: c.refereeIds } : {}),
         },
       });
     });

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { FixtureWorkspace } from "@/lib/fixtures";
+import { RefereeAssignment } from "./referee-assignment";
 import { ConfirmMutation } from "./confirm-mutation";
 type Fixture = FixtureWorkspace["fixtures"][number];
 type Round = FixtureWorkspace["rounds"][number];
@@ -27,9 +28,6 @@ function FixtureForm({
   );
   const [timeZone, setZone] = useState(fixture?.timeZone ?? data.timeZone);
   const [status, setStatus] = useState(fixture?.status ?? "scheduled");
-  const [referees, setReferees] = useState(
-    fixture?.refereeIds.join(", ") ?? "",
-  );
   const [homeSourceId, setHomeSource] = useState(fixture?.homeSourceId ?? "");
   const [homeSourceOutcome, setHomeOutcome] = useState(
     fixture?.homeSourceOutcome ?? "winner",
@@ -49,9 +47,6 @@ function FixtureForm({
     scheduledAt: time ? `${time}${time.length === 16 ? ":00" : ""}Z` : null,
     timeZone,
     status,
-    refereeIds: referees.trim()
-      ? referees.split(",").map((v) => Number(v.trim()))
-      : [],
     homeSourceId: homeSourceId || null,
     homeSourceOutcome: homeSourceId ? homeSourceOutcome : null,
     awaySourceId: awaySourceId || null,
@@ -214,14 +209,6 @@ function FixtureForm({
           <option value="in_progress">In progress</option>
           <option value="cancelled">Cancelled</option>
         </select>
-      </label>
-      <label className="field">
-        <span>Assigned referee osu! IDs (comma-separated)</span>
-        <input
-          value={referees}
-          maxLength={1000}
-          onChange={(e) => setReferees(e.target.value)}
-        />
       </label>
       {round?.stage === "knockout" && (
         <details>
@@ -815,11 +802,13 @@ export function FixtureManager({
             · {f.result ? `${f.result.state} report` : "No result submitted"}
           </p>
           <p className="small muted">
-            Assigned referees: {f.refereeIds.join(", ") || "None"} · v
+            Assigned referees:{" "}
+            {f.referees.map((r) => r.username).join(", ") || "None"} · v
             {f.version}
           </p>
           {data.canManage && (
             <>
+              <RefereeAssignment slug={slug} fixture={f} data={data} />
               <ConfirmMutation
                 label={f.publishedAt ? "Unpublish fixture" : "Publish fixture"}
                 title={
@@ -839,7 +828,7 @@ export function FixtureManager({
               />
               {!f.publishedAt && (
                 <details>
-                  <summary>Amend fixture and referees</summary>
+                  <summary>Edit fixture</summary>
                   <FixtureForm
                     key={`${f.id}-${f.version}`}
                     slug={slug}

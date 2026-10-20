@@ -438,7 +438,9 @@ describe.skipIf(!url)(
       });
       fixtureBody = { ...fixtureBody, roundId, mappoolId: null };
       await fixtureCommand(admin, "test-cup", {
-        ...fixtureBody,
+        ...Object.fromEntries(
+          Object.entries(fixtureBody).filter(([key]) => key !== "refereeIds"),
+        ),
         action: "edit",
         fixtureId,
         expectedVersion: 0,
@@ -567,7 +569,9 @@ describe.skipIf(!url)(
         published: false,
       });
       await fixtureCommand(admin, "test-cup", {
-        ...fixtureBody,
+        ...Object.fromEntries(
+          Object.entries(fixtureBody).filter(([key]) => key !== "refereeIds"),
+        ),
         action: "edit",
         fixtureId: child.id,
         expectedVersion: savedChild.context.fixture.version + 1,

@@ -38,17 +38,21 @@ export function permits(
       roleCapabilities[g.role].includes(capability),
   );
 }
+export function bootstrapAdminIds() {
+  return (process.env.ADMIN_OSU_IDS ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter((v) => /^[1-9]\d*$/.test(v))
+    .map(Number)
+    .filter(Number.isSafeInteger);
+}
 /** No session claims or process cache: revocations apply to the next check. */
 type StaffReader = Pick<ReturnType<typeof db>, "select">;
 export async function staffAccess(
   user: User,
   reader?: StaffReader,
 ): Promise<StaffGrant[]> {
-  const bootstrap = (process.env.ADMIN_OSU_IDS ?? "")
-    .split(",")
-    .map((v) => v.trim())
-    .filter((v) => /^[1-9]\d*$/.test(v));
-  if (bootstrap.includes(String(user.osuId)))
+  if (bootstrapAdminIds().includes(user.osuId))
     return [{ role: "admin", editionSlug: null }];
   if (!process.env.DATABASE_URL) return [];
   return (reader ?? db())

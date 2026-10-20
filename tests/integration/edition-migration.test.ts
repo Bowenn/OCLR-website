@@ -260,11 +260,15 @@ describe.skipIf(!base)(
             ).rows;
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+            expect(
+              (await pool.query("SELECT assignment_revision FROM fixtures"))
+                .rows,
+            ).toEqual([{ assignment_revision: 0 }]);
             for (const table of tables)
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));

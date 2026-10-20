@@ -110,6 +110,8 @@ The final local recovery drill used `pg_dump` (custom format) and `pg_restore --
 
 ## Competition operations release rehearsal
 
+Apply migration `0015` before deploying quick referee assignment. It adds a separate assignment revision without changing fixture/result versions or existing assignments. Roll back application code if needed; retain the additive column and audit history. Referee changes are saved from each fixture card using active edition-authorized Referee/Admin accounts. They do not invalidate an ongoing result review.
+
 Use verified `ADMIN_OSU_IDS` only to bootstrap the first global Admin; legacy `STAFF_OSU_IDS` grants nothing. Sign in with the organizer-confirmed osu! account, grant persistent Admin assignments through `/admin/staff`, verify a second authorized account, then remove the temporary environment bootstrap if desired. Role grants can be global or edition-scoped. Mappoolers receive only mappool capabilities; Referees receive only assigned-fixture reporting. Captains have no staff powers through captain status. Test direct requests with each role, not just navigation visibility.
 
 Before reporting matches, publish finalized official rosters, configure actual Group/Knockout rounds and their approved scoring policies, create/release mappools and schedule fixtures with referee assignments. Publish group membership and point/tiebreak rules explicitly if standings are required. Unconfirmed match times, rules or grouping remain TBA/pending. Do not import a lobby until its two fixture teams are verified.

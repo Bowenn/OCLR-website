@@ -541,6 +541,7 @@ export const fixtures = pgTable(
     awaySourceId: uuid("away_source_id"),
     awaySourceOutcome: text("away_source_outcome").$type<"winner" | "loser">(),
     publishedAt: timestamp("published_at", { withTimezone: true }),
+    assignmentRevision: integer("assignment_revision").notNull().default(0),
     version: integer("version").notNull().default(0),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()

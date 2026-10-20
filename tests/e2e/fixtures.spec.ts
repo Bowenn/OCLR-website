@@ -123,15 +123,31 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         .getByRole("combobox", { name: /^Associated mappool/ })
         .selectOption(pool.id);
       await page
-        .getByLabel("Assigned referee osu! IDs (comma-separated)")
-        .fill(String(refId));
-      await page
         .getByRole("button", { name: "Create fixture", exact: true })
         .click();
       await expect(
         page.getByRole("heading", {
           name: `Synthetic HTTP Fixture ${base} ↗`,
           exact: true,
+        }),
+      ).toBeVisible();
+      await page
+        .getByRole("button", { name: "Assign Referee", exact: true })
+        .click();
+      const assignmentDialog = page.getByRole("dialog");
+      await assignmentDialog
+        .getByRole("searchbox", { name: "Search referees", exact: true })
+        .fill(String(refId));
+      await assignmentDialog
+        .getByRole("checkbox", { name: new RegExp(String(refId)) })
+        .check();
+      await assignmentDialog
+        .getByRole("button", { name: "Save assignments", exact: true })
+        .click();
+      await expect(assignmentDialog).not.toBeVisible();
+      await expect(
+        page.getByText(`Assigned referees: Synthetic Player ${refId}`, {
+          exact: false,
         }),
       ).toBeVisible();
       const data = await (await context.request.get(endpoint)).json();
@@ -141,6 +157,30 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       expect(fixture.scheduledAt).toBeNull();
       expect(fixture.publishedAt).toBeNull();
       expect(fixture.result).toBeNull();
+      expect(fixture.assignmentRevision).toBe(1);
+      expect(fixture.version).toBe(0);
+      const assignUrl = `${endpoint}/${fixture.id}/referees`;
+      for (const [client, status] of [
+        [guest, 401],
+        [mapper, 403],
+        [referee, 403],
+      ] as const)
+        expect(
+          (
+            await client.request.patch(assignUrl, {
+              headers,
+              data: { expectedAssignmentRevision: 1, refereeIds: [] },
+            })
+          ).status(),
+        ).toBe(status);
+      expect(
+        (
+          await context.request.patch(assignUrl, {
+            headers: { origin: "https://evil.example" },
+            data: { expectedAssignmentRevision: 1, refereeIds: [] },
+          })
+        ).status(),
+      ).toBe(403);
       expect(
         (await referee.request.get(`${endpoint}/${fixture.id}`)).status(),
       ).toBe(200);

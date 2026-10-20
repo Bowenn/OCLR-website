@@ -26,6 +26,7 @@ import {
   users,
 } from "../../src/db/schema";
 import {
+  assignFixtureReferees,
   fixtureCommand,
   fixtureForReview,
   staffFixtures,
@@ -116,7 +117,7 @@ describe.skipIf(!url)(
       await closeDb();
       vi.unstubAllEnvs();
     });
-    function body() {
+    function body(edit = false) {
       return {
         ...confirm,
         action: "create",
@@ -133,7 +134,7 @@ describe.skipIf(!url)(
         homeSourceOutcome: null,
         awaySourceId: null,
         awaySourceOutcome: null,
-        refereeIds: [referee.osuId],
+        ...(edit ? {} : { refereeIds: [referee.osuId] }),
       };
     }
     it("creates persistent fixtures separately from results and limits referee reads to assigned fixtures", async () => {
@@ -244,14 +245,13 @@ describe.skipIf(!url)(
     it("serializes stale amendments, audits actual operators and applies assignment/role revocation immediately", async () => {
       const data = await fixtureCommand(admin, "test-cup", body());
       const f = data.fixtures[0];
-      const { action: _action, ...fields } = body();
+      const { action: _action, ...fields } = body(true);
       void _action;
       const amendment = {
         ...fields,
         action: "edit",
         fixtureId: f.id,
         expectedVersion: 0,
-        refereeIds: [],
       };
       const results = await Promise.allSettled([
         fixtureCommand(admin, "test-cup", amendment),
@@ -261,12 +261,15 @@ describe.skipIf(!url)(
       expect(results.find((r) => r.status === "rejected")).toMatchObject({
         reason: { status: 409 },
       });
+      await assignFixtureReferees(admin, "test-cup", f.id, {
+        expectedAssignmentRevision: 0,
+        refereeIds: [],
+      });
       await expect(
         fixtureForReview(referee, "test-cup", f.id),
       ).rejects.toMatchObject({ status: 403 });
-      await fixtureCommand(admin, "test-cup", {
-        ...amendment,
-        expectedVersion: 1,
+      await assignFixtureReferees(admin, "test-cup", f.id, {
+        expectedAssignmentRevision: 1,
         refereeIds: [referee.osuId],
       });
       await db()
@@ -277,10 +280,85 @@ describe.skipIf(!url)(
         fixtureForReview(referee, "test-cup", f.id),
       ).rejects.toMatchObject({ status: 403 });
       const events = await db().select().from(resultAuditEvents);
-      expect(events).toHaveLength(3);
+      expect(events).toHaveLength(4);
       expect(
         events.every((e) => e.actorId === admin.osuId && e.reason === null),
       ).toBe(true);
+    });
+    it("assigns multiple active referees independently of fixture/result versions with atomic conflicts and no false audits", async () => {
+      const f = (await fixtureCommand(admin, "test-cup", body())).fixtures[0];
+      await db()
+        .insert(matchResults)
+        .values({ fixtureId: f.id, state: "submitted", version: 7 });
+      const resultBefore = await db().select().from(matchResults);
+      const outcomes = await Promise.allSettled([
+        assignFixtureReferees(admin, "test-cup", f.id, {
+          expectedAssignmentRevision: 0,
+          refereeIds: [referee.osuId, otherRef.osuId],
+        }),
+        assignFixtureReferees(admin, "test-cup", f.id, {
+          expectedAssignmentRevision: 0,
+          refereeIds: [otherRef.osuId],
+        }),
+      ]);
+      expect(outcomes.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      expect(outcomes.find((r) => r.status === "rejected")).toMatchObject({
+        reason: { status: 409 },
+      });
+      const updated = (await staffFixtures(admin, "test-cup")).fixtures[0];
+      const {
+        refereeIds: _ids,
+        referees: _names,
+        result: _result,
+        ...unchanged
+      } = f;
+      void _ids;
+      void _names;
+      void _result;
+      const stored = (await db().select().from(fixtures))[0];
+      expect(stored).toEqual({ ...unchanged, assignmentRevision: 1 });
+      expect(await db().select().from(matchResults)).toEqual(resultBefore);
+      const auditCount = (await db().select().from(resultAuditEvents)).length;
+      await expect(
+        assignFixtureReferees(referee, "test-cup", f.id, {
+          expectedAssignmentRevision: 1,
+          refereeIds: [],
+        }),
+      ).rejects.toMatchObject({ status: 403 });
+      await expect(
+        assignFixtureReferees(admin, "other-test-cup", f.id, {
+          expectedAssignmentRevision: 1,
+          refereeIds: [],
+        }),
+      ).rejects.toMatchObject({ status: 404 });
+      for (const refereeIds of [
+        [player.osuId],
+        [mapper.osuId],
+        [referee.osuId, referee.osuId],
+      ])
+        await expect(
+          assignFixtureReferees(admin, "test-cup", f.id, {
+            expectedAssignmentRevision: 1,
+            refereeIds,
+          }),
+        ).rejects.toMatchObject({ status: 400 });
+      await db()
+        .update(staffRoles)
+        .set({ revokedAt: new Date() })
+        .where(eq(staffRoles.userId, otherRef.osuId));
+      await expect(
+        assignFixtureReferees(admin, "test-cup", f.id, {
+          expectedAssignmentRevision: 1,
+          refereeIds: [otherRef.osuId],
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      expect((await db().select().from(resultAuditEvents)).length).toBe(
+        auditCount,
+      );
+      expect(
+        (await staffFixtures(referee, "test-cup")).eligibleReferees,
+      ).toEqual([]);
+      expect(updated.assignmentRevision).toBe(1);
     });
     it("requires explicit publication/amendments and preserves UTC instants and timezone labels", async () => {
       const [f] = (
@@ -300,7 +378,7 @@ describe.skipIf(!url)(
       expect(published.fixtures[0].publishedAt).not.toBeNull();
       await expect(
         fixtureCommand(admin, "test-cup", {
-          ...body(),
+          ...body(true),
           action: "edit",
           fixtureId: f.id,
           expectedVersion: 1,
@@ -362,7 +440,9 @@ describe.skipIf(!url)(
       )!;
       await expect(
         fixtureCommand(admin, "test-cup", {
-          ...koBody,
+          ...body(true),
+          roundId: ko.id,
+          mappoolId: null,
           action: "edit",
           fixtureId: a.id,
           expectedVersion: 0,
