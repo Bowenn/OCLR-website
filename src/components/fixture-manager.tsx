@@ -254,6 +254,11 @@ function RoundRules({
   const [drawPoints, setDrawPoints] = useState(
     String(standings?.drawPoints ?? ""),
   );
+  const [failure, setFailure] = useState(rules?.failedScorePolicy ?? "");
+  const [mapTies, setMapTies] = useState(rules?.tiedMapPolicy ?? "");
+  const [shortHanded, setShortHanded] = useState(
+    rules ? String(rules.allowShortHanded ?? "") : "",
+  );
   const [enabled, setEnabled] = useState(Boolean(rules));
   const [version, setVersion] = useState(rules?.version ?? "");
   const [mode, setMode] = useState<string>(rules?.mode ?? "");
@@ -328,9 +333,9 @@ function RoundRules({
             </select>
           </label>
           <p className="small muted">
-            Automatic scoring supports team-vs games with Score or Score v2.
-            Other provider modes require review and cannot silently produce
-            winners.
+            Automatic scoring supports configured roster aggregation with Score
+            or Score v2. Other provider modes require review and cannot silently
+            produce winners.
           </p>
           <label className="field">
             <span>Multiplayer team mode</span>
@@ -340,6 +345,9 @@ function RoundRules({
             >
               <option value="">Unconfirmed</option>
               <option value="team-vs">Team vs</option>
+              <option value="head-to-head">
+                Head-to-head with explicit roster aggregation
+              </option>
             </select>
           </label>
           <label className="field">
@@ -411,6 +419,45 @@ function RoundRules({
               </select>
             </label>
           )}
+          <label className="field">
+            <span>Failed player scores</span>
+            <select
+              value={failure}
+              onChange={(e) => setFailure(e.target.value)}
+            >
+              <option value="">Unconfirmed</option>
+              <option value="include">Count the recorded score</option>
+              <option value="zero">Count failed scores as zero</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Tied map policy</span>
+            <select
+              value={mapTies}
+              onChange={(e) => setMapTies(e.target.value)}
+            >
+              <option value="">Unconfirmed</option>
+              <option value="require_replay">
+                Require replay; exclude the tied original
+              </option>
+              <option value="count_as_draw">
+                Count as a drawn map, without a map win
+              </option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Understrength teams</span>
+            <select
+              value={shortHanded}
+              onChange={(e) => setShortHanded(e.target.value)}
+            >
+              <option value="">Unconfirmed</option>
+              <option value="false">Require the configured player count</option>
+              <option value="true">
+                Allow fewer players with explicit review
+              </option>
+            </select>
+          </label>
           <label className="field">
             <span>Substitution policy</span>
             <select value={subs} onChange={(e) => setSubs(e.target.value)}>
@@ -527,6 +574,10 @@ function RoundRules({
                         allowDraw: draws === "" ? null : draws === "true",
                       },
                 allowSubstitutions: subs === "" ? null : subs === "true",
+                allowShortHanded:
+                  shortHanded === "" ? null : shortHanded === "true",
+                failedScorePolicy: failure,
+                tiedMapPolicy: mapTies,
               }
             : null,
           standingsRules:

@@ -179,6 +179,15 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         .selectOption("first_to");
       await rules.getByLabel("Map wins required").fill("2");
       await rules
+        .getByRole("combobox", { name: /^Failed player scores/ })
+        .selectOption("include");
+      await rules
+        .getByRole("combobox", { name: /^Tied map policy/ })
+        .selectOption("require_replay");
+      await rules
+        .getByRole("combobox", { name: /^Understrength teams/ })
+        .selectOption("false");
+      await rules
         .getByRole("combobox", { name: /^Substitution policy/ })
         .selectOption("false");
       await rules

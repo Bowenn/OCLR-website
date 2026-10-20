@@ -3,7 +3,7 @@ export const scoringRulesSchema = z
   .object({
     version: z.string().trim().min(1).max(80),
     mode: z.enum(["osu", "taiko", "fruits", "mania"]),
-    teamType: z.literal("team-vs"),
+    teamType: z.enum(["team-vs", "head-to-head"]),
     scoringType: z.enum(["score", "scorev2"]),
     aggregation: z.enum(["sum", "average"]),
     playersPerTeam: z.number().int().min(1).max(16),
@@ -23,6 +23,9 @@ export const scoringRulesSchema = z
         .strict(),
     ]),
     allowSubstitutions: z.boolean(),
+    allowShortHanded: z.boolean(),
+    failedScorePolicy: z.enum(["include", "zero"]),
+    tiedMapPolicy: z.enum(["require_replay", "count_as_draw"]),
   })
   .strict();
 export type ScoringRules = z.infer<typeof scoringRulesSchema>;

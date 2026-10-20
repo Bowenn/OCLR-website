@@ -49,6 +49,9 @@ const rules = {
   playersPerTeam: 2,
   series: { type: "first_to", wins: 2 },
   allowSubstitutions: false,
+  allowShortHanded: false,
+  failedScorePolicy: "include",
+  tiedMapPolicy: "require_replay",
 };
 describe.skipIf(!url)(
   "competition fixture integrity and assigned-referee boundaries",
