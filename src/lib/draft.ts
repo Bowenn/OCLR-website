@@ -140,12 +140,7 @@ export async function staffDraft(actor: User, slug: string) {
   return db().transaction(
     async (tx) => {
       const data = await draftData(tx, slug);
-      const events = await tx
-        .select()
-        .from(editionEvents)
-        .where(eq(editionEvents.editionSlug, slug))
-        .orderBy(editionEvents.createdAt);
-      return { ...data, availablePool: availablePool(data), events };
+      return { ...data, availablePool: availablePool(data) };
     },
     { isolationLevel: "repeatable read" },
   );

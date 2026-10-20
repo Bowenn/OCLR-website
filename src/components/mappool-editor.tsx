@@ -554,22 +554,6 @@ export function MappoolEditor({
           restrictions are assumed.
         </p>
       )}
-      <details className="panel">
-        <summary>Recent mappool audit history</summary>
-        <p className="muted small">
-          Latest 100 edition events. Full before/after revisions are retained in
-          the database.
-        </p>
-        {data.events.map((e) => (
-          <article key={e.id} className="spaced">
-            <h3>{e.action}</h3>
-            {e.reason && <p>{e.reason}</p>}
-            <p className="small muted">
-              osu! ID {e.actorId} · {e.createdAt.toISOString()}
-            </p>
-          </article>
-        ))}
-      </details>
     </div>
   );
 }

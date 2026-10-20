@@ -224,17 +224,6 @@ export async function tournamentForAdmin(actor: User, slug: string) {
   await assertCapability(actor, "configure_tournament", slug);
   const row = await readTournament(slug);
   if (!row) throw new HttpError(404, "Tournament not found.");
-  const events = await db()
-    .select()
-    .from(editionEvents)
-    .where(
-      and(
-        eq(editionEvents.editionSlug, slug),
-        sql`${editionEvents.kind} LIKE 'tournament_%'`,
-      ),
-    )
-    .orderBy(desc(editionEvents.createdAt))
-    .limit(50);
   const [applications] = await db()
     .select({ count: sql<number>`count(*)::int` })
     .from(registrations)
@@ -243,7 +232,6 @@ export async function tournamentForAdmin(actor: User, slug: string) {
   return {
     ...row,
     frozen,
-    events,
     applications: applications.count,
     readiness: tournamentReadiness(row.edition, frozen),
     links: tournamentLinks(await staffAccess(actor), slug),

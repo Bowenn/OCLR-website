@@ -23,6 +23,7 @@ import {
   staffRoles,
   editionState,
   editionRevisions,
+  editionEvents,
   registrations,
 } from "../../src/db/schema";
 import { submitRegistration } from "../../src/lib/registrations";
@@ -50,6 +51,8 @@ const change = (revision: number, action: string, data: object) =>
     action,
     ...data,
   });
+const auditEvents = () =>
+  db().select().from(editionEvents).where(eq(editionEvents.editionSlug, "s12"));
 describe.skipIf(!url)("authoritative tournament edition storage", () => {
   beforeAll(() => {
     assertTestDatabase(url);
@@ -143,7 +146,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       registration: null,
       schedule: [],
     });
-    expect(saved.events[0]).toMatchObject({
+    expect((await auditEvents())[0]).toMatchObject({
       actorId: admin.osuId,
       reason: null,
       kind: "tournament_create",
@@ -190,7 +193,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     expect(writes.find((r) => r.status === "rejected")).toMatchObject({
       reason: { status: 409 },
     });
-    expect((await tournamentForAdmin(admin, "s12")).events).toHaveLength(2);
+    expect(await auditEvents()).toHaveLength(2);
     await db().insert(staffRoles).values({
       userId: player.osuId,
       role: "admin",
@@ -342,12 +345,12 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
         schedule: [{ label: "Synthetic milestone", at: null }],
       }),
     ).rejects.toMatchObject({ status: 409 });
-    const saved = await change(0, "general", {
+    await change(0, "general", {
       ...fields,
       name: "Completed synthetic edition",
       status: "completed",
     });
-    expect(saved.events).toHaveLength(2);
+    expect(await auditEvents()).toHaveLength(2);
     expect(
       (
         await db()
@@ -384,7 +387,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     await create();
     const same = await change(0, "general", { ...fields, status: "upcoming" });
     expect(same.revision).toBe(0);
-    expect(same.events).toHaveLength(1);
+    expect(await auditEvents()).toHaveLength(1);
     expect(
       (
         await change(0, "publication", {

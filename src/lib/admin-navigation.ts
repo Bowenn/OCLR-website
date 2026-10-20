@@ -22,6 +22,12 @@ export const globalNavigation: readonly (AdminLink & {
     capability: "manage_staff",
   },
   {
+    href: "/admin/audit",
+    label: "Audit log",
+    group: "Administration",
+    capability: "manage_staff",
+  },
+  {
     href: "/admin/profiles",
     label: "osu! profile lookup",
     group: "Tools",

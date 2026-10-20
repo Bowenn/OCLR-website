@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -166,13 +166,7 @@ export async function mappoolWorkspace(actor: User, slug: string) {
             )
             .orderBy(mappoolEntries.category, mappoolEntries.position)
         : [];
-      const events = await tx
-        .select()
-        .from(mappoolEvents)
-        .where(eq(mappoolEvents.editionSlug, slug))
-        .orderBy(desc(mappoolEvents.createdAt))
-        .limit(100);
-      return { rounds, pools, entries, events };
+      return { rounds, pools, entries };
     },
     { isolationLevel: "repeatable read" },
   );

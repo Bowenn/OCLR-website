@@ -37,13 +37,7 @@ export async function listStaffRoles(actor: User) {
     .where(where)
     .orderBy(desc(staffRoles.grantedAt))
     .limit(500);
-  const events = await db()
-    .select()
-    .from(staffRoleEvents)
-    .where(scopes ? inArray(staffRoleEvents.editionSlug, scopes) : undefined)
-    .orderBy(desc(staffRoleEvents.createdAt), desc(staffRoleEvents.id))
-    .limit(100);
-  return { grants, events, scopes };
+  return { grants, scopes };
 }
 export async function changeStaffRole(actor: User, input: unknown) {
   await capabilityScope(actor, "manage_staff");

@@ -11,9 +11,7 @@ export default async function StaffPage({
   searchParams: Promise<{ edition?: string }>;
 }) {
   return authorizedPage(async () => {
-    const { grants, events, scopes } = await listStaffRoles(
-      await requireUser(),
-    );
+    const { grants, scopes } = await listStaffRoles(await requireUser());
     const requested = (await searchParams).edition ?? "";
     const editions = await getEditions();
     const selected = editions.find(
@@ -70,41 +68,6 @@ export default async function StaffPage({
                     scope={g.editionSlug}
                   />
                 )}
-              </article>
-            ))}
-        </section>
-        <section className="spaced">
-          <h2>Recent access history</h2>
-          <p className="muted small">Latest 100 events within your scope.</p>
-          {events
-            .filter(
-              (event) =>
-                !selected ||
-                event.editionSlug === null ||
-                event.editionSlug === selected.slug,
-            )
-            .map((e) => (
-              <article className="panel spaced" key={e.id}>
-                <p>
-                  {e.action} · {e.role} · osu! ID {e.targetId} ·{" "}
-                  {e.editionSlug ?? "Global"}
-                </p>
-                {e.reason && <p>{e.reason}</p>}
-                {e.after && (
-                  <details>
-                    <summary>Assignment changes</summary>
-                    <pre className="audit-json">
-                      {JSON.stringify(
-                        { before: e.before, after: e.after },
-                        null,
-                        2,
-                      )}
-                    </pre>
-                  </details>
-                )}
-                <p className="muted small">
-                  Actor {e.actorId} · {e.createdAt.toISOString()}
-                </p>
               </article>
             ))}
         </section>

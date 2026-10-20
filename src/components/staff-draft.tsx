@@ -6,7 +6,6 @@ import { usePoll } from "./use-poll";
 import { DraftPick } from "./draft-pick";
 import { ConfirmMutation } from "./confirm-mutation";
 import { DraftBoardView } from "./draft-board";
-import { formatDate } from "@/lib/editions";
 function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
   const [sequence, setSequence] = useState<string[]>(
     data.session?.turnSequence ?? [],
@@ -242,31 +241,6 @@ export function StaffDraftRoom({
         slug={slug}
         data={data}
       />
-      <section className="section-space">
-        <h2>Operator audit</h2>
-        <ol className="schedule-list">
-          {data.events
-            .filter((e) => e.kind.startsWith("draft_"))
-            .map((e) => (
-              <li key={e.id}>
-                <div>
-                  <h3>{e.kind.replaceAll("_", " ")}</h3>
-                  <p className="small muted">
-                    Actor osu! ID {e.actorId ?? "removed"} ·{" "}
-                    {formatDate(e.createdAt, "UTC")}
-                  </p>
-                  {e.reason && <p className="small">{e.reason}</p>}
-                  <details>
-                    <summary>Before/after record</summary>
-                    <pre className="audit-json">
-                      {JSON.stringify(e.detail, null, 2)}
-                    </pre>
-                  </details>
-                </div>
-              </li>
-            ))}
-        </ol>
-      </section>
     </>
   );
 }

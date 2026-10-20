@@ -411,11 +411,14 @@ test.describe("browser-managed authoritative tournament editions", () => {
       expect(
         (await guest.request.get(`/api/tournaments/${slug}`)).status(),
       ).toBe(404);
-      const audit = await current();
+      const audit = await (
+        await page.request.get(
+          `/api/admin/audit?edition=${slug}&module=tournament`,
+        )
+      ).json();
       expect(
-        audit.events.every(
-          (event: { actorId: number; reason: string | null }) =>
-            event.actorId === adminId && event.reason === null,
+        audit.rows.every(
+          (event: { actorId: number }) => event.actorId === adminId,
         ),
       ).toBe(true);
       expect(

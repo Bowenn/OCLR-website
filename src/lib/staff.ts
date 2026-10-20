@@ -115,12 +115,7 @@ export async function applicationDetails(actor: User, id: string) {
     "manage_registrations",
     row.registration.editionSlug,
   );
-  const events = await db()
-    .select()
-    .from(registrationEvents)
-    .where(eq(registrationEvents.registrationId, id))
-    .orderBy(registrationEvents.createdAt);
-  return { ...row, events };
+  return row;
 }
 export async function reviewApplication(
   actor: User,

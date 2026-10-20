@@ -16,7 +16,7 @@ export default async function Application({
     const { id, edition: slug } = await params;
     const data = await applicationDetails(actor, id);
     if (data.registration.editionSlug !== slug) notFound();
-    const { registration: r, username, events } = data;
+    const { registration: r, username } = data;
     const edition = await getEdition(r.editionSlug);
     return (
       <>
@@ -55,27 +55,6 @@ export default async function Application({
         {r.status === "pending" && (
           <ReviewForm id={r.id} updatedAt={r.updatedAt.toISOString()} />
         )}
-        <section className="section-space">
-          <h2>Audit trail</h2>
-          <ol className="schedule-list">
-            {events.map((e) => (
-              <li key={e.id}>
-                <div>
-                  <h3>
-                    {e.fromStatus ?? "new"} → {e.toStatus}
-                  </h3>
-                  <p className="muted small">
-                    Actor osu! ID {e.actorId ?? "removed"} ·{" "}
-                    {formatDate(e.createdAt, "UTC")}
-                  </p>
-                  {e.reason && (
-                    <p className="preserve-lines small">{e.reason}</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
       </>
     );
   });

@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
   and,
-  desc,
   eq,
   inArray,
   isNotNull,
@@ -340,12 +339,6 @@ export async function fixtureForReview(
       .select()
       .from(matchResults)
       .where(eq(matchResults.fixtureId, id));
-    const events = await tx
-      .select()
-      .from(resultAuditEvents)
-      .where(eq(resultAuditEvents.fixtureId, id))
-      .orderBy(desc(resultAuditEvents.createdAt))
-      .limit(100);
     return {
       fixture,
       round,
@@ -362,7 +355,6 @@ export async function fixtureForReview(
         : null,
       result: result ?? null,
       canApprove: admin,
-      events,
     };
   };
   return reader

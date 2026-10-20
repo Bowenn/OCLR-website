@@ -50,6 +50,11 @@ const mapper = { osuId: 190002, username: "Synthetic Mappooler" };
 const referee = { osuId: 190003, username: "Synthetic Referee" };
 const player = { osuId: 190004, username: "Synthetic Player" };
 const confirm = { confirmed: true };
+const auditEvents = () =>
+  db()
+    .select()
+    .from(mappoolEvents)
+    .orderBy(mappoolEvents.createdAt, mappoolEvents.id);
 describe.skipIf(!url)("edition mappool integrity and publication", () => {
   beforeAll(() => {
     assertTestDatabase(url);
@@ -211,9 +216,9 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
       entryId: data.entries[0].id,
     });
     expect(data.entries[0].metadata.title).toBe("Changed upstream");
-    expect(data.events.filter((e) => e.action === "entry_save")).toHaveLength(
-      2,
-    );
+    expect(
+      (await auditEvents()).filter((e) => e.action === "entry_save"),
+    ).toHaveLength(2);
   });
   it("automatically records actor, target, versions and map changes without a reason", async () => {
     const pool = await create();
@@ -223,7 +228,7 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
       ...add(pool.id, 1, 1, "NM", "456"),
       entryId: entry.id,
     });
-    const event = data.events.find(
+    const event = (await auditEvents()).find(
       (e) =>
         e.action === "entry_save" &&
         (e.after.pool as { version: number } | undefined)?.version === 2,
@@ -243,7 +248,7 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
       pool: { version: 2 },
       entries: [{ id: entry.id, beatmapId: 456 }],
     });
-    const count = data.events.length;
+    const count = (await auditEvents()).length;
     for (const forged of [
       { actorId: admin.osuId },
       { createdAt: new Date().toISOString() },
@@ -258,9 +263,7 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     await expect(
       mappoolCommand(mapper, edition.slug, add(pool.id, 0, 2)),
     ).rejects.toMatchObject({ status: 409 });
-    expect((await mappoolWorkspace(mapper, edition.slug)).events).toHaveLength(
-      count,
-    );
+    expect(await auditEvents()).toHaveLength(count);
   });
   it("rolls back the mutation when its transactional audit write fails and retains historical notes", async () => {
     const pool = await create();
@@ -275,6 +278,7 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
         after: { id: pool.id },
       });
     const before = await mappoolWorkspace(mapper, edition.slug);
+    const beforeEvents = await auditEvents();
     await db().execute(
       sql`CREATE FUNCTION oclr_test_fail_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic unavailable audit sink'; END $$`,
     );
@@ -288,9 +292,9 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
       const after = await mappoolWorkspace(mapper, edition.slug);
       expect(after.pools).toEqual(before.pools);
       expect(after.entries).toEqual(before.entries);
-      expect(after.events).toEqual(before.events);
+      expect(await auditEvents()).toEqual(beforeEvents);
       expect(
-        after.events.some(
+        (await auditEvents()).some(
           (e) => e.reason === "Historical organizer explanation",
         ),
       ).toBe(true);

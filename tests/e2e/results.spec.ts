@@ -235,7 +235,13 @@ test.describe("private referee review and Admin publication", () => {
         awayWins: 1,
       });
       expect(
-        review.context.events.map((e: { action: string }) => e.action),
+        (
+          await (
+            await page.request.get(
+              "/api/admin/audit?edition=test-cup&module=results",
+            )
+          ).json()
+        ).rows.map((e: { action: string }) => e.action),
       ).toEqual(
         expect.arrayContaining([
           "result_submit",

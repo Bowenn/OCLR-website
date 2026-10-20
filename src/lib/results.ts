@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -276,10 +276,20 @@ export async function matchReview(
       const previous = baseline
         ? matchSourceSchema.safeParse(baseline.source)
         : null;
-      const lastImportEvent = context.events.find(
-        (e) =>
-          e.action === "source_imported" && e.detail.importId === latest?.id,
-      );
+      const [lastImportEvent] = latest
+        ? await tx
+            .select({ detail: resultAuditEvents.detail })
+            .from(resultAuditEvents)
+            .where(
+              and(
+                eq(resultAuditEvents.fixtureId, fixtureId),
+                eq(resultAuditEvents.action, "source_imported"),
+                sql`${resultAuditEvents.detail}->>'importId' = ${latest.id}`,
+              ),
+            )
+            .orderBy(desc(resultAuditEvents.createdAt))
+            .limit(1)
+        : [];
       const recordedDiff = sourceDiffSchema.safeParse(
         lastImportEvent?.detail.diff,
       );

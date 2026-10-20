@@ -674,24 +674,6 @@ export function MatchReviewPanel({
           )}
         </div>
       </section>
-      <details className="panel">
-        <summary>Internal audit trail</summary>
-        <ul>
-          {context.events.map((e) => (
-            <li key={e.id}>
-              {e.action} · osu! ID {e.actorId} ·{" "}
-              {new Date(e.createdAt).toISOString()}
-              {e.reason && <p>{e.reason}</p>}
-              <details>
-                <summary>Recorded changes</summary>
-                <pre className="audit-json">
-                  {JSON.stringify(e.detail, null, 2)}
-                </pre>
-              </details>
-            </li>
-          ))}
-        </ul>
-      </details>
     </div>
   );
 }
