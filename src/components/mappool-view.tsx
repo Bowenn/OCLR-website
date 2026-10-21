@@ -10,87 +10,100 @@ import { BeatmapCover } from "./beatmap-cover";
 
 type Pool = Awaited<ReturnType<typeof publicMappools>>[number];
 const columns = [
-  "Mapper",
-  "BID",
   "Base SR",
   "Official Mod SR",
   "BPM",
   "Length",
-  "AR",
-  "OD",
-  "CS",
-  "HP",
+  "AR / OD / CS / HP",
 ] as const;
 
 function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
   const m = e.metadata;
   const url = `https://osu.ppy.sh/beatmaps/${e.beatmapId}`;
   const fields = [
-    m.mapper,
-    <a className="text-link" href={url} key="bid">
-      {e.beatmapId}
-    </a>,
-    formatBeatmapNumber(m.stars, 2),
-    <span key="mods">
-      {m.attributes ? (
-        <details className="mappool-mod-attributes">
-          <summary>
-            {formatBeatmapNumber(m.attributes.stars, 2)}
-            <small>{m.attributes.configuration}</small>
-          </summary>
-          <dl>
-            <div>
-              <dt>Ruleset</dt>
-              <dd>{m.attributes.ruleset}</dd>
-            </div>
-            <div>
-              <dt>Max combo</dt>
-              <dd>{formatBeatmapNumber(m.attributes.maxCombo)}</dd>
-            </div>
-            {Object.entries(m.attributes.values).map(([key, value]) => (
-              <div key={key}>
-                <dt>{key.replaceAll("_", " ")}</dt>
-                <dd>{formatBeatmapNumber(value)}</dd>
-              </div>
-            ))}
-          </dl>
-        </details>
-      ) : (
-        <>
-          —
-          <small>
-            {e.category === "FM" || e.category === "TB"
-              ? "Variable / unconfigured"
-              : "Unconfigured"}
-          </small>
-        </>
-      )}
+    <span className="mappool-base-sr" key="base">
+      {formatBeatmapNumber(m.stars, 2)}
+      <span aria-hidden="true"> ★</span>
     </span>,
+    m.attributes ? (
+      <details className="mappool-mod-attributes" key="mods">
+        <summary>
+          {formatBeatmapNumber(m.attributes.stars, 2)}
+          <small>{m.attributes.configuration}</small>
+        </summary>
+        <dl>
+          <div>
+            <dt>Ruleset</dt>
+            <dd>{m.attributes.ruleset}</dd>
+          </div>
+          <div>
+            <dt>Max combo</dt>
+            <dd>{formatBeatmapNumber(m.attributes.maxCombo)}</dd>
+          </div>
+          {Object.entries(m.attributes.values).map(([key, value]) => (
+            <div key={key}>
+              <dt>{key.replaceAll("_", " ")}</dt>
+              <dd>{formatBeatmapNumber(value)}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+    ) : (
+      <span className="muted" key="mods">
+        {e.category === "NM" ? (
+          <span title="Base SR is the No Mod difficulty">—</span>
+        ) : e.category === "FM" || e.category === "TB" ? (
+          "Variable"
+        ) : (
+          "Not calculated"
+        )}
+      </span>
+    ),
     formatBeatmapNumber(m.bpm),
     formatBeatmapDuration(m.duration),
-    formatBeatmapNumber(m.ar),
-    formatBeatmapNumber(m.od),
-    formatBeatmapNumber(m.cs),
-    formatBeatmapNumber(m.hp),
+    <dl className="mappool-parameters" key="parameters">
+      {(["AR", "OD", "CS", "HP"] as const).map((label) => (
+        <div key={label}>
+          <dt>{label}</dt>
+          <dd>
+            {formatBeatmapNumber(
+              m[label.toLowerCase() as "ar" | "od" | "cs" | "hp"],
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>,
   ];
   return (
     <tr>
-      <th scope="row">{slotLabel(e.category, e.position)}</th>
+      <th scope="row">
+        <span className="mappool-slot">
+          {slotLabel(e.category, e.position)}
+        </span>
+      </th>
       <td className="mappool-map">
         <div className="mappool-map-identity">
           <BeatmapCover setId={m.setId} />
           <div>
-            <a className="text-link" href={url}>
-              {m.artist} — {m.title}
+            <a className="mappool-map-title" href={url}>
+              <span>{m.artist} — </span>
+              {m.title}
             </a>
-            <p className="muted">[{m.difficulty}]</p>
+            <p className="mappool-difficulty">[{m.difficulty}]</p>
+            <p className="mappool-map-credit">
+              <span>{m.mapper}</span>
+              <span aria-hidden="true"> · </span>
+              <a href={url}>BID {e.beatmapId}</a>
+            </p>
           </div>
         </div>
         <details className="mappool-mobile-details">
           <summary>
-            {formatBeatmapNumber(m.stars, 2)} ★ base ·{" "}
-            {formatBeatmapNumber(m.bpm)} BPM ·{" "}
-            {formatBeatmapDuration(m.duration)}{" "}
+            <span>
+              {formatBeatmapNumber(m.stars, 2)} ★ base ·{" "}
+              {formatBeatmapNumber(m.bpm)} BPM ·{" "}
+              {formatBeatmapDuration(m.duration)}
+            </span>
             <span className="text-link">Details</span>
           </summary>
           <dl>
@@ -111,29 +124,53 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
     </tr>
   );
 }
-export function MappoolView({ pool }: { pool: Pool }) {
-  const populated = categories.filter((c) =>
-    pool.entries.some((e) => e.category === c),
+export function MappoolView({
+  pool,
+  headingLevel = 2,
+}: {
+  pool: Pool;
+  headingLevel?: 2 | 5;
+}) {
+  const populated = categories.filter((category) =>
+    pool.entries.some((entry) => entry.category === category),
   );
+  const prefix = `pool-${pool.id}`;
+  const Heading = headingLevel === 5 ? "h5" : "h2";
   if (!populated.length)
     return (
-      <p className="muted">No beatmaps have been released for this pool.</p>
+      <p className="muted small">
+        No beatmaps have been released for this pool.
+      </p>
     );
   return (
     <div className="mappool-public">
-      <nav className="actions" aria-label="Mappool categories">
-        {populated.map((c) => (
-          <a className="button secondary" key={c} href={`#maps-${c}`}>
-            {c} · {pool.entries.filter((e) => e.category === c).length}
-          </a>
-        ))}
-      </nav>
-      <p id="mappool-values" className="muted small spaced">
-        Map values are unmodified base values. Official Mod SR is shown only for
-        explicitly configured mods.
+      {populated.length > 1 && (
+        <nav
+          className="mappool-category-links"
+          aria-label={`${pool.name}: map categories`}
+        >
+          {populated.map((category) => (
+            <a key={category} href={`#${prefix}-maps-${category}`}>
+              {category}{" "}
+              <span>
+                {
+                  pool.entries.filter((entry) => entry.category === category)
+                    .length
+                }
+              </span>
+            </a>
+          ))}
+        </nav>
+      )}
+      <p id={`${prefix}-values`} className="mappool-values muted small">
+        {populated.every((category) => category === "NM")
+          ? "NM uses Base SR and unmodified map stats."
+          : "Base stats are unmodified. Mod SR is calculated for the shown mods."}
       </p>
       {populated.map((category) => {
-        const entries = pool.entries.filter((e) => e.category === category);
+        const entries = pool.entries.filter(
+          (entry) => entry.category === category,
+        );
         const name =
           category === "FM" && pool.fmMode
             ? pool.fmMode === "free_mod"
@@ -142,21 +179,22 @@ export function MappoolView({ pool }: { pool: Pool }) {
             : categoryNames[category];
         return (
           <section
-            className="section-space"
-            id={`maps-${category}`}
+            className="mappool-category"
+            id={`${prefix}-maps-${category}`}
             key={category}
-            aria-labelledby={`maps-${category}-title`}
+            aria-labelledby={`${prefix}-maps-${category}-title`}
           >
-            <div className="section-title">
-              <h2 id={`maps-${category}-title`}>
-                {category} <span className="muted">/ {name}</span>
-              </h2>
+            <div className="mappool-category-heading">
+              <Heading id={`${prefix}-maps-${category}-title`}>
+                <strong>{category}</strong>
+                <span>{name}</span>
+              </Heading>
               <span className="muted small">
-                {entries.length} {entries.length === 1 ? "slot" : "slots"}
+                {entries.length} {entries.length === 1 ? "map" : "maps"}
               </span>
             </div>
             {category === "FM" && (
-              <p className="muted small">
+              <p className="mappool-fm-note muted small">
                 {name}:{" "}
                 {pool.fmRestrictions ||
                   "Detailed mod restrictions have not been published."}
@@ -165,15 +203,18 @@ export function MappoolView({ pool }: { pool: Pool }) {
             <div
               className="table-scroll"
               role="region"
-              aria-label={`${category} beatmaps`}
+              aria-label={`${pool.name}: ${category} beatmaps`}
               tabIndex={0}
             >
               <table
                 className="mappool-sheet"
-                aria-describedby="mappool-values"
+                aria-describedby={`${prefix}-values`}
               >
-                <caption className="sr-only">
-                  {category} / {name} beatmaps
+                <caption
+                  id={`${prefix}-maps-${category}-caption`}
+                  className="sr-only"
+                >
+                  {pool.name}: {category} / {name} beatmaps
                 </caption>
                 <thead>
                   <tr>
@@ -187,8 +228,8 @@ export function MappoolView({ pool }: { pool: Pool }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map((e) => (
-                    <MappoolRow key={e.id} entry={e} />
+                  {entries.map((entry) => (
+                    <MappoolRow key={entry.id} entry={entry} />
                   ))}
                 </tbody>
               </table>

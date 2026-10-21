@@ -1627,50 +1627,235 @@ body:has(.presenter-view) .site-footer,
   margin-left: 1.5rem;
 }
 
+/* Public releases: stage tabs, round disclosures, then one dense map surface. */
+.mappool-browser {
+  min-width: 0;
+}
+.mappool-browser > .workspace-tabs {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 0.25rem;
+  background: #101321;
+}
+.mappool-browser > .workspace-tabs button {
+  border: 0;
+  border-radius: 0.35rem;
+}
+.mappool-browser > .workspace-tabs button[aria-selected="true"] {
+  background: #b666df24;
+  color: #efc3ff;
+}
+.mappool-stage-title {
+  font-size: 1.15rem;
+  margin: 0 0 1rem;
+}
+.mappool-round-list {
+  margin-top: 1rem;
+}
+.mappool-public-round {
+  border-top: 1px solid var(--color-border);
+}
+.mappool-public-round > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  min-height: 56px;
+  padding: 0.75rem 0.25rem;
+  cursor: pointer;
+  list-style: none;
+}
+.mappool-public-round > summary::-webkit-details-marker {
+  display: none;
+}
+.mappool-public-round > summary::before {
+  content: "+";
+  color: #dba7ef;
+  font-size: 1.2rem;
+  width: 1rem;
+}
+.mappool-public-round[open] > summary::before {
+  content: "−";
+}
+.mappool-public-round > summary:hover {
+  background: #b666df08;
+}
+.mappool-public-round > summary h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.mappool-public-round > summary > span {
+  margin-left: auto;
+}
+.mappool-release {
+  padding: 0.8rem 0 1.5rem;
+  min-width: 0;
+}
+.mappool-release + .mappool-release {
+  border-top: 1px solid var(--color-border);
+}
+.mappool-release-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.8rem;
+}
+.mappool-release-heading h4 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+.mappool-release-heading p {
+  margin: 0 0 0 auto;
+}
+.mappool-category-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.65rem;
+}
+.mappool-category-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.4rem 0.5rem;
+  color: #e5baf8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-bottom: 2px solid #b666df35;
+  text-decoration: none;
+}
+.mappool-category-links a:hover {
+  border-color: #dba7ef;
+  background: #b666df12;
+}
+.mappool-category-links span {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+.mappool-values {
+  margin: 0.65rem 0 1rem;
+  max-width: 80ch;
+}
+.mappool-category {
+  margin-bottom: 1.25rem;
+  scroll-margin-top: 6rem;
+}
+.mappool-category-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.75rem;
+  background: #17192a;
+  border-left: 3px solid #b16bd3;
+}
+.mappool-category-heading :is(h2, h5) {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 0.8rem;
+}
+.mappool-category-heading strong {
+  color: #e5baf8;
+  letter-spacing: 0.04em;
+}
+.mappool-category-heading :is(h2, h5) > span {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+.mappool-fm-note {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  background: #101321;
+}
 .mappool-sheet {
-  min-width: 960px;
+  min-width: 780px;
   font-size: 0.75rem;
+  margin: 0;
+  background: #101320;
 }
 .mappool-sheet th,
 .mappool-sheet td {
-  padding: 0.65rem 0.6rem;
+  padding: 0.8rem 0.6rem;
   vertical-align: middle;
   font-variant-numeric: tabular-nums;
 }
 .mappool-sheet thead th {
-  letter-spacing: 0.02em;
+  color: var(--color-muted);
+  font-size: 0.65rem;
+  font-weight: 500;
   white-space: nowrap;
+  background: transparent;
 }
 .mappool-sheet tbody th {
   background: transparent;
-  color: var(--color-foreground);
   font-size: 0.75rem;
   white-space: nowrap;
 }
+.mappool-slot {
+  color: #e5baf8;
+  font-weight: 700;
+}
+.mappool-sheet .mappool-extra {
+  text-align: right;
+}
+.mappool-base-sr {
+  font-weight: 700;
+  white-space: nowrap;
+}
 .mappool-map {
-  min-width: 260px;
+  min-width: 250px;
+  width: 44%;
 }
 .mappool-map-identity {
   display: flex;
-  gap: 0.65rem;
+  gap: 0.75rem;
   align-items: center;
 }
 .mappool-map-identity > div:last-child {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.mappool-map-title {
+  color: var(--color-foreground);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.mappool-map-title > span {
+  color: #b9bed4;
+  font-weight: 400;
+}
+.mappool-map-title:hover {
+  color: #e5baf8;
+  text-decoration: underline;
+}
 .mappool-map-identity p {
   margin: 0.2rem 0 0;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
+}
+.mappool-difficulty {
+  color: #d3bce0;
+}
+.mappool-map-credit {
+  color: var(--color-muted);
+}
+.mappool-map-credit a {
+  color: inherit;
+  text-underline-offset: 0.2em;
 }
 .mappool-map-identity .beatmap-cover {
-  width: 56px;
-  height: 32px;
-  flex: 0 0 56px;
-  border-radius: 0.25rem;
+  width: 72px;
+  height: 48px;
+  flex: 0 0 72px;
+  border-radius: 0.3rem;
 }
 .mappool-map-identity .beatmap-cover span {
-  font-size: 0.5rem;
+  font-size: 0.55rem;
   line-height: 1.2;
   text-align: center;
 }
@@ -1679,11 +1864,27 @@ body:has(.presenter-view) .site-footer,
   color: var(--color-muted);
   font-size: 0.65rem;
 }
+.mappool-parameters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(1.4rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+.mappool-parameters dt {
+  font-size: 0.6rem;
+  color: var(--color-muted);
+}
+.mappool-parameters dd {
+  margin: 0.15rem 0 0;
+}
 .mappool-mobile-details {
   display: none;
 }
 .mappool-mod-attributes summary {
   cursor: pointer;
+  min-height: 44px;
+  display: grid;
+  align-content: center;
 }
 .mappool-mod-attributes dl {
   margin-bottom: 0;
@@ -1696,12 +1897,40 @@ body:has(.presenter-view) .site-footer,
   margin: 0 0 0.35rem;
 }
 @media (max-width: 760px) {
+  .mappool-release-heading {
+    display: block;
+  }
+  .mappool-release-heading p {
+    margin-top: 0.4rem;
+  }
+  .mappool-public-round > summary > span {
+    width: 100%;
+    margin-left: 2rem;
+  }
   .mappool-sheet {
     min-width: 0;
-    font-size: 0.85rem;
+    width: 100%;
+    font-size: 0.8rem;
+  }
+  .mappool-sheet th,
+  .mappool-sheet td {
+    padding: 0.65rem 0.4rem;
   }
   .mappool-map {
     min-width: 0;
+    width: auto;
+  }
+  .mappool-map-identity {
+    gap: 0.55rem;
+    align-items: flex-start;
+  }
+  .mappool-map-identity .beatmap-cover {
+    width: 52px;
+    height: 40px;
+    flex-basis: 52px;
+  }
+  .mappool-map-title {
+    font-size: 0.8rem;
   }
   .mappool-extra {
     display: none;
@@ -1710,20 +1939,27 @@ body:has(.presenter-view) .site-footer,
     display: block;
     margin-top: 0.35rem;
   }
-  .mappool-mobile-details summary {
-    min-height: var(--button-height);
-    padding-block: 0.4rem;
+  .mappool-mobile-details > summary {
+    min-height: 44px;
+    padding-block: 0.5rem;
     cursor: pointer;
+    font-size: 0.7rem;
   }
-  .mappool-mobile-details dl {
+  .mappool-mobile-details > summary > span:last-child {
+    margin-left: 0.4rem;
+  }
+  .mappool-mobile-details > dl {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
     margin: 0.35rem 0;
   }
+  .mappool-mobile-details > dl > div:last-child {
+    grid-column: 1 / -1;
+  }
   .mappool-mobile-details dt {
     color: var(--color-muted);
-    font-size: 0.68rem;
+    font-size: 0.65rem;
   }
   .mappool-mobile-details dd {
     margin: 0;

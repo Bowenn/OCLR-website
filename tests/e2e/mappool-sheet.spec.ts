@@ -120,25 +120,29 @@ test.describe("published mappool mainsheet", () => {
     await expect(sheet.locator("tbody tr")).toHaveCount(30);
     expect(
       await sheet
-        .getByRole("navigation", { name: "Mappool categories" })
+        .getByRole("navigation", {
+          name: "Synthetic Released 30-Map Pool: map categories",
+        })
         .getByRole("link")
         .allTextContents(),
-    ).toEqual(categories.map((c) => `${c} · 5`));
+    ).toEqual(categories.map((c) => `${c} 5`));
     for (const c of categories)
       expect(
-        await sheet.locator(`#maps-${c} tbody th`).allTextContents(),
+        await sheet
+          .locator(`#pool-${poolId}-maps-${c} tbody th`)
+          .allTextContents(),
       ).toEqual([1, 2, 3, 4, 5].map((p) => slotLabel(c, p)));
     await expect(
       sheet.getByText("Free Mod: Synthetic published mod restrictions."),
     ).toBeVisible();
     for (const c of ["FM", "TB"]) {
       await expect(
-        sheet.locator(`#maps-${c} .mappool-mod-attributes`),
+        sheet.locator(`#pool-${poolId}-maps-${c} .mappool-mod-attributes`),
       ).toHaveCount(0);
       await expect(
         sheet
-          .locator(`#maps-${c} .mappool-extra`)
-          .filter({ hasText: "Variable / unconfigured" }),
+          .locator(`#pool-${poolId}-maps-${c} .mappool-extra`)
+          .filter({ hasText: "Variable" }),
       ).toHaveCount(5);
     }
     await expect(sheet.getByText("Cover unavailable")).toBeVisible();
@@ -149,7 +153,9 @@ test.describe("published mappool mainsheet", () => {
       }),
     ).toHaveAttribute("href", "https://osu.ppy.sh/beatmaps/820001");
     if (isMobile) {
-      const details = sheet.locator("#maps-DT .mappool-mobile-details").first();
+      const details = sheet
+        .locator(`#pool-${poolId}-maps-DT .mappool-mobile-details`)
+        .first();
       await details.locator("summary").first().focus();
       await page.keyboard.press("Enter");
       await expect(details).toHaveAttribute("open", "");
@@ -164,15 +170,21 @@ test.describe("published mappool mainsheet", () => {
     } else {
       await expect(
         sheet
-          .locator("#maps-DT .mappool-extra")
+          .locator(`#pool-${poolId}-maps-DT .mappool-extra`)
           .filter({ hasText: "6.75" })
           .first(),
       ).toBeVisible();
       await expect(
-        sheet.locator("#maps-NM tbody tr").nth(1).locator("td").nth(7),
+        sheet
+          .locator(`#pool-${poolId}-maps-NM tbody tr`)
+          .nth(1)
+          .locator(".mappool-extra .mappool-parameters dd")
+          .first(),
       ).toHaveText("—");
       const attributes = sheet
-        .locator("#maps-DT .mappool-extra .mappool-mod-attributes")
+        .locator(
+          `#pool-${poolId}-maps-DT .mappool-extra .mappool-mod-attributes`,
+        )
         .first();
       await attributes.locator("summary").click();
       await expect(attributes.getByText("1000", { exact: true })).toBeVisible();
@@ -187,7 +199,7 @@ test.describe("published mappool mainsheet", () => {
     await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 900 });
     if (!isMobile) {
       const region = page.getByRole("region", {
-        name: "NM beatmaps",
+        name: "Synthetic Released 30-Map Pool: NM beatmaps",
         exact: true,
       });
       await region.focus();
