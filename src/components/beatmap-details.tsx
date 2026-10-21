@@ -1,4 +1,8 @@
 import type { BeatmapMetadata } from "@/lib/mappool-model";
+import {
+  formatBeatmapDuration,
+  formatBeatmapNumber,
+} from "@/lib/mappool-model";
 import { BeatmapCover } from "./beatmap-cover";
 export function BeatmapDetails({
   beatmapId,
@@ -28,24 +32,24 @@ export function BeatmapDetails({
           {m.difficulty} · mapped by {m.mapper}
         </p>
         <p className="small">
-          {m.stars.toFixed(2)} ★ base · {m.bpm} BPM ·{" "}
-          {Math.floor(m.duration / 60)}:
-          {String(m.duration % 60).padStart(2, "0")}
+          {formatBeatmapNumber(m.stars, 2)} ★ base ·{" "}
+          {formatBeatmapNumber(m.bpm)} BPM · {formatBeatmapDuration(m.duration)}
         </p>
         {(m.ar !== undefined ||
           m.od !== undefined ||
           m.cs !== undefined ||
           m.hp !== undefined) && (
           <p className="small muted">
-            Base AR {m.ar ?? "—"} · OD {m.od ?? "—"} · CS {m.cs ?? "—"} · HP{" "}
-            {m.hp ?? "—"}
+            Base AR {formatBeatmapNumber(m.ar)} · OD {formatBeatmapNumber(m.od)}{" "}
+            · CS {formatBeatmapNumber(m.cs)} · HP {formatBeatmapNumber(m.hp)}
           </p>
         )}
         {m.attributes ? (
           <div className="small">
             <p>
-              {m.attributes.configuration} · {m.attributes.stars.toFixed(2)} ★
-              official adjusted · {m.attributes.ruleset}
+              {m.attributes.configuration} ·{" "}
+              {formatBeatmapNumber(m.attributes.stars, 2)} ★ official adjusted ·{" "}
+              {m.attributes.ruleset}
               {m.attributes.maxCombo !== null
                 ? ` · ${m.attributes.maxCombo} max combo`
                 : ""}

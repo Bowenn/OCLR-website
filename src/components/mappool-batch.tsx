@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { MappoolBatchPreview, MappoolWorkspace } from "@/lib/mappools";
-import { categories, slotLabel } from "@/lib/mappool-model";
+import {
+  categories,
+  slotLabel,
+  formatBeatmapDuration,
+  formatBeatmapNumber,
+} from "@/lib/mappool-model";
 import { ConfirmMutation } from "./confirm-mutation";
 type Pool = MappoolWorkspace["pools"][number];
 export function MappoolBatch({
@@ -150,10 +155,12 @@ export function MappoolBatch({
                             ? `${r.snapshot.metadata.difficulty} · ${r.snapshot.metadata.mapper}`
                             : "—"}
                         </td>
-                        <td>{r.snapshot?.metadata.stars.toFixed(2) ?? "—"}</td>
+                        <td>
+                          {formatBeatmapNumber(r.snapshot?.metadata.stars, 2)}
+                        </td>
                         <td>
                           {r.snapshot
-                            ? `${r.snapshot.metadata.bpm} BPM · ${Math.floor(r.snapshot.metadata.duration / 60)}:${String(r.snapshot.metadata.duration % 60).padStart(2, "0")}`
+                            ? `${formatBeatmapNumber(r.snapshot.metadata.bpm)} BPM · ${formatBeatmapDuration(r.snapshot.metadata.duration)}`
                             : "—"}
                         </td>
                         <td className={r.error ? "error-text" : ""}>

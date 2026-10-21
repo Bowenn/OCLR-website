@@ -10,6 +10,20 @@ export const categoryNames = {
 export function slotLabel(category: string, position: number) {
   return category === "TB" && position === 1 ? "TB" : `${category}${position}`;
 }
+export function formatBeatmapNumber(
+  value: number | null | undefined,
+  digits?: number,
+) {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return digits === undefined
+    ? String(Number(value.toFixed(2)))
+    : value.toFixed(digits);
+}
+export function formatBeatmapDuration(seconds: number | null | undefined) {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "—";
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
 
 // Shared browser/server parsing: only fixed official difficulty URLs, never arbitrary fetch targets.
 export function parseBeatmapId(input: string): number | null {

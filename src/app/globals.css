@@ -1633,11 +1633,108 @@ body:has(.presenter-view) .site-footer,
   margin-left: 1.5rem;
 }
 
-.mappool-slots {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: 1rem;
+.mappool-sheet {
+  min-width: 960px;
+  font-size: 0.75rem;
+}
+.mappool-sheet th,
+.mappool-sheet td {
+  padding: 0.65rem 0.6rem;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.mappool-sheet thead th {
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.mappool-sheet tbody th {
+  background: transparent;
+  color: var(--color-foreground);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.mappool-map {
+  min-width: 260px;
+}
+.mappool-map-identity {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+.mappool-map-identity > div:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.mappool-map-identity p {
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+}
+.mappool-map-identity .beatmap-cover {
+  width: 56px;
+  height: 32px;
+  flex: 0 0 56px;
+  border-radius: 0.25rem;
+}
+.mappool-map-identity .beatmap-cover span {
+  font-size: 0.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+.mappool-sheet small {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.65rem;
+}
+.mappool-mobile-details {
+  display: none;
+}
+.mappool-mod-attributes summary {
+  cursor: pointer;
+}
+.mappool-mod-attributes dl {
+  margin-bottom: 0;
+  min-width: 8rem;
+}
+.mappool-mod-attributes dt {
+  color: var(--color-muted);
+}
+.mappool-mod-attributes dd {
+  margin: 0 0 0.35rem;
+}
+@media (max-width: 760px) {
+  .mappool-sheet {
+    min-width: 0;
+    font-size: 0.85rem;
+  }
+  .mappool-map {
+    min-width: 0;
+  }
+  .mappool-extra {
+    display: none;
+  }
+  .mappool-mobile-details {
+    display: block;
+    margin-top: 0.35rem;
+  }
+  .mappool-mobile-details summary {
+    min-height: var(--button-height);
+    padding-block: 0.4rem;
+    cursor: pointer;
+  }
+  .mappool-mobile-details dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin: 0.35rem 0;
+  }
+  .mappool-mobile-details dt {
+    color: var(--color-muted);
+    font-size: 0.68rem;
+  }
+  .mappool-mobile-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
 }
 .beatmap-row {
   display: grid;
