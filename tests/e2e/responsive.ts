@@ -63,7 +63,10 @@ export async function captureResponsiveLayout(
       expect(measured.main!.right).toBeLessThanOrEqual(width);
       expect(measured.main!.left).toBeGreaterThanOrEqual(0);
       for (const action of measured.actions) {
-        expect(action.height, action.label!).toBeGreaterThanOrEqual(44);
+        expect(
+          Math.round(action.height * 100) / 100,
+          action.label!,
+        ).toBeGreaterThanOrEqual(44);
         expect(action.left, action.label!).toBeGreaterThanOrEqual(0);
         expect(action.right, action.label!).toBeLessThanOrEqual(width);
       }

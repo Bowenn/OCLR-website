@@ -200,7 +200,8 @@ test.describe("role-aware header actions and compact tournament context", () => 
       });
       const bounds = (await control.boundingBox())!;
       expect(bounds.x).toBeGreaterThanOrEqual(0);
-      expect(bounds.height).toBeGreaterThanOrEqual(44);
+      // DOMRect transform interpolation can report 43.999999px for a 44px target.
+      expect(Math.round(bounds.height * 100) / 100).toBeGreaterThanOrEqual(44);
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
       await expect(accounts.locator(".account-control")).toHaveCount(1);
       expect(
