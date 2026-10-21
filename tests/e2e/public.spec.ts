@@ -72,6 +72,10 @@ test("news is approved content only and about uses the official identity", async
     "osu! Chinese League Rookie",
   );
   await expect(page.locator(".page-heading")).toContainText("Founded in 2018");
+  await expect(page.locator("main")).not.toContainText("not affiliated with");
+  await expect(page.locator("footer")).toContainText(
+    "Not affiliated with or endorsed by osu!.",
+  );
   await expect(page.locator(".page-heading")).toContainText(
     "OCL tournament series, whose history dates back to 2014",
   );

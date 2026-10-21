@@ -76,10 +76,6 @@ export default async function About() {
             </Link>
             .
           </p>
-          <p className="small muted">
-            OCLR is a community event and is not affiliated with or endorsed by
-            osu!.
-          </p>
         </aside>
       </div>
     </div>
