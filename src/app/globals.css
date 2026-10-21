@@ -3493,38 +3493,91 @@ body:has(.presenter-view) .site-footer,
   font-size: 0.65rem;
 }
 .account-menu {
+  --account-surface: #151827;
+  --account-border: #996ab0;
   position: relative;
+  isolation: isolate;
+}
+.account-control:hover {
+  transform: none;
 }
 .account-control[data-active] {
   border-color: #ce86f0;
 }
+.account-control[aria-expanded="true"] {
+  position: relative;
+  z-index: 2;
+  background: var(--account-surface);
+  border-color: var(--account-border);
+  border-bottom-color: transparent;
+  border-radius: var(--button-radius) var(--button-radius) 0 0;
+}
 .account-dropdown {
   position: absolute;
+  z-index: 1;
   right: 0;
-  top: calc(100% + 0.5rem);
-  width: 12rem;
-  padding: 0.35rem;
-  background: #121626;
-  border: 1px solid var(--color-border);
-  border-radius: 0.6rem;
-  box-shadow: 0 12px 30px #0006;
+  top: calc(100% - 1px);
+  width: 14.5rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.45rem;
+  background: var(--account-surface);
+  border: 1px solid var(--account-border);
+  border-radius: 0.65rem 0 0.65rem 0.65rem;
+  box-shadow: 0 16px 36px #0007;
+  animation: account-menu-reveal 100ms ease-out;
 }
 .account-dropdown a {
   display: flex;
   align-items: center;
+  gap: 0.65rem;
   min-height: 44px;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.3rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.35rem;
   font-size: 0.85rem;
+  color: #d3d4e2;
+  transition:
+    background 100ms,
+    color 100ms;
+}
+.account-dropdown a svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: #b8a3c6;
 }
 .account-dropdown a:hover,
-.account-dropdown a:focus-visible,
-.account-dropdown a[aria-current] {
-  background: #a65bd41c;
-  color: #e6bcfa;
+.account-dropdown a:focus-visible {
+  background: #ffffff0c;
+  color: #fff;
+}
+.account-dropdown a:focus-visible {
+  outline-offset: -3px;
+}
+.account-dropdown a[aria-current="page"] {
+  background: #a65bd42e;
+  color: #f4e7ff;
+  box-shadow: inset 3px 0 #d09ae9;
+  font-weight: 700;
+}
+.account-dropdown a[aria-current="page"] svg {
+  color: #ddaaf5;
 }
 .account-chevron {
-  font-size: 1rem;
+  width: 14px;
+  height: 14px;
+  color: #c7b5d2;
+  transition: transform 120ms ease-out;
+}
+.account-control[aria-expanded="true"] .account-chevron {
+  transform: rotate(180deg);
+}
+@keyframes account-menu-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Headline navigation stays distinct from underlined inline prose links. */

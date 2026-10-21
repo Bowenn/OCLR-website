@@ -125,9 +125,18 @@ function AccountControl({
         }}
       >
         {content}
-        <span aria-hidden="true" className="account-chevron">
-          ⌄
-        </span>
+        <svg
+          aria-hidden="true"
+          className="account-chevron"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m4 6 4 4 4-4" />
+        </svg>
       </button>
       {open && (
         <div
@@ -153,7 +162,25 @@ function AccountControl({
               }
               onClick={() => setOpen(false)}
             >
-              {label}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {href === "/admin" ? (
+                  <path d="m10 2 6 2.5V9c0 4-3 7-6 9-3-2-6-5-6-9V4.5L10 2Z" />
+                ) : (
+                  <>
+                    <circle cx="10" cy="6" r="3" />
+                    <path d="M4 17v-1a6 6 0 0 1 12 0v1" />
+                  </>
+                )}
+              </svg>
+              <span>{label}</span>
             </Link>
           ))}
         </div>

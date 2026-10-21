@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
@@ -31,6 +31,117 @@ test.describe("role-aware header actions and compact tournament context", () => 
     const staffCookie = await seedSession(staffId);
     process.env.ADMIN_OSU_IDS = String(adminId);
     const actor = { osuId: adminId, username: "Synthetic Admin" };
+    async function inspectSwitcher(
+      target: Page,
+      surface: string,
+      current?: string,
+    ) {
+      const original = target.viewportSize()!;
+      const control = target.getByRole("button", {
+        name: "Dashboard",
+        exact: true,
+      });
+      const menu = target.getByRole("menu", {
+        name: "Dashboards",
+        exact: true,
+      });
+      for (const width of [320, 390, 768, 1024, 1440]) {
+        await target.setViewportSize({ width, height: 900 });
+        await target.evaluate(() => window.scrollTo(0, 0));
+        const before = (await control.boundingBox())!;
+        const contentBefore = (await target.locator("main").boundingBox())!;
+        if (isMobile) await control.tap();
+        else await control.click();
+        await expect(menu).toBeVisible();
+        const bounds = (await menu.boundingBox())!;
+        const after = (await control.boundingBox())!;
+        const contentAfter = (await target.locator("main").boundingBox())!;
+        expect(after.y).toBeCloseTo(before.y, 1);
+        expect(after.width).toBeCloseTo(before.width, 1);
+        expect(contentAfter.y).toBeCloseTo(contentBefore.y, 1);
+        expect(contentAfter.height).toBeCloseTo(contentBefore.height, 1);
+        expect(bounds.x).toBeGreaterThanOrEqual(0);
+        expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+        expect(bounds.x + bounds.width).toBeCloseTo(after.x + after.width, 1);
+        expect(
+          Math.abs(bounds.y - (after.y + after.height)),
+        ).toBeLessThanOrEqual(1.1);
+        const items = menu.getByRole("menuitem");
+        await expect(items).toHaveCount(2);
+        for (const item of await items.all()) {
+          expect(
+            Math.round((await item.boundingBox())!.height),
+          ).toBeGreaterThanOrEqual(44);
+          expect(
+            await item.evaluate((node) => {
+              const box = node.getBoundingClientRect();
+              return node.contains(
+                document.elementFromPoint(
+                  box.x + box.width / 2,
+                  box.y + box.height / 2,
+                ),
+              );
+            }),
+          ).toBe(true);
+        }
+        const selected = menu.locator('[aria-current="page"]');
+        await expect(selected).toHaveCount(current ? 1 : 0);
+        if (current) {
+          await expect(selected).toHaveText(current);
+          const other = menu.locator('a:not([aria-current="page"])');
+          await other.focus();
+          await expect
+            .poll(
+              async () =>
+                (await selected.evaluate(
+                  (node) => getComputedStyle(node).backgroundColor,
+                )) !==
+                (await other.evaluate(
+                  (node) => getComputedStyle(node).backgroundColor,
+                )),
+            )
+            .toBe(true);
+        }
+        if (width === 320) {
+          await target.emulateMedia({ reducedMotion: "reduce" });
+          await expect(menu).toHaveCSS("animation-name", "none");
+          await expect(control.locator(".account-chevron")).toHaveCSS(
+            "transition-duration",
+            "0s",
+          );
+          expect(
+            (
+              await new AxeBuilder({ page: target })
+                .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+                .analyze()
+            ).violations,
+          ).toEqual([]);
+          await target.emulateMedia({ reducedMotion: "no-preference" });
+        }
+        expect(
+          await target.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        const path = info.outputPath(
+          `account-switcher-${surface}-${width}.png`,
+        );
+        await target.screenshot({
+          path,
+          fullPage: true,
+          animations: "disabled",
+        });
+        if (width === 320 || width === 1440)
+          await info.attach(`Account switcher ${surface} ${width}px`, {
+            path,
+            contentType: "image/png",
+          });
+        await target.keyboard.press("Escape");
+        await expect(menu).toHaveCount(0);
+        await expect(control).toBeFocused();
+      }
+      await target.setViewportSize(original);
+    }
     const grant = await changeStaffRole(actor, {
       action: "grant",
       userId: staffId,
@@ -87,8 +198,15 @@ test.describe("role-aware header actions and compact tournament context", () => 
     await staff.addCookies([staffCookie]);
     try {
       await staff.route("https://a.ppy.sh/**", (route) => route.abort());
+      await db()
+        .update(editionState)
+        .set({
+          configuration: sql`jsonb_set(jsonb_set(configuration, '{published}', 'true'), '{status}', '"live"')`,
+        })
+        .where(eq(editionState.slug, "s11"));
       const operator = await staff.newPage();
       await operator.goto("/");
+      await inspectSwitcher(operator, "home");
       const operatorActions = operator.getByRole("group", {
         name: "Account actions",
         exact: true,
@@ -144,6 +262,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
         .press(" ");
       await expect(operator).toHaveURL(/\/admin$/);
       await expect(menu).toHaveCount(0);
+      await inspectSwitcher(operator, "staff", "Staff dashboard");
       await dashboard.click();
       await expect(
         menu.getByRole("menuitem", { name: "Staff dashboard", exact: true }),
@@ -153,6 +272,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
         .press("Enter");
       await expect(operator).toHaveURL(/\/dashboard$/);
       await expect(menu).toHaveCount(0);
+      await inspectSwitcher(operator, "player", "Player dashboard");
       await expect(
         operator
           .getByRole("navigation", { name: "Main navigation", exact: true })
@@ -177,6 +297,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
     } finally {
       await staff.close();
     }
+    await seedEditions(prepared);
     await context.clearCookies();
     await context.addCookies([adminCookie]);
     await page.goto("/admin");
