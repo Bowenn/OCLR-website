@@ -112,7 +112,7 @@ test.describe("anonymous tournament competition center", () => {
       }
       await expect(
         page.getByRole("link", {
-          name: "Released mappool: Synthetic Released Fixture Pool ↗",
+          name: "Released mappool: Synthetic Released Fixture Pool",
           exact: true,
         }),
       ).toBeVisible();
@@ -153,7 +153,7 @@ test.describe("anonymous tournament competition center", () => {
       ]);
       await expect(
         page.getByRole("link", {
-          name: "Match details & source ↗",
+          name: "Match details & source",
           exact: true,
         }),
       ).toBeVisible();
@@ -183,7 +183,7 @@ test.describe("anonymous tournament competition center", () => {
         .selectOption("knockout");
       await expect(
         page.getByRole("link", {
-          name: "Synthetic Reviewed Fixture ↗",
+          name: "Synthetic Reviewed Fixture",
           exact: true,
         }),
       ).toBeVisible();

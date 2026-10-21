@@ -54,14 +54,14 @@ export default async function Home() {
           <div className="actions">
             {availability === "open" && (
               <Action href={`/tournaments/${featured!.slug}/register`}>
-                Register →
+                Register
               </Action>
             )}
             <Action
               href={featured ? `/tournaments/${featured.slug}` : "/tournaments"}
               secondary={availability === "open"}
             >
-              {featured ? "View tournament ↗" : "Browse tournaments ↗"}
+              {featured ? "View tournament" : "Browse tournaments"}
             </Action>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default async function Home() {
           <div className="section-title">
             <h2 id="latest-news-title">Latest news</h2>
             <Action href="/news" secondary>
-              All news ↗
+              All news
             </Action>
           </div>
           {news.length ? (
@@ -85,7 +85,6 @@ export default async function Home() {
                   <h3>
                     <Link className="news-headline" href={`/news/${item.slug}`}>
                       {item.title}
-                      <span aria-hidden="true">→</span>
                     </Link>
                   </h3>
                   <p className="muted small">{item.summary}</p>
@@ -105,7 +104,7 @@ export default async function Home() {
               <h3>{milestone.label}</h3>
               <p>{formatDate(milestone.at, milestone.timeZone)}</p>
               <Action href={milestone.url} secondary>
-                View schedule details ↗
+                View schedule
               </Action>
             </>
           ) : (

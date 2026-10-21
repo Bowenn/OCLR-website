@@ -20,7 +20,7 @@ export default async function Teams({
             <article className="panel" key={t.id}>
               <h2>
                 <Link href={`/tournaments/${edition}/teams/${t.id}`}>
-                  {t.name} ↗
+                  {t.name}
                 </Link>
               </h2>
               <p className="muted">

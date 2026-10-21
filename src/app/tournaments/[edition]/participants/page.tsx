@@ -62,7 +62,7 @@ export default async function Participants({
                   <article className="panel" key={t.id}>
                     <h3>
                       <Link href={`/tournaments/${edition}/teams/${t.id}`}>
-                        {t.name} ↗
+                        {t.name}
                       </Link>
                     </h3>
                     {t.members ? (
@@ -101,7 +101,7 @@ export default async function Participants({
             className="button secondary"
             href={`/tournaments/${edition}/draft`}
           >
-            View the published draft →
+            View the published draft
           </Link>
         </p>
       )}

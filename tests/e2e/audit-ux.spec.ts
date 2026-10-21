@@ -85,7 +85,7 @@ test.describe("automatic staff auditing", () => {
       }),
     ).toHaveCount(0);
     await page
-      .getByRole("link", { name: "Appoint captains →", exact: true })
+      .getByRole("link", { name: "Appoint captains", exact: true })
       .click();
     await expect(page).toHaveURL(new RegExp(captainPage + "$"));
     await expect(
@@ -279,7 +279,7 @@ test.describe("automatic staff auditing", () => {
       }),
     ).toHaveCount(0);
     await page
-      .getByRole("link", { name: "Open live draft →", exact: true })
+      .getByRole("link", { name: "Open live draft", exact: true })
       .click();
     await expect(page).toHaveURL(/\/test-cup\/draft$/);
     await expect(page.getByRole("textbox", { name: /reason/i })).toHaveCount(0);

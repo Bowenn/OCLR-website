@@ -56,7 +56,7 @@ export default async function Admin({
               className="button secondary"
               href="/admin/registrations?status=pending"
             >
-              Review applications →
+              Review applications
             </Link>
           </section>
         )}
@@ -77,8 +77,7 @@ export default async function Admin({
                     className="button secondary"
                     href={`/admin/tournaments/${row.slug}`}
                   >
-                    Open tournament<span className="sr-only"> {row.name}</span>{" "}
-                    →
+                    Open tournament<span className="sr-only"> {row.name}</span>
                   </Link>
                 </article>
               ))}

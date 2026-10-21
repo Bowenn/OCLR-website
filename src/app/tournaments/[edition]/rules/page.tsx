@@ -33,7 +33,7 @@ export default async function Rules({
           </EmptyState>
           <div className="actions spaced">
             <Action href={`/tournaments/${slug}/register`} secondary>
-              View registration →
+              View registration
             </Action>
           </div>
         </>

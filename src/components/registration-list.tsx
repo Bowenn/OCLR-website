@@ -146,7 +146,7 @@ export async function RegistrationList({
                         className="button secondary"
                         href={`/admin/tournaments/${r.editionSlug}/registrations/${r.id}`}
                       >
-                        Review<span className="sr-only"> {r.username}</span> ↗
+                        Review<span className="sr-only"> {r.username}</span>
                       </Link>
                     </td>
                   </tr>

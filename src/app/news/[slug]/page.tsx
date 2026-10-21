@@ -37,7 +37,7 @@ export default async function Announcement({
       {item.source && (
         <p>
           <Link className="button secondary" href={item.source.url}>
-            View {item.source.label} ↗
+            View {item.source.label}
           </Link>
         </p>
       )}

@@ -37,13 +37,12 @@ export default async function Tournament({
               >
                 {data
                   ? "Configure tournament"
-                  : `Open ${primary.label.toLowerCase()}`}{" "}
-                <span aria-hidden="true">→</span>
+                  : `Open ${primary.label.toLowerCase()}`}
               </Link>
             )}
             {row.published && (
               <Link className="button secondary" href={`/tournaments/${slug}`}>
-                View public tournament <span aria-hidden="true">↗</span>
+                View public tournament
               </Link>
             )}
           </div>

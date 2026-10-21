@@ -86,7 +86,7 @@ export default async function Profile({
                   href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
                   className="text-link"
                 >
-                  {p.team.name} →
+                  {p.team.name}
                 </Link>
               ) : (
                 <p className="muted">Team awaiting publication</p>

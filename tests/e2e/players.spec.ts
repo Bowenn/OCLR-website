@@ -78,7 +78,7 @@ test.describe("anonymous published player directory", () => {
     });
     await page
       .getByRole("link", {
-        name: `Synthetic Directory Team ${base} ↗`,
+        name: `Synthetic Directory Team ${base}`,
         exact: true,
       })
       .first()

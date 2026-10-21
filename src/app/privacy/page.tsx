@@ -57,7 +57,7 @@ export default function Privacy() {
             contact the OCLR Admin on osu!.
           </p>
           <a className="button secondary" href={contact.url}>
-            {contact.label} →
+            {contact.label}
           </a>
         </>
       ) : (

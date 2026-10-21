@@ -61,7 +61,7 @@ export default async function About() {
           {contact ? (
             <p>
               <a href={contact.url} className="text-link">
-                {contact.label} →
+                {contact.label}
               </a>
             </p>
           ) : (

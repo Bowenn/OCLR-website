@@ -32,7 +32,7 @@ export function MatchCard({
           href={`/tournaments/${slug}/matches/${f.id}`}
           className="text-link"
         >
-          {f.label} ↗
+          {f.label}
         </Link>
       </h3>
       <div className="match-versus">
@@ -53,7 +53,7 @@ export function MatchCard({
           className="text-link"
           href={`/tournaments/${slug}/mappools/${f.pool.id}`}
         >
-          Released mappool: {f.pool.name} ↗
+          Released mappool: {f.pool.name}
         </Link>
       )}
       {f.result && (

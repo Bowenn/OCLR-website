@@ -76,7 +76,7 @@ export default async function Overview({
           <div className="actions">
             {state === "open" && (
               <Action href={`/tournaments/${slug}/register`}>
-                Register individually →
+                Register individually
               </Action>
             )}
             <Action href={`/tournaments/${slug}/rules`} secondary>

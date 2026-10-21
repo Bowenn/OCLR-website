@@ -751,7 +751,7 @@ export function FixtureManager({
             className="button secondary"
             href={`/admin/tournaments/${slug}/matches/${f.id}`}
           >
-            Open match ↗
+            Open match
           </Link>
           {data.canManage && (
             <>

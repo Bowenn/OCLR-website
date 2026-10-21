@@ -15,11 +15,11 @@ export async function EditionCard({ edition }: { edition: Edition }) {
         <div className="actions">
           {state === "open" && (
             <Action href={`/tournaments/${edition.slug}/register`}>
-              Register →
+              Register
             </Action>
           )}
           <Action href={`/tournaments/${edition.slug}`} secondary>
-            View tournament →
+            View tournament
           </Action>
         </div>
       </div>

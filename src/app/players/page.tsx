@@ -107,7 +107,7 @@ export default async function Players({
                         className="text-link"
                         href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
                       >
-                        {p.team.name}&nbsp;↗
+                        {p.team.name}
                       </Link>
                     ) : (
                       "Team identity awaiting publication"
@@ -128,7 +128,7 @@ export default async function Players({
                 href={`/players/${p.osuId}`}
                 prefetch={false}
               >
-                Player profile & statistics →
+                Player profile & statistics
               </Link>
             </li>
           ))}

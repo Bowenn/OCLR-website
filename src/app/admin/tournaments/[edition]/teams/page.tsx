@@ -27,7 +27,7 @@ export default async function Teams({
               className="text-link"
               href={`/admin/tournaments/${edition}/draft`}
             >
-              Open live draft →
+              Open live draft
             </Link>
           </p>
         )}
@@ -46,7 +46,7 @@ export default async function Teams({
                 className="button"
                 href={`/admin/tournaments/${edition}/captains`}
               >
-                Appoint captains →
+                Appoint captains
               </Link>
               {!setup.candidates.length && (
                 <Link

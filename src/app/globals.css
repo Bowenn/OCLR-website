@@ -3529,19 +3529,10 @@ body:has(.presenter-view) .site-footer,
 
 /* Headline navigation stays distinct from underlined inline prose links. */
 .news-headline {
-  max-width: 100%;
   overflow-wrap: anywhere;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.75rem;
   color: var(--color-foreground);
   text-decoration: none;
   border-radius: 0.2rem;
-}
-.news-headline > span {
-  flex: 0 0 auto;
-  color: var(--color-muted);
-  font-size: 0.85em;
 }
 .news-headline:hover,
 .news-headline:focus-visible {

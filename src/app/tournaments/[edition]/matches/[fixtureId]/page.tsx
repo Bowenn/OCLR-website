@@ -75,7 +75,7 @@ export default async function MatchPage({
             className="text-link"
             href={`/tournaments/${slug}/mappools/${f.pool.id}`}
           >
-            Released mappool: {f.pool.name} ↗
+            Released mappool: {f.pool.name}
           </Link>
         )}
         {!f.confirmed && (

@@ -53,7 +53,6 @@ export default async function MappoolsPage({
                             className="text-link"
                           >
                             {pool.name}
-                            <span aria-hidden="true"> ↗</span>
                           </Link>
                         </h4>
                         <p className="muted small">

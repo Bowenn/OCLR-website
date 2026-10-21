@@ -136,7 +136,7 @@ export default async function Dashboard({
           <div className="section-title">
             <h2>My registrations</h2>
             <Link href="/tournaments" className="text-link">
-              Browse tournaments ↗
+              Browse tournaments
             </Link>
           </div>
           {applications.length ? (

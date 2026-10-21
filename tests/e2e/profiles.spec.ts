@@ -79,7 +79,7 @@ test.describe("published osu! profiles", () => {
     ).toBe(405);
     await page.goto(`/players?q=${base}`);
     await page
-      .getByRole("link", { name: "Player profile & statistics →" })
+      .getByRole("link", { name: "Player profile & statistics" })
       .first()
       .click();
     await expect(

@@ -34,7 +34,7 @@ export default async function Register({
         <div className="panel">
           <h2>You have an application</h2>
           <p className="muted">Current status: {existing.status}.</p>
-          <Action href="/dashboard">View my application →</Action>
+          <Action href="/dashboard">View my application</Action>
         </div>
       ) : availability !== "open" ? (
         <EmptyState
@@ -50,7 +50,7 @@ export default async function Register({
         <div className="panel">
           <h2>Sign in before applying</h2>
           <p className="muted">Use your own osu! identity to register.</p>
-          <Action href="/login">Login with osu! ↗</Action>
+          <Action href="/login">Login with osu!</Action>
         </div>
       ) : (
         <>

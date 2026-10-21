@@ -39,7 +39,7 @@ export default async function Login({
         </p>
         {authReady() ? (
           <a className="button" href="/auth/osu">
-            Continue with osu! ↗
+            Continue with osu!
           </a>
         ) : (
           <p className="notice">

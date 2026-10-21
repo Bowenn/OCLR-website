@@ -184,7 +184,7 @@ export function CaptainManager({
                 className="text-link small"
                 href={`/admin/tournaments/${slug}/teams`}
               >
-                Configure teams →
+                Configure teams
               </Link>
             )}
           </div>

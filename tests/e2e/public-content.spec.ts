@@ -59,7 +59,21 @@ test.describe("derived public content", () => {
         0,
       );
       const headline = page.locator(".home-news .news-headline").first();
+      for (const [name, href] of [
+        ["Register", "/tournaments/test-cup/register"],
+        ["View tournament", "/tournaments/test-cup"],
+        ["All news", "/news"],
+        ["View schedule", "/tournaments/test-cup/schedule"],
+      ]) {
+        const action = page.getByRole("link", { name, exact: true });
+        await expect(action).toHaveText(name);
+        await expect(action).toHaveAttribute("href", href);
+      }
+      await expect(headline).not.toContainText(/[→↗]/);
       await expect(headline).toHaveCSS("text-decoration-line", "none");
+      await headline.hover();
+      await expect(headline).toHaveCSS("text-decoration-line", "underline");
+      await page.mouse.move(0, 0);
       await headline.focus();
       await expect(headline).toHaveCSS("text-decoration-line", "underline");
       await headline.blur();
@@ -68,6 +82,7 @@ test.describe("derived public content", () => {
       await expect(page.getByText("PRIVATE_EDITION_NEWS")).toHaveCount(0);
       await expect(page.locator(".hero-kicker")).not.toContainText("11");
       await page.goto("/news");
+      await expect(page.locator(".news-list")).not.toContainText(/[→↗]/);
       await captureResponsiveLayout(page, info, "news-headlines-list");
       await page
         .getByRole("link", {
@@ -83,7 +98,7 @@ test.describe("derived public content", () => {
       );
       await expect(page.getByText(/plan, not confirmation/)).toBeVisible();
       await page
-        .getByRole("link", { name: "View Synthetic Season 12 ↗", exact: true })
+        .getByRole("link", { name: "View Synthetic Season 12", exact: true })
         .click();
       await expect(page).toHaveURL(/\/tournaments\/test-cup\/schedule$/);
       await page.goto("/news");

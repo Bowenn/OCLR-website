@@ -26,13 +26,13 @@ export default async function Draft({
             href={`/tournaments/${edition}/draft?presenter=1`}
             className="text-link"
           >
-            Open presenter view ↗
+            Open presenter view
           </Link>
           <Link
             href={`/tournaments/${edition}/draft/overlay`}
             className="text-link broadcast-link"
           >
-            Open broadcast overlay ↗
+            Open broadcast overlay
           </Link>
         </>
       )}

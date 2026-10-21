@@ -121,7 +121,7 @@ export function ApplicationForm({
         </p>
       )}
       <button disabled={pending} type="submit">
-        {pending ? "Saving application…" : "Submit individual application →"}
+        {pending ? "Saving application…" : "Submit individual application"}
       </button>
     </form>
   );

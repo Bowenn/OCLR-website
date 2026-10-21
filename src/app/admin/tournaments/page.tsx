@@ -91,7 +91,7 @@ export default async function Tournaments({
                   className="button secondary"
                   href={`/admin/tournaments/${r.slug}`}
                 >
-                  Open tournament<span className="sr-only"> {r.name}</span> ↗
+                  Open tournament<span className="sr-only"> {r.name}</span>
                 </Link>
               </article>
             ))}

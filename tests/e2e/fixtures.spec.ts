@@ -671,7 +671,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         }),
       ).toBeVisible();
       await refPage
-        .getByRole("link", { name: "Open match ↗", exact: true })
+        .getByRole("link", { name: "Open match", exact: true })
         .click();
       await expect(
         refPage.getByText(/Participants are not confirmed/),

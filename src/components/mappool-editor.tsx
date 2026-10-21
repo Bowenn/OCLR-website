@@ -596,7 +596,7 @@ export function MappoolEditor({
                   className="text-link small"
                   href={`/tournaments/${slug}/mappools/${pool.id}`}
                 >
-                  View public pool ↗
+                  View public pool
                 </Link>
               )}
             </div>

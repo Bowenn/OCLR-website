@@ -224,7 +224,7 @@ export function Header({ user }: { user: Account | null }) {
               aria-current={path === "/login" ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
-              Login with osu!<span aria-hidden="true">↗</span>
+              Login with osu!
             </Link>
           )}
         </div>
