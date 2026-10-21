@@ -156,9 +156,11 @@ Take a recoverable database backup. Inject MIGRATION_DATABASE_URL for this setup
 
 ```sh
 npm run production:setup -- --dry-run
-npm run production:setup
+npm run production:setup -- --apply
 npm run production:start -- --dry-run
 ```
+
+These are operator-invoked preparation/start commands, **not completion of #10's automated deployment gate**. Real setup requires explicit `--apply`; the operator must first verify the target and backup. Automatic backup verification, deployment serialization, migration drift detection, managed service switching/health rollback and two consecutive staging upgrades remain future #10 work. Do not treat a successful build or localhost smoke test as a production rollout.
 
 Setup installs locked dependencies including build tools, runs migrations with the migration URL, runs release preflight with the runtime URL, then builds. Failed steps stop the sequence; there is no automated legacy import, account provisioning, publication or rollback. The migration secret is excluded from build/start subprocesses. Start only checks configuration/schema and serves an existing build; restarting never runs migrations.
 

@@ -41,6 +41,12 @@ describe("production operator commands", () => {
     expect(result.stdout).toContain("release:check");
     expect(result.stdout).not.toMatch(/db:migrate|npm ci|run build/);
   });
+  it("requires explicit opt-in before setup can install dependencies or migrate", () => {
+    const result = run(["setup"], { PATH: "/nonexistent" });
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("--apply");
+  });
   it("rejects unexpected arguments and invalid ports before starting anything", () => {
     expect(run(["setup", "--force"]).status).toBe(1);
     const result = run(["start", "--dry-run"], { PORT: "3000;bad" });

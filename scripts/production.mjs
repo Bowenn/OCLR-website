@@ -7,7 +7,8 @@ import { join } from "node:path";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const [action, ...flags] = process.argv.slice(2);
 const dryRun = flags.includes("--dry-run");
-const usage = "Usage: node scripts/production.mjs setup|start [--dry-run]";
+const usage =
+  "Usage: node scripts/production.mjs setup --apply | setup|start --dry-run | start";
 
 // The migration secret is used only for the migration subprocess, never Next.js.
 let migrationUrl = process.env.MIGRATION_DATABASE_URL;
@@ -57,9 +58,14 @@ async function run(command, args, overrides = {}) {
 try {
   if (
     !["setup", "start"].includes(action) ||
-    flags.some((flag) => flag !== "--dry-run")
+    flags.some((flag) => !["--dry-run", "--apply"].includes(flag)) ||
+    (flags.includes("--apply") && (action !== "setup" || dryRun))
   )
     throw new Error(usage);
+  if (action === "setup" && !dryRun && !flags.includes("--apply"))
+    throw new Error(
+      "Setup changes the database. Verify the intended database, reviewed release and recoverable backup, then explicitly run production:setup -- --apply.",
+    );
   const [major, minor] = process.versions.node.split(".").map(Number);
   if (major < 22 || (major === 22 && minor < 13))
     throw new Error("Use Node.js >=22.13 (Node.js 24 LTS recommended).");
