@@ -3615,7 +3615,8 @@ html:lang(zh-Hant) .eyebrow {
   z-index: 1;
   right: 0;
   top: calc(100% + 0.5rem);
-  width: 16.5rem;
+  width: max-content;
+  min-width: 10rem;
   max-width: calc(100vw - 2rem);
   padding: 0.3rem;
   background: var(--account-surface);
@@ -3627,9 +3628,9 @@ html:lang(zh-Hant) .eyebrow {
 .account-dropdown a {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   min-height: 44px;
-  padding: 0.4rem 0.65rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 0.35rem;
   font-size: 0.85rem;
   color: #d3d4e2;

@@ -97,7 +97,8 @@ test.describe("role-aware header actions and compact tournament context", () => 
         }
         expect(bounds.height).toBeLessThanOrEqual(108);
         expect(bounds.width).toBeLessThanOrEqual(300);
-        expect(bounds.width).toBeGreaterThanOrEqual(260);
+        expect(bounds.width).toBeGreaterThanOrEqual(160);
+        expect(bounds.width).toBeLessThan(240);
         const items = menu.getByRole("menuitem");
         await expect(items).toHaveCount(2);
         for (const item of await items.all()) {
