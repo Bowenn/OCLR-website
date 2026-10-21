@@ -2493,11 +2493,40 @@ body:has(.presenter-view) .site-footer,
   display: grid;
   justify-items: start;
   gap: 0.5rem;
-  margin: 0.75rem 0 1rem;
+  margin: 0 0 0.75rem;
 }
-.admin-context .field,
-.admin-return {
+.admin-context .field {
   width: 100%;
+}
+.admin-context-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+.admin-workspace .admin-return {
+  justify-content: flex-start;
+  min-height: 36px;
+  width: auto;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.75rem;
+  background: transparent;
+  border-color: #303247;
+  transform: none;
+}
+.admin-workspace .admin-return:hover {
+  background: #ffffff08;
+  border-color: #a77dbb;
+}
+.admin-context-heading .badge {
+  padding: 0.05rem 0.4rem;
+  font-size: 0.65rem;
+}
+@media (pointer: coarse) {
+  .admin-workspace .admin-return {
+    min-height: 44px;
+  }
 }
 .admin-context select {
   width: 100%;

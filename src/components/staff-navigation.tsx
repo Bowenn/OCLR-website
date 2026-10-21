@@ -40,9 +40,17 @@ export function StaffNavigation({
   return (
     <div className="container page workspace admin-workspace">
       <aside className="sidebar">
-        <p className="eyebrow">{selected ? "TOURNAMENT" : "ADMINISTRATION"}</p>
+        {!selected && <p className="eyebrow">ADMINISTRATION</p>}
         {selected ? (
           <div className="admin-context">
+            <div className="admin-context-heading">
+              <span className="muted small">Tournament</span>
+              {!selected.published ? (
+                <span className="badge">Draft</span>
+              ) : selected.status === "live" ? (
+                <span className="badge">Live</span>
+              ) : null}
+            </div>
             <label className="field">
               <span className="sr-only">Selected tournament</span>
               <select
@@ -63,11 +71,6 @@ export function StaffNavigation({
                 ))}
               </select>
             </label>
-            {!selected.published ? (
-              <span className="badge">Draft</span>
-            ) : selected.status === "live" ? (
-              <span className="badge">Live</span>
-            ) : null}
             <Link
               href="/admin/tournaments"
               className="button secondary admin-return"

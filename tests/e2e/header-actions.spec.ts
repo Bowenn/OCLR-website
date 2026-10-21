@@ -381,8 +381,18 @@ test.describe("role-aware header actions and compact tournament context", () => 
       (await sidebar.locator(".eyebrow").allTextContents()).filter(
         (text) => text.toLowerCase() === "tournament",
       ),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     await expect(sidebar.locator(".admin-context .badge")).toHaveText("Draft");
+    const contextHeading = sidebar.locator(".admin-context-heading");
+    await expect(contextHeading).toContainText("Tournament");
+    const selectorBounds = (await sidebar
+      .getByLabel("Selected tournament")
+      .boundingBox())!;
+    const returnBounds = (await sidebar
+      .getByRole("link", { name: "← All tournaments", exact: true })
+      .boundingBox())!;
+    expect(returnBounds.width).toBeLessThan(selectorBounds.width);
+    expect(returnBounds.x).toBeCloseTo(selectorBounds.x, 0);
     await db()
       .update(editionState)
       .set({
