@@ -22,6 +22,8 @@ test.describe("concept-aligned tournament surfaces", () => {
     context,
     isMobile,
   }, info) => {
+    // This review captures multiple pages at six widths and runs accessibility scans.
+    test.setTimeout(120000);
     assertTestDatabase(process.env.TEST_DATABASE_URL);
     process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
     await db().execute(

@@ -158,6 +158,11 @@ test.describe("published mappools and restricted editing", () => {
         name: "Beatmap URL or ID",
         exact: true,
       });
+      const previewResponse = page.waitForResponse(
+        (response) =>
+          response.url().endsWith(previewUrl) &&
+          response.request().method() === "POST",
+      );
       await input.fill("https://osu.ppy.sh/beatmapsets/42#osu/123");
       await expect(page.getByRole("status")).toHaveText(
         "Looking up beatmap 123…",
@@ -173,7 +178,10 @@ test.describe("published mappools and restricted editing", () => {
       await expect(preview).toContainText("180 BPM 2:03");
       await expect(preview).toContainText("Official osu! API");
       await expect(preview).toContainText("Set 42");
+      const previewSnapshot = await (await previewResponse).json();
       const fetchedAt = await preview.locator("time").getAttribute("datetime");
+      expect(previewSnapshot.beatmapId).toBe(123);
+      expect(previewSnapshot.fetchedAt).toBe(fetchedAt);
       await expect(
         page.getByRole("textbox", {
           name: /reason|song title|artist|BPM|duration/i,
@@ -190,7 +198,12 @@ test.describe("published mappools and restricted editing", () => {
         .select()
         .from(mappoolEntries)
         .where(eq(mappoolEntries.poolId, pool.id));
-      expect(entry.metadataFetchedAt.toISOString()).toBe(fetchedAt);
+      // Save independently revalidates metadata. A cache expiry may legitimately
+      // produce a newer fetch time while preserving exactly the previewed fields.
+      expect(entry.metadataFetchedAt.getTime()).toBeGreaterThanOrEqual(
+        Date.parse(fetchedAt!),
+      );
+      expect(entry.metadata).toEqual(previewSnapshot.metadata);
       expect(entry.metadata.title).toBe("Synthetic Browser Song");
       const events = await db()
         .select()
