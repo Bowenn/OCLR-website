@@ -1,3 +1,4 @@
+import { useAppTranslations } from "@/i18n/shared";
 import Image from "next/image";
 import { Avatar } from "./avatar";
 import { modeNames, type ProfileSnapshot } from "@/lib/osu-profile-model";
@@ -10,12 +11,16 @@ const number = (v: number | null, decimals = 0) =>
 const score = (v: string | null) =>
   v === null ? "Unavailable" : BigInt(v).toLocaleString("en-GB");
 export function PlayerProfile({ snapshot }: { snapshot: ProfileSnapshot }) {
+  const tr = useAppTranslations();
+
   const p = snapshot.profile;
   const s = p.statistics;
   return (
     <section
       className="panel profile-summary"
-      aria-label={`${modeNames[p.ruleset]} profile snapshot`}
+      aria-label={tr("{value0} profile snapshot", {
+        value0: modeNames[p.ruleset],
+      })}
     >
       {p.coverUrl && (
         <div className="profile-cover">
@@ -35,15 +40,18 @@ export function PlayerProfile({ snapshot }: { snapshot: ProfileSnapshot }) {
           avatarUrl={p.avatarUrl ?? undefined}
         />
         <div>
-          <p className="eyebrow">{modeNames[p.ruleset]} · PUBLIC PROFILE</p>
+          <p className="eyebrow">
+            {modeNames[p.ruleset]} {tr(" · PUBLIC PROFILE")}
+          </p>
           <h2>{p.username}</h2>
           <p className="muted">
-            {p.countryName ?? p.countryCode ?? "Country unavailable"}
-            {p.countryName && p.countryCode ? ` (${p.countryCode})` : ""} · osu!
-            ID {p.osuId}
+            {p.countryName ?? p.countryCode ?? tr("Country unavailable")}
+            {p.countryName && p.countryCode ? ` (${p.countryCode})` : ""}{" "}
+            {tr(" · osu! ID ")}
+            {p.osuId}
           </p>
           <a href={p.canonicalUrl} className="text-link">
-            View on osu! ↗
+            {tr("View on osu! ↗")}
           </a>
         </div>
       </div>
@@ -92,61 +100,75 @@ export function PlayerProfile({ snapshot }: { snapshot: ProfileSnapshot }) {
           ],
         ].map(([label, value]) => (
           <div key={label}>
-            <dt>{label}</dt>
+            <dt>{tr(label)}</dt>
             <dd>{value}</dd>
           </div>
         ))}
       </dl>
       {s.grades && (
         <p className="muted small">
-          Grades:{" "}
+          {tr("Grades:")}{" "}
           {Object.entries(s.grades)
             .map(([grade, count]) => `${grade.toUpperCase()} ${number(count)}`)
             .join(" · ")}
         </p>
       )}
       <details className="spaced">
-        <summary>Public profile details</summary>
+        <summary>{tr("Public profile details")}</summary>
         <dl className="directory-details">
           <div>
-            <dt>Default ruleset</dt>
+            <dt>{tr("Default ruleset")}</dt>
             <dd>
-              {p.defaultRuleset ? modeNames[p.defaultRuleset] : "Unavailable"}
+              {p.defaultRuleset
+                ? modeNames[p.defaultRuleset]
+                : tr("Unavailable")}
             </dd>
           </div>
           <div>
-            <dt>Joined</dt>
-            <dd>{p.joinedAt ?? "Unavailable"}</dd>
+            <dt>{tr("Joined")}</dt>
+            <dd>{p.joinedAt ?? tr("Unavailable")}</dd>
           </div>
           <div>
-            <dt>Last seen</dt>
-            <dd>{p.lastSeenAt ?? "Not public / unavailable"}</dd>
+            <dt>{tr("Last seen")}</dt>
+            <dd>{p.lastSeenAt ?? tr("Not public / unavailable")}</dd>
           </div>
           <div>
-            <dt>Previous usernames</dt>
-            <dd>{p.previousUsernames.join(", ") || "None returned"}</dd>
+            <dt>{tr("Previous usernames")}</dt>
+            <dd>{p.previousUsernames.join(", ") || tr("None returned")}</dd>
           </div>
           <div>
-            <dt>Active account</dt>
+            <dt>{tr("Active account")}</dt>
             <dd>
-              {p.active === null ? "Unavailable" : p.active ? "Yes" : "No"}
+              {p.active === null
+                ? tr("Unavailable")
+                : p.active
+                  ? tr("Yes")
+                  : tr("No")}
             </dd>
           </div>
           <div>
-            <dt>Bot account</dt>
-            <dd>{p.bot === null ? "Unavailable" : p.bot ? "Yes" : "No"}</dd>
+            <dt>{tr("Bot account")}</dt>
+            <dd>
+              {p.bot === null
+                ? tr("Unavailable")
+                : p.bot
+                  ? tr("Yes")
+                  : tr("No")}
+            </dd>
           </div>
         </dl>
       </details>
       <p className="small muted spaced">
-        Source: {p.source} · Last updated{" "}
-        <time dateTime={p.fetchedAt}>{p.fetchedAt}</time>. Statistics are a
-        saved {modeNames[p.ruleset]} snapshot.
+        {tr("Source: ")}
+        {p.source} {tr(" · Last updated")}{" "}
+        <time dateTime={p.fetchedAt}>{p.fetchedAt}</time>
+        {tr(". Statistics are a saved ")}
+        {modeNames[p.ruleset]} {tr(" snapshot.")}
       </p>
       {(snapshot.stale || snapshot.notice) && (
         <p className="notice" role="status">
-          {snapshot.stale ? "Stale snapshot. " : ""}
-          {snapshot.notice ?? "A new snapshot is not available yet."}
+          {snapshot.stale ? tr("Stale snapshot. ") : ""}
+          {snapshot.notice ?? tr("A new snapshot is not available yet.")}
         </p>
       )}
     </section>

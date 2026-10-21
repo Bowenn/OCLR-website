@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { useState } from "react";
 import type { PublicFixture, PublicGroup } from "@/lib/public-competition";
@@ -11,6 +14,8 @@ export function MatchCard({
   fixture: PublicFixture;
   slug: string;
 }) {
+  const tr = useAppTranslations();
+
   const status =
     f.status === "cancelled"
       ? "Cancelled"
@@ -23,10 +28,10 @@ export function MatchCard({
     <article className="panel public-match-card">
       <div className="match-meta">
         <span className="eyebrow">
-          {f.stage === "group" ? "GROUP STAGE" : "KNOCKOUT STAGE"} /{" "}
+          {f.stage === "group" ? tr("GROUP STAGE") : tr("KNOCKOUT STAGE")} /{" "}
           {f.roundName}
         </span>
-        <span className="badge">{status}</span>
+        <span className="badge">{tr(status)}</span>
       </div>
       <h3>
         <Link
@@ -41,26 +46,29 @@ export function MatchCard({
         <strong
           aria-label={
             f.result
-              ? `Score ${f.result.homeWins} to ${f.result.awayWins}`
-              : "Versus"
+              ? tr("Score {value0} to {value1}", {
+                  value0: f.result.homeWins,
+                  value1: f.result.awayWins,
+                })
+              : tr("Versus")
           }
         >
-          {f.result ? `${f.result.homeWins} : ${f.result.awayWins}` : "vs"}
+          {f.result ? `${f.result.homeWins} : ${f.result.awayWins}` : tr("vs")}
         </strong>
         <span>{f.away.label}</span>
       </div>
       <p className="match-time muted">
         {f.scheduledAt ? (
           <time dateTime={f.scheduledAt}>
-            {formatDate(f.scheduledAt, f.timeZone)}
+            {tr(formatDate(f.scheduledAt, f.timeZone, tr.locale))}
           </time>
         ) : (
-          "Match time TBA"
+          tr("Match time TBA")
         )}{" "}
         · {f.timeZone}
       </p>
       <details className="match-public-details">
-        <summary>Match details</summary>
+        <summary>{tr("Match details")}</summary>
         <div>
           {f.pool && (
             <p>
@@ -68,7 +76,8 @@ export function MatchCard({
                 className="text-link"
                 href={`/tournaments/${slug}/mappools/${f.pool.id}`}
               >
-                Released mappool: {f.pool.name}
+                {tr("Released mappool: ")}
+                {f.pool.name}
               </Link>
             </p>
           )}
@@ -76,12 +85,18 @@ export function MatchCard({
             <>
               <p className="small muted">
                 {f.result.draw
-                  ? "Approved draw"
-                  : `Winner: ${f.result.winnerTeamId === f.home.team?.id ? f.home.label : f.away.label}`}{" "}
-                · Updated {formatDate(f.result.updatedAt, f.timeZone)}
+                  ? tr("Approved draw")
+                  : tr("Winner: {value0}", {
+                      value0:
+                        f.result.winnerTeamId === f.home.team?.id
+                          ? f.home.label
+                          : f.away.label,
+                    })}{" "}
+                {tr("· Updated")}{" "}
+                {tr(formatDate(f.result.updatedAt, f.timeZone, tr.locale))}
               </p>
               <a className="text-link" href={f.result.mpUrl}>
-                osu! match source
+                {tr("osu! match source")}
               </a>
             </>
           )}
@@ -90,7 +105,7 @@ export function MatchCard({
               className="text-link"
               href={`/tournaments/${slug}/matches/${f.id}`}
             >
-              Open match
+              {tr("Open match")}
             </Link>
           </p>
         </div>
@@ -108,6 +123,8 @@ export function PublicMatches({
   slug: string;
   groups?: PublicGroup[];
 }) {
+  const tr = useAppTranslations();
+
   const [stage, setStage] = useState("");
   const [round, setRound] = useState("");
   const [status, setStatus] = useState("");
@@ -149,7 +166,7 @@ export function PublicMatches({
         <div
           className="event-pills"
           role="group"
-          aria-label="Competition stage"
+          aria-label={tr("Competition stage")}
         >
           {[
             ["", "All stages"],
@@ -169,11 +186,11 @@ export function PublicMatches({
                 setGroup("");
               }}
             >
-              {label}
+              {tr(label)}
             </button>
           ))}
         </div>
-        <div className="event-pills" role="group" aria-label="Match view">
+        <div className="event-pills" role="group" aria-label={tr("Match view")}>
           {(["cards", "compact"] as const).map((value) => (
             <button
               className="secondary"
@@ -182,26 +199,26 @@ export function PublicMatches({
               aria-pressed={view === value}
               onClick={() => setView(value)}
             >
-              {value === "cards" ? "Cards" : "Compact"}
+              {value === "cards" ? tr("Cards") : tr("Compact")}
             </button>
           ))}
         </div>
       </div>
       <div className="public-match-filters">
         <label className="field">
-          <span>Search matches</span>
+          <span>{tr("Search matches")}</span>
           <input
             type="search"
             value={search}
-            placeholder="Team, match or MP ID"
+            placeholder={tr("Team, match or MP ID")}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
         {rounds.length > 1 && (
           <label className="field">
-            <span>Competition round</span>
+            <span>{tr("Competition round")}</span>
             <select value={round} onChange={(e) => setRound(e.target.value)}>
-              <option value="">All rounds</option>
+              <option value="">{tr("All rounds")}</option>
               {rounds.map(([id, name]) => (
                 <option key={id} value={id}>
                   {name}
@@ -212,9 +229,9 @@ export function PublicMatches({
         )}
         {groups.length > 0 && stage !== "knockout" && (
           <label className="field">
-            <span>Group</span>
+            <span>{tr("Group")}</span>
             <select value={group} onChange={(e) => setGroup(e.target.value)}>
-              <option value="">All groups</option>
+              <option value="">{tr("All groups")}</option>
               {groups.map((g) => (
                 <option key={g.key} value={g.key}>
                   {g.name}
@@ -224,17 +241,20 @@ export function PublicMatches({
           </label>
         )}
         <label className="field">
-          <span>Match publication status</span>
+          <span>{tr("Match publication status")}</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">All matches</option>
-            <option value="completed">Published results</option>
-            <option value="pending">Awaiting result</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="">{tr("All matches")}</option>
+            <option value="completed">{tr("Published results")}</option>
+            <option value="pending">{tr("Awaiting result")}</option>
+            <option value="cancelled">{tr("Cancelled")}</option>
           </select>
         </label>
       </div>
       <p className="muted small" role="status">
-        {matches.length} published fixture{matches.length === 1 ? "" : "s"}
+        {tr(
+          "{count, plural, one {# published fixture} other {# published fixtures}}",
+          { count: matches.length },
+        )}
       </p>
       {[...new Set(matches.map((f) => f.roundId))].map((roundId) => {
         const group = matches.filter((f) => f.roundId === roundId);
@@ -245,8 +265,10 @@ export function PublicMatches({
             aria-labelledby={`public-round-${roundId}`}
           >
             <h2 id={`public-round-${roundId}`}>
-              {group[0].stage === "group" ? "Group Stage" : "Knockout Stage"} ·{" "}
-              {group[0].roundName}
+              {group[0].stage === "group"
+                ? tr("Group Stage")
+                : tr("Knockout Stage")}{" "}
+              · {group[0].roundName}
             </h2>
             <div className="public-match-list" data-view={view}>
               {group.map((f) => (
@@ -258,8 +280,9 @@ export function PublicMatches({
       })}
       {!matches.length && (
         <p className="notice">
-          No published fixtures match these filters. Confirmed matches will
-          appear here when released.
+          {tr(
+            "No published fixtures match these filters. Confirmed matches will appear here when released.",
+          )}
         </p>
       )}
     </section>
@@ -272,22 +295,27 @@ export function GroupStandings({
   groups: PublicGroup[];
   slug: string;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <section
       className="section-space stack"
       aria-labelledby="standings-heading"
     >
       <div>
-        <p className="eyebrow">GROUP STAGE</p>
-        <h2 id="standings-heading">Standings</h2>
+        <p className="eyebrow">{tr("GROUP STAGE")}</p>
+        <h2 id="standings-heading">{tr("Standings")}</h2>
         <p className="muted">
-          Only approved, published match results count. Equal ranks remain tied
-          until the configured criteria resolve them.
+          {tr(
+            "Only approved, published match results count. Equal ranks remain tied until the configured criteria resolve them.",
+          )}
         </p>
       </div>
       {!groups.length && (
         <p className="notice">
-          Groups and ranking rules await publication. No ranking is assumed.
+          {tr(
+            "Groups and ranking rules await publication. No ranking is assumed.",
+          )}
         </p>
       )}
       {groups.map((g) => (
@@ -295,30 +323,33 @@ export function GroupStandings({
           <h3>{g.name}</h3>
           {g.rankingPending && (
             <p className="notice">
-              Ranking pending: confirmed fixtures, points or tiebreak rules are
-              incomplete or inconsistent.
+              {tr(
+                "Ranking pending: confirmed fixtures, points or tiebreak rules are incomplete or inconsistent.",
+              )}
             </p>
           )}
           <div
             className="table-scroll"
             role="region"
             tabIndex={0}
-            aria-label={`${g.name} standings; scroll horizontally`}
+            aria-label={tr("{value0} standings; scroll horizontally", {
+              value0: g.name,
+            })}
           >
             <table>
               <caption>{g.name}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Rank</th>
-                  <th scope="col">Team</th>
-                  <th scope="col">Played</th>
+                  <th scope="col">{tr("Rank")}</th>
+                  <th scope="col">{tr("Team")}</th>
+                  <th scope="col">{tr("Played")}</th>
                   <th scope="col">W</th>
                   <th scope="col">L</th>
                   <th scope="col">D</th>
-                  <th scope="col">Maps won</th>
-                  <th scope="col">Maps lost</th>
-                  <th scope="col">Difference</th>
-                  <th scope="col">Points</th>
+                  <th scope="col">{tr("Maps won")}</th>
+                  <th scope="col">{tr("Maps lost")}</th>
+                  <th scope="col">{tr("Difference")}</th>
+                  <th scope="col">{tr("Points")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,7 +379,7 @@ export function GroupStandings({
           </div>
           {g.criteria && (
             <p className="muted small">
-              Approved order:{" "}
+              {tr("Approved order:")}{" "}
               {g.criteria.map((c) => c.replaceAll("_", " ")).join(" → ")}
             </p>
           )}

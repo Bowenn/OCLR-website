@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import type { publicMappools } from "@/lib/mappools";
@@ -40,6 +43,8 @@ function MapDetails({
   onMove: (id: string) => void;
   onClose: () => void;
 }) {
+  const tr = useAppTranslations();
+
   const dialog = useRef<HTMLDialogElement>(null);
   const title = useId();
   useEffect(() => {
@@ -63,9 +68,9 @@ function MapDetails({
           className="secondary"
           type="button"
           onClick={() => dialog.current?.close()}
-          aria-label="Close map details"
+          aria-label={tr("Close map details")}
         >
-          Close
+          {tr("Close")}
         </button>
       </header>
       <div className="map-dialog-body">
@@ -80,7 +85,7 @@ function MapDetails({
             ["Beatmap ID", entry.beatmapId],
             ["Beatmapset ID", m.setId],
             ["Base difficulty", `${number(m.stars, 2)} ★`],
-            ["Official Mod SR", modRating(entry)],
+            ["Official Mod SR", tr(modRating(entry))],
             ["Base BPM", number(m.bpm)],
             ["Base length", duration(m.duration)],
             [
@@ -101,17 +106,17 @@ function MapDetails({
               : []),
           ].map(([label, value]) => (
             <div key={label}>
-              <dt>{label}</dt>
+              <dt>{tr(String(label))}</dt>
               <dd>{value}</dd>
             </div>
           ))}
         </dl>
         {entry.category === "FM" && (
           <p className="notice">
-            {pool.fmMode === "force_mod" ? "Force Mod" : "Free Mod"}
+            {pool.fmMode === "force_mod" ? tr("Force Mod") : tr("Free Mod")}
             {pool.fmRestrictions
               ? `: ${pool.fmRestrictions}`
-              : ": Detailed restrictions have not been published."}
+              : tr(": Detailed restrictions have not been published.")}
           </p>
         )}
         <div className="actions">
@@ -119,14 +124,14 @@ function MapDetails({
             className="button"
             href={`https://osu.ppy.sh/beatmaps/${entry.beatmapId}`}
           >
-            Open on osu!
+            {tr("Open on osu!")}
           </a>
           <Link
             className="button secondary"
             href={`/tournaments/${slug}/mappools/${pool.id}#map-${entry.id}`}
             onClick={() => dialog.current?.close()}
           >
-            Map permalink
+            {tr("Map permalink")}
           </Link>
         </div>
         <div className="map-dialog-navigation">
@@ -136,7 +141,7 @@ function MapDetails({
             disabled={!previous}
             onClick={() => previous && onMove(previous.id)}
           >
-            Previous map
+            {tr("Previous map")}
           </button>
           <button
             className="secondary"
@@ -144,7 +149,7 @@ function MapDetails({
             disabled={!next}
             onClick={() => next && onMove(next.id)}
           >
-            Next map
+            {tr("Next map")}
           </button>
         </div>
       </div>
@@ -160,6 +165,8 @@ export function MappoolBrowser({
   slug: string;
   headingLevel?: 2 | 5;
 }) {
+  const tr = useAppTranslations();
+
   const CardHeading = headingLevel === 5 ? "h5" : "h2";
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
@@ -204,12 +211,12 @@ export function MappoolBrowser({
     <div className="mappool-browse">
       <div className="pool-summary">
         <span role="status">
-          <strong>{entries.length}</strong> / {pool.entries.length} released
-          maps
+          <strong>{entries.length}</strong> / {pool.entries.length}{" "}
+          {tr(" released maps")}
         </span>
         {mean !== null && (
           <span>
-            <strong>{number(mean, 2)} ★</strong> average base SR
+            <strong>{number(mean, 2)} ★</strong> {tr(" average base SR")}
           </span>
         )}
         <span>
@@ -222,7 +229,7 @@ export function MappoolBrowser({
         <div
           className="event-pills"
           role="group"
-          aria-label={`${pool.name}: mod filter`}
+          aria-label={tr("{value0}: mod filter", { value0: pool.name })}
         >
           {[
             ["", "All mods"],
@@ -240,14 +247,14 @@ export function MappoolBrowser({
                 setSelected(null);
               }}
             >
-              {label}
+              {tr(label)}
             </button>
           ))}
         </div>
         <div
-          className="event-pills"
+          className="event-pills map-view-control"
           role="group"
-          aria-label={`${pool.name}: map view`}
+          aria-label={tr("{value0}: map view", { value0: pool.name })}
         >
           {["cards", "compact"].map((value) => (
             <button
@@ -260,17 +267,20 @@ export function MappoolBrowser({
                 setSelected(null);
               }}
             >
-              {value === "cards" ? "Map cards" : "Compact table"}
+              {value === "cards" ? tr("Map cards") : tr("Compact table")}
             </button>
           ))}
         </div>
 
         <label className="field map-search">
-          <span className="sr-only">Search {pool.name}</span>
+          <span className="sr-only">
+            {tr("Search ")}
+            {pool.name}
+          </span>
           <input
             type="search"
             value={search}
-            placeholder="Title, artist, mapper or slot"
+            placeholder={tr("Title, artist, mapper or slot")}
             onChange={(e) => {
               setSearch(e.target.value);
               setSelected(null);
@@ -278,7 +288,10 @@ export function MappoolBrowser({
           />
         </label>
         <label className="field map-sort">
-          <span className="sr-only">Sort {pool.name}</span>
+          <span className="sr-only">
+            {tr("Sort ")}
+            {pool.name}
+          </span>
           <select
             value={sort}
             onChange={(e) => {
@@ -286,9 +299,9 @@ export function MappoolBrowser({
               setSelected(null);
             }}
           >
-            <option value="slot">Slot order</option>
-            <option value="title">Song title</option>
-            <option value="stars">Base difficulty</option>
+            <option value="slot">{tr("Slot order")}</option>
+            <option value="title">{tr("Song title")}</option>
+            <option value="stars">{tr("Base difficulty")}</option>
           </select>
         </label>
       </div>
@@ -298,14 +311,16 @@ export function MappoolBrowser({
       ) : (
         <>
           <p className="map-values-note muted small">
-            Base stars, BPM and length · Official mod SR shown separately.
+            {tr(
+              "Base stars, BPM and length · Official mod SR shown separately.",
+            )}
           </p>
           {pool.entries.some((e) => e.category === "FM") && (
             <p className="map-values-note muted small">
-              {pool.fmMode === "force_mod" ? "Force Mod" : "Free Mod"}
+              {pool.fmMode === "force_mod" ? tr("Force Mod") : tr("Free Mod")}
               {pool.fmRestrictions
                 ? `: ${pool.fmRestrictions}`
-                : ": Detailed restrictions have not been published."}
+                : tr(": Detailed restrictions have not been published.")}
             </p>
           )}
           <div className="map-card-grid">
@@ -324,13 +339,16 @@ export function MappoolBrowser({
                 </div>
                 <div className="map-card-copy">
                   <p className="eyebrow">
-                    {categoryNames[e.category]} · {e.metadata.artist}
+                    {tr(categoryNames[e.category])} · {e.metadata.artist}
                   </p>
                   <CardHeading>
                     <button
                       className="map-open-button"
                       type="button"
-                      aria-label={`View ${slotLabel(e.category, e.position)}: ${e.metadata.title}`}
+                      aria-label={tr("View {value0}: {value1}", {
+                        value0: slotLabel(e.category, e.position),
+                        value1: e.metadata.title,
+                      })}
                       onClick={() => setSelected(e.id)}
                     >
                       {e.metadata.title}
@@ -338,14 +356,21 @@ export function MappoolBrowser({
                   </CardHeading>
                   <p className="muted small">[{e.metadata.difficulty}]</p>
                   <p className="muted small">
-                    {e.metadata.mapper} · BID {e.beatmapId}
+                    {e.metadata.mapper} {tr(" · BID ")}
+                    {e.beatmapId}
                   </p>
                   <div className="map-card-values">
-                    <span>{number(e.metadata.stars, 2)} ★ base</span>
-                    <span>{number(e.metadata.bpm)} BPM</span>
+                    <span>
+                      {number(e.metadata.stars, 2)} {tr(" ★ base")}
+                    </span>
+                    <span>
+                      {number(e.metadata.bpm)} {tr(" BPM")}
+                    </span>
                     <span>{duration(e.metadata.duration)}</span>
                   </div>
-                  <p className="map-mod-rating muted small">{modRating(e)}</p>
+                  <p className="map-mod-rating muted small">
+                    {tr(modRating(e))}
+                  </p>
                 </div>
               </article>
             ))}
@@ -353,7 +378,7 @@ export function MappoolBrowser({
         </>
       )}
       {!entries.length && (
-        <p className="notice">No beatmaps match these filters.</p>
+        <p className="notice">{tr("No beatmaps match these filters.")}</p>
       )}
       {active && (
         <MapDetails

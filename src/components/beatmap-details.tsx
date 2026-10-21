@@ -1,3 +1,4 @@
+import { useAppTranslations } from "@/i18n/shared";
 import type { BeatmapMetadata, MappoolCategory } from "@/lib/mappool-model";
 import {
   formatBeatmapDuration,
@@ -17,6 +18,8 @@ export function BeatmapDetails({
   category?: MappoolCategory;
   fetchedAt?: string;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <div className="beatmap-row">
       <BeatmapCover key={m.setId} setId={m.setId} />
@@ -32,13 +35,16 @@ export function BeatmapDetails({
           </a>
         </h3>
         <p className="muted small">
-          {m.difficulty} · mapped by {m.mapper}
+          {m.difficulty} {tr(" · mapped by ")}
+          {m.mapper}
         </p>
         <p className="small beatmap-stats">
           <span>
-            <strong>{formatBeatmapNumber(m.stars, 2)}</strong> ★ base
+            <strong>{formatBeatmapNumber(m.stars, 2)}</strong> {tr(" ★ base")}
           </span>{" "}
-          <span>{formatBeatmapNumber(m.bpm)} BPM</span>{" "}
+          <span>
+            {formatBeatmapNumber(m.bpm)} {tr(" BPM")}
+          </span>{" "}
           <span>{formatBeatmapDuration(m.duration)}</span>
         </p>
         {(m.ar !== undefined ||
@@ -46,23 +52,26 @@ export function BeatmapDetails({
           m.cs !== undefined ||
           m.hp !== undefined) && (
           <p className="small muted beatmap-parameters">
-            Base AR {formatBeatmapNumber(m.ar)} · OD {formatBeatmapNumber(m.od)}{" "}
-            · CS {formatBeatmapNumber(m.cs)} · HP {formatBeatmapNumber(m.hp)}
+            {tr("Base AR ")}
+            {formatBeatmapNumber(m.ar)} {tr(" · OD ")}
+            {formatBeatmapNumber(m.od)} {tr("· CS ")}
+            {formatBeatmapNumber(m.cs)} {tr(" · HP ")}
+            {formatBeatmapNumber(m.hp)}
           </p>
         )}
         {m.attributes ? (
           <div className="small beatmap-adjusted">
             <p>
               {m.attributes.configuration} ·{" "}
-              {formatBeatmapNumber(m.attributes.stars, 2)} ★ official adjusted ·{" "}
-              {m.attributes.ruleset}
+              {formatBeatmapNumber(m.attributes.stars, 2)}{" "}
+              {tr(" ★ official adjusted ·")} {m.attributes.ruleset}
               {m.attributes.maxCombo !== null
-                ? ` · ${m.attributes.maxCombo} max combo`
+                ? tr(" · {value0} max combo", { value0: m.attributes.maxCombo })
                 : ""}
             </p>
             {Object.keys(m.attributes.values).length > 0 && (
               <details>
-                <summary>Official ruleset attributes</summary>
+                <summary>{tr("Official ruleset attributes")}</summary>
                 <dl className="detail-list">
                   {Object.entries(m.attributes.values).map(([key, value]) => (
                     <div key={key}>
@@ -78,17 +87,19 @@ export function BeatmapDetails({
           category &&
           category !== "NM" && (
             <p className="muted small beatmap-adjusted">
-              Mod-adjusted difficulty:{" "}
+              {tr("Mod-adjusted difficulty:")}{" "}
               {category === "FM" || category === "TB"
-                ? "Variable"
-                : "Not calculated"}
+                ? tr("Variable")
+                : tr("Not calculated")}
               .
             </p>
           )
         )}
         {fetchedAt && (
           <p className="muted small">
-            Official osu! API · Beatmap {beatmapId} / Set {m.setId} · Fetched{" "}
+            {tr("Official osu! API · Beatmap ")}
+            {beatmapId} {tr(" / Set ")}
+            {m.setId} {tr(" · Fetched")}{" "}
             <time dateTime={fetchedAt}>
               {new Date(fetchedAt).toISOString().replace("T", " ").slice(0, 19)}{" "}
               UTC

@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { seedSession } from "./session";
@@ -60,7 +61,7 @@ test.describe("player registration with persistent sessions", () => {
         })
       ).status(),
     ).toBe(409);
-    const other = await browser.newContext();
+    const other = await browser.newContext({ storageState: englishStorage });
     await other.addCookies([await seedSession(id + 1)]);
     const privateResponse = await other.request.get(
       "http://127.0.0.1:3100/api/registrations",

@@ -1,26 +1,40 @@
+import { getAppTranslations } from "@/i18n/server";
 import { publicBracket } from "@/lib/brackets";
 import { formatDate } from "@/lib/editions";
 import { EmptyState, PageHeading } from "@/components/ui";
 import { BracketView } from "@/components/bracket-view";
-export const metadata = { title: "Tournament bracket & results" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Tournament bracket & results") };
+}
+
 export default async function Bracket({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition } = await params;
   const bracket = await publicBracket(edition);
   return (
     <>
-      <PageHeading eyebrow="THE COMPETITION" title="Bracket & results">
+      <PageHeading
+        eyebrow={tr("THE COMPETITION")}
+        title={tr("Bracket & results")}
+      >
         {bracket
           ? bracket.formatLabel
-          : "Confirmed match data will appear after final rosters and competition format are published."}
+          : tr(
+              "Confirmed match data will appear after final rosters and competition format are published.",
+            )}
       </PageHeading>
       {bracket ? (
         <>
           <p className="muted small">
-            Updated {formatDate(bracket.updatedAt, "UTC")} · Source:{" "}
+            {tr("Updated ")}
+            {tr(formatDate(bracket.updatedAt, "UTC", tr.locale))}{" "}
+            {tr(" · Source:")}{" "}
             {bracket.source.url ? (
               <a
                 className="text-link"
@@ -37,9 +51,10 @@ export default async function Bracket({
           <BracketView bracket={bracket} />
         </>
       ) : (
-        <EmptyState title="Bracket awaiting publication">
-          The format and results are not yet published, or finalized team
-          rosters are awaiting approval.
+        <EmptyState title={tr("Bracket awaiting publication")}>
+          {tr(
+            "The format and results are not yet published, or finalized team rosters are awaiting approval.",
+          )}
         </EmptyState>
       )}
     </>

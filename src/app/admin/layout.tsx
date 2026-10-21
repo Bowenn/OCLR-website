@@ -1,13 +1,18 @@
+import { getAppTranslations } from "@/i18n/server";
 import { StaffNavigation } from "@/components/staff-navigation";
 import { notFound, redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/user";
 import { staffAccess, permits } from "@/lib/auth/staff";
 import { tournamentList } from "@/lib/tournaments";
 import { globalNavigation } from "@/lib/admin-navigation";
-export const metadata = {
-  title: "Administration",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return {
+    title: tr("Administration"),
+    robots: { index: false, follow: false },
+  };
+}
+
 export default async function StaffLayout({
   children,
 }: {

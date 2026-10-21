@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicPlayers } from "@/lib/players";
 import { getPublicEdition } from "@/lib/content";
@@ -5,10 +6,16 @@ import { notFound } from "next/navigation";
 import { HttpError } from "@/lib/http";
 import { Action, PageHeading } from "@/components/ui";
 import { PublicPlayerIdentity } from "@/components/public-player-identity";
-export const metadata = {
-  title: "Players",
-  description: "Accepted players and announced teams for this OCLR tournament.",
-};
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return {
+    title: tr("Players"),
+    description: tr(
+      "Accepted players and announced teams for this OCLR tournament.",
+    ),
+  };
+}
+
 export default async function Players({
   searchParams,
   params,
@@ -16,6 +23,8 @@ export default async function Players({
   params: Promise<{ edition: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition } = await params;
   if (!(await getPublicEdition(edition))) notFound();
   const base = `/tournaments/${edition}/players`;
@@ -29,10 +38,10 @@ export default async function Players({
     if (!(error instanceof HttpError) || error.status !== 400) throw error;
     return (
       <div className="directory-page">
-        <PageHeading eyebrow="PUBLIC DIRECTORY" title="Players">
+        <PageHeading eyebrow={tr("PUBLIC DIRECTORY")} title={tr("Players")}>
           {error.message}
         </PageHeading>
-        <Action href={base}>Clear filters</Action>
+        <Action href={base}>{tr("Clear filters")}</Action>
       </div>
     );
   }
@@ -40,22 +49,23 @@ export default async function Players({
   const query = new URLSearchParams({ q: filters.q });
   return (
     <div className="directory-page">
-      <PageHeading title="Players" />
+      <PageHeading title={tr("Players")} />
       <form action={base} method="get" className="filters">
         <label className="field">
-          <span>Search players</span>
+          <span>{tr("Search players")}</span>
           <input
             name="q"
             defaultValue={filters.q}
             maxLength={100}
-            placeholder="Username or osu! ID"
+            placeholder={tr("Username or osu! ID")}
           />
         </label>
-        <button type="submit">Search</button>
+        <button type="submit">{tr("Search")}</button>
       </form>
       {total > 0 && (
         <p className="muted small" role="status">
-          {total} player {total === 1 ? "entry" : "entries"}
+          {total} {tr(" player ")}
+          {total === 1 ? tr("entry") : tr("entries")}
         </p>
       )}
       {rows.length ? (
@@ -63,10 +73,10 @@ export default async function Players({
           {rows.map((p) => (
             <li className="panel" key={`${p.editionSlug}-${p.osuId}`}>
               <PublicPlayerIdentity osuId={p.osuId} username={p.username} />
-              {p.captain && <span className="badge">Captain</span>}
+              {p.captain && <span className="badge">{tr("Captain")}</span>}
               <dl className="directory-details">
                 <div>
-                  <dt>Edition</dt>
+                  <dt>{tr("Edition")}</dt>
                   <dd>
                     <Link
                       className="text-link"
@@ -77,7 +87,7 @@ export default async function Players({
                   </dd>
                 </div>
                 <div>
-                  <dt>Team</dt>
+                  <dt>{tr("Team")}</dt>
                   <dd>
                     {p.team ? (
                       <Link
@@ -87,18 +97,18 @@ export default async function Players({
                         {p.team.name}
                       </Link>
                     ) : (
-                      "Not announced"
+                      tr("Not announced")
                     )}
                   </dd>
                 </div>
                 <div>
-                  <dt>Status</dt>
+                  <dt>{tr("Status")}</dt>
                   <dd>
                     {p.participation === "finalized_roster"
-                      ? "Finalized roster"
+                      ? tr("Finalized roster")
                       : p.captain
-                        ? "Appointed captain"
-                        : "Accepted player"}
+                        ? tr("Appointed captain")
+                        : tr("Accepted player")}
                   </dd>
                 </div>
               </dl>
@@ -107,7 +117,7 @@ export default async function Players({
                 href={`/players/${p.osuId}?edition=${edition}`}
                 prefetch={false}
               >
-                Player profile & statistics
+                {tr("Player profile & statistics")}
               </Link>
             </li>
           ))}
@@ -115,22 +125,24 @@ export default async function Players({
       ) : (
         <div className="directory-empty" role="status">
           <p className="muted">
-            {filters.q ? "No matching players" : "No accepted players yet"}
+            {filters.q
+              ? tr("No matching players")
+              : tr("No accepted players yet")}
           </p>
           {filters.q && (
             <Link className="text-link" href={base}>
-              Clear filters
+              {tr("Clear filters")}
             </Link>
           )}
         </div>
       )}
-      <nav className="actions spaced" aria-label="Player directory pages">
+      <nav className="actions spaced" aria-label={tr("Player directory pages")}>
         {filters.page > 1 && (
           <Link
             className="button secondary"
             href={`${base}?${query}&page=${filters.page - 1}`}
           >
-            ← Previous
+            {tr("← Previous")}
           </Link>
         )}
         {filters.page * 24 < total && (
@@ -138,7 +150,7 @@ export default async function Players({
             className="button secondary"
             href={`${base}?${query}&page=${filters.page + 1}`}
           >
-            Next →
+            {tr("Next →")}
           </Link>
         )}
       </nav>

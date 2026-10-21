@@ -3407,6 +3407,35 @@ body:has(.presenter-view) .site-footer,
   align-items: center;
   gap: 0.6rem;
 }
+.site-preferences {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.language-control select {
+  min-height: 44px;
+  max-width: 8rem;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+html:lang(zh-Hans),
+html:lang(zh-Hant) {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Microsoft JhengHei",
+    "Noto Sans CJK SC",
+    sans-serif;
+}
+html:lang(zh-Hans) .eyebrow,
+html:lang(zh-Hant) .eyebrow {
+  letter-spacing: 0.08em;
+}
 .nav-actions a[aria-current="page"] {
   border-color: #ce86f0;
   box-shadow: inset 0 0 0 1px #ce86f066;
@@ -3451,6 +3480,24 @@ body:has(.presenter-view) .site-footer,
   }
   .nav-login > span {
     display: none;
+  }
+}
+@media (max-width: 760px) {
+  .nav-wrap,
+  body:has(.public-tournament) .nav-wrap {
+    height: auto;
+    min-height: 68px;
+    flex-wrap: wrap;
+    padding-block: 0.6rem;
+    gap: 0.5rem;
+  }
+  .site-preferences {
+    order: 5;
+    flex: 1 0 100%;
+    justify-content: flex-end;
+  }
+  .language-control select {
+    max-width: 8rem;
   }
 }
 /* Shared accessible labels used by navigation, match cards and review actions. */
@@ -3784,26 +3831,5 @@ body:has(.presenter-view) .site-footer,
   }
   .mappool-workbench .beatmap-stats {
     gap: 0.2rem 0.65rem;
-  }
-}
-
-.site-preferences {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-@media (max-width: 760px) {
-  .nav-wrap,
-  body:has(.public-tournament) .nav-wrap {
-    height: auto;
-    min-height: 68px;
-    flex-wrap: wrap;
-    padding-block: 0.6rem;
-    gap: 0.5rem;
-  }
-  .site-preferences {
-    order: 5;
-    flex: 1 0 100%;
-    justify-content: flex-end;
   }
 }

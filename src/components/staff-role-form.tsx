@@ -1,4 +1,6 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState } from "react";
 import { ConfirmMutation } from "./confirm-mutation";
 export function StaffRoleForm({
@@ -10,19 +12,22 @@ export function StaffRoleForm({
   scopes: string[] | null;
   initialEdition?: string;
 }) {
+  const tr = useAppTranslations();
+
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState("mappooler");
   const [scope, setScope] = useState(initialEdition || scopes?.[0] || "");
 
   return (
     <div className="panel form-stack">
-      <h2>Grant a role</h2>
+      <h2>{tr("Grant a role")}</h2>
       <p className="muted">
-        The user must have signed in. Verify their osu! ID before granting
-        access.
+        {tr(
+          "The user must have signed in. Verify their osu! ID before granting access.",
+        )}
       </p>
       <label className="field">
-        <span>Verified osu! user ID</span>
+        <span>{tr("Verified osu! user ID")}</span>
         <input
           inputMode="numeric"
           value={userId}
@@ -31,17 +36,19 @@ export function StaffRoleForm({
         />
       </label>
       <label className="field">
-        <span>Role</span>
+        <span>{tr("Role")}</span>
         <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="mappooler">Mappooler</option>
-          <option value="referee">Referee</option>
-          <option value="admin">Admin — full access within scope</option>
+          <option value="mappooler">{tr("Mappooler")}</option>
+          <option value="referee">{tr("Referee")}</option>
+          <option value="admin">
+            {tr("Admin — full access within scope")}
+          </option>
         </select>
       </label>
       <label className="field">
-        <span>Scope</span>
+        <span>{tr("Scope")}</span>
         <select value={scope} onChange={(e) => setScope(e.target.value)}>
-          {!scopes && <option value="">Global — all editions</option>}
+          {!scopes && <option value="">{tr("Global — all editions")}</option>}
           {editions
             .filter((e) => !scopes || scopes.includes(e.slug))
             .map((e) => (
@@ -52,9 +59,16 @@ export function StaffRoleForm({
         </select>
       </label>
       <ConfirmMutation
-        label="Review role grant"
-        title="Grant staff access?"
-        description={`Grant ${role} to osu! ID ${userId || "(missing)"} for ${scope || "all editions"}. This change takes effect immediately.`}
+        label={tr("Review role grant")}
+        title={tr("Grant staff access?")}
+        description={tr(
+          "Grant {value0} to osu! ID {value1} for {value2}. This change takes effect immediately.",
+          {
+            value0: role,
+            value1: userId || "(missing)",
+            value2: scope || "all editions",
+          },
+        )}
         url="/api/admin/staff"
         payload={{
           action: "grant",
@@ -78,12 +92,17 @@ export function RevokeRole({
   role: string;
   scope: string | null;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <div className="form-stack">
       <ConfirmMutation
-        label="Revoke role"
-        title="Revoke staff access?"
-        description={`Remove ${username}'s ${role} role for ${scope ?? "all editions"}. Other grants remain active. This applies to existing sessions on the next authorization check.`}
+        label={tr("Revoke role")}
+        title={tr("Revoke staff access?")}
+        description={tr(
+          "Remove {value0}'s {value1} role for {value2}. Other grants remain active. This applies to existing sessions on the next authorization check.",
+          { value0: username, value1: role, value2: scope ?? "all editions" },
+        )}
         url="/api/admin/staff"
         payload={{ action: "revoke", grantId: id, confirmed: true }}
       />
@@ -104,11 +123,16 @@ export function StaffPublicVisibility({
   scope: string | null;
   published: boolean;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <ConfirmMutation
-      label={published ? "Hide from About" : "Show on About"}
-      title="Show staff profile on About?"
-      description={`Publish ${username}'s osu! username, avatar/profile link and ${role} role for ${scope ?? "all editions"}. Edition-scoped roles appear only while that tournament is public. Other private grants stay hidden.`}
+      label={published ? tr("Hide from About") : tr("Show on About")}
+      title={tr("Show staff profile on About?")}
+      description={tr(
+        "Publish {value0}'s osu! username, avatar/profile link and {value1} role for {value2}. Edition-scoped roles appear only while that tournament is public. Other private grants stay hidden.",
+        { value0: username, value1: role, value2: scope ?? "all editions" },
+      )}
       url="/api/admin/staff"
       requireConfirmation={!published}
       payload={{

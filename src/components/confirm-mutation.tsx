@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +30,8 @@ export function ConfirmMutation({
   disabled?: boolean;
   children?: ReactNode;
 }) {
+  const tr = useAppTranslations();
+
   const dialog = useRef<HTMLDialogElement>(null);
   const id = useId();
   const router = useRouter();
@@ -73,11 +78,11 @@ export function ConfirmMutation({
           else void confirm();
         }}
       >
-        {pending ? "Saving…" : label}
+        {pending ? tr("Saving…") : tr(label)}
       </button>
       {!requireConfirmation && error && (
         <p role="alert" className="notice error-text">
-          {error}
+          {tr(error)}
         </p>
       )}
       {requireConfirmation && (
@@ -89,28 +94,28 @@ export function ConfirmMutation({
             if (pending) event.preventDefault();
           }}
         >
-          <h2 id={`${id}-title`}>{title}</h2>
+          <h2 id={`${id}-title`}>{tr(title)}</h2>
           {description && (
             <p id={`${id}-description`} className="muted">
-              {description}
+              {tr(description)}
             </p>
           )}
           {children}
           {error && (
             <p role="alert" className="notice error-text">
-              {error}
+              {tr(error)}
             </p>
           )}
           <div className="actions">
             <button disabled={pending || !canConfirm} onClick={confirm}>
-              {pending ? "Saving…" : "Confirm"}
+              {pending ? tr("Saving…") : tr("Confirm")}
             </button>
             <button
               className="secondary"
               disabled={pending}
               onClick={() => dialog.current?.close()}
             >
-              Cancel
+              {tr("Cancel")}
             </button>
           </div>
         </dialog>

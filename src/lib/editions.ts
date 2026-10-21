@@ -163,7 +163,8 @@ export function enrollmentState(
 export function formatDate(
   value: string | Date | null,
   timeZone: string,
+  locale = "en-GB",
 ): string {
   if (!value) return "To be announced";
-  return `${new Intl.DateTimeFormat("en-GB", { timeZone, dateStyle: "medium", timeStyle: "short", hourCycle: "h23" }).format(new Date(value))} (${timeZone})`;
+  return `${new Intl.DateTimeFormat(locale, { timeZone, dateStyle: "medium", timeStyle: "short", hourCycle: "h23" }).format(new Date(value))} (${timeZone})`;
 }

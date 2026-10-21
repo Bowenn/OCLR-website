@@ -740,7 +740,7 @@ body:has(.public-tournament) .site-footer {
   flex: 0 1 170px;
   order: 3;
 }
-.map-browse-toolbar [aria-label$=": map view"] {
+.map-browse-toolbar .map-view-control {
   order: 4;
 }
 .map-values-note {
@@ -1226,6 +1226,11 @@ html[data-theme="dark"] body:has(.public-tournament) {
 }
 .theme-control {
   display: none;
+}
+body:has(.public-tournament) .language-control select {
+  background: var(--public-surface);
+  color: var(--public-foreground);
+  border-color: var(--public-control-border);
 }
 @media (max-width: 950px) {
   body:has(.public-tournament) .main-nav {

@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { seedSession } from "./session";
@@ -25,7 +26,7 @@ test.describe("staff registration review", () => {
         answers: { private: "Private test answer" },
       })
       .returning();
-    const other = await browser.newContext();
+    const other = await browser.newContext({ storageState: englishStorage });
     await other.addCookies([playerCookie]);
     for (const route of [
       "/api/admin/registrations",

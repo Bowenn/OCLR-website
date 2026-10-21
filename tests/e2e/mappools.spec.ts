@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { captureResponsiveLayout } from "./responsive";
 import { openTournamentTool } from "./navigation";
 import { test, expect } from "@playwright/test";
@@ -41,9 +42,11 @@ test.describe("published mappools and restricted editing", () => {
       grantedBy: adminId,
     });
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const referee = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     await referee.addCookies([refCookie]);

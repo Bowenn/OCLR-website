@@ -1,13 +1,20 @@
+import { getAppTranslations } from "@/i18n/server";
 import { PageHeading } from "@/components/ui";
 import { EditionCard } from "@/components/edition-card";
 import { getPublicEditions } from "@/lib/content";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Tournaments" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Tournaments") };
+}
+
 export default async function Tournaments() {
+  const tr = await getAppTranslations();
+
   const editions = await getPublicEditions();
   return (
     <div className="container page">
-      <PageHeading title="Tournaments" />
+      <PageHeading title={tr("Tournaments")} />
       {editions.length ? (
         <div className="stack">
           {editions.map((edition) => (
@@ -15,7 +22,7 @@ export default async function Tournaments() {
           ))}
         </div>
       ) : (
-        <p className="muted">No tournaments announced yet.</p>
+        <p className="muted">{tr("No tournaments announced yet.")}</p>
       )}
     </div>
   );

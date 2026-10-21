@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { openTournamentTool } from "./navigation";
 import { createHash, randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
@@ -52,6 +53,7 @@ test.describe("private referee review and Admin publication", () => {
     const route = `/admin/tournaments/test-cup/matches/${seed.fixtureId}`;
     const headers = { origin: "http://127.0.0.1:3100" };
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     try {

@@ -1,3 +1,4 @@
+import { useAppTranslations } from "@/i18n/shared";
 import type { publicMappools } from "@/lib/mappools";
 import {
   categories,
@@ -18,6 +19,8 @@ const columns = [
 ] as const;
 
 function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
+  const tr = useAppTranslations();
+
   const m = e.metadata;
   const url = `https://osu.ppy.sh/beatmaps/${e.beatmapId}`;
   const fields = [
@@ -33,11 +36,11 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
         </summary>
         <dl>
           <div>
-            <dt>Ruleset</dt>
+            <dt>{tr("Ruleset")}</dt>
             <dd>{m.attributes.ruleset}</dd>
           </div>
           <div>
-            <dt>Max combo</dt>
+            <dt>{tr("Max combo")}</dt>
             <dd>{formatBeatmapNumber(m.attributes.maxCombo)}</dd>
           </div>
           {Object.entries(m.attributes.values).map(([key, value]) => (
@@ -51,11 +54,11 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
     ) : (
       <span className="muted" key="mods">
         {e.category === "NM" ? (
-          <span title="Base SR is the No Mod difficulty">—</span>
+          <span title={tr("Base SR is the No Mod difficulty")}>—</span>
         ) : e.category === "FM" || e.category === "TB" ? (
-          "Variable"
+          tr("Variable")
         ) : (
-          "Not calculated"
+          tr("Not calculated")
         )}
       </span>
     ),
@@ -64,7 +67,7 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
     <dl className="mappool-parameters" key="parameters">
       {(["AR", "OD", "CS", "HP"] as const).map((label) => (
         <div key={label}>
-          <dt>{label}</dt>
+          <dt>{tr(label)}</dt>
           <dd>
             {formatBeatmapNumber(
               m[label.toLowerCase() as "ar" | "od" | "cs" | "hp"],
@@ -93,18 +96,21 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
             <p className="mappool-map-credit">
               <span>{m.mapper}</span>
               <span aria-hidden="true"> · </span>
-              <a href={url}>BID {e.beatmapId}</a>
+              <a href={url}>
+                {tr("BID ")}
+                {e.beatmapId}
+              </a>
             </p>
           </div>
         </div>
         <details className="mappool-mobile-details">
           <summary>
             <span>
-              {formatBeatmapNumber(m.stars, 2)} ★ base ·{" "}
-              {formatBeatmapNumber(m.bpm)} BPM ·{" "}
+              {formatBeatmapNumber(m.stars, 2)} {tr(" ★ base ·")}{" "}
+              {formatBeatmapNumber(m.bpm)} {tr(" BPM ·")}{" "}
               {formatBeatmapDuration(m.duration)}
             </span>
-            <span className="text-link">Details</span>
+            <span className="text-link">{tr("Details")}</span>
           </summary>
           <dl>
             {fields.map((value, i) => (
@@ -131,6 +137,8 @@ export function MappoolView({
   pool: Pool;
   headingLevel?: 2 | 5;
 }) {
+  const tr = useAppTranslations();
+
   const populated = categories.filter((category) =>
     pool.entries.some((entry) => entry.category === category),
   );
@@ -139,7 +147,7 @@ export function MappoolView({
   if (!populated.length)
     return (
       <p className="muted small">
-        No beatmaps have been released for this pool.
+        {tr("No beatmaps have been released for this pool.")}
       </p>
     );
   return (
@@ -147,7 +155,7 @@ export function MappoolView({
       {populated.length > 1 && (
         <nav
           className="mappool-category-links"
-          aria-label={`${pool.name}: map categories`}
+          aria-label={tr("{value0}: map categories", { value0: pool.name })}
         >
           {populated.map((category) => (
             <a key={category} href={`#${prefix}-maps-${category}`}>
@@ -164,8 +172,10 @@ export function MappoolView({
       )}
       <p id={`${prefix}-values`} className="mappool-values muted small">
         {populated.every((category) => category === "NM")
-          ? "NM uses Base SR and unmodified map stats."
-          : "Base stats are unmodified. Mod SR is calculated for the shown mods."}
+          ? tr("NM uses Base SR and unmodified map stats.")
+          : tr(
+              "Base stats are unmodified. Mod SR is calculated for the shown mods.",
+            )}
       </p>
       {populated.map((category) => {
         const entries = pool.entries.filter(
@@ -187,23 +197,26 @@ export function MappoolView({
             <div className="mappool-category-heading">
               <Heading id={`${prefix}-maps-${category}-title`}>
                 <strong>{category}</strong>
-                <span>{name}</span>
+                <span>{tr(name)}</span>
               </Heading>
               <span className="muted small">
-                {entries.length} {entries.length === 1 ? "map" : "maps"}
+                {entries.length} {entries.length === 1 ? tr("map") : tr("maps")}
               </span>
             </div>
             {category === "FM" && (
               <p className="mappool-fm-note muted small">
-                {name}:{" "}
+                {tr(name)}:{" "}
                 {pool.fmRestrictions ||
-                  "Detailed mod restrictions have not been published."}
+                  tr("Detailed mod restrictions have not been published.")}
               </p>
             )}
             <div
               className="table-scroll"
               role="region"
-              aria-label={`${pool.name}: ${category} beatmaps`}
+              aria-label={tr("{value0}: {value1} beatmaps", {
+                value0: pool.name,
+                value1: category,
+              })}
               tabIndex={0}
             >
               <table
@@ -214,15 +227,15 @@ export function MappoolView({
                   id={`${prefix}-maps-${category}-caption`}
                   className="sr-only"
                 >
-                  {pool.name}: {category} / {name} beatmaps
+                  {pool.name}: {category} / {tr(name)} {tr(" beatmaps")}
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Slot</th>
-                    <th scope="col">Beatmap / Difficulty</th>
+                    <th scope="col">{tr("Slot")}</th>
+                    <th scope="col">{tr("Beatmap / Difficulty")}</th>
                     {columns.map((label) => (
                       <th className="mappool-extra" scope="col" key={label}>
-                        {label}
+                        {tr(label)}
                       </th>
                     ))}
                   </tr>

@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -25,6 +28,8 @@ export function StaffNavigation({
   username: string;
   children: ReactNode;
 }) {
+  const tr = useAppTranslations();
+
   const pathname = usePathname();
   const router = useRouter();
   const [openPath, setOpenPath] = useState<string | null>(null);
@@ -40,21 +45,21 @@ export function StaffNavigation({
   return (
     <div className="container page workspace admin-workspace">
       <aside className="sidebar">
-        {!selected && <p className="eyebrow">ADMINISTRATION</p>}
+        {!selected && <p className="eyebrow">{tr("ADMINISTRATION")}</p>}
         {selected ? (
           <div className="admin-context">
             <div className="admin-context-heading">
-              <span className="muted small">Tournament</span>
+              <span className="muted small">{tr("Tournament")}</span>
               {!selected.published ? (
-                <span className="badge">Draft</span>
+                <span className="badge">{tr("Draft")}</span>
               ) : selected.status === "live" ? (
-                <span className="badge">Live</span>
+                <span className="badge">{tr("Live")}</span>
               ) : null}
             </div>
             <label className="field">
-              <span className="sr-only">Selected tournament</span>
+              <span className="sr-only">{tr("Selected tournament")}</span>
               <select
-                aria-label="Selected tournament"
+                aria-label={tr("Selected tournament")}
                 value={selected.slug}
                 onChange={(event) => {
                   setOpenPath(null);
@@ -76,11 +81,11 @@ export function StaffNavigation({
               className="button secondary admin-return"
               onClick={() => setOpenPath(null)}
             >
-              ← All tournaments
+              {tr("← All tournaments")}
             </Link>
           </div>
         ) : (
-          <h2>OCLR operations</h2>
+          <h2>{tr("OCLR operations")}</h2>
         )}
         <button
           className="secondary admin-menu-toggle"
@@ -88,18 +93,22 @@ export function StaffNavigation({
           aria-expanded={open}
           onClick={() => setOpenPath(open ? null : pathname)}
         >
-          {open ? "Close administration menu" : "Open administration menu"}
+          {open
+            ? tr("Close administration menu")
+            : tr("Open administration menu")}
         </button>
         <div id="admin-menu" className={`admin-menu${open ? " is-open" : ""}`}>
           <nav
             aria-label={
-              selected ? "Tournament navigation" : "Administration navigation"
+              selected
+                ? tr("Tournament navigation")
+                : tr("Administration navigation")
             }
           >
             {[...new Set(links.map((link) => link.group))].map((group) => (
               <div className="admin-nav-group" key={group}>
                 {!(selected && group === "Tournament") && (
-                  <p className="eyebrow">{group}</p>
+                  <p className="eyebrow">{tr(group)}</p>
                 )}
                 {links
                   .filter((link) => link.group === group)
@@ -112,24 +121,35 @@ export function StaffNavigation({
                       }
                       onClick={() => setOpenPath(null)}
                     >
-                      {link.label}
+                      {tr(link.label)}
                     </Link>
                   ))}
               </div>
             ))}
           </nav>
-          <p className="admin-identity muted small">Signed in as {username}</p>
+          <p className="admin-identity muted small">
+            {tr("Signed in as ")}
+            {username}
+          </p>
         </div>
       </aside>
       <div className="workspace-main">
-        <nav className="admin-breadcrumbs" aria-label="Breadcrumb">
+        <nav className="admin-breadcrumbs" aria-label={tr("Breadcrumb")}>
           <ol>
             {crumbs.map((crumb, i) => (
               <li key={crumb.href}>
                 {i === crumbs.length - 1 ? (
-                  <span aria-current="page">{crumb.label}</span>
+                  <span aria-current="page">
+                    {crumb.label === selected?.name
+                      ? crumb.label
+                      : tr(crumb.label)}
+                  </span>
                 ) : (
-                  <Link href={crumb.href}>{crumb.label}</Link>
+                  <Link href={crumb.href}>
+                    {crumb.label === selected?.name
+                      ? crumb.label
+                      : tr(crumb.label)}
+                  </Link>
                 )}
               </li>
             ))}

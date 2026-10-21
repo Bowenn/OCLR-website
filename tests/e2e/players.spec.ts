@@ -14,7 +14,9 @@ test.describe("anonymous published player directory", () => {
   }, info) => {
     const base = isMobile ? 240101 : 240001;
     const fixture = await seedPublicDirectory(base);
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+    ).toEqual([]);
     const query = new URLSearchParams({
       q: `Synthetic Directory ${base}`,
       edition: "test-cup",

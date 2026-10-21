@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useId, useRef, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -28,10 +31,12 @@ function IdentityFields({
   value: Identity;
   onChange: (value: Identity) => void;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <>
       <label className="field">
-        <span>Tournament name</span>
+        <span>{tr("Tournament name")}</span>
         <input
           required
           maxLength={100}
@@ -40,10 +45,10 @@ function IdentityFields({
         />
       </label>
       <label className="field">
-        <span>Summary</span>
+        <span>{tr("Summary")}</span>
         <textarea
           required={published}
-          placeholder="Add approved public copy before publishing."
+          placeholder={tr("Add approved public copy before publishing.")}
           maxLength={2000}
           value={value.summary}
           onChange={(e) => onChange({ ...value, summary: e.target.value })}
@@ -54,10 +59,10 @@ function IdentityFields({
         onChange={(timeZone) => onChange({ ...value, timeZone })}
       />
       <details className="form-options">
-        <summary>Season & artwork</summary>
+        <summary>{tr("Season & artwork")}</summary>
         <div className="form-stack">
           <label className="field">
-            <span>Season identifier (optional)</span>
+            <span>{tr("Season identifier (optional)")}</span>
             <input
               maxLength={40}
               value={value.season ?? ""}
@@ -67,7 +72,7 @@ function IdentityFields({
             />
           </label>
           <fieldset className="form-stack">
-            <legend>Approved artwork</legend>
+            <legend>{tr("Approved artwork")}</legend>
             {(["logo", "background", "keyVisual"] as const).map((key, i) => (
               <label className="field" key={key}>
                 <span>
@@ -85,7 +90,7 @@ function IdentityFields({
                     })
                   }
                 >
-                  <option value="">No edition artwork</option>
+                  <option value="">{tr("No edition artwork")}</option>
                   <option
                     value={
                       [
@@ -95,7 +100,8 @@ function IdentityFields({
                       ][i]
                     }
                   >
-                    OCLR Season 11 — {["logo", "background", "key visual"][i]}
+                    {tr("OCLR Season 11 — ")}
+                    {["logo", "background", "key visual"][i]}
                   </option>
                 </select>
               </label>
@@ -107,6 +113,8 @@ function IdentityFields({
   );
 }
 export function CreateTournamentForm() {
+  const tr = useAppTranslations();
+
   const router = useRouter();
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
@@ -141,7 +149,7 @@ export function CreateTournamentForm() {
   return (
     <form className="panel form-stack" onSubmit={create}>
       <label className="field">
-        <span>Tournament name</span>
+        <span>{tr("Tournament name")}</span>
         <input
           required
           maxLength={100}
@@ -157,12 +165,12 @@ export function CreateTournamentForm() {
         />
       </label>
       <p className="muted small" id="slug-help">
-        /tournaments/{slug || "…"} · Permanent after creation.
+        /tournaments/{slug || "…"} {tr(" · Permanent after creation.")}
       </p>
       <details>
-        <summary>Customize URL</summary>
+        <summary>{tr("Customize URL")}</summary>
         <label className="field">
-          <span>Permanent slug</span>
+          <span>{tr("Permanent slug")}</span>
           <input
             onInvalid={(event) => {
               event.currentTarget.closest("details")!.open = true;
@@ -180,11 +188,11 @@ export function CreateTournamentForm() {
       </details>
       {error && (
         <p role="alert" className="notice error-text">
-          {error}
+          {tr(error)}
         </p>
       )}
       <button disabled={pending}>
-        {pending ? "Creating…" : "Create private draft"}
+        {pending ? tr("Creating…") : tr("Create private draft")}
       </button>
     </form>
   );
@@ -205,6 +213,8 @@ function Save({
   confirmation?: boolean;
   disabled?: boolean;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <ConfirmMutation
       requireConfirmation={confirmation}
@@ -213,7 +223,9 @@ function Save({
       title={label}
       description={
         confirmation
-          ? "Completing this tournament pauses registration. Competition records and past applications are preserved."
+          ? tr(
+              "Completing this tournament pauses registration. Competition records and past applications are preserved.",
+            )
           : undefined
       }
       url={`/api/admin/tournaments/${data.edition.slug}`}
@@ -228,6 +240,8 @@ function Save({
   );
 }
 function General({ data, saved }: EditorProps) {
+  const tr = useAppTranslations();
+
   const [value, setValue] = useState<Identity>({
     name: data.edition.name,
     season: data.edition.season,
@@ -238,9 +252,10 @@ function General({ data, saved }: EditorProps) {
   const [status, setStatus] = useState(data.edition.status);
   return (
     <section className="panel form-stack">
-      <h2>General settings</h2>
+      <h2>{tr("General settings")}</h2>
       <p className="muted small tournament-slug">
-        Permanent slug: <strong>{data.edition.slug}</strong>
+        {tr("Permanent slug: ")}
+        <strong>{data.edition.slug}</strong>
       </p>
       <IdentityFields
         value={value}
@@ -248,14 +263,14 @@ function General({ data, saved }: EditorProps) {
         published={data.edition.published}
       />
       <label className="field">
-        <span>Tournament status</span>
+        <span>{tr("Tournament status")}</span>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as Edition["status"])}
         >
-          <option value="upcoming">Upcoming</option>
-          <option value="live">Live</option>
-          <option value="completed">Completed</option>
+          <option value="upcoming">{tr("Upcoming")}</option>
+          <option value="live">{tr("Live")}</option>
+          <option value="completed">{tr("Completed")}</option>
         </select>
       </label>
       <Save
@@ -263,7 +278,7 @@ function General({ data, saved }: EditorProps) {
         saved={saved}
         action="general"
         fields={{ ...value, status }}
-        label="Save general settings"
+        label={tr("Save general settings")}
         confirmation={
           status === "completed" && data.edition.status !== "completed"
         }
@@ -272,6 +287,8 @@ function General({ data, saved }: EditorProps) {
   );
 }
 function Rules({ data, saved }: EditorProps) {
+  const tr = useAppTranslations();
+
   const [configured, setConfigured] = useState(Boolean(data.edition.rules));
   const [version, setVersion] = useState(data.edition.rules?.version ?? "");
   const [sections, setSections] = useState(
@@ -282,10 +299,11 @@ function Rules({ data, saved }: EditorProps) {
   );
   return (
     <section className="panel form-stack">
-      <h2>Rules & eligibility</h2>
+      <h2>{tr("Rules & eligibility")}</h2>
       <p className="muted small">
-        Optional. Use a new version when rules change; past acknowledgments are
-        preserved.
+        {tr(
+          "Optional. Use a new version when rules change; past acknowledgments are preserved.",
+        )}
       </p>
       {
         <label className="check-field">
@@ -294,20 +312,20 @@ function Rules({ data, saved }: EditorProps) {
             checked={configured}
             onChange={(e) => setConfigured(e.target.checked)}
           />
-          <span>Configure approved rules</span>
+          <span>{tr("Configure approved rules")}</span>
         </label>
       }
       {configured && (
         <>
           <details open={!data.edition.rules}>
-            <summary>Rules release</summary>
+            <summary>{tr("Rules release")}</summary>
             <p className="small muted">
-              This is the published identifier players acknowledge. Use a new
-              identifier when rules change; past acknowledgments remain attached
-              to the original release.
+              {tr(
+                "This is the published identifier players acknowledge. Use a new identifier when rules change; past acknowledgments remain attached to the original release.",
+              )}
             </p>
             <label className="field">
-              <span>Rules version</span>
+              <span>{tr("Rules version")}</span>
               <input
                 value={version}
                 maxLength={80}
@@ -317,9 +335,15 @@ function Rules({ data, saved }: EditorProps) {
           </details>
           {sections.map((s, i) => (
             <fieldset className="form-stack" key={i}>
-              <legend>Rules section {i + 1}</legend>
+              <legend>
+                {tr("Rules section ")}
+                {i + 1}
+              </legend>
               <label className="field">
-                <span>Section {i + 1} heading</span>
+                <span>
+                  {tr("Section ")}
+                  {i + 1} {tr(" heading")}
+                </span>
                 <input
                   maxLength={200}
                   value={s.heading}
@@ -333,7 +357,10 @@ function Rules({ data, saved }: EditorProps) {
                 />
               </label>
               <label className="field">
-                <span>Section {i + 1} content</span>
+                <span>
+                  {tr("Section ")}
+                  {i + 1} {tr(" content")}
+                </span>
                 <textarea
                   rows={6}
                   maxLength={20000}
@@ -364,7 +391,8 @@ function Rules({ data, saved }: EditorProps) {
                     )
                   }
                 >
-                  Move section {i + 1} up
+                  {tr("Move section ")}
+                  {i + 1} {tr(" up")}
                 </button>
                 <button
                   type="button"
@@ -374,7 +402,8 @@ function Rules({ data, saved }: EditorProps) {
                     setSections(sections.filter((_, j) => j !== i))
                   }
                 >
-                  Remove section {i + 1}
+                  {tr("Remove section ")}
+                  {i + 1}
                 </button>
               </div>
             </fieldset>
@@ -387,12 +416,12 @@ function Rules({ data, saved }: EditorProps) {
               setSections([...sections, { heading: "", body: "" }])
             }
           >
-            Add rules section
+            {tr("Add rules section")}
           </button>
         </>
       )}
       <label className="field">
-        <span>Eligibility disclosure</span>
+        <span>{tr("Eligibility disclosure")}</span>
         <textarea
           rows={5}
           maxLength={4000}
@@ -408,12 +437,14 @@ function Rules({ data, saved }: EditorProps) {
           rules: configured ? { version, sections } : null,
           eligibility: eligibility.trim() || null,
         }}
-        label="Save rules & eligibility"
+        label={tr("Save rules & eligibility")}
       />
     </section>
   );
 }
 function Registration({ data, saved }: EditorProps) {
+  const tr = useAppTranslations();
+
   const e = data.edition;
   const [configured, setConfigured] = useState(Boolean(e.registration));
   const [enabled, setEnabled] = useState(e.registration?.enabled ?? false);
@@ -439,9 +470,11 @@ function Registration({ data, saved }: EditorProps) {
 
   return (
     <section className="panel form-stack">
-      <h2>Registration settings</h2>
+      <h2>{tr("Registration settings")}</h2>
       <p className="muted small">
-        Enable ahead of time; applications are accepted only within this window.
+        {tr(
+          "Enable ahead of time; applications are accepted only within this window.",
+        )}
       </p>
       <label className="check-field">
         <input
@@ -449,19 +482,19 @@ function Registration({ data, saved }: EditorProps) {
           checked={configured}
           onChange={(e) => setConfigured(e.target.checked)}
         />
-        <span>Configure registration window</span>
+        <span>{tr("Configure registration window")}</span>
       </label>
       {configured && (
         <>
           <ZonedDateInput
-            label="Registration opens"
+            label={tr("Registration opens")}
             value={opensAt}
             timeZone={e.timeZone}
             onChange={setOpens}
             onValidityChange={setOpensValid}
           />
           <ZonedDateInput
-            label="Registration closes"
+            label={tr("Registration closes")}
             value={closesAt}
             timeZone={e.timeZone}
             onChange={setCloses}
@@ -469,10 +502,10 @@ function Registration({ data, saved }: EditorProps) {
           />
           {blockers.length > 0 && (
             <aside className="registration-blockers">
-              <strong>Before enabling registration</strong>
+              <strong>{tr("Before enabling registration")}</strong>
               <ul>
                 {blockers.map((message) => (
-                  <li key={message}>{message}</li>
+                  <li key={message}>{tr(message)}</li>
                 ))}
               </ul>
             </aside>
@@ -484,7 +517,7 @@ function Registration({ data, saved }: EditorProps) {
               disabled={!enabled && blockers.length > 0}
               onChange={(e) => setEnabled(e.target.checked)}
             />
-            <span>Enable registration during this window</span>
+            <span>{tr("Enable registration during this window")}</span>
           </label>
           <details
             className="form-options"
@@ -493,12 +526,12 @@ function Registration({ data, saved }: EditorProps) {
             )}
           >
             <summary>
-              Withdrawal & application questions
+              {tr("Withdrawal & application questions")}
               {questions.length > 0 ? ` (${questions.length})` : ""}
             </summary>
             <div className="form-stack">
               <ZonedDateInput
-                label="Withdrawal deadline"
+                label={tr("Withdrawal deadline")}
                 value={withdrawUntil}
                 timeZone={e.timeZone}
                 onChange={setWithdraw}
@@ -506,14 +539,21 @@ function Registration({ data, saved }: EditorProps) {
                 optional
               />
               <p className="muted small">
-                Collect only necessary information. Saved applications retain
-                their original answers.
+                {tr(
+                  "Collect only necessary information. Saved applications retain their original answers.",
+                )}
               </p>
               {questions.map((q, i) => (
                 <fieldset className="form-stack" key={q.id}>
-                  <legend>Question {i + 1}</legend>
+                  <legend>
+                    {tr("Question ")}
+                    {i + 1}
+                  </legend>
                   <label className="field">
-                    <span>Question {i + 1} label</span>
+                    <span>
+                      {tr("Question ")}
+                      {i + 1} {tr(" label")}
+                    </span>
                     <input
                       maxLength={200}
                       value={q.label}
@@ -538,10 +578,16 @@ function Registration({ data, saved }: EditorProps) {
                         )
                       }
                     />
-                    <span>Question {i + 1} is required</span>
+                    <span>
+                      {tr("Question ")}
+                      {i + 1} {tr(" is required")}
+                    </span>
                   </label>
                   <label className="field">
-                    <span>Question {i + 1} maximum length</span>
+                    <span>
+                      {tr("Question ")}
+                      {i + 1} {tr(" maximum length")}
+                    </span>
                     <input
                       type="number"
                       min={1}
@@ -575,7 +621,8 @@ function Registration({ data, saved }: EditorProps) {
                         )
                       }
                     >
-                      Move question {i + 1} up
+                      {tr("Move question ")}
+                      {i + 1} {tr(" up")}
                     </button>
                     <button
                       type="button"
@@ -584,7 +631,8 @@ function Registration({ data, saved }: EditorProps) {
                         setQuestions(questions.filter((_, j) => j !== i))
                       }
                     >
-                      Remove question {i + 1}
+                      {tr("Remove question ")}
+                      {i + 1}
                     </button>
                   </div>
                 </fieldset>
@@ -605,7 +653,7 @@ function Registration({ data, saved }: EditorProps) {
                   ])
                 }
               >
-                Add question
+                {tr("Add question")}
               </button>
             </div>
           </details>
@@ -620,7 +668,7 @@ function Registration({ data, saved }: EditorProps) {
             ? { enabled, opensAt, closesAt, withdrawUntil, questions }
             : null,
         }}
-        label="Save registration settings"
+        label={tr("Save registration settings")}
         disabled={
           configured &&
           (!opensValid ||
@@ -633,6 +681,8 @@ function Registration({ data, saved }: EditorProps) {
   );
 }
 function Schedule({ data, saved }: EditorProps) {
+  const tr = useAppTranslations();
+
   const [schedule, setSchedule] = useState(
     data.edition.schedule.map((s, id) => ({ ...s, id })),
   );
@@ -640,13 +690,21 @@ function Schedule({ data, saved }: EditorProps) {
   const [invalid, setInvalid] = useState<Record<number, boolean>>({});
   return (
     <section className="panel form-stack">
-      <h2>Tournament milestones</h2>
-      <p className="muted small">Leave unconfirmed dates blank for TBA.</p>
+      <h2>{tr("Tournament milestones")}</h2>
+      <p className="muted small">
+        {tr("Leave unconfirmed dates blank for TBA.")}
+      </p>
       {schedule.map((s, i) => (
         <fieldset key={s.id} className="form-stack">
-          <legend>Milestone {i + 1}</legend>
+          <legend>
+            {tr("Milestone ")}
+            {i + 1}
+          </legend>
           <label className="field">
-            <span>Milestone {i + 1} label</span>
+            <span>
+              {tr("Milestone ")}
+              {i + 1} {tr(" label")}
+            </span>
             <input
               maxLength={200}
               value={s.label}
@@ -660,7 +718,7 @@ function Schedule({ data, saved }: EditorProps) {
             />
           </label>
           <ZonedDateInput
-            label={`Milestone ${i + 1} time`}
+            label={tr("Milestone {value0} time", { value0: i + 1 })}
             onValidityChange={(valid) =>
               setInvalid((old) =>
                 old[s.id] === !valid ? old : { ...old, [s.id]: !valid },
@@ -686,14 +744,16 @@ function Schedule({ data, saved }: EditorProps) {
                 )
               }
             >
-              Move milestone {i + 1} up
+              {tr("Move milestone ")}
+              {i + 1} {tr(" up")}
             </button>
             <button
               type="button"
               className="secondary"
               onClick={() => setSchedule(schedule.filter((_, j) => i !== j))}
             >
-              Remove milestone {i + 1}
+              {tr("Remove milestone ")}
+              {i + 1}
             </button>
           </div>
         </fieldset>
@@ -709,7 +769,7 @@ function Schedule({ data, saved }: EditorProps) {
           ])
         }
       >
-        Add milestone
+        {tr("Add milestone")}
       </button>
       <Save
         data={data}
@@ -717,30 +777,40 @@ function Schedule({ data, saved }: EditorProps) {
         action="schedule"
         fields={{ schedule: schedule.map(({ label, at }) => ({ label, at })) }}
         disabled={schedule.some((s) => invalid[s.id])}
-        label="Save milestones"
+        label={tr("Save milestones")}
       />
     </section>
   );
 }
 function Publication({ data, saved }: EditorProps) {
+  const tr = useAppTranslations();
+
   return (
     <section className="panel form-stack">
-      <h2>Publication</h2>
+      <h2>{tr("Publication")}</h2>
       <p className="notice">
         {data.edition.published
-          ? "Unpublishing hides tournament information and pauses registration. Existing competition records are preserved."
-          : "Publishing makes approved information public. Registration stays paused until explicitly enabled in Registration settings."}
+          ? tr(
+              "Unpublishing hides tournament information and pauses registration. Existing competition records are preserved.",
+            )
+          : tr(
+              "Publishing makes approved information public. Registration stays paused until explicitly enabled in Registration settings.",
+            )}
       </p>
       <ConfirmMutation
         label={
-          data.edition.published ? "Unpublish tournament" : "Publish tournament"
+          data.edition.published
+            ? tr("Unpublish tournament")
+            : tr("Publish tournament")
         }
         title={
           data.edition.published
-            ? "Hide this tournament?"
-            : "Publish this tournament?"
+            ? tr("Hide this tournament?")
+            : tr("Publish this tournament?")
         }
-        description="Review tournament identity, public wording and the effect on visibility before confirming."
+        description={tr(
+          "Review tournament identity, public wording and the effect on visibility before confirming.",
+        )}
         url={`/api/admin/tournaments/${data.edition.slug}`}
         payload={{
           action: "publication",
@@ -753,13 +823,16 @@ function Publication({ data, saved }: EditorProps) {
         }}
       />
       <p className="muted small">
-        Historical tournaments are retained. Mark an edition Completed in
-        General settings; use visibility controls to archive it privately.
+        {tr(
+          "Historical tournaments are retained. Mark an edition Completed in General settings; use visibility controls to archive it privately.",
+        )}
       </p>
     </section>
   );
 }
 export function TournamentEditor({ data }: { data: Workspace }) {
+  const tr = useAppTranslations();
+
   const id = useId();
   const router = useRouter();
   const requested = useSearchParams().get("section");
@@ -776,7 +849,7 @@ export function TournamentEditor({ data }: { data: Workspace }) {
     <div className="tournament-settings">
       <WorkspaceTabs
         id={id}
-        label="Tournament settings"
+        label={tr("Tournament settings")}
         value={section}
         items={[
           { value: "general", label: "General" },
@@ -801,14 +874,15 @@ export function TournamentEditor({ data }: { data: Workspace }) {
       >
         {message && (
           <p role="status" className="notice">
-            {message}
+            {tr(message)}
           </p>
         )}
         {data.frozen &&
           ["rules", "registration", "schedule"].includes(section) && (
             <p className="notice">
-              These settings are frozen after setup locks or drafting begins.
-              Existing registrations and competition history are retained.
+              {tr(
+                "These settings are frozen after setup locks or drafting begins. Existing registrations and competition history are retained.",
+              )}
             </p>
           )}
         {section === "general" && (

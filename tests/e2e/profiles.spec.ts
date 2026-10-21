@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq } from "drizzle-orm";
@@ -48,7 +49,9 @@ test.describe("published osu! profiles", () => {
           retryAt: new Date(Date.now() + 60000),
         });
     }
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+    ).toEqual([]);
     const response = await context.request.get(`/api/players/${base}`);
     expect(response.status()).toBe(200);
     expect(JSON.stringify(await response.json())).not.toMatch(
@@ -137,6 +140,7 @@ test.describe("published osu! profiles", () => {
       page.getByRole("heading", { name: "Published participation" }),
     ).toBeVisible();
     const operator = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     try {

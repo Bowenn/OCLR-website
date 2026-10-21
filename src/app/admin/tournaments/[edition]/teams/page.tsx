@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
@@ -11,6 +12,8 @@ export default async function Teams({
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const actor = await requireStaff();
     const { edition } = await params;
@@ -18,16 +21,20 @@ export default async function Teams({
     const data = await staffTeams(actor, edition);
     return (
       <>
-        <PageHeading eyebrow="PARTICIPANTS" title="Team management" />
+        <PageHeading
+          eyebrow={tr("PARTICIPANTS")}
+          title={tr("Team management")}
+        />
         {data.locked && (
           <p className="notice small" role="status">
-            Team configuration is locked for the draft. Names and roster
-            capacities cannot be edited here.{" "}
+            {tr(
+              "Team configuration is locked for the draft. Names and roster capacities cannot be edited here.",
+            )}{" "}
             <Link
               className="text-link"
               href={`/admin/tournaments/${edition}/draft`}
             >
-              Open live draft
+              {tr("Open live draft")}
             </Link>
           </p>
         )}
@@ -36,24 +43,25 @@ export default async function Teams({
             className="panel form-stack"
             aria-labelledby="team-setup-heading"
           >
-            <h2 id="team-setup-heading">No teams yet</h2>
+            <h2 id="team-setup-heading">{tr("No teams yet")}</h2>
             <p className="muted small">
-              Appoint captains to configure teams. Players join through the
-              draft.
+              {tr(
+                "Appoint captains to configure teams. Players join through the draft.",
+              )}
             </p>
             <div className="actions">
               <Link
                 className="button"
                 href={`/admin/tournaments/${edition}/captains`}
               >
-                Appoint captains
+                {tr("Appoint captains")}
               </Link>
               {!setup.candidates.length && (
                 <Link
                   className="button secondary"
                   href={`/admin/tournaments/${edition}/registrations`}
                 >
-                  Review registrations
+                  {tr("Review registrations")}
                 </Link>
               )}
             </div>
@@ -64,9 +72,12 @@ export default async function Teams({
             <article className="panel" key={t.id}>
               <h2>{t.name}</h2>
               <p className="muted small">
-                Captain osu! ID {t.captainId} · {t.members.length} member(s)
-                {t.capacity ? ` / capacity ${t.capacity}` : ""} ·{" "}
-                {t.finalizedAt ? "finalized" : "not finalized"}
+                {tr("Captain osu! ID ")}
+                {t.captainId} · {t.members.length} {tr(" member(s)")}
+                {t.capacity
+                  ? tr(" / capacity {value0}", { value0: t.capacity })
+                  : ""}{" "}
+                · {t.finalizedAt ? tr("finalized") : tr("not finalized")}
               </p>
               <ul>
                 {t.members.map((m) => (
@@ -79,11 +90,13 @@ export default async function Teams({
                 <ConfirmMutation
                   label={
                     t.identityPublished
-                      ? "Hide team identity"
-                      : "Publish team identity"
+                      ? tr("Hide team identity")
+                      : tr("Publish team identity")
                   }
-                  title="Change public team visibility?"
-                  description="Only publish identities approved by the organizers. Rosters remain hidden until finalized and approved separately."
+                  title={tr("Change public team visibility?")}
+                  description={tr(
+                    "Only publish identities approved by the organizers. Rosters remain hidden until finalized and approved separately.",
+                  )}
                   url={`/api/admin/tournaments/${edition}/teams`}
                   payload={{
                     command: {
@@ -101,11 +114,13 @@ export default async function Teams({
                   <ConfirmMutation
                     label={
                       t.rosterPublished
-                        ? "Hide roster"
-                        : "Publish finalized roster"
+                        ? tr("Hide roster")
+                        : tr("Publish finalized roster")
                     }
-                    title="Change public roster visibility?"
-                    description="This releases only the finalized players’ osu! IDs and display names. Verify organizer approval."
+                    title={tr("Change public roster visibility?")}
+                    description={tr(
+                      "This releases only the finalized players’ osu! IDs and display names. Verify organizer approval.",
+                    )}
                     url={`/api/admin/tournaments/${edition}/teams`}
                     payload={{
                       command: {

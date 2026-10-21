@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useId, useRef, useState } from "react";
 import {
   availableTimeZones,
@@ -13,6 +16,8 @@ export function TimeZonePicker({
   value: string;
   onChange: (zone: string) => void;
 }) {
+  const tr = useAppTranslations();
+
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -59,7 +64,7 @@ export function TimeZonePicker({
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
       }}
     >
-      <span id={`${id}-label`}>Time zone</span>
+      <span id={`${id}-label`}>{tr("Time zone")}</span>
       <button
         type="button"
         ref={trigger}
@@ -92,7 +97,7 @@ export function TimeZonePicker({
           <input
             ref={input}
             role="combobox"
-            aria-label="Search time zones"
+            aria-label={tr("Search time zones")}
             aria-autocomplete="list"
             aria-expanded={open}
             aria-controls={`${id}-choices`}
@@ -100,7 +105,7 @@ export function TimeZonePicker({
               options[active] ? `${id}-option-${active}` : undefined
             }
             autoComplete="off"
-            placeholder="Search city or region"
+            placeholder={tr("Search city or region")}
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -137,7 +142,7 @@ export function TimeZonePicker({
           <div
             id={`${id}-choices`}
             role="listbox"
-            aria-label="Time zones"
+            aria-label={tr("Time zones")}
             className="time-zone-options"
           >
             {(
@@ -148,9 +153,9 @@ export function TimeZonePicker({
             ).map(
               ([label, list]) =>
                 list.length > 0 && (
-                  <div role="group" aria-label={label} key={label}>
+                  <div role="group" aria-label={tr(label)} key={label}>
                     <div className="time-zone-group" aria-hidden="true">
-                      {label}
+                      {tr(label)}
                     </div>
                     {list.map((zone) => {
                       const index = options.indexOf(zone);
@@ -174,7 +179,7 @@ export function TimeZonePicker({
           </div>
           {!options.length && (
             <p className="small muted" role="status">
-              No matching time zones.
+              {tr("No matching time zones.")}
             </p>
           )}
         </div>

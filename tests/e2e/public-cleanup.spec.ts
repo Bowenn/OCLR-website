@@ -70,7 +70,9 @@ test.describe("concise public tournament surfaces", () => {
     await expect(
       page.getByRole("link", { name: "privacy notice", exact: true }),
     ).toHaveAttribute("href", "/privacy");
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+    ).toEqual([]);
     expect(
       (
         await new AxeBuilder({ page })

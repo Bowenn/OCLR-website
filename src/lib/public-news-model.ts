@@ -1,3 +1,4 @@
+import { english, type AppTranslator } from "@/i18n/translate";
 import { createHash } from "node:crypto";
 import { enrollmentState, formatDate, type Edition } from "./editions";
 import type { announcementsSchema } from "./announcements";
@@ -42,6 +43,7 @@ export function projectPublicNews(
   manual: z.infer<typeof announcementsSchema>,
   privacyConfigured: boolean,
   now = new Date(),
+  tr: AppTranslator = english,
 ): PublicNewsItem[] {
   const items: PublicNewsItem[] = manual
     .filter(
@@ -88,8 +90,19 @@ export function projectPublicNews(
       add(
         "registration",
         "opens",
-        available ? "Registration is open" : "Registration window",
-        `Configured registration window: ${formatDate(r.opensAt, e.timeZone)} to ${formatDate(r.closesAt, e.timeZone)}. ${available ? "Applications are currently accepted." : "Applications require enabled registration and an available tournament; check the registration page for current availability."}`,
+        available ? tr("Registration is open") : tr("Registration window"),
+        tr(
+          "Configured registration window: {opens} to {closes}. {availability}",
+          {
+            opens: formatDate(r.opensAt, e.timeZone, tr.locale),
+            closes: formatDate(r.closesAt, e.timeZone, tr.locale),
+            availability: available
+              ? tr("Applications are currently accepted.")
+              : tr(
+                  "Applications require enabled registration and an available tournament; check the registration page for current availability.",
+                ),
+          },
+        ),
         r.opensAt,
         `/tournaments/${e.slug}/register`,
       );
@@ -97,9 +110,11 @@ export function projectPublicNews(
         "registration",
         "closes",
         Date.parse(r.closesAt) <= now.getTime()
-          ? "Registration window ended"
-          : "Registration closing deadline",
-        `The configured registration window ends at ${formatDate(r.closesAt, e.timeZone)}.`,
+          ? tr("Registration window ended")
+          : tr("Registration closing deadline"),
+        tr("The configured registration window ends at {time}.", {
+          time: formatDate(r.closesAt, e.timeZone, tr.locale),
+        }),
         r.closesAt,
         `/tournaments/${e.slug}/register`,
       );
@@ -107,8 +122,11 @@ export function projectPublicNews(
         add(
           "registration",
           "withdrawal",
-          "Withdrawal deadline",
-          `The configured withdrawal cutoff is ${formatDate(r.withdrawUntil, e.timeZone)}. Available actions depend on the application's status and tournament lock.`,
+          tr("Withdrawal deadline"),
+          tr(
+            "The configured withdrawal cutoff is {time}. Available actions depend on the application's status and tournament lock.",
+            { time: formatDate(r.withdrawUntil, e.timeZone, tr.locale) },
+          ),
           r.withdrawUntil,
           `/tournaments/${e.slug}/register`,
         );
@@ -118,8 +136,14 @@ export function projectPublicNews(
         add(
           "schedule",
           JSON.stringify([entry.label, entry.at]),
-          `Scheduled: ${entry.label}`,
-          `${entry.label} is scheduled for ${formatDate(entry.at, e.timeZone)}. This published date is a plan, not confirmation that the event took place.`,
+          tr("Scheduled: {label}", { label: entry.label }),
+          tr(
+            "{label} is scheduled for {time}. This published date is a plan, not confirmation that the event took place.",
+            {
+              label: entry.label,
+              time: formatDate(entry.at, e.timeZone, tr.locale),
+            },
+          ),
           entry.at,
           `/tournaments/${e.slug}/schedule`,
         );

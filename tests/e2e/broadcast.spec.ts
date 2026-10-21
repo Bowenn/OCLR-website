@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { assertTestDatabase } from "../database";
 import { randomUUID } from "node:crypto";
 import { expect, test, type BrowserContext } from "@playwright/test";
@@ -39,7 +40,10 @@ test.describe("published OBS browser-source rehearsal", () => {
     const adminEndpoint = `/api/admin/tournaments/${slug}/draft`;
     const overlay = `/tournaments/${slug}/draft/overlay`;
     async function actor(userId: number) {
-      const next = await browser.newContext({ baseURL: origin });
+      const next = await browser.newContext({
+        storageState: englishStorage,
+        baseURL: origin,
+      });
       actors.push(next);
       const session = await createSession(userId);
       await next.addCookies([

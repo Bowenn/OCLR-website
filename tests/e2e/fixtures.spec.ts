@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { selectTimeZone } from "./time-zone";
 import { openTournamentTool } from "./navigation";
 import { captureResponsiveLayout } from "./responsive";
@@ -80,12 +81,15 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
     );
     const pool = maps.pools.find((p) => p.roundId === round.id)!;
     const referee = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const mapper = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     await referee.addCookies([refCookie]);
@@ -549,12 +553,15 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       },
     );
     const referee = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const second = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     await referee.addCookies([firstCookie]);

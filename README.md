@@ -58,6 +58,8 @@ Staff enter `/admin` for a role-aware overview, then select a tournament at `/ad
 
 ## Release operations
 
+The interface supports Simplified Chinese (default), Traditional Chinese and English. Public tournament pages offer light/dark appearance, with both preferences remembered across navigation. Organizer content remains in its approved original language. See [localization and appearance](docs/localization.md) for editing messages and the remaining translation-review gate.
+
 With `/etc/oclr/runtime.env` prepared on Rocky Linux 10, the simple entry point is:
 
 ```sh

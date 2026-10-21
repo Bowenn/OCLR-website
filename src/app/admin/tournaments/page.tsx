@@ -1,10 +1,15 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
 import { tournamentList } from "@/lib/tournaments";
 import { formatDate } from "@/lib/editions";
 import { PageHeading, EmptyState, Action } from "@/components/ui";
-export const metadata = { title: "Tournament management" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Tournament management") };
+}
+
 export default async function Tournaments({
   searchParams,
 }: {
@@ -13,6 +18,8 @@ export default async function Tournaments({
     visibility?: string | string[];
   }>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const data = await tournamentList(await requireUser());
     const filters = await searchParams;
@@ -29,28 +36,35 @@ export default async function Tournaments({
     );
     return (
       <>
-        <PageHeading eyebrow="OCLR OPERATIONS" title="Tournament management">
-          Create and configure editions, then open their competition tools.
+        <PageHeading
+          eyebrow={tr("OCLR OPERATIONS")}
+          title={tr("Tournament management")}
+        >
+          {tr(
+            "Create and configure editions, then open their competition tools.",
+          )}
         </PageHeading>
         <div className="actions">
           {data.canCreate && (
-            <Action href="/admin/tournaments/new">Create tournament</Action>
+            <Action href="/admin/tournaments/new">
+              {tr("Create tournament")}
+            </Action>
           )}
         </div>
         <form className="filters spaced" method="get">
           <label className="field">
-            <span>Search tournaments</span>
+            <span>{tr("Search tournaments")}</span>
             <input name="q" maxLength={100} defaultValue={query} />
           </label>
           <label className="field">
-            <span>Visibility</span>
+            <span>{tr("Visibility")}</span>
             <select name="visibility" defaultValue={visibility}>
-              <option value="">All assigned editions</option>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
+              <option value="">{tr("All assigned editions")}</option>
+              <option value="draft">{tr("Draft")}</option>
+              <option value="published">{tr("Published")}</option>
             </select>
           </label>
-          <button>Filter</button>
+          <button>{tr("Filter")}</button>
         </form>
         {rows.length ? (
           <div className="stack">
@@ -59,48 +73,58 @@ export default async function Tournaments({
                 <div className="section-title">
                   <div>
                     <p className="eyebrow">
-                      {r.season ? `Season ${r.season}` : r.slug}
+                      {r.season
+                        ? tr("Season {value0}", { value0: r.season })
+                        : r.slug}
                     </p>
                     <h2>{r.name}</h2>
                   </div>
                   <span className="badge">
-                    {r.published ? "Published" : "Draft"} · {r.status}
+                    {r.published ? tr("Published") : tr("Draft")} ·{" "}
+                    {tr(r.status)}
                   </span>
                 </div>
                 <dl className="detail-list">
                   <div>
-                    <dt>Registration</dt>
+                    <dt>{tr("Registration")}</dt>
                     <dd>
-                      {!r.registration ? "Not configured" : r.registrationState}
+                      {!r.registration
+                        ? tr("Not configured")
+                        : r.registrationState}
                     </dd>
                   </div>
                   <div>
-                    <dt>Opens / closes</dt>
+                    <dt>{tr("Opens / closes")}</dt>
                     <dd>
                       {r.registration
-                        ? `${formatDate(r.registration.opensAt, r.timeZone)} — ${formatDate(r.registration.closesAt, r.timeZone)}`
-                        : "Not configured"}
+                        ? `${tr(formatDate(r.registration.opensAt, r.timeZone, tr.locale))} — ${tr(formatDate(r.registration.closesAt, r.timeZone, tr.locale))}`
+                        : tr("Not configured")}
                     </dd>
                   </div>
                   <div>
-                    <dt>Last modified</dt>
-                    <dd>{formatDate(r.updatedAt, r.timeZone)}</dd>
+                    <dt>{tr("Last modified")}</dt>
+                    <dd>
+                      {tr(formatDate(r.updatedAt, r.timeZone, tr.locale))}
+                    </dd>
                   </div>
                 </dl>
                 <Link
                   className="button secondary"
                   href={`/admin/tournaments/${r.slug}`}
                 >
-                  Open tournament<span className="sr-only"> {r.name}</span>
+                  {tr("Open tournament")}
+                  <span className="sr-only"> {r.name}</span>
                 </Link>
               </article>
             ))}
           </div>
         ) : (
-          <EmptyState title="No matching tournaments">
+          <EmptyState title={tr("No matching tournaments")}>
             {data.canCreate
-              ? "Create a private edition to begin, or clear the filters."
-              : "Your authorized tournament workspaces will appear here when assigned."}
+              ? tr("Create a private edition to begin, or clear the filters.")
+              : tr(
+                  "Your authorized tournament workspaces will appear here when assigned.",
+                )}
           </EmptyState>
         )}
       </>

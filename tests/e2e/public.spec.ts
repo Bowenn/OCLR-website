@@ -131,7 +131,9 @@ test("Privacy and About share one explicit osu! contact without publishing the a
     "private-contact@example.test",
   ])
     expect(html).not.toContain(hidden);
-  expect(await context.cookies()).toEqual([]);
+  expect(
+    (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+  ).toEqual([]);
   await page.screenshot({
     path: info.outputPath("privacy-osu-contact.png"),
     fullPage: true,

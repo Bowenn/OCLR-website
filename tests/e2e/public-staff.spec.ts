@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { sql } from "drizzle-orm";
@@ -44,9 +45,11 @@ test.describe("approved public About roster", () => {
       }),
     );
     const admin = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const member = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     await admin.addCookies([adminCookie]);

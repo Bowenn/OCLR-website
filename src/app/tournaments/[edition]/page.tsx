@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { registrationAvailability } from "@/lib/registrations";
 import { notFound } from "next/navigation";
@@ -22,6 +23,8 @@ export default async function Overview({
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition: slug } = await params;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
@@ -58,7 +61,9 @@ export default async function Overview({
       >
         <div className="event-intro">
           <p className="eyebrow">
-            OCLR {edition.season && ` / SEASON ${edition.season}`}
+            {tr("OCLR ")}
+            {edition.season &&
+              tr(" / SEASON {value0}", { value0: edition.season })}
           </p>
           <h1 id="event-title">{edition.name}</h1>
           {publicEditionSummary(edition.summary) && (
@@ -68,14 +73,17 @@ export default async function Overview({
             <Action
               href={`${base}/${state === "open" ? "register" : "schedule"}`}
             >
-              {state === "open" ? "Register individually" : "View schedule"}
+              {state === "open"
+                ? tr("Register individually")
+                : tr("View schedule")}
             </Action>
             <Action href={`${base}/mappools`} secondary>
-              Explore mappools
+              {tr("Explore mappools")}
             </Action>
           </div>
           <p className="event-hero-caption">
-            osu! Chinese League Rookie <span>· {edition.status}</span>
+            {tr("osu! Chinese League Rookie ")}
+            <span>· {tr(edition.status)}</span>
           </p>
         </div>
         {edition.branding.keyVisual && (
@@ -83,7 +91,10 @@ export default async function Overview({
         )}
       </section>
       {edition.schedule.length > 0 && (
-        <ol className="event-milestones" aria-label="Tournament milestones">
+        <ol
+          className="event-milestones"
+          aria-label={tr("Tournament milestones")}
+        >
           {edition.schedule.map((event, i) => (
             <li key={i}>
               <span className="event-step">
@@ -92,7 +103,7 @@ export default async function Overview({
               <div>
                 <strong>{event.label}</strong>
                 <p className="muted small">
-                  {formatDate(event.at, edition.timeZone)}
+                  {tr(formatDate(event.at, edition.timeZone, tr.locale))}
                 </p>
               </div>
             </li>
@@ -103,8 +114,9 @@ export default async function Overview({
         (r) => r.status === "rejected",
       ) && (
         <p className="notice" role="status">
-          Some competition information is temporarily unavailable. Please try
-          again later.
+          {tr(
+            "Some competition information is temporarily unavailable. Please try again later.",
+          )}
         </p>
       )}
       <div className="event-overview-grid">
@@ -112,9 +124,9 @@ export default async function Overview({
           {upcoming.length > 0 && (
             <section aria-labelledby="upcoming-heading">
               <div className="section-title">
-                <h2 id="upcoming-heading">Coming up</h2>
+                <h2 id="upcoming-heading">{tr("Coming up")}</h2>
                 <Link className="text-link" href={`${base}/schedule`}>
-                  Full schedule
+                  {tr("Full schedule")}
                 </Link>
               </div>
               <div className="overview-matches">
@@ -127,9 +139,9 @@ export default async function Overview({
           {latest.length > 0 && (
             <section aria-labelledby="latest-heading">
               <div className="section-title">
-                <h2 id="latest-heading">Latest results</h2>
+                <h2 id="latest-heading">{tr("Latest results")}</h2>
                 <Link className="text-link" href={`${base}/results`}>
-                  All results
+                  {tr("All results")}
                 </Link>
               </div>
               <div className="overview-matches">
@@ -145,9 +157,9 @@ export default async function Overview({
           {pools.length > 0 && (
             <section className="panel">
               <div className="section-title">
-                <h2>Released mappools</h2>
+                <h2>{tr("Released mappools")}</h2>
                 <Link className="text-link" href={`${base}/mappools`}>
-                  All mappools
+                  {tr("All mappools")}
                 </Link>
               </div>
               <ul className="event-pool-list">
@@ -157,7 +169,7 @@ export default async function Overview({
                       <span className="eyebrow">{pool.roundName}</span>
                       <strong>{pool.name}</strong>
                       <span className="muted small">
-                        {pool.entries.length} maps
+                        {pool.entries.length} {tr(" maps")}
                       </span>
                     </Link>
                   </li>
@@ -167,74 +179,83 @@ export default async function Overview({
           )}
           {!upcoming.length && !latest.length && !pools.length && (
             <section className="panel">
-              <h2>The next stage</h2>
+              <h2>{tr("The next stage")}</h2>
               <p className="muted">
-                Confirmed matches, released mappools and results will appear
-                here as the tournament progresses.
+                {tr(
+                  "Confirmed matches, released mappools and results will appear here as the tournament progresses.",
+                )}
               </p>
               <Link className="text-link" href={`${base}/schedule`}>
-                View tournament schedule
+                {tr("View tournament schedule")}
               </Link>
             </section>
           )}
         </div>
         <aside
           className="event-overview-aside"
-          aria-label="Tournament information"
+          aria-label={tr("Tournament information")}
         >
           <section className="panel">
             <div className="section-title">
-              <h2>Registration</h2>
-              <Badge>{state}</Badge>
+              <h2>{tr("Registration")}</h2>
+              <Badge>{tr(state)}</Badge>
             </div>
             <p className="muted small">
-              Individual entry. Captain-led team draft.
+              {tr("Individual entry. Captain-led team draft.")}
             </p>
             <dl className="detail-list">
               <div>
-                <dt>Opens</dt>
+                <dt>{tr("Opens")}</dt>
                 <dd>
-                  {formatDate(
-                    edition.registration?.opensAt ?? null,
-                    edition.timeZone,
+                  {tr(
+                    formatDate(
+                      edition.registration?.opensAt ?? null,
+                      edition.timeZone,
+                      tr.locale,
+                    ),
                   )}
                 </dd>
               </div>
               <div>
-                <dt>Closes</dt>
+                <dt>{tr("Closes")}</dt>
                 <dd>
-                  {formatDate(
-                    edition.registration?.closesAt ?? null,
-                    edition.timeZone,
+                  {tr(
+                    formatDate(
+                      edition.registration?.closesAt ?? null,
+                      edition.timeZone,
+                      tr.locale,
+                    ),
                   )}
                 </dd>
               </div>
               <div>
-                <dt>Time zone</dt>
+                <dt>{tr("Time zone")}</dt>
                 <dd>{edition.timeZone}</dd>
               </div>
             </dl>
             {state === "open" && (
-              <Action href={`${base}/register`}>Register individually</Action>
+              <Action href={`${base}/register`}>
+                {tr("Register individually")}
+              </Action>
             )}
             {edition.rules && (
               <p className="spaced">
                 <Link href={`${base}/rules`} className="text-link">
-                  Read the rules
+                  {tr("Read the rules")}
                 </Link>
               </p>
             )}
           </section>
           {edition.eligibility && (
             <section className="panel">
-              <h2>Eligibility</h2>
+              <h2>{tr("Eligibility")}</h2>
               <p className="muted preserve-lines">{edition.eligibility}</p>
             </section>
           )}
           {teams.length > 0 && (
             <section className="panel">
               <div className="section-title">
-                <h2>Teams</h2>
+                <h2>{tr("Teams")}</h2>
                 <Badge>{teams.length}</Badge>
               </div>
               <ul className="event-team-links">
@@ -247,7 +268,7 @@ export default async function Overview({
                 ))}
               </ul>
               <Link className="text-link" href={`${base}/teams`}>
-                Explore teams
+                {tr("Explore teams")}
               </Link>
             </section>
           )}

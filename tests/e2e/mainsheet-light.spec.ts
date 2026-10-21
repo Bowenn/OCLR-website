@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { db, closeDb } from "../../src/db";
@@ -101,7 +102,9 @@ test.describe("MainSheet Light public experience", () => {
     );
     await context.route("https://a.ppy.sh/**", (route) => route.abort());
     const base = "/tournaments/test-cup";
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+    ).toEqual([]);
     const poolUrl = `/api/tournaments/test-cup/mappools/${seed.poolId}`;
     const before = await (await context.request.get(poolUrl)).json();
     await page.goto(base);
@@ -267,6 +270,7 @@ test.describe("MainSheet Light public experience", () => {
     await page.goto(base);
     await expect(page.locator(".event-artwork-fallback")).toBeVisible();
     const admin = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     try {

@@ -1,16 +1,26 @@
+import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
 import { assertCapability } from "@/lib/auth/staff";
 import { PageHeading } from "@/components/ui";
 import { CreateTournamentForm } from "@/components/tournament-editor";
-export const metadata = { title: "Create tournament" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Create tournament") };
+}
+
 export default async function NewTournament() {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     await assertCapability(await requireUser(), "configure_tournament");
     return (
       <>
-        <PageHeading eyebrow="TOURNAMENT MANAGEMENT" title="Create tournament">
-          Start with a name. Add details when you’re ready.
+        <PageHeading
+          eyebrow={tr("TOURNAMENT MANAGEMENT")}
+          title={tr("Create tournament")}
+        >
+          {tr("Start with a name. Add details when you’re ready.")}
         </PageHeading>
         <CreateTournamentForm />
       </>

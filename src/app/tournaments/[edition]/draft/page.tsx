@@ -1,8 +1,13 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicDraft } from "@/lib/draft";
 import { PageHeading } from "@/components/ui";
 import { LiveDraft } from "@/components/live-draft";
-export const metadata = { title: "Live draft" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Live draft") };
+}
+
 export default async function Draft({
   params,
   searchParams,
@@ -10,6 +15,8 @@ export default async function Draft({
   params: Promise<{ edition: string }>;
   searchParams: Promise<{ presenter?: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition } = await params;
   const presenter = (await searchParams).presenter === "1";
   return (
@@ -17,22 +24,22 @@ export default async function Draft({
       {!presenter && (
         <>
           <PageHeading
-            eyebrow="THE TEAM STORY STARTS HERE"
-            title="Captain draft"
+            eyebrow={tr("THE TEAM STORY STARTS HERE")}
+            title={tr("Captain draft")}
           >
-            Published selections, captain turns and roster progress.
+            {tr("Published selections, captain turns and roster progress.")}
           </PageHeading>
           <Link
             href={`/tournaments/${edition}/draft?presenter=1`}
             className="text-link"
           >
-            Open presenter view
+            {tr("Open presenter view")}
           </Link>
           <Link
             href={`/tournaments/${edition}/draft/overlay`}
             className="text-link broadcast-link"
           >
-            Open broadcast overlay
+            {tr("Open broadcast overlay")}
           </Link>
         </>
       )}

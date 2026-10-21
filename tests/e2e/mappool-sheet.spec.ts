@@ -120,7 +120,9 @@ test.describe("published mappool mainsheet", () => {
             body: '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="32"><rect width="56" height="32" fill="#593776"/></svg>',
           }),
     );
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+    ).toEqual([]);
     expect(
       (
         await context.request.get(

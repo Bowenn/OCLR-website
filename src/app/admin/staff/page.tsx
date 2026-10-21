@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
@@ -14,6 +15,8 @@ export default async function StaffPage({
 }: {
   searchParams: Promise<{ edition?: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const { grants, scopes } = await listStaffRoles(await requireUser());
     const requested = (await searchParams).edition ?? "";
@@ -24,7 +27,10 @@ export default async function StaffPage({
     if (requested && !selected) notFound();
     return (
       <>
-        <PageHeading eyebrow="ACCESS CONTROL" title="Staff assignments" />
+        <PageHeading
+          eyebrow={tr("ACCESS CONTROL")}
+          title={tr("Staff assignments")}
+        />
         <StaffRoleForm
           key={selected?.slug ?? "all"}
           initialEdition={selected?.slug ?? ""}
@@ -34,11 +40,12 @@ export default async function StaffPage({
           scopes={scopes}
         />
         <section className="spaced">
-          <h2>Role assignments</h2>
+          <h2>{tr("Role assignments")}</h2>
           {!grants.length && (
-            <EmptyState title="No persistent assignments">
-              Bootstrap administrators are configured on the server and do not
-              appear here.
+            <EmptyState title={tr("No persistent assignments")}>
+              {tr(
+                "Bootstrap administrators are configured on the server and do not appear here.",
+              )}
             </EmptyState>
           )}
           {grants
@@ -54,23 +61,23 @@ export default async function StaffPage({
                   {username} · {g.userId}
                 </h3>
                 <p>
-                  {g.role} · {g.editionSlug ?? "Global"} ·{" "}
-                  {g.revokedAt ? "Revoked" : "Active"}
+                  {g.role} · {g.editionSlug ?? tr("Global")} ·{" "}
+                  {g.revokedAt ? tr("Revoked") : tr("Active")}
                 </p>
                 <p className="small muted">
-                  About:{" "}
+                  {tr("About:")}{" "}
                   {g.aboutPublished && !g.revokedAt
                     ? !g.editionSlug ||
                       editions.some(
                         (e) => e.slug === g.editionSlug && e.published,
                       )
-                      ? "Public"
-                      : "Hidden until tournament publication"
-                    : "Private"}
+                      ? tr("Public")
+                      : tr("Hidden until tournament publication")
+                    : tr("Private")}
                 </p>
                 <p className="muted small">
-                  Granted by osu! ID {g.grantedBy} on{" "}
-                  {g.grantedAt.toISOString()}
+                  {tr("Granted by osu! ID ")}
+                  {g.grantedBy} {tr(" on")} {g.grantedAt.toISOString()}
                 </p>
                 {!g.revokedAt && (
                   <div className="actions">

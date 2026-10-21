@@ -1,44 +1,58 @@
+import { getAppTranslations } from "@/i18n/server";
 import { registrationAvailability } from "@/lib/registrations";
 import { Action, Badge } from "./ui";
 import { EditionArtwork } from "./edition-artwork";
 import { formatDate, publicEditionSummary, type Edition } from "@/lib/editions";
 export async function EditionCard({ edition }: { edition: Edition }) {
+  const tr = await getAppTranslations();
+
   const state = await registrationAvailability(edition);
   const summary = publicEditionSummary(edition.summary);
   return (
     <article className="edition-card">
       <EditionArtwork slug={edition.slug} logo={edition.branding.logo} />
       <div className="edition-copy">
-        {state !== "open" && <Badge>Registration: {state}</Badge>}
+        {state !== "open" && (
+          <Badge>
+            {tr("Registration: ")}
+            {tr(state)}
+          </Badge>
+        )}
         <h2>{edition.name}</h2>
         {summary && <p className="muted">{summary}</p>}
         <div className="actions">
           {state === "open" && (
             <Action href={`/tournaments/${edition.slug}/register`}>
-              Register
+              {tr("Register")}
             </Action>
           )}
           <Action href={`/tournaments/${edition.slug}`} secondary>
-            View tournament
+            {tr("View tournament")}
           </Action>
         </div>
       </div>
       <dl className="edition-facts">
         <div>
-          <dt>Registration opens</dt>
+          <dt>{tr("Registration opens")}</dt>
           <dd>
-            {formatDate(
-              edition.registration?.opensAt ?? null,
-              edition.timeZone,
+            {tr(
+              formatDate(
+                edition.registration?.opensAt ?? null,
+                edition.timeZone,
+                tr.locale,
+              ),
             )}
           </dd>
         </div>
         <div>
-          <dt>Registration closes</dt>
+          <dt>{tr("Registration closes")}</dt>
           <dd>
-            {formatDate(
-              edition.registration?.closesAt ?? null,
-              edition.timeZone,
+            {tr(
+              formatDate(
+                edition.registration?.closesAt ?? null,
+                edition.timeZone,
+                tr.locale,
+              ),
             )}
           </dd>
         </div>

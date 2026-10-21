@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useState } from "react";
 import type {
   BeatmapSnapshot,
@@ -16,6 +19,8 @@ export function BeatmapPreview({
   url: string;
   onReady: (snapshot: BeatmapSnapshot | null) => void;
 }) {
+  const tr = useAppTranslations();
+
   const [result, setResult] = useState<{
     snapshot?: BeatmapSnapshot;
     error?: string;
@@ -66,20 +71,21 @@ export function BeatmapPreview({
   }, [id, url, attempt, onReady, difficultyConfiguration]);
   return (
     <div
-      aria-label="Beatmap preview"
+      aria-label={tr("Beatmap preview")}
       aria-busy={!result}
       className="stack"
       aria-live="polite"
     >
       {!result && (
         <p role="status" className="muted small">
-          Looking up beatmap {id}…
+          {tr("Looking up beatmap ")}
+          {id}…
         </p>
       )}
       {result?.error && (
         <>
           <p role="alert" className="notice error-text">
-            {result.error}
+            {tr(result.error)}
           </p>
           <button
             type="button"
@@ -90,7 +96,7 @@ export function BeatmapPreview({
               setAttempt((a) => a + 1);
             }}
           >
-            Retry beatmap lookup
+            {tr("Retry beatmap lookup")}
           </button>
         </>
       )}
@@ -98,8 +104,9 @@ export function BeatmapPreview({
         <>
           <BeatmapDetails {...result.snapshot} />
           <p className="muted small">
-            Base ratings and any explicitly configured official attributes are
-            labeled separately. BPM and duration describe the base map.
+            {tr(
+              "Base ratings and any explicitly configured official attributes are labeled separately. BPM and duration describe the base map.",
+            )}
           </p>
           <button
             type="button"
@@ -110,7 +117,7 @@ export function BeatmapPreview({
               setAttempt((a) => a + 1);
             }}
           >
-            Refresh preview
+            {tr("Refresh preview")}
           </button>
         </>
       )}

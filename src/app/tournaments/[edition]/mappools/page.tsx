@@ -1,14 +1,21 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicMappools } from "@/lib/mappools";
 import { EmptyState, PageHeading } from "@/components/ui";
 import { MappoolBrowser } from "@/components/mappool-browser";
 import { MappoolStages } from "@/components/mappool-stages";
-export const metadata = { title: "Published mappools" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Published mappools") };
+}
+
 export default async function MappoolsPage({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition } = await params;
   const pools = await publicMappools(edition);
   const stages = (["group", "knockout"] as const).flatMap((stage) => {
@@ -18,7 +25,7 @@ export default async function MappoolsPage({
     return [
       {
         value: stage,
-        label: stage === "group" ? "Group Stage" : "Knockout Stage",
+        label: tr(stage === "group" ? "Group Stage" : "Knockout Stage"),
         content: (
           <div className="mappool-round-list">
             {rounds.map((roundId, index) => {
@@ -36,8 +43,9 @@ export default async function MappoolsPage({
                   <summary>
                     <h3>{round[0].roundName}</h3>
                     <span className="muted small">
-                      {round.length} {round.length === 1 ? "pool" : "pools"} ·{" "}
-                      {mapCount} {mapCount === 1 ? "map" : "maps"}
+                      {round.length}{" "}
+                      {round.length === 1 ? tr("pool") : tr("pools")} ·{" "}
+                      {mapCount} {mapCount === 1 ? tr("map") : tr("maps")}
                     </span>
                   </summary>
                   {round.map((pool) => (
@@ -57,17 +65,17 @@ export default async function MappoolsPage({
                         </h4>
                         <p className="muted small">
                           {pool.entries.length}{" "}
-                          {pool.entries.length === 1 ? "map" : "maps"} ·
-                          Released{" "}
+                          {pool.entries.length === 1 ? tr("map") : tr("maps")}{" "}
+                          {tr(" · Released")}{" "}
                           <time dateTime={pool.publishedAt!.toISOString()}>
-                            {new Intl.DateTimeFormat("en-GB", {
+                            {new Intl.DateTimeFormat(tr.locale, {
                               timeZone: "UTC",
                               day: "numeric",
                               month: "short",
                               year: "numeric",
                             }).format(pool.publishedAt!)}
                           </time>{" "}
-                          (UTC)
+                          {tr("(UTC)")}
                         </p>
                       </header>
                       <MappoolBrowser
@@ -87,14 +95,14 @@ export default async function MappoolsPage({
   });
   return (
     <>
-      <PageHeading eyebrow="THE MAPS" title="Mappools">
-        Released beatmaps, organized by competition stage and round.
+      <PageHeading eyebrow={tr("THE MAPS")} title={tr("Mappools")}>
+        {tr("Released beatmaps, organized by competition stage and round.")}
       </PageHeading>
       {stages.length ? (
         <MappoolStages stages={stages} />
       ) : (
-        <EmptyState title="No mappools published">
-          Organizers will release the approved maps here.
+        <EmptyState title={tr("No mappools published")}>
+          {tr("Organizers will release the approved maps here.")}
         </EmptyState>
       )}
     </>

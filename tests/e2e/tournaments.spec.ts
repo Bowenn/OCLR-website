@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { selectTimeZone } from "./time-zone";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -130,12 +131,15 @@ test.describe("browser-managed authoritative tournament editions", () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
     await context.addCookies([await seedSession(adminId)]);
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const player = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const limited = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const headers = { origin: "http://127.0.0.1:3100" };

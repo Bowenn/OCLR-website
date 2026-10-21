@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState } from "react";
 import type { CaptainBoard, DraftBoard } from "@/lib/draft-types";
 import { usePoll } from "./use-poll";
@@ -16,6 +19,8 @@ export function LiveDraft({
   captainId?: number;
   presenter?: boolean;
 }) {
+  const tr = useAppTranslations();
+
   const [feedback, setFeedback] = useState<{
     message: string;
     version: number;
@@ -36,22 +41,23 @@ export function LiveDraft({
   if (authorizationLost)
     return (
       <section className="panel" role="alert">
-        <h2>Sign-in or captain access changed.</h2>
+        <h2>{tr("Sign-in or captain access changed.")}</h2>
         <p className="muted">
-          Your session may have expired. Sign in again; captain appointments are
-          managed by the organizer.
+          {tr(
+            "Your session may have expired. Sign in again; captain appointments are managed by the organizer.",
+          )}
         </p>
-        <Action href="/login">Sign in again</Action>
+        <Action href="/login">{tr("Sign in again")}</Action>
       </section>
     );
   return (
     <div className={presenter ? "presenter-view" : ""}>
       <div className={captainId ? "draft-room-connection" : "section-title"}>
-        {!captainId && <p className="eyebrow">OCLR / LIVE DRAFT</p>}
+        {!captainId && <p className="eyebrow">{tr("OCLR / LIVE DRAFT")}</p>}
         <p className="connection-state small" role="status">
           {connected
-            ? "Connected · updates every 2s"
-            : "Reconnecting · showing last published state"}
+            ? tr("Connected · updates every 2s")
+            : tr("Reconnecting · showing last published state")}
         </p>
       </div>
       {feedback && board && feedback.version === board.version && (
@@ -63,7 +69,7 @@ export function LiveDraft({
         <>
           {captainId && "eligiblePool" in board && (
             <p className="muted small">
-              Your configured turns:{" "}
+              {tr("Your configured turns:")}{" "}
               {(board.turnSequence ?? [])
                 .flatMap((teamId, index) =>
                   board.rosters.some(
@@ -74,7 +80,7 @@ export function LiveDraft({
                     ? [index + 1]
                     : [],
                 )
-                .join(", ") || "None"}
+                .join(", ") || tr("None")}
               .
             </p>
           )}
@@ -115,12 +121,16 @@ export function LiveDraft({
                     }
                   />
                   <details className="section-space">
-                    <summary>Published draft board and pick history</summary>
+                    <summary>
+                      {tr("Published draft board and pick history")}
+                    </summary>
                     <DraftBoardView board={{ ...board, pool: null }} />
                   </details>
                 </>
               ) : (
-                <p className="notice">Your team is awaiting publication.</p>
+                <p className="notice">
+                  {tr("Your team is awaiting publication.")}
+                </p>
               );
             })()
           ) : (
@@ -128,9 +138,10 @@ export function LiveDraft({
           )}
         </>
       ) : (
-        <EmptyState title="Draft awaiting publication">
-          No draft board is published for this edition. Check the tournament
-          announcements.
+        <EmptyState title={tr("Draft awaiting publication")}>
+          {tr(
+            "No draft board is published for this edition. Check the tournament announcements.",
+          )}
         </EmptyState>
       )}
     </div>

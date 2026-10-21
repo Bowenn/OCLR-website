@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { authorizedPage } from "@/lib/auth/page";
@@ -16,6 +17,8 @@ export async function RegistrationList({
   editionSlug?: string;
   filtersInput: Record<string, string | string[] | undefined>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const access = await staffAccess(actor);
     const result = await listApplications(
@@ -38,37 +41,43 @@ export async function RegistrationList({
       <section
         className={`registration-review${editionSlug ? " edition-registration-review" : ""}`}
       >
-        <PageHeading eyebrow="REGISTRATION REVIEW" title="Registrations">
-          Acceptance does not appoint a captain or assign a team.
+        <PageHeading
+          eyebrow={tr("REGISTRATION REVIEW")}
+          title={tr("Registrations")}
+        >
+          {tr("Acceptance does not appoint a captain or assign a team.")}
         </PageHeading>
         <div className="section-title">
           <p className="muted small">
-            {total} matching application{total === 1 ? "" : "s"}
+            {tr(
+              "{count, plural, one {# matching application} other {# matching applications}}",
+              { count: total },
+            )}
           </p>
           {total > 0 && (
             <a
               className="button secondary"
               href={`/api/admin/registrations/export?${query}`}
             >
-              Export CSV ↓
+              {tr("Export CSV ↓")}
             </a>
           )}
         </div>
         <form className="filters" action={basePath} method="get">
           <label className="field">
-            <span>Search player or osu! ID</span>
+            <span>{tr("Search player or osu! ID")}</span>
             <input
               name="q"
               defaultValue={filters.q}
               maxLength={100}
-              placeholder="Username or stable osu! ID"
+              placeholder={tr("Username or stable osu! ID")}
             />
           </label>
           {!editionSlug && (
             <label className="field">
-              <span>Edition</span>
+              <span>{tr("Edition")}</span>
               <select name="edition" defaultValue={filters.edition}>
-                <option value="">All editions</option>
+                <option value="">{tr("All editions")}</option>
                 {editions.map((e) => (
                   <option key={e.slug} value={e.slug}>
                     {e.name}
@@ -78,30 +87,33 @@ export async function RegistrationList({
             </label>
           )}
           <label className="field">
-            <span>Status</span>
+            <span>{tr("Status")}</span>
             <select name="status" defaultValue={filters.status}>
-              <option value="">All statuses</option>
+              <option value="">{tr("All statuses")}</option>
               {["pending", "accepted", "rejected", "withdrawn"].map(
                 (status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {tr(status)}
                   </option>
                 ),
               )}
             </select>
           </label>
-          <button type="submit">Filter</button>
+          <button type="submit">{tr("Filter")}</button>
         </form>
         {rows.length ? (
           <div
             className="table-scroll"
             role="region"
             tabIndex={0}
-            aria-label="Registration table; scroll horizontally on small screens"
+            aria-label={tr(
+              "Registration table; scroll horizontally on small screens",
+            )}
           >
             <table>
               <caption className="sr-only">
-                Private registration review, page {filters.page}
+                {tr("Private registration review, page ")}
+                {filters.page}
               </caption>
               <thead>
                 <tr>
@@ -137,16 +149,17 @@ export async function RegistrationList({
                     )}
                     <td>
                       <span className={`badge status-${r.status}`}>
-                        {r.status}
+                        {tr(r.status)}
                       </span>
                     </td>
-                    <td>{formatDate(r.createdAt, "UTC")}</td>
+                    <td>{tr(formatDate(r.createdAt, "UTC", tr.locale))}</td>
                     <td>
                       <Link
                         className="button secondary"
                         href={`/admin/tournaments/${r.editionSlug}/registrations/${r.id}`}
                       >
-                        Review<span className="sr-only"> {r.username}</span>
+                        {tr("Review")}
+                        <span className="sr-only"> {r.username}</span>
                       </Link>
                     </td>
                   </tr>
@@ -157,17 +170,17 @@ export async function RegistrationList({
         ) : (
           <p className="notice small">
             {filters.q || filters.status
-              ? "No matching registrations."
-              : "No registrations yet."}
+              ? tr("No matching registrations.")
+              : tr("No registrations yet.")}
           </p>
         )}
-        <nav aria-label="Application pages" className="actions spaced">
+        <nav aria-label={tr("Application pages")} className="actions spaced">
           {filters.page > 1 && (
             <Link
               className="button secondary"
               href={`${basePath}?${query}&page=${filters.page - 1}`}
             >
-              ← Previous
+              {tr("← Previous")}
             </Link>
           )}
           {filters.page * 25 < total && (
@@ -175,7 +188,7 @@ export async function RegistrationList({
               className="button secondary"
               href={`${basePath}?${query}&page=${filters.page + 1}`}
             >
-              Next →
+              {tr("Next →")}
             </Link>
           )}
         </nav>

@@ -1,14 +1,22 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useId, useRef, useState } from "react";
 import type { DraftIdentity, DraftTeam } from "@/lib/draft-types";
 import { Avatar } from "./avatar";
 function PlayerIdentity({ player }: { player: DraftIdentity }) {
+  const tr = useAppTranslations();
+
   return (
     <span className="draft-player-identity">
       <Avatar osuId={player.osuId} username={player.username} />
       <span>
         <strong>{player.username}</strong>
-        <small className="muted">osu! ID {player.osuId}</small>
+        <small className="muted">
+          {tr("osu! ID ")}
+          {player.osuId}
+        </small>
       </span>
     </span>
   );
@@ -40,6 +48,8 @@ export function DraftPick({
   unavailableMessage: string;
   onFeedback: (message: string) => void;
 }) {
+  const tr = useAppTranslations();
+
   const id = useId();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<number | null>(null);
@@ -141,19 +151,23 @@ export function DraftPick({
     }
   }
   return (
-    <section className="draft-pick-workspace" aria-label="Player selection">
+    <section
+      className="draft-pick-workspace"
+      aria-label={tr("Player selection")}
+    >
       <section
         className="draft-player-pool"
         aria-labelledby={`${id}-pool-title`}
       >
         <div className="draft-room-heading">
-          <h2 id={`${id}-pool-title`}>Player pool</h2>
+          <h2 id={`${id}-pool-title`}>{tr("Player pool")}</h2>
           <span className="muted small">
-            {filtered.length} of {pool.length}
+            {filtered.length} {tr(" of ")}
+            {pool.length}
           </span>
         </div>
         <label className="field">
-          <span>Search eligible players</span>
+          <span>{tr("Search eligible players")}</span>
           <input
             type="search"
             maxLength={100}
@@ -163,14 +177,16 @@ export function DraftPick({
         </label>
         <p className="muted small">
           {canStage
-            ? `Drag a player into ${staff ? "the receiving team" : "your team"}, or choose a player below.`
+            ? tr("Drag a player into {value0}, or choose a player below.", {
+                value0: staff ? "the receiving team" : "your team",
+              })
             : staff
-              ? "Current eligible players."
-              : "Last published eligible players."}
+              ? tr("Current eligible players.")
+              : tr("Last published eligible players.")}
         </p>
         <ul
           className="draft-player-list"
-          aria-label="Eligible players"
+          aria-label={tr("Eligible players")}
           tabIndex={0}
         >
           {filtered.map((p) => (
@@ -201,7 +217,7 @@ export function DraftPick({
                 type="button"
                 id={`${id}-player-${p.osuId}`}
                 disabled={!canStage}
-                aria-label={`Choose ${p.username}`}
+                aria-label={tr("Choose {value0}", { value0: p.username })}
                 aria-pressed={selected === p.osuId}
                 onClick={() => choose(p.osuId)}
               >
@@ -213,14 +229,14 @@ export function DraftPick({
         {!filtered.length && (
           <p className="muted small">
             {pool.length
-              ? "No matching players."
-              : "No eligible players in this snapshot."}
+              ? tr("No matching players.")
+              : tr("No eligible players in this snapshot.")}
           </p>
         )}
       </section>
       <section
         className={`draft-own-team ${dragOver && canStage ? "is-dragging" : ""}`}
-        aria-label={staff ? "Receiving team" : "My team"}
+        aria-label={staff ? tr("Receiving team") : tr("My team")}
         onDragOver={(event) => {
           if (
             canStage &&
@@ -256,7 +272,7 @@ export function DraftPick({
         }}
       >
         <div className="draft-room-heading">
-          <h2>{staff ? "Receiving team" : "My team"}</h2>
+          <h2>{staff ? tr("Receiving team") : tr("My team")}</h2>
           <span className="badge">
             {capacity == null
               ? `${roster.length} ${roster.length === 1 ? "member" : "members"}`
@@ -266,40 +282,47 @@ export function DraftPick({
         <h3>{team.name}</h3>
         {staff && (
           <p className="muted small">
-            Picking on behalf of Captain {team.captain.username}.
+            {tr("Picking on behalf of Captain ")}
+            {team.captain.username}.
           </p>
         )}
         <ul
           className="draft-team-list"
-          aria-label={staff ? "Receiving team roster" : "My team roster"}
+          aria-label={
+            staff ? tr("Receiving team roster") : tr("My team roster")
+          }
         >
           {roster.map((p) => (
             <li key={p.osuId}>
               <PlayerIdentity player={p} />
               {p.osuId === team.captain.osuId && (
-                <span className="badge">Captain</span>
+                <span className="badge">{tr("Captain")}</span>
               )}
             </li>
           ))}
         </ul>
         {capacity != null && (
           <p className="muted small">
-            {Math.max(0, capacity - roster.length)} available roster{" "}
-            {capacity - roster.length === 1 ? "slot" : "slots"}
+            {Math.max(0, capacity - roster.length)} {tr(" available roster")}{" "}
+            {capacity - roster.length === 1 ? tr("slot") : tr("slots")}
           </p>
         )}
-        <section className="draft-pending-pick" aria-label="Pending selection">
+        <section
+          className="draft-pending-pick"
+          aria-label={tr("Pending selection")}
+        >
           {player && !committed ? (
             <>
-              <p className="eyebrow">Pending selection</p>
+              <p className="eyebrow">{tr("Pending selection")}</p>
               <PlayerIdentity player={player} />
               <p className="muted small">
-                Confirm to draft this player to {team.name}.
+                {tr("Confirm to draft this player to ")}
+                {team.name}.
               </p>
             </>
           ) : canStage ? (
             <p className="muted small">
-              Drop or choose a player to prepare your pick.
+              {tr("Drop or choose a player to prepare your pick.")}
             </p>
           ) : null}
           <div className="actions">
@@ -310,12 +333,14 @@ export function DraftPick({
               onClick={submit}
             >
               {pending
-                ? "Submitting…"
+                ? tr("Submitting…")
                 : receiptPending && !committed
-                  ? "Retry confirmed pick"
+                  ? tr("Retry confirmed pick")
                   : staff
-                    ? `Select for Captain ${team.captain.username}`
-                    : "Confirm Pick"}
+                    ? tr("Select for Captain {value0}", {
+                        value0: team.captain.username,
+                      })
+                    : tr("Confirm Pick")}
             </button>
             {player && !receiptPending && (
               <button
@@ -328,7 +353,7 @@ export function DraftPick({
                   document.getElementById(`${id}-player-${previous}`)?.focus();
                 }}
               >
-                Cancel selection
+                {tr("Cancel selection")}
               </button>
             )}
           </div>
@@ -340,7 +365,9 @@ export function DraftPick({
         >
           {status ||
             (player
-              ? `${player.username} selected. Confirm the pending pick when ready.`
+              ? tr("{value0} selected. Confirm the pending pick when ready.", {
+                  value0: player.username,
+                })
               : !enabled
                 ? unavailableMessage
                 : "")}

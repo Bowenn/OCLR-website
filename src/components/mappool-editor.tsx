@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { WorkspaceTabs } from "./workspace-tabs";
 import { useId, useState } from "react";
@@ -63,6 +66,8 @@ function RoundForm({
   round?: Round;
   onSuccess: () => void;
 }) {
+  const tr = useAppTranslations();
+
   const [name, setName] = useState(round?.name ?? "");
   const [position, setPosition] = useState(
     String(round?.position ?? nextPosition),
@@ -70,18 +75,18 @@ function RoundForm({
   return (
     <div className="form-stack">
       <label className="field">
-        <span>Round name</span>
+        <span>{tr("Round name")}</span>
         <input
           value={name}
           maxLength={80}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Approved round label"
+          placeholder={tr("Approved round label")}
         />
       </label>
       <details className="form-options" open={Boolean(round)}>
-        <summary>Round order</summary>
+        <summary>{tr("Round order")}</summary>
         <label className="field">
-          <span>Round order</span>
+          <span>{tr("Round order")}</span>
           <input
             type="number"
             min={1}
@@ -94,7 +99,7 @@ function RoundForm({
       <Save
         change={change}
         onSuccess={onSuccess}
-        label={round ? "Save round" : "Create round"}
+        label={round ? tr("Save round") : tr("Create round")}
         payload={
           round
             ? {
@@ -124,11 +129,13 @@ function CreatePool({
   roundId: string;
   onSuccess: () => void;
 }) {
+  const tr = useAppTranslations();
+
   const [name, setName] = useState("");
   return (
     <div className="form-stack">
       <label className="field">
-        <span>New pool name</span>
+        <span>{tr("New pool name")}</span>
         <input
           value={name}
           maxLength={80}
@@ -137,7 +144,7 @@ function CreatePool({
       </label>
       <Save
         change={change}
-        label="Create draft pool"
+        label={tr("Create draft pool")}
         onSuccess={onSuccess}
         payload={{ action: "pool_create", roundId, name }}
       />
@@ -145,13 +152,15 @@ function CreatePool({
   );
 }
 function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
+  const tr = useAppTranslations();
+
   const [name, setName] = useState(pool.name);
   const [fmMode, setFmMode] = useState<string>(pool.fmMode ?? "");
   const [fmRestrictions, setRestrictions] = useState(pool.fmRestrictions);
   return (
     <div className="form-stack">
       <label className="field">
-        <span>Pool name</span>
+        <span>{tr("Pool name")}</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -159,16 +168,16 @@ function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
         />
       </label>
       <label className="field">
-        <span>FM policy</span>
+        <span>{tr("FM policy")}</span>
         <select value={fmMode} onChange={(e) => setFmMode(e.target.value)}>
-          <option value="">Disabled</option>
-          <option value="free_mod">Free Mod</option>
-          <option value="force_mod">Force Mod</option>
+          <option value="">{tr("Disabled")}</option>
+          <option value="free_mod">{tr("Free Mod")}</option>
+          <option value="force_mod">{tr("Force Mod")}</option>
         </select>
       </label>
       {(fmMode || fmRestrictions) && (
         <label className="field">
-          <span>Approved FM restrictions</span>
+          <span>{tr("Approved FM restrictions")}</span>
           <textarea
             value={fmRestrictions}
             onChange={(e) => setRestrictions(e.target.value)}
@@ -178,7 +187,7 @@ function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
       )}
       <Save
         change={change}
-        label="Save pool settings"
+        label={tr("Save pool settings")}
         payload={{
           action: "pool_settings",
           poolId: pool.id,
@@ -204,6 +213,8 @@ function EntryForm({
   entry?: Entry;
   entries?: Entry[];
 }) {
+  const tr = useAppTranslations();
+
   const [difficultyConfiguration, setDifficultyConfiguration] =
     useState<DifficultyConfiguration | null>(
       entry?.metadata.attributes?.configuration ?? null,
@@ -228,7 +239,7 @@ function EntryForm({
   return (
     <div className="form-stack">
       <label className="field">
-        <span>Beatmap URL or ID</span>
+        <span>{tr("Beatmap URL or ID")}</span>
         <input
           value={beatmap}
           onChange={(e) => {
@@ -243,18 +254,18 @@ function EntryForm({
       </label>
       {beatmap.trim() && !id && (
         <p role="alert" className="notice error-text">
-          Enter a numeric beatmap ID or an official osu! difficulty URL.
+          {tr("Enter a numeric beatmap ID or an official osu! difficulty URL.")}
         </p>
       )}
       <details
         className="form-options"
         open={Boolean(entry?.metadata.attributes)}
       >
-        <summary>Official mod attributes</summary>
+        <summary>{tr("Official mod attributes")}</summary>
         <label className="field">
-          <span>Difficulty calculation mods</span>
+          <span>{tr("Difficulty calculation mods")}</span>
           <select
-            aria-label="Difficulty calculation mods"
+            aria-label={tr("Difficulty calculation mods")}
             value={difficultyConfiguration ?? ""}
             onChange={(e) => {
               setPreview(null);
@@ -263,14 +274,14 @@ function EntryForm({
               );
             }}
           >
-            <option value="">Variable / unconfigured</option>
+            <option value="">{tr("Variable / unconfigured")}</option>
             {difficultyConfigurations.map((mods) => (
               <option key={mods} value={mods}>
                 {mods}
                 {mods.includes("DT")
-                  ? " · standard DT speed"
+                  ? tr(" · standard DT speed")
                   : mods === "HT"
-                    ? " · standard HT speed"
+                    ? tr(" · standard HT speed")
                     : ""}
               </option>
             ))}
@@ -287,7 +298,7 @@ function EntryForm({
         />
       )}
       <label className="field">
-        <span>Mod category</span>
+        <span>{tr("Mod category")}</span>
         <select
           value={mod}
           onChange={(e) => {
@@ -297,13 +308,13 @@ function EntryForm({
         >
           {categories.map((c) => (
             <option key={c} value={c}>
-              {c} — {categoryNames[c]}
+              {c} — {tr(categoryNames[c])}
             </option>
           ))}
         </select>
       </label>
       <label className="field">
-        <span>Slot number</span>
+        <span>{tr("Slot number")}</span>
         <input
           type="number"
           min={1}
@@ -314,7 +325,7 @@ function EntryForm({
       </label>
       <Save
         change={change}
-        label={entry ? "Save map slot" : "Add beatmap"}
+        label={entry ? tr("Save map slot") : tr("Add beatmap")}
         disabled={!id || preview?.beatmapId !== id}
         payload={{
           action: "entry_save",
@@ -342,11 +353,14 @@ function EntryEditor({
   category: string;
   entry: Entry;
 }) {
+  const tr = useAppTranslations();
+
   const [open, setOpen] = useState(false);
   return (
     <details onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary>
-        Edit or replace {slotLabel(entry.category, entry.position)}
+        {tr("Edit or replace ")}
+        {slotLabel(entry.category, entry.position)}
       </summary>
       {open && (
         <EntryForm
@@ -368,6 +382,8 @@ export function MappoolEditor({
   slug: string;
   data: MappoolWorkspace;
 }) {
+  const tr = useAppTranslations();
+
   const id = useId();
   const [stage, setStage] = useState(data.rounds[0]?.stage ?? "group");
   const [roundId, setRoundId] = useState("");
@@ -408,7 +424,7 @@ export function MappoolEditor({
         <div className="mappool-toolbar">
           <WorkspaceTabs
             id={`${id}-stage`}
-            label="Competition stage"
+            label={tr("Competition stage")}
             value={stage}
             items={[
               { value: "group", label: "Group Stage" },
@@ -428,7 +444,7 @@ export function MappoolEditor({
             aria-controls={setup ? `${id}-setup` : undefined}
             onClick={() => toggleSetup("round_create")}
           >
-            + New round
+            {tr("+ New round")}
           </button>
         </div>
         <div
@@ -439,7 +455,11 @@ export function MappoolEditor({
         >
           {rounds.length ? (
             <div className="mappool-round-bar">
-              <div className="mappool-rounds" role="group" aria-label="Rounds">
+              <div
+                className="mappool-rounds"
+                role="group"
+                aria-label={tr("Rounds")}
+              >
                 {rounds.map((r) => (
                   <button
                     type="button"
@@ -463,7 +483,7 @@ export function MappoolEditor({
                   aria-controls={setup ? `${id}-setup` : undefined}
                   onClick={() => toggleSetup("round_edit")}
                 >
-                  Edit round
+                  {tr("Edit round")}
                 </button>
                 <button
                   type="button"
@@ -472,17 +492,21 @@ export function MappoolEditor({
                   aria-controls={setup ? `${id}-setup` : undefined}
                   onClick={() => toggleSetup("pool_create")}
                 >
-                  + New pool
+                  {tr("+ New pool")}
                 </button>
               </div>
             </div>
           ) : (
             <p className="muted small mappool-empty">
-              No rounds in this stage. Create a round to get started.
+              {tr("No rounds in this stage. Create a round to get started.")}
             </p>
           )}
           {pools.length > 1 && (
-            <div className="mappool-pools" role="group" aria-label="Mappools">
+            <div
+              className="mappool-pools"
+              role="group"
+              aria-label={tr("Mappools")}
+            >
               {pools.map((p) => (
                 <button
                   type="button"
@@ -495,7 +519,7 @@ export function MappoolEditor({
                 >
                   {p.name}
                   <span className="muted small">
-                    {p.publishedAt ? "Published" : "Draft"}
+                    {p.publishedAt ? tr("Published") : tr("Draft")}
                   </span>
                 </button>
               ))}
@@ -512,17 +536,17 @@ export function MappoolEditor({
           <div className="mappool-toolbar">
             <h2 id={`${id}-setup-title`}>
               {setup === "round_create"
-                ? "Create a round"
+                ? tr("Create a round")
                 : setup === "round_edit"
-                  ? "Edit selected round"
-                  : "Create a mappool"}
+                  ? tr("Edit selected round")
+                  : tr("Create a mappool")}
             </h2>
             <button
               type="button"
               className="secondary"
               onClick={() => setSetup(null)}
             >
-              Cancel
+              {tr("Cancel")}
             </button>
           </div>
           {setup === "pool_create" && round ? (
@@ -557,29 +581,29 @@ export function MappoolEditor({
           role={feedbackFailed ? "alert" : "status"}
           className={`mappool-feedback${feedbackFailed ? " is-error" : ""}`}
         >
-          {feedback}
+          {tr(feedback)}
         </div>
       )}
       {pool ? (
-        <section className="mappool-active" aria-label="Selected mappool">
+        <section className="mappool-active" aria-label={tr("Selected mappool")}>
           <div className="mappool-toolbar mappool-pool-heading">
             <div>
               <p className="muted small">
                 {round?.name} · {poolEntries.length}{" "}
-                {poolEntries.length === 1 ? "map" : "maps"}
+                {poolEntries.length === 1 ? tr("map") : tr("maps")}
               </p>
               <h2>
                 {pool.name}{" "}
                 <span className="badge">
-                  {pool.publishedAt ? "Published" : "Draft"}
+                  {pool.publishedAt ? tr("Published") : tr("Draft")}
                 </span>
               </h2>
               <p className="mappool-policy small muted">
                 {pool.fmMode === "free_mod"
-                  ? "Free Mod"
+                  ? tr("Free Mod")
                   : pool.fmMode === "force_mod"
-                    ? "Force Mod"
-                    : "FM disabled"}
+                    ? tr("Force Mod")
+                    : tr("FM disabled")}
                 {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
               </p>
             </div>
@@ -587,11 +611,17 @@ export function MappoolEditor({
               {!pool.lockedAt && (
                 <Save
                   change={change}
-                  label={pool.publishedAt ? "Unpublish pool" : "Publish pool"}
+                  label={
+                    pool.publishedAt ? tr("Unpublish pool") : tr("Publish pool")
+                  }
                   description={
                     pool.publishedAt
-                      ? "Hide this pool from public queries. History is retained."
-                      : "Release this pool and its current maps publicly. Confirm that FM details and every map are approved."
+                      ? tr(
+                          "Hide this pool from public queries. History is retained.",
+                        )
+                      : tr(
+                          "Release this pool and its current maps publicly. Confirm that FM details and every map are approved.",
+                        )
                   }
                   payload={{
                     action: "pool_publish",
@@ -606,24 +636,27 @@ export function MappoolEditor({
                   className="text-link small"
                   href={`/tournaments/${slug}/mappools/${pool.id}`}
                 >
-                  View public pool
+                  {tr("View public pool")}
                 </Link>
               )}
             </div>
           </div>
           {pool.lockedAt ? (
             <p className="notice">
-              This pool is referenced by a completed fixture. Map changes are
-              locked; create a new pool for later matches.
+              {tr(
+                "This pool is referenced by a completed fixture. Map changes are locked; create a new pool for later matches.",
+              )}
             </p>
           ) : (
             pool.publishedAt && (
-              <p className="muted small">Public changes appear on Save.</p>
+              <p className="muted small">
+                {tr("Public changes appear on Save.")}
+              </p>
             )
           )}
           <WorkspaceTabs
             id={`${id}-task`}
-            label="Pool tools"
+            label={tr("Pool tools")}
             value={activeTask}
             onChange={(value) => {
               setTask(value);
@@ -649,11 +682,11 @@ export function MappoolEditor({
           >
             {activeTask === "maps" && (
               <>
-                <h3 className="sr-only">Map slots</h3>
+                <h3 className="sr-only">{tr("Map slots")}</h3>
                 <div
                   className="mappool-mods"
                   role="group"
-                  aria-label="Mod categories"
+                  aria-label={tr("Mod categories")}
                 >
                   {categories.map((c) => (
                     <button
@@ -679,9 +712,9 @@ export function MappoolEditor({
                   {category} /{" "}
                   {category === "FM" && pool.fmMode
                     ? pool.fmMode === "free_mod"
-                      ? "Free Mod"
-                      : "Force Mod"
-                    : categoryNames[category]}
+                      ? tr("Free Mod")
+                      : tr("Force Mod")
+                    : tr(categoryNames[category])}
                 </h3>
                 {entries.length > 0 && (
                   <MappoolOrder
@@ -730,12 +763,16 @@ export function MappoolEditor({
                 )}
                 {!entries.length && (
                   <p className="notice spaced">
-                    No {category} slots configured.
+                    {tr("No ")}
+                    {category} {tr(" slots configured.")}
                   </p>
                 )}
                 {editable && (category !== "FM" || pool.fmMode) && (
                   <details className="spaced">
-                    <summary>Add a {category} beatmap</summary>
+                    <summary>
+                      {tr("Add a ")}
+                      {category} {tr(" beatmap")}
+                    </summary>
                     <EntryForm
                       key={`${pool.id}-${category}-${pool.version}`}
                       change={change}
@@ -747,7 +784,9 @@ export function MappoolEditor({
                 )}
                 {category === "FM" && !pool.fmMode && (
                   <p className="muted">
-                    Choose Free Mod or Force Mod in pool settings to enable FM.
+                    {tr(
+                      "Choose Free Mod or Force Mod in pool settings to enable FM.",
+                    )}
                   </p>
                 )}
               </>
@@ -764,7 +803,7 @@ export function MappoolEditor({
             )}
             {activeTask === "settings" && (
               <div className="mappool-settings">
-                <h3>Pool name and FM policy</h3>
+                <h3>{tr("Pool name and FM policy")}</h3>
                 <PoolSettings
                   key={`${pool.id}-${pool.version}`}
                   change={change}
@@ -778,7 +817,9 @@ export function MappoolEditor({
         round &&
         !setup && (
           <p className="muted small mappool-empty">
-            No mappools in {round.name}. Create a draft pool to add beatmaps.
+            {tr("No mappools in ")}
+            {round.name}
+            {tr(". Create a draft pool to add beatmaps.")}
           </p>
         )
       )}

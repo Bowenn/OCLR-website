@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useId, useState } from "react";
 import { dateTimeDraft, localDateTime } from "@/lib/edition-time";
 
@@ -17,6 +20,8 @@ export function ZonedDateInput({
   onValidityChange: (valid: boolean) => void;
   optional?: boolean;
 }) {
+  const tr = useAppTranslations();
+
   const id = useId();
   function initial() {
     let local = "";
@@ -70,7 +75,10 @@ export function ZonedDateInput({
     ) ?? draft.offset;
   const offset =
     result.value && timeZone !== "UTC"
-      ? new Intl.DateTimeFormat("en", { timeZone, timeZoneName: "longOffset" })
+      ? new Intl.DateTimeFormat(tr.locale, {
+          timeZone,
+          timeZoneName: "longOffset",
+        })
           .formatToParts(new Date(result.value))
           .find((part) => part.type === "timeZoneName")?.value
       : null;
@@ -81,13 +89,13 @@ export function ZonedDateInput({
     >
       <legend>
         {label}
-        {optional ? " (optional)" : ""}
+        {optional ? tr(" (optional)") : ""}
       </legend>
       <div className="zoned-date-fields">
         <label className="field">
-          <span className="sr-only">Date</span>
+          <span className="sr-only">{tr("Date")}</span>
           <input
-            aria-label={`${label}: date`}
+            aria-label={tr("{value0}: date", { value0: label })}
             type="date"
             required={!optional}
             value={draft.date}
@@ -98,13 +106,13 @@ export function ZonedDateInput({
         </label>
         <div className="zoned-time">
           <label className="field">
-            <span className="sr-only">Time (HH:mm)</span>
+            <span className="sr-only">{tr("Time (HH:mm)")}</span>
             <input
-              aria-label={`${label}: time (HH:mm)`}
+              aria-label={tr("{value0}: time (HH:mm)", { value0: label })}
               type="text"
               inputMode="numeric"
               autoComplete="off"
-              placeholder="HH:mm"
+              placeholder={tr("HH:mm")}
               maxLength={5}
               required={!optional}
               value={draft.time}
@@ -133,14 +141,18 @@ export function ZonedDateInput({
               disabled={!draft.date && !draft.time}
               onClick={() => edit("", "")}
             >
-              Clear<span className="sr-only"> {label}</span>
+              {tr("Clear")}
+              <span className="sr-only"> {label}</span>
             </button>
           )}
         </div>
       </div>
       {result.candidates.length > 1 && (
         <label className="field zoned-offset">
-          <span id={`${id}-offset-label`}>{label}: clock-change offset</span>
+          <span id={`${id}-offset-label`}>
+            {label}
+            {tr(": clock-change offset")}
+          </span>
           <select
             aria-labelledby={`${id}-offset-label`}
             aria-describedby={result.error ? `${id}-error` : undefined}
@@ -150,7 +162,7 @@ export function ZonedDateInput({
               edit(draft.date, draft.time, event.target.value)
             }
           >
-            <option value="">Choose UTC offset</option>
+            <option value="">{tr("Choose UTC offset")}</option>
             {result.candidates.map((instant) => (
               <option key={instant} value={instant}>
                 {new Intl.DateTimeFormat("en", {
@@ -168,15 +180,16 @@ export function ZonedDateInput({
       )}
       {result.error && (
         <p id={`${id}-error`} role="alert" className="error-text small">
-          {result.error}
+          {tr(result.error)}
         </p>
       )}
       {value &&
         (new Date(value).getUTCSeconds() !== 0 ||
           new Date(value).getUTCMilliseconds() !== 0) && (
           <p className="muted small">
-            Saved seconds are preserved. Changing the date or time sets seconds
-            to zero.
+            {tr(
+              "Saved seconds are preserved. Changing the date or time sets seconds to zero.",
+            )}
           </p>
         )}
     </fieldset>

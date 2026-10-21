@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
@@ -6,12 +7,18 @@ import { tournamentList } from "@/lib/tournaments";
 import { HttpError } from "@/lib/http";
 import { PageHeading } from "@/components/ui";
 import { AuditModuleTabs } from "@/components/audit-module-tabs";
-export const metadata = { title: "Audit log" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Audit log") };
+}
+
 export default async function Audit({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const actor = await requireStaff();
     let data;
@@ -21,12 +28,12 @@ export default async function Audit({
       if (!(error instanceof HttpError) || error.status !== 400) throw error;
       return (
         <>
-          <PageHeading eyebrow="ADMINISTRATION" title="Audit log" />
+          <PageHeading eyebrow={tr("ADMINISTRATION")} title={tr("Audit log")} />
           <p role="alert" className="notice error-text">
             {error.message}
           </p>
           <Link className="text-link" href="/admin/audit">
-            Reset audit filters
+            {tr("Reset audit filters")}
           </Link>
         </>
       );
@@ -42,8 +49,8 @@ export default async function Audit({
     const moreFilters = Boolean(f.actor || f.action || f.from || f.to);
     return (
       <div className="audit-workspace">
-        <PageHeading eyebrow="ADMINISTRATION" title="Audit log">
-          All times are UTC.
+        <PageHeading eyebrow={tr("ADMINISTRATION")} title={tr("Audit log")}>
+          {tr("All times are UTC.")}
         </PageHeading>
         <AuditModuleTabs
           value={f.module}
@@ -52,7 +59,10 @@ export default async function Audit({
             { value: "", label: "All activity" },
             ...auditModules.map((module) => ({
               value: module,
-              label: module.charAt(0).toUpperCase() + module.slice(1),
+              label:
+                module === "draft"
+                  ? "draft_module"
+                  : module.charAt(0).toUpperCase() + module.slice(1),
             })),
           ]}
         />
@@ -65,13 +75,13 @@ export default async function Audit({
           <form className="audit-filters" method="get" key={query.toString()}>
             <input type="hidden" name="module" value={f.module} />
             <label className="field">
-              <span>Tournament</span>
+              <span>{tr("Tournament")}</span>
               <select
-                aria-label="Tournament"
+                aria-label={tr("Tournament")}
                 name="edition"
                 defaultValue={f.edition}
               >
-                <option value="">All authorized tournaments</option>
+                <option value="">{tr("All authorized tournaments")}</option>
                 {editions.map((e) => (
                   <option key={e.slug} value={e.slug}>
                     {e.name}
@@ -80,7 +90,7 @@ export default async function Audit({
               </select>
             </label>
             <div className="actions audit-filter-actions">
-              <button className="secondary">Filter</button>
+              <button className="secondary">{tr("Filter")}</button>
               {(f.edition || moreFilters) && (
                 <Link
                   className="text-link small"
@@ -91,15 +101,15 @@ export default async function Audit({
                   }
                   scroll={false}
                 >
-                  Reset filters
+                  {tr("Reset filters")}
                 </Link>
               )}
             </div>
             <details className="audit-more-filters" open={moreFilters}>
-              <summary>More filters</summary>
+              <summary>{tr("More filters")}</summary>
               <div className="audit-filter-fields">
                 <label className="field">
-                  <span>Actor osu! ID</span>
+                  <span>{tr("Actor osu! ID")}</span>
                   <input
                     name="actor"
                     inputMode="numeric"
@@ -108,20 +118,20 @@ export default async function Audit({
                   />
                 </label>
                 <label className="field">
-                  <span>Action type</span>
+                  <span>{tr("Action type")}</span>
                   <input
                     name="action"
                     maxLength={80}
                     defaultValue={f.action}
-                    placeholder="e.g. captain_appoint"
+                    placeholder={tr("e.g. captain_appoint")}
                   />
                 </label>
                 <label className="field">
-                  <span>From (UTC)</span>
+                  <span>{tr("From (UTC)")}</span>
                   <input type="date" name="from" defaultValue={f.from} />
                 </label>
                 <label className="field">
-                  <span>Through (UTC)</span>
+                  <span>{tr("Through (UTC)")}</span>
                   <input type="date" name="to" defaultValue={f.to} />
                 </label>
               </div>
@@ -129,19 +139,23 @@ export default async function Audit({
           </form>
           <div className="audit-list-heading">
             <p className="muted small">
-              {data.total} event{data.total === 1 ? "" : "s"} · Page {f.page}
+              {tr("{count, plural, one {# event} other {# events}}", {
+                count: data.total,
+              })}{" "}
+              {tr(" · Page ")}
+              {f.page}
             </p>
-            <span className="muted small">Newest first · UTC</span>
+            <span className="muted small">{tr("Newest first · UTC")}</span>
           </div>
           {data.rows.length > 0 ? (
             <>
               <div className="audit-columns muted" aria-hidden="true">
-                <span>Time (UTC)</span>
-                <span>Activity / entity</span>
-                <span>Actor</span>
-                <span>Tournament</span>
+                <span>{tr("Time (UTC)")}</span>
+                <span>{tr("Activity / entity")}</span>
+                <span>{tr("Actor")}</span>
+                <span>{tr("Tournament")}</span>
               </div>
-              <ol className="audit-events" aria-label="Audit events">
+              <ol className="audit-events" aria-label={tr("Audit events")}>
                 {data.rows.map((event) => {
                   const changes = auditChanges(event.before, event.after);
                   return (
@@ -169,12 +183,13 @@ export default async function Audit({
                             <span>
                               {event.username ??
                                 (event.actorId
-                                  ? "Removed account"
-                                  : "System / removed account")}
+                                  ? tr("Removed account")
+                                  : tr("System / removed account"))}
                             </span>
                             {event.actorId && (
                               <span className="muted">
-                                osu! ID {event.actorId}
+                                {tr("osu! ID ")}
+                                {event.actorId}
                               </span>
                             )}
                           </span>
@@ -182,7 +197,7 @@ export default async function Audit({
                             {event.edition
                               ? (editionNames.get(event.edition) ??
                                 event.edition)
-                              : "Global"}
+                              : tr("Global")}
                           </span>
                           <span
                             className="audit-event-toggle"
@@ -194,8 +209,11 @@ export default async function Audit({
                         <div className="audit-event-detail">
                           <h2>
                             {changes.length === 20
-                              ? "Up to 20 changed fields"
-                              : `${changes.length} changed field${changes.length === 1 ? "" : "s"}`}
+                              ? tr("Up to 20 changed fields")
+                              : tr(
+                                  "{count, plural, one {# changed field} other {# changed fields}}",
+                                  { count: changes.length },
+                                )}
                           </h2>
                           {changes.length > 0 ? (
                             <dl className="detail-list">
@@ -210,11 +228,11 @@ export default async function Audit({
                             </dl>
                           ) : (
                             <p className="muted small">
-                              No before/after changes recorded.
+                              {tr("No before/after changes recorded.")}
                             </p>
                           )}
                           <details>
-                            <summary>Raw details (redacted)</summary>
+                            <summary>{tr("Raw details (redacted)")}</summary>
                             <pre className="audit-json">
                               {JSON.stringify(
                                 {
@@ -235,16 +253,16 @@ export default async function Audit({
               </ol>
             </>
           ) : (
-            <p className="notice small">No matching audit events.</p>
+            <p className="notice small">{tr("No matching audit events.")}</p>
           )}
-          <nav className="actions spaced" aria-label="Audit pages">
+          <nav className="actions spaced" aria-label={tr("Audit pages")}>
             {f.page > 1 && (
               <Link
                 className="button secondary"
                 href={`/admin/audit?${query}&page=${f.page - 1}`}
                 scroll={false}
               >
-                ← Previous
+                {tr("← Previous")}
               </Link>
             )}
             {f.page * 25 < data.total && (
@@ -253,7 +271,7 @@ export default async function Audit({
                 href={`/admin/audit?${query}&page=${f.page + 1}`}
                 scroll={false}
               >
-                Next →
+                {tr("Next →")}
               </Link>
             )}
           </nav>

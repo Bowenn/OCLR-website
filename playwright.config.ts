@@ -3,6 +3,7 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { announcements } from "./tests/fixtures/announcements";
+import { englishStorage } from "./tests/fixtures/preferences";
 const announcementsPath = join(
   tmpdir(),
   `oclr-e2e-announcements-${process.pid}.json`,
@@ -24,6 +25,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   use: {
+    storageState: englishStorage,
     baseURL: "http://127.0.0.1:3100",
     trace: "retain-on-failure",
     actionTimeout: 10000,

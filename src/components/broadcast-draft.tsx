@@ -1,4 +1,5 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useRef } from "react";
 import type { DraftBoard } from "@/lib/draft-types";
@@ -47,6 +48,8 @@ export function BroadcastDraft({
   available: boolean;
   background: "opaque" | "transparent";
 }) {
+  const tr = useAppTranslations();
+
   const { value: board, connected } = usePoll<DraftBoard>(
     `/api/tournaments/${slug}/draft`,
     initial,
@@ -86,17 +89,17 @@ export function BroadcastDraft({
           OCLR<span>osu! Chinese League Rookie</span>
         </div>
         <div className={styles.heading}>
-          <p className="eyebrow">CAPTAIN DRAFT</p>
+          <p className="eyebrow">{tr("CAPTAIN DRAFT")}</p>
           <h1>{name}</h1>
         </div>
         <div className={styles.status}>
           <strong data-state={board?.state ?? "waiting"}>
-            {board ? draftLabels[board.state] : "Awaiting published draft"}
+            {board ? draftLabels[board.state] : tr("Awaiting published draft")}
           </strong>
           <p role="status">
             {connected
-              ? "Connected · updates every 2s"
-              : "Reconnecting · last published state"}
+              ? tr("Connected · updates every 2s")
+              : tr("Reconnecting · last published state")}
           </p>
         </div>
       </header>
@@ -105,47 +108,53 @@ export function BroadcastDraft({
         <section
           className={styles.selection}
           ref={spotlight}
-          aria-label="Latest published selection"
+          aria-label={tr("Latest published selection")}
         >
           <p className="eyebrow">
             {latest
-              ? `PICK ${String(latest.turnIndex + 1).padStart(2, "0")} / SELECTED`
-              : "THE NEXT TEAM STORY"}
+              ? tr("PICK {value0} / SELECTED", {
+                  value0: String(latest.turnIndex + 1).padStart(2, "0"),
+                })
+              : tr("THE NEXT TEAM STORY")}
           </p>
           <div aria-live="polite" aria-atomic="true">
-            <h2>{latest?.player.username ?? "The stage is ready."}</h2>
+            <h2>{latest?.player.username ?? tr("The stage is ready.")}</h2>
             {latest ? (
               <>
                 <p className={styles.destination}>{latest.team.name}</p>
                 <p className={styles.caption}>
-                  Selected by Captain {latest.team.captain.username}
+                  {tr("Selected by Captain ")}
+                  {latest.team.captain.username}
                 </p>
               </>
             ) : (
               <p className={styles.caption}>
-                Selections appear here when published.
+                {tr("Selections appear here when published.")}
               </p>
             )}
           </div>
         </section>
         <section
           className={styles.turn}
-          aria-label="Current published captain turn"
+          aria-label={tr("Current published captain turn")}
         >
           <p className="eyebrow">
             {complete
-              ? "DRAFT COMPLETE"
+              ? tr("DRAFT COMPLETE")
               : board?.state === "paused"
-                ? "ON HOLD"
-                : "CURRENT TURN"}
+                ? tr("ON HOLD")
+                : tr("CURRENT TURN")}
           </p>
           <h2>
             {board?.activeTeam?.name ??
-              (complete ? "Teams assembled." : "Waiting for the next stage.")}
+              (complete
+                ? tr("Teams assembled.")
+                : tr("Waiting for the next stage."))}
           </h2>
           {board?.activeTeam && (
             <p className={styles.caption}>
-              Captain {board.activeTeam.captain.username}
+              {tr("Captain ")}
+              {board.activeTeam.captain.username}
             </p>
           )}
           <div className={styles.progress}>
@@ -156,8 +165,8 @@ export function BroadcastDraft({
             </span>
             <p>
               {complete
-                ? "Configured picks completed"
-                : "Configured pick order"}
+                ? tr("Configured picks completed")
+                : tr("Configured pick order")}
             </p>
           </div>
         </section>
@@ -166,11 +175,12 @@ export function BroadcastDraft({
       <div className={styles.details}>
         <section
           className={styles.rosters}
-          aria-label="Published roster progress"
+          aria-label={tr("Published roster progress")}
           tabIndex={0}
         >
           <h2>
-            Team rosters <span>Published draft progress</span>
+            {tr("Team rosters ")}
+            <span>{tr("Published draft progress")}</span>
           </h2>
           {board?.rosters.length ? (
             <div className={styles.rosterGrid}>
@@ -181,18 +191,19 @@ export function BroadcastDraft({
                 >
                   <h3>{team.name}</h3>
                   <p className={styles.caption}>
-                    Captain {team.captain.username}
+                    {tr("Captain ")}
+                    {team.captain.username}
                   </p>
                   <p className={styles.count}>
                     {players.length}{" "}
-                    {players.length === 1 ? "player" : "players"}
+                    {players.length === 1 ? tr("player") : tr("players")}
                   </p>
                   <ul>
                     {players.map((player) => (
                       <li key={player.osuId}>
                         <span>{player.username}</span>
                         {player.osuId === team.captain.osuId && (
-                          <small>Captain</small>
+                          <small>{tr("Captain")}</small>
                         )}
                       </li>
                     ))}
@@ -202,16 +213,16 @@ export function BroadcastDraft({
             </div>
           ) : (
             <p className={styles.caption}>
-              Team rosters have not been published.
+              {tr("Team rosters have not been published.")}
             </p>
           )}
         </section>
         <section
           className={styles.history}
-          aria-label="Recent published selections"
+          aria-label={tr("Recent published selections")}
           tabIndex={0}
         >
-          <h2>Recent picks</h2>
+          <h2>{tr("Recent picks")}</h2>
           {board?.picks.length ? (
             <ol>
               {board.picks
@@ -225,20 +236,23 @@ export function BroadcastDraft({
                     <div>
                       <strong>{pick.player.username}</strong>
                       <p>
-                        {pick.team.name} · Captain {pick.team.captain.username}
+                        {pick.team.name} {tr(" · Captain ")}
+                        {pick.team.captain.username}
                       </p>
                     </div>
                   </li>
                 ))}
             </ol>
           ) : (
-            <p className={styles.caption}>No selections published yet.</p>
+            <p className={styles.caption}>
+              {tr("No selections published yet.")}
+            </p>
           )}
         </section>
       </div>
       <footer className={styles.footer}>
-        <span>INDIVIDUAL ENTRY. CAPTAIN DRAFT. TEAM COMPETITION.</span>
-        <span>Published selections only</span>
+        <span>{tr("INDIVIDUAL ENTRY. CAPTAIN DRAFT. TEAM COMPETITION.")}</span>
+        <span>{tr("Published selections only")}</span>
       </footer>
     </div>
   );

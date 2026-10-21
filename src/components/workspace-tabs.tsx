@@ -1,4 +1,5 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
 import { useEffect } from "react";
 // Each tab group has one active panel and supports the standard arrow/Home/End keys.
 export function WorkspaceTabs<T extends string>({
@@ -14,6 +15,7 @@ export function WorkspaceTabs<T extends string>({
   value: T;
   onChange: (value: T) => void;
 }) {
+  const tr = useAppTranslations();
   // Reveal a restored/deep-linked tab horizontally without moving the page.
   useEffect(() => {
     const tab = document.getElementById(`${id}-${value}`);
@@ -27,7 +29,7 @@ export function WorkspaceTabs<T extends string>({
       strip.scrollLeft += itemBounds.right - stripBounds.right;
   }, [id, value]);
   return (
-    <div className="workspace-tabs" role="tablist" aria-label={label}>
+    <div className="workspace-tabs" role="tablist" aria-label={tr(label)}>
       {items.map((item, index) => (
         <button
           type="button"
@@ -55,7 +57,7 @@ export function WorkspaceTabs<T extends string>({
             document.getElementById(`${id}-${items[next].value}`)?.focus();
           }}
         >
-          {item.label}
+          {tr(item.label)}
         </button>
       ))}
     </div>

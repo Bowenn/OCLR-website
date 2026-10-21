@@ -1,25 +1,32 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicNews } from "@/lib/public-news";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "News & announcements" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("News & announcements") };
+}
+
 export default async function News() {
-  const announcements = await publicNews();
+  const tr = await getAppTranslations();
+
+  const announcements = await publicNews(undefined, tr);
   return (
     <div className="container page">
-      <PageHeading title="News & announcements" />
+      <PageHeading title={tr("News & announcements")} />
       {announcements.length ? (
         <div className="news-list">
           {announcements.map((a) => (
             <article key={a.slug}>
               <div>
                 <p className="eyebrow">
-                  {a.future ? "SCHEDULED" : a.kind.toUpperCase()}
+                  {a.future ? tr("SCHEDULED") : a.kind.toUpperCase()}
                 </p>
                 <p className="muted small">
-                  {a.future ? "Scheduled for " : ""}
-                  {formatDate(a.at, a.timeZone)}
+                  {a.future ? tr("Scheduled for ") : ""}
+                  {tr(formatDate(a.at, a.timeZone, tr.locale))}
                 </p>
               </div>
               <div>
@@ -34,7 +41,7 @@ export default async function News() {
           ))}
         </div>
       ) : (
-        <p className="muted">No announcements yet.</p>
+        <p className="muted">{tr("No announcements yet.")}</p>
       )}
     </div>
   );

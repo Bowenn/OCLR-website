@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { useState } from "react";
 import type { publishedTeams } from "@/lib/teams";
@@ -14,6 +17,8 @@ export function PublicTeams({
   groups: PublicGroup[];
   slug: string;
 }) {
+  const tr = useAppTranslations();
+
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState("");
   const term = search.trim().toLocaleLowerCase();
@@ -36,7 +41,11 @@ export function PublicTeams({
     <>
       <div className="team-browse-toolbar">
         {groups.length > 0 && (
-          <div className="event-pills" role="group" aria-label="Team groups">
+          <div
+            className="event-pills"
+            role="group"
+            aria-label={tr("Team groups")}
+          >
             {[["", "All teams"], ...groups.map((g) => [g.key, g.name])].map(
               ([value, label]) => (
                 <button
@@ -53,17 +62,17 @@ export function PublicTeams({
           </div>
         )}
         <label className="field">
-          <span>Search teams</span>
+          <span>{tr("Search teams")}</span>
           <input
             type="search"
-            placeholder="Team, captain or published player"
+            placeholder={tr("Team, captain or published player")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
       </div>
       <p className="muted small" role="status">
-        {filtered.length} / {teams.length} teams
+        {filtered.length} / {teams.length} {tr(" teams")}
       </p>
       <div
         className={`public-team-workspace${groups.length ? " with-standings" : ""}`}
@@ -94,28 +103,30 @@ export function PublicTeams({
                       )}
                     </div>
                   </div>
-                  <p className="eyebrow">Captain</p>
+                  <p className="eyebrow">{tr("Captain")}</p>
                   <PublicPlayerIdentity
                     osuId={t.captainId}
                     username={t.captainName}
                   />
                   <p className="muted small">
                     {t.members
-                      ? `${t.members.length} published roster members`
-                      : "Roster awaiting publication"}
+                      ? tr("{value0} published roster members", {
+                          value0: t.members.length,
+                        })
+                      : tr("Roster awaiting publication")}
                   </p>
                   <Link
                     className="text-link"
                     href={`/tournaments/${slug}/teams/${t.id}`}
                   >
-                    View team
+                    {tr("View team")}
                   </Link>
                 </article>
               );
             })}
           </div>
           {!filtered.length && (
-            <p className="notice">No teams match this search.</p>
+            <p className="notice">{tr("No teams match this search.")}</p>
           )}
         </div>
         {groups.length > 0 && (

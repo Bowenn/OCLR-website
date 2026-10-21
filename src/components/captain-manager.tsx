@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useRef, useState, type PointerEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,6 +18,8 @@ export function CaptainManager({
   setup: Setup;
   identities?: Record<number, CaptainIdentity>;
 }) {
+  const tr = useAppTranslations();
+
   const [action, setAction] = useState("publish");
   const [userId, setUserId] = useState("");
   const [previousUserId, setPrevious] = useState("");
@@ -166,7 +171,7 @@ export function CaptainManager({
     <div className="stack">
       {error && (
         <p className="notice error-text" role="alert">
-          {error}
+          {tr(error)}
         </p>
       )}
       <p className="sr-only" role="status" aria-live="polite">
@@ -178,26 +183,30 @@ export function CaptainManager({
           aria-labelledby="captain-order-heading"
         >
           <div className="section-title">
-            <h2 id="captain-order-heading">Captains</h2>
+            <h2 id="captain-order-heading">{tr("Captains")}</h2>
             {setup.captains.length > 0 && (
               <Link
                 className="text-link small"
                 href={`/admin/tournaments/${slug}/teams`}
               >
-                Configure teams
+                {tr("Configure teams")}
               </Link>
             )}
           </div>
           <p className="muted small">
             {setup.locked
-              ? "Captain setup is locked. Publication controls remain available below."
-              : "Drag or appoint players; drag or use arrow buttons to reorder."}
+              ? tr(
+                  "Captain setup is locked. Publication controls remain available below.",
+                )
+              : tr(
+                  "Drag or appoint players; drag or use arrow buttons to reorder.",
+                )}
           </p>
           <div
             className={`captain-drop-zone${dragging !== null ? " is-dragging" : ""}`}
             data-captain-drop
             role="group"
-            aria-label="Captain appointment area"
+            aria-label={tr("Captain appointment area")}
             onDragOver={(event) => {
               if (editable) event.preventDefault();
             }}
@@ -209,7 +218,7 @@ export function CaptainManager({
             {ordered.length ? (
               <ol
                 className="captain-order"
-                aria-label="Captain selection order"
+                aria-label={tr("Captain selection order")}
               >
                 {ordered.map((c, index) => (
                   <li
@@ -250,7 +259,9 @@ export function CaptainManager({
                           className="secondary"
                           type="button"
                           disabled={!editable || index === 0}
-                          aria-label={`Move ${c.username} up`}
+                          aria-label={tr("Move {value0} up", {
+                            value0: c.username,
+                          })}
                           onClick={() => move(c.userId, order[index - 1])}
                         >
                           ↑
@@ -259,16 +270,28 @@ export function CaptainManager({
                           className="secondary"
                           type="button"
                           disabled={!editable || index === order.length - 1}
-                          aria-label={`Move ${c.username} down`}
+                          aria-label={tr("Move {value0} down", {
+                            value0: c.username,
+                          })}
                           onClick={() => move(c.userId, order[index + 1])}
                         >
                           ↓
                         </button>
                       </div>
                       <ConfirmMutation
-                        label="Unappoint"
-                        title={`Unappoint ${c.username}?`}
-                        description={`Remove ${c.username}'s captain appointment and keep their registration.${c.teamId ? " Their empty captain team will be archived. Teams with other players or finalized rosters cannot be removed here." : ""}`}
+                        label={tr("Unappoint")}
+                        title={tr("Unappoint {value0}?", {
+                          value0: c.username,
+                        })}
+                        description={tr(
+                          "Remove {value0}'s captain appointment and keep their registration.{value1}",
+                          {
+                            value0: c.username,
+                            value1: c.teamId
+                              ? " Their empty captain team will be archived. Teams with other players or finalized rosters cannot be removed here."
+                              : "",
+                          },
+                        )}
                         disabled={!editable || changed}
                         url={`/api/admin/tournaments/${slug}/captains`}
                         payload={{
@@ -287,14 +310,16 @@ export function CaptainManager({
               </ol>
             ) : (
               <p className="muted small">
-                No captains appointed.
+                {tr("No captains appointed.")}
                 {!setup.locked
-                  ? " Drop a player card here or use Appoint captain below."
+                  ? tr(" Drop a player card here or use Appoint captain below.")
                   : ""}
               </p>
             )}
           </div>
-          {changed && <p className="notice small">Unsaved captain order.</p>}
+          {changed && (
+            <p className="notice small">{tr("Unsaved captain order.")}</p>
+          )}
           {ordered.length > 0 && !setup.locked && (
             <div className="actions">
               <button
@@ -303,7 +328,7 @@ export function CaptainManager({
                 disabled={!changed || pending}
                 onClick={() => void mutate({ action: "order", userIds: order })}
               >
-                {pending ? "Saving…" : "Save captain order"}
+                {pending ? tr("Saving…") : tr("Save captain order")}
               </button>
               <button
                 className="secondary"
@@ -315,7 +340,7 @@ export function CaptainManager({
                   setError("");
                 }}
               >
-                Reset order
+                {tr("Reset order")}
               </button>
             </div>
           )}
@@ -325,18 +350,18 @@ export function CaptainManager({
           aria-labelledby="eligible-pool-heading"
         >
           <div className="section-title">
-            <h2 id="eligible-pool-heading">Eligible remaining pool</h2>
+            <h2 id="eligible-pool-heading">{tr("Eligible remaining pool")}</h2>
             <span className="badge">
               {setup.pool.length}{" "}
-              {setup.pool.length === 1 ? "player" : "players"}
+              {setup.pool.length === 1 ? tr("player") : tr("players")}
             </span>
           </div>
           <label className="field">
-            <span>Search players</span>
+            <span>{tr("Search players")}</span>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Username or osu! ID"
+              placeholder={tr("Username or osu! ID")}
             />
           </label>
           {pool.length ? (
@@ -367,10 +392,12 @@ export function CaptainManager({
                     className="secondary"
                     type="button"
                     disabled={!editable || changed}
-                    aria-label={`Appoint ${p.username} as captain`}
+                    aria-label={tr("Appoint {value0} as captain", {
+                      value0: p.username,
+                    })}
                     onClick={() => void appoint(p.userId)}
                   >
-                    Appoint captain
+                    {tr("Appoint captain")}
                   </button>
                 </article>
               ))}
@@ -378,34 +405,36 @@ export function CaptainManager({
           ) : (
             <p className="muted small">
               {search
-                ? "No players match your search."
-                : "No eligible players remain. Review accepted registrations to build the player pool."}
+                ? tr("No players match your search.")
+                : tr(
+                    "No eligible players remain. Review accepted registrations to build the player pool.",
+                  )}
             </p>
           )}
         </section>
       </div>
       <details className="panel">
-        <summary>Publication and advanced controls</summary>
+        <summary>{tr("Publication and advanced controls")}</summary>
         <div className="form-stack spaced">
-          <h2>Captain and pool controls</h2>
+          <h2>{tr("Captain and pool controls")}</h2>
           <label className="field">
-            <span>Action</span>
+            <span>{tr("Action")}</span>
             <select value={action} onChange={(e) => setAction(e.target.value)}>
               {["replace", "availability", "lock", "publish"].map((a) => (
                 <option key={a} value={a}>
-                  {a}
+                  {tr(a)}
                 </option>
               ))}
             </select>
           </label>
           {["replace", "availability"].includes(action) && (
             <label className="field">
-              <span>Player</span>
+              <span>{tr("Player")}</span>
               <select
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
               >
-                <option value="">Choose an accepted player</option>
+                <option value="">{tr("Choose an accepted player")}</option>
                 {setup.candidates.map((c) => (
                   <option key={c.userId} value={c.userId}>
                     {c.username} ({c.userId})
@@ -416,12 +445,12 @@ export function CaptainManager({
           )}
           {action === "replace" && (
             <label className="field">
-              <span>Captain to replace</span>
+              <span>{tr("Captain to replace")}</span>
               <select
                 value={previousUserId}
                 onChange={(e) => setPrevious(e.target.value)}
               >
-                <option value="">Choose captain</option>
+                <option value="">{tr("Choose captain")}</option>
                 {setup.captains.map((c) => (
                   <option key={c.userId} value={c.userId}>
                     {c.username}
@@ -439,8 +468,8 @@ export function CaptainManager({
               />
               <span>
                 {action === "availability"
-                  ? "Player is available for draft"
-                  : "Publish approved captain identities and order"}
+                  ? tr("Player is available for draft")
+                  : tr("Publish approved captain identities and order")}
               </span>
             </label>
           )}
@@ -452,14 +481,16 @@ export function CaptainManager({
                 onChange={(e) => setPoolPublished(e.target.checked)}
               />
               <span>
-                Approve public display of remaining eligible player identities
+                {tr(
+                  "Approve public display of remaining eligible player identities",
+                )}
               </span>
             </label>
           )}
 
           {action === "availability" && !published && (
             <label className="field">
-              <span>Draft unavailability explanation</span>
+              <span>{tr("Draft unavailability explanation")}</span>
               <textarea
                 value={unavailableExplanation}
                 onChange={(e) => setExplanation(e.target.value)}
@@ -477,9 +508,11 @@ export function CaptainManager({
             disabled={
               pending || changed || (setup.locked && action !== "publish")
             }
-            label="Review setup change"
-            title="Apply this captain setup change?"
-            description="This can change draft eligibility or release player identities publicly. Review the selected players and approval before confirming."
+            label={tr("Review setup change")}
+            title={tr("Apply this captain setup change?")}
+            description={tr(
+              "This can change draft eligibility or release player identities publicly. Review the selected players and approval before confirming.",
+            )}
             url={`/api/admin/tournaments/${slug}/captains`}
             payload={{
               command,

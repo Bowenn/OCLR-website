@@ -53,7 +53,11 @@ describe.skipIf(!testUrl)(
     function request(state: string, code = "synthetic-code") {
       return new NextRequest(
         `https://oclr.example.test/auth/osu/callback?state=${state}&code=${code}`,
-        { headers: { cookie: `__Host-oclr_oauth=${state}` } },
+        {
+          headers: {
+            cookie: `__Host-oclr_oauth=${state}; oclr-locale=zh-Hant; oclr-theme=dark`,
+          },
+        },
       );
     }
     it("accepts one valid callback, persists stable identity, hashes sessions and rejects replay", async () => {
@@ -75,6 +79,9 @@ describe.skipIf(!testUrl)(
         "https://oclr.example.test/dashboard",
       );
       const token = result.cookies.get("__Host-oclr_session")!.value;
+      // Redirect/session issuance must not reset appearance or locale choices.
+      expect(result.cookies.get("oclr-locale")).toBeUndefined();
+      expect(result.cookies.get("oclr-theme")).toBeUndefined();
       expect(await readSession(token)).toEqual({
         osuId: 10001,
         username: "Synthetic Player",

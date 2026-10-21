@@ -1,4 +1,6 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useRef, useState } from "react";
 import type { MappoolBatchPreview, MappoolWorkspace } from "@/lib/mappools";
 import {
@@ -24,6 +26,8 @@ export function MappoolBatch({
   entries: MappoolWorkspace["entries"];
   onFeedback: (message: string, failed?: boolean) => void;
 }) {
+  const tr = useAppTranslations();
+
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<MappoolBatchPreview | null>(null);
   const [busy, setBusy] = useState(false),
@@ -97,15 +101,16 @@ export function MappoolBatch({
     <section className="mappool-batch">
       {mode === "import" && (
         <div className="form-stack">
-          <h3>Import multiple beatmaps</h3>
+          <h3>{tr("Import multiple beatmaps")}</h3>
           <p className="muted small">
-            Paste up to 50 IDs or difficulty URLs. Slots append automatically;
-            existing maps stay unchanged.
+            {tr(
+              "Paste up to 50 IDs or difficulty URLs. Slots append automatically; existing maps stay unchanged.",
+            )}
           </p>
           <label className="field">
-            <span>Import category</span>
+            <span>{tr("Import category")}</span>
             <select
-              aria-label="Import category"
+              aria-label={tr("Import category")}
               value={category}
               onChange={(event) => {
                 request.current?.abort();
@@ -121,22 +126,23 @@ export function MappoolBatch({
             </select>
           </label>
           <details>
-            <summary>Import format help</summary>
+            <summary>{tr("Import format help")}</summary>
             <p className="muted small">
-              Optional: prefix a row with NM1, HD1 or another explicit slot.
-              Plain rows skip reserved slots.
+              {tr(
+                "Optional: prefix a row with NM1, HD1 or another explicit slot. Plain rows skip reserved slots.",
+              )}
             </p>
           </details>
           <label className="field">
-            <span>Map rows</span>
+            <span>{tr("Map rows")}</span>
             <textarea
-              aria-label="Map rows"
+              aria-label={tr("Map rows")}
               rows={6}
               maxLength={16000}
               value={text}
-              placeholder={
-                "4184799\nhttps://osu.ppy.sh/beatmaps/123\nhttps://osu.ppy.sh/beatmapsets/2010589#osu/4184800"
-              }
+              placeholder={tr(
+                "4184799\nhttps://osu.ppy.sh/beatmaps/123\nhttps://osu.ppy.sh/beatmapsets/2010589#osu/4184800",
+              )}
               onChange={(e) => {
                 request.current?.abort();
                 setBusy(false);
@@ -152,7 +158,7 @@ export function MappoolBatch({
               disabled={busy || !text.trim()}
               onClick={lookup}
             >
-              {busy ? "Looking up beatmaps…" : "Preview batch"}
+              {busy ? tr("Looking up beatmaps…") : tr("Preview batch")}
             </button>
           </div>
           {error && (
@@ -162,9 +168,12 @@ export function MappoolBatch({
           )}
           <div role="status" aria-live="polite">
             {busy
-              ? "Retrieving official metadata…"
+              ? tr("Retrieving official metadata…")
               : preview
-                ? `${preview.rows.filter((r) => !r.error).length} of ${preview.rows.length} rows ready.`
+                ? tr("{value0} of {value1} rows ready.", {
+                    value0: preview.rows.filter((r) => !r.error).length,
+                    value1: preview.rows.length,
+                  })
                 : ""}
           </div>
           {preview && (
@@ -172,11 +181,14 @@ export function MappoolBatch({
               <div
                 className="table-scroll"
                 role="region"
-                aria-label="Batch preview"
+                aria-label={tr("Batch preview")}
                 tabIndex={0}
               >
                 <table>
-                  <caption>Batch preview — {pool.name}</caption>
+                  <caption>
+                    {tr("Batch preview — ")}
+                    {pool.name}
+                  </caption>
                   <thead>
                     <tr>
                       {[
@@ -219,11 +231,22 @@ export function MappoolBatch({
                         </td>
                         <td>
                           {r.snapshot
-                            ? `${formatBeatmapNumber(r.snapshot.metadata.bpm)} BPM · ${formatBeatmapDuration(r.snapshot.metadata.duration)}`
+                            ? tr("{value0} BPM · {value1}", {
+                                value0: formatBeatmapNumber(
+                                  r.snapshot.metadata.bpm,
+                                ),
+                                value1: formatBeatmapDuration(
+                                  r.snapshot.metadata.duration,
+                                ),
+                              })
                             : "—"}
                         </td>
                         <td className={r.error ? "error-text" : ""}>
-                          {r.error ?? r.warning ?? "Ready"}
+                          {r.error
+                            ? tr(r.error)
+                            : r.warning
+                              ? tr(r.warning)
+                              : tr("Ready")}
                         </td>
                       </tr>
                     ))}
@@ -232,9 +255,9 @@ export function MappoolBatch({
               </div>
               <ConfirmMutation
                 requireConfirmation={false}
-                label="Import verified batch"
-                title="Import beatmaps"
-                description="Save the verified rows atomically."
+                label={tr("Import verified batch")}
+                title={tr("Import beatmaps")}
+                description={tr("Save the verified rows atomically.")}
                 url={url}
                 disabled={!ready}
                 onSuccess={() => {
@@ -268,19 +291,20 @@ export function MappoolBatch({
       {mode === "batch" &&
         (entries.length > 0 ? (
           <div className="form-stack">
-            <h3>Manage multiple map slots</h3>
+            <h3>{tr("Manage multiple map slots")}</h3>
             <p className="muted small">
-              Select up to 50 maps. Insert them at a position in the destination
-              category; remaining maps shift and that category is renumbered.
+              {tr(
+                "Select up to 50 maps. Insert them at a position in the destination category; remaining maps shift and that category is renumbered.",
+              )}
             </p>
             <div className="table-scroll">
               <table>
-                <caption>Saved map selection</caption>
+                <caption>{tr("Saved map selection")}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">Select</th>
-                    <th scope="col">Slot</th>
-                    <th scope="col">Beatmap</th>
+                    <th scope="col">{tr("Select")}</th>
+                    <th scope="col">{tr("Slot")}</th>
+                    <th scope="col">{tr("Beatmap")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -289,7 +313,9 @@ export function MappoolBatch({
                       <td>
                         <input
                           type="checkbox"
-                          aria-label={`Select ${slotLabel(e.category, e.position)}`}
+                          aria-label={tr("Select {value0}", {
+                            value0: slotLabel(e.category, e.position),
+                          })}
                           checked={selected.includes(e.id)}
                           onChange={(event) =>
                             setSelected(
@@ -310,12 +336,14 @@ export function MappoolBatch({
                 </tbody>
               </table>
             </div>
-            <p className="muted small">{selected.length} selected</p>
+            <p className="muted small">
+              {selected.length} {tr(" selected")}
+            </p>
             <div className="filters">
               <label className="field">
-                <span>Move to category</span>
+                <span>{tr("Move to category")}</span>
                 <select
-                  aria-label="Move to category"
+                  aria-label={tr("Move to category")}
                   value={category}
                   onChange={(e) =>
                     setCategory(e.target.value as MappoolCategory)
@@ -327,7 +355,7 @@ export function MappoolBatch({
                 </select>
               </label>
               <label className="field">
-                <span>Insert at position</span>
+                <span>{tr("Insert at position")}</span>
                 <input
                   type="number"
                   min={1}
@@ -344,13 +372,13 @@ export function MappoolBatch({
             )}
             {movePreview.length > 0 && (
               <details open>
-                <summary>Preview destination order</summary>
+                <summary>{tr("Preview destination order")}</summary>
                 <ol className="mappool-move-preview">
                   {movePreview.map((e) => (
                     <li key={e.id}>
                       {slotLabel(e.category, e.position)} · {e.metadata.artist}{" "}
                       — {e.metadata.title} · {e.beatmapId}
-                      {selected.includes(e.id) ? " (selected)" : ""}
+                      {selected.includes(e.id) ? tr(" (selected)") : ""}
                     </li>
                   ))}
                 </ol>
@@ -359,9 +387,11 @@ export function MappoolBatch({
             <div className="actions">
               <ConfirmMutation
                 requireConfirmation={false}
-                label="Move / renumber selected"
-                title="Move map slots"
-                description="Insert the selected maps and renumber the destination category."
+                label={tr("Move / renumber selected")}
+                title={tr("Move map slots")}
+                description={tr(
+                  "Insert the selected maps and renumber the destination category.",
+                )}
                 url={url}
                 disabled={
                   !selected.length || selected.length > 50 || !!moveError
@@ -378,9 +408,11 @@ export function MappoolBatch({
               />
               <ConfirmMutation
                 requireConfirmation={false}
-                label="Refresh selected metadata"
-                title="Refresh metadata"
-                description="Retrieve official metadata for every selected map; any failure leaves all saved maps unchanged."
+                label={tr("Refresh selected metadata")}
+                title={tr("Refresh metadata")}
+                description={tr(
+                  "Retrieve official metadata for every selected map; any failure leaves all saved maps unchanged.",
+                )}
                 url={url}
                 disabled={!selected.length || selected.length > 50}
                 payload={{
@@ -390,9 +422,12 @@ export function MappoolBatch({
                 }}
               />
               <ConfirmMutation
-                label="Remove selected maps"
-                title="Remove selected maps"
-                description={`Remove ${selected.length} selected map slots? This cannot be undone in the editor. Historical audit records are retained.`}
+                label={tr("Remove selected maps")}
+                title={tr("Remove selected maps")}
+                description={tr(
+                  "Remove {value0} selected map slots? This cannot be undone in the editor. Historical audit records are retained.",
+                  { value0: selected.length },
+                )}
                 url={url}
                 disabled={!selected.length || selected.length > 50}
                 payload={{
@@ -405,7 +440,9 @@ export function MappoolBatch({
           </div>
         ) : (
           <p className="muted small">
-            No maps to select. Add beatmaps in Maps or Bulk import first.
+            {tr(
+              "No maps to select. Add beatmaps in Maps or Bulk import first.",
+            )}
           </p>
         ))}
     </section>

@@ -2,6 +2,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Privacy from "../../src/app/privacy/page";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/en.json";
 import {
   authReady,
   oauthConfig,
@@ -28,7 +30,12 @@ describe("explicit osu! privacy contact", () => {
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
-  const html = () => renderToStaticMarkup(React.createElement(Privacy));
+  const html = () =>
+    renderToStaticMarkup(
+      <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+        <Privacy />
+      </NextIntlClientProvider>,
+    );
   it("enables configured OAuth and publishes exactly one designated contact without exposing other admins", () => {
     expect(privacyReady()).toBe(true);
     expect(authReady()).toBe(true);

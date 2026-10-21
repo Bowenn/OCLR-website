@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import Image from "next/image";
 import { getOsuUserProfile } from "@/lib/osu-profiles";
@@ -8,15 +9,21 @@ import { formatDate } from "@/lib/editions";
 import { Action, EmptyState, PageHeading } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { ConfirmMutation } from "@/components/confirm-mutation";
-export const metadata = {
-  title: "Player dashboard",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return {
+    title: tr("Player dashboard"),
+    robots: { index: false, follow: false },
+  };
+}
+
 export default async function Dashboard({
   searchParams,
 }: {
   searchParams: Promise<{ submitted?: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const user = await currentUser();
   if (!user) redirect("/login");
   const [applications, snapshot] = await Promise.all([
@@ -31,35 +38,38 @@ export default async function Dashboard({
       )
     : null;
   const stats = profile?.statistics;
-  const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
+  const number = new Intl.NumberFormat(tr.locale, { maximumFractionDigits: 2 });
   const params = await searchParams;
   return (
     <div className="container page workspace player-workspace">
       <aside className="sidebar">
-        <p className="eyebrow">PLAYER CENTER</p>
-        <h2>Your OCLR</h2>
-        <nav aria-label="Player navigation">
+        <p className="eyebrow">{tr("PLAYER CENTER")}</p>
+        <h2>{tr("Your OCLR")}</h2>
+        <nav aria-label={tr("Player navigation")}>
           <Link href="/dashboard" aria-current="page">
-            Dashboard
+            {tr("Dashboard")}
           </Link>
         </nav>
         <form className="spaced" action="/auth/logout" method="post">
-          <button className="secondary">Sign out</button>
+          <button className="secondary">{tr("Sign out")}</button>
         </form>
       </aside>
       <div className="workspace-main">
-        <PageHeading eyebrow="YOUR ROOKIE STAGE" title="Player dashboard">
-          Your identity and tournament applications, in one place.
+        <PageHeading
+          eyebrow={tr("YOUR ROOKIE STAGE")}
+          title={tr("Player dashboard")}
+        >
+          {tr("Your identity and tournament applications, in one place.")}
         </PageHeading>
         {params.submitted && (
           <p className="notice" role="status">
-            Application submitted. Your saved status appears below.
+            {tr("Application submitted. Your saved status appears below.")}
           </p>
         )}
         <section
           className="panel identity-panel"
           id="identity"
-          aria-label="osu! identity"
+          aria-label={tr("osu! identity")}
         >
           <Avatar
             osuId={user.osuId}
@@ -67,7 +77,7 @@ export default async function Dashboard({
             avatarUrl={profile?.avatarUrl ?? undefined}
           />
           <div className="player-identity">
-            <p className="eyebrow">OSU! IDENTITY</p>
+            <p className="eyebrow">{tr("OSU! IDENTITY")}</p>
             <h2>
               <a
                 href={`https://osu.ppy.sh/users/${user.osuId}`}
@@ -77,18 +87,23 @@ export default async function Dashboard({
                 {user.username}{" "}
                 <span
                   className="muted"
-                  aria-label="opens osu! profile in a new tab"
+                  aria-label={tr("opens osu! profile in a new tab")}
                 >
                   ↗
                 </span>
               </a>
             </h2>
-            <p className="muted small">osu! ID: {user.osuId}</p>
+            <p className="muted small">
+              {tr("osu! ID: ")}
+              {user.osuId}
+            </p>
             {country && (
               <p className="small">
                 <span
                   role="img"
-                  aria-label={`${profile?.countryName ?? country} flag`}
+                  aria-label={tr("{value0} flag", {
+                    value0: profile?.countryName ?? country,
+                  })}
                 >
                   {flag}
                 </span>{" "}
@@ -98,44 +113,52 @@ export default async function Dashboard({
           </div>
           <div className="player-statistics">
             <p className="eyebrow">
-              OSU! · {snapshot?.stale ? "SAVED SNAPSHOT" : "PROFILE"}
+              {tr("OSU! · ")}
+              {snapshot?.stale ? tr("SAVED SNAPSHOT") : tr("PROFILE")}
             </p>
             <dl>
               <div>
-                <dt>Global rank</dt>
+                <dt>{tr("Global rank")}</dt>
                 <dd>
                   {stats?.globalRank != null
                     ? `#${number.format(stats.globalRank)}`
-                    : "Unavailable"}
+                    : tr("Unavailable")}
                 </dd>
               </div>
               <div>
                 <dt>PP</dt>
                 <dd>
-                  {stats?.pp != null ? number.format(stats.pp) : "Unavailable"}
+                  {stats?.pp != null
+                    ? number.format(stats.pp)
+                    : tr("Unavailable")}
                 </dd>
               </div>
               <div>
-                <dt>Accuracy</dt>
+                <dt>{tr("Accuracy")}</dt>
                 <dd>
                   {stats?.accuracy != null
                     ? `${number.format(stats.accuracy)}%`
-                    : "Unavailable"}
+                    : tr("Unavailable")}
                 </dd>
               </div>
             </dl>
             <p className="muted small">
               {profile
-                ? `Updated ${formatDate(profile.fetchedAt, "UTC")}${snapshot?.stale ? " · Refresh temporarily unavailable" : ""}`
-                : "osu! statistics are temporarily unavailable."}
+                ? tr("Updated {value0}{value1}", {
+                    value0: tr(formatDate(profile.fetchedAt, "UTC", tr.locale)),
+                    value1: snapshot?.stale
+                      ? " · Refresh temporarily unavailable"
+                      : "",
+                  })
+                : tr("osu! statistics are temporarily unavailable.")}
             </p>
           </div>
         </section>
         <section className="section-space" id="registrations">
           <div className="section-title">
-            <h2>My registrations</h2>
+            <h2>{tr("My registrations")}</h2>
             <Link href="/tournaments" className="text-link">
-              Browse tournaments
+              {tr("Browse tournaments")}
             </Link>
           </div>
           {applications.length ? (
@@ -164,24 +187,34 @@ export default async function Dashboard({
                     </div>
                     <div className="registration-details">
                       <div className="section-title">
-                        <h3>{edition?.name ?? `Edition: ${r.editionSlug}`}</h3>
+                        <h3>
+                          {edition?.name ??
+                            tr("Edition: {value0}", { value0: r.editionSlug })}
+                        </h3>
                         <span className={`badge status-${r.status}`}>
-                          {r.status}
+                          {tr(r.status)}
                         </span>
                       </div>
-                      <p className="muted small">{statusCopy[r.status]}</p>
+                      <p className="muted small">{tr(statusCopy[r.status])}</p>
                       <p className="small muted">
-                        Submitted{" "}
-                        {formatDate(r.createdAt, edition?.timeZone ?? "UTC")}
+                        {tr("Submitted")}{" "}
+                        {tr(
+                          formatDate(
+                            r.createdAt,
+                            edition?.timeZone ?? "UTC",
+                            tr.locale,
+                          ),
+                        )}
                       </p>
                       {r.statusReason && (
                         <p className="notice small">
-                          Staff explanation: {r.statusReason}
+                          {tr("Staff explanation: ")}
+                          {r.statusReason}
                         </p>
                       )}
                       {Object.keys(r.answers).length > 0 && (
                         <details className="spaced">
-                          <summary>My application</summary>
+                          <summary>{tr("My application")}</summary>
                           <dl className="detail-list">
                             {Object.entries(r.answers).map(([key, value]) => (
                               <div key={key}>
@@ -191,7 +224,7 @@ export default async function Dashboard({
                                   )?.label ?? key}
                                 </dt>
                                 <dd className="preserve-lines">
-                                  {value || "No answer"}
+                                  {value || tr("No answer")}
                                 </dd>
                               </div>
                             ))}
@@ -205,12 +238,12 @@ export default async function Dashboard({
                               href={`/tournaments/${edition.slug}/team`}
                               secondary
                             >
-                              My captain team
+                              {tr("My captain team")}
                             </Action>
                             <Action
                               href={`/tournaments/${edition.slug}/draft/captain`}
                             >
-                              Captain draft room
+                              {tr("Captain draft room")}
                             </Action>
                           </>
                         )}
@@ -219,14 +252,16 @@ export default async function Dashboard({
                             href={`/tournaments/${edition.slug}`}
                             secondary
                           >
-                            Edition details
+                            {tr("Edition details")}
                           </Action>
                         )}
                         {withdrawable && (
                           <ConfirmMutation
-                            label="Withdraw application"
-                            title="Withdraw your application?"
-                            description="This removes your application from consideration. You cannot resubmit automatically. Contact staff if you need help."
+                            label={tr("Withdraw application")}
+                            title={tr("Withdraw your application?")}
+                            description={tr(
+                              "This removes your application from consideration. You cannot resubmit automatically. Contact staff if you need help.",
+                            )}
                             url={`/api/registrations/${r.id}/withdraw`}
                             payload={{ confirmed: true }}
                           />
@@ -238,9 +273,10 @@ export default async function Dashboard({
               )}
             </div>
           ) : (
-            <EmptyState title="Your stage starts here.">
-              You have no applications yet. Browse the tournaments and apply
-              individually when registration is open.
+            <EmptyState title={tr("Your stage starts here.")}>
+              {tr(
+                "You have no applications yet. Browse the tournaments and apply individually when registration is open.",
+              )}
             </EmptyState>
           )}
         </section>

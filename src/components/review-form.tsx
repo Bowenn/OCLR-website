@@ -1,4 +1,6 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState } from "react";
 import { ConfirmMutation } from "./confirm-mutation";
 export function ReviewForm({
@@ -8,27 +10,29 @@ export function ReviewForm({
   id: string;
   updatedAt: string;
 }) {
+  const tr = useAppTranslations();
+
   const [status, setStatus] = useState<"accepted" | "rejected">("accepted");
   const [reason, setReason] = useState("");
   return (
     <section className="panel form-stack">
-      <h2>Review application</h2>
+      <h2>{tr("Review application")}</h2>
       <label className="field">
-        <span>Decision</span>
+        <span>{tr("Decision")}</span>
         <select
           value={status}
           onChange={(event) =>
             setStatus(event.target.value as "accepted" | "rejected")
           }
         >
-          <option value="accepted">Accept</option>
-          <option value="rejected">Reject</option>
+          <option value="accepted">{tr("Accept")}</option>
+          <option value="rejected">{tr("Reject")}</option>
         </select>
       </label>
       <label className="field">
         <span>
-          Explanation to player{" "}
-          {status === "rejected" ? "(required)" : "(optional)"}
+          {tr("Explanation to player")}{" "}
+          {status === "rejected" ? tr("(required)") : tr("(optional)")}
         </span>
         <textarea
           value={reason}
@@ -38,13 +42,18 @@ export function ReviewForm({
         />
       </label>
       <p className="muted small">
-        This explanation is visible to the player. Acceptance does not assign a
-        team or captain role.
+        {tr(
+          "This explanation is visible to the player. Acceptance does not assign a team or captain role.",
+        )}
       </p>
       <ConfirmMutation
-        label="Review decision"
-        title={`${status === "accepted" ? "Accept" : "Reject"} this application?`}
-        description="The player will see this decision and your explanation. The action is recorded in the staff audit trail."
+        label={tr("Review decision")}
+        title={tr("{value0} this application?", {
+          value0: status === "accepted" ? "Accept" : "Reject",
+        })}
+        description={tr(
+          "The player will see this decision and your explanation. The action is recorded in the staff audit trail.",
+        )}
         url={`/api/admin/registrations/${id}/review`}
         payload={{
           status,

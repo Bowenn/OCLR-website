@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
 import { staffFixtures } from "@/lib/fixtures";
@@ -7,12 +8,18 @@ import { matchReview } from "@/lib/results";
 import { MatchReviewPanel } from "@/components/match-review";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
-export const metadata = { title: "Fixture review" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Fixture review") };
+}
+
 export default async function FixturePage({
   params,
 }: {
   params: Promise<{ edition: string; fixtureId: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const actor = await requireUser();
     const { edition, fixtureId } = await params;
@@ -34,23 +41,30 @@ export default async function FixturePage({
       const { fixture, workspace } = review.planned;
       return (
         <>
-          <PageHeading eyebrow="PLANNED MATCH" title={fixture.label}>
-            {fixtureSlot(workspace, fixture, "home").label} vs{" "}
+          <PageHeading eyebrow={tr("PLANNED MATCH")} title={fixture.label}>
+            {fixtureSlot(workspace, fixture, "home").label} {tr(" vs")}{" "}
             {fixtureSlot(workspace, fixture, "away").label}
           </PageHeading>
           <div className="panel form-stack">
             <p>
               {fixture.scheduledAt
-                ? formatDate(fixture.scheduledAt, fixture.timeZone)
-                : "Match time TBA"}
+                ? tr(
+                    formatDate(
+                      fixture.scheduledAt,
+                      fixture.timeZone,
+                      tr.locale,
+                    ),
+                  )
+                : tr("Match time TBA")}
             </p>
             <p>
-              Assigned referees:{" "}
-              {fixture.referees.map((r) => r.username).join(", ") || "None"}
+              {tr("Assigned referees:")}{" "}
+              {fixture.referees.map((r) => r.username).join(", ") || tr("None")}
             </p>
             <p className="notice">
-              Participants are not confirmed. An Admin must select two
-              finalized, published teams before importing or reviewing results.
+              {tr(
+                "Participants are not confirmed. An Admin must select two finalized, published teams before importing or reviewing results.",
+              )}
             </p>
           </div>
         </>
@@ -60,22 +74,33 @@ export default async function FixturePage({
     return (
       <>
         <PageHeading
-          eyebrow={`${data.round.stage === "group" ? "GROUP" : "KNOCKOUT"} STAGE / ${data.round.name}`}
+          eyebrow={tr("{value0} STAGE / {value1}", {
+            value0: data.round.stage === "group" ? "GROUP" : "KNOCKOUT",
+            value1: data.round.name,
+          })}
           title={data.fixture.label}
         >
           {data.teams.map((t) => t.name).join(" vs ")} ·{" "}
-          {data.fixture.status.replaceAll("_", " ")}
+          {tr(data.fixture.status)}
         </PageHeading>
         <div className="panel">
           <p>
             {data.fixture.scheduledAt
-              ? formatDate(data.fixture.scheduledAt, data.fixture.timeZone)
-              : `Match time TBA (${data.fixture.timeZone})`}
+              ? tr(
+                  formatDate(
+                    data.fixture.scheduledAt,
+                    data.fixture.timeZone,
+                    tr.locale,
+                  ),
+                )
+              : tr("Match time TBA ({value0})", {
+                  value0: data.fixture.timeZone,
+                })}
           </p>
           <p>
             {data.pool
-              ? `Associated pool: ${data.pool.name}`
-              : "No mappool associated"}
+              ? tr("Associated pool: {value0}", { value0: data.pool.name })
+              : tr("No mappool associated")}
           </p>
         </div>
         <MatchReviewPanel data={review} slug={edition} />

@@ -1,3 +1,4 @@
+import { useAppTranslations } from "@/i18n/shared";
 import Link from "next/link";
 import { Avatar } from "./avatar";
 export function PublicPlayerIdentity({
@@ -13,6 +14,8 @@ export function PublicPlayerIdentity({
   countryCode?: string | null;
   countryName?: string | null;
 }) {
+  const tr = useAppTranslations();
+
   const flag =
     countryCode && /^[A-Z]{2}$/.test(countryCode)
       ? String.fromCodePoint(
@@ -26,10 +29,18 @@ export function PublicPlayerIdentity({
         <a className="text-link" href={`https://osu.ppy.sh/users/${osuId}`}>
           {username}
         </a>
-        <p className="muted small">osu! ID {osuId}</p>
+        <p className="muted small">
+          {tr("osu! ID ")}
+          {osuId}
+        </p>
         {flag && (
           <p className="small">
-            <span role="img" aria-label={`${countryName ?? countryCode} flag`}>
+            <span
+              role="img"
+              aria-label={tr("{value0} flag", {
+                value0: countryName ?? countryCode ?? "",
+              })}
+            >
               {flag}
             </span>{" "}
             {countryName ?? countryCode}
@@ -41,7 +52,7 @@ export function PublicPlayerIdentity({
             href={`/players/${osuId}?edition=${edition}`}
             prefetch={false}
           >
-            OCLR profile
+            {tr("OCLR profile")}
           </Link>
         )}
       </div>

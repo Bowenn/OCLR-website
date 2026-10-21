@@ -1,3 +1,5 @@
+import { english, type AppTranslator } from "@/i18n/translate";
+import { formatDate } from "./editions";
 import { cache } from "react";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
@@ -7,7 +9,7 @@ import { getAnnouncements } from "./announcements";
 import { privacyReady } from "./auth/config";
 import { publicCompetition } from "./public-competition";
 import { projectPublicNews, type OfficialNewsEvent } from "./public-news-model";
-async function loadNews(now: Date) {
+async function loadNews(now: Date, tr: AppTranslator) {
   const editions = await readTournaments(true);
   const events: OfficialNewsEvent[] = [];
   if (editions.length) {
@@ -35,8 +37,11 @@ async function loadNews(now: Date) {
         editionSlug: p.slug,
         kind: "mappool" as const,
         id: p.id,
-        title: `Mappool released: ${p.name}`,
-        summary: `${p.name} for ${p.round} is published. View the released beatmaps and slot configuration.`,
+        title: tr("Mappool released: {name}", { name: p.name }),
+        summary: tr(
+          "{name} for {round} is published. View the released beatmaps and slot configuration.",
+          { name: p.name, round: p.round },
+        ),
         at: p.at!.toISOString(),
         url: `/tournaments/${p.slug}/mappools/${p.id}`,
       })),
@@ -54,8 +59,20 @@ async function loadNews(now: Date) {
           editionSlug: slug,
           kind: "fixture",
           id: f.id,
-          title: `Fixture published: ${f.label}`,
-          summary: `${f.roundName}: ${f.home.label} vs ${f.away.label}. ${f.scheduledAt ? `Scheduled for ${new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: f.timeZone }).format(new Date(f.scheduledAt))} (${f.timeZone}).` : "Match time is to be announced."} A published fixture does not establish a completed result.`,
+          title: tr("Fixture published: {label}", { label: f.label }),
+          summary: tr(
+            "{round}: {home} vs {away}. {time} A published fixture does not establish a completed result.",
+            {
+              round: f.roundName,
+              home: f.home.label,
+              away: f.away.label,
+              time: f.scheduledAt
+                ? tr("Scheduled for {time}.", {
+                    time: formatDate(f.scheduledAt, f.timeZone, tr.locale),
+                  })
+                : tr("Match time is to be announced."),
+            },
+          ),
           at: f.publishedAt,
           url: `/tournaments/${slug}/matches/${f.id}`,
         });
@@ -64,8 +81,17 @@ async function loadNews(now: Date) {
             editionSlug: slug,
             kind: "result",
             id: f.id,
-            title: `Result published: ${f.label}`,
-            summary: `${f.roundName}: ${f.home.label} ${f.result.homeWins}–${f.result.awayWins} ${f.away.label}. View the approved match result and latest published updates.`,
+            title: tr("Result published: {label}", { label: f.label }),
+            summary: tr(
+              "{round}: {home} {homeWins}–{awayWins} {away}. View the approved match result and latest published updates.",
+              {
+                round: f.roundName,
+                home: f.home.label,
+                homeWins: f.result.homeWins,
+                awayWins: f.result.awayWins,
+                away: f.away.label,
+              },
+            ),
             at: f.result.updatedAt,
             url: `/tournaments/${slug}/matches/${f.id}`,
           });
@@ -79,17 +105,22 @@ async function loadNews(now: Date) {
       getAnnouncements(),
       privacyReady(),
       now,
+      tr,
     ),
   };
 }
 // Request-scoped memoization only: fresh requests reflect time windows, retractions and corrections.
-const requestNews = cache(() => loadNews(new Date()));
-export function publicNewsContext(now?: Date) {
-  return now ? loadNews(now) : requestNews();
+const requestNews = cache((tr: AppTranslator) => loadNews(new Date(), tr));
+export function publicNewsContext(now?: Date, tr: AppTranslator = english) {
+  return now ? loadNews(now, tr) : requestNews(tr);
 }
-export async function publicNews(now?: Date) {
-  return (await publicNewsContext(now)).items;
+export async function publicNews(now?: Date, tr: AppTranslator = english) {
+  return (await publicNewsContext(now, tr)).items;
 }
-export async function publicNewsItem(slug: string, now?: Date) {
-  return (await publicNews(now)).find((item) => item.slug === slug);
+export async function publicNewsItem(
+  slug: string,
+  now?: Date,
+  tr: AppTranslator = english,
+) {
+  return (await publicNews(now, tr)).find((item) => item.slug === slug);
 }

@@ -1,4 +1,6 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState } from "react";
 import { ConfirmMutation } from "./confirm-mutation";
 export function TeamManager({
@@ -15,14 +17,17 @@ export function TeamManager({
     capacity: number | null;
   }[];
 }) {
+  const tr = useAppTranslations();
+
   const [values, setValues] = useState(captains);
 
   return (
     <section className="panel form-stack">
-      <h2>Configure captain teams</h2>
+      <h2>{tr("Configure captain teams")}</h2>
       <p className="muted small">
-        Use approved team names. Roster capacity includes the captain; leave it
-        blank when not confirmed. Public identities update on Save.
+        {tr(
+          "Use approved team names. Roster capacity includes the captain; leave it blank when not confirmed. Public identities update on Save.",
+        )}
       </p>
       {values.map((c, index) => (
         <fieldset key={c.userId}>
@@ -30,7 +35,7 @@ export function TeamManager({
             {c.username} ({c.userId})
           </legend>
           <label className="field">
-            <span>Approved team name</span>
+            <span>{tr("Approved team name")}</span>
             <input
               value={c.name}
               maxLength={80}
@@ -44,7 +49,7 @@ export function TeamManager({
             />
           </label>
           <label className="field spaced">
-            <span>Roster capacity (optional)</span>
+            <span>{tr("Roster capacity (optional)")}</span>
             <input
               type="number"
               min={1}
@@ -70,9 +75,11 @@ export function TeamManager({
       ))}
       <ConfirmMutation
         requireConfirmation={false}
-        label="Save team configuration"
-        title="Save these team identities?"
-        description="This assigns exactly one team to each appointed captain. Rosters stay private until finalized and explicitly published."
+        label={tr("Save team configuration")}
+        title={tr("Save these team identities?")}
+        description={tr(
+          "This assigns exactly one team to each appointed captain. Rosters stay private until finalized and explicitly published.",
+        )}
         url={`/api/admin/tournaments/${slug}/teams`}
         payload={{
           command: {

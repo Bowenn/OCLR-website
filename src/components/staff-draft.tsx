@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState } from "react";
 import type { StaffDraft } from "@/lib/draft";
 import type { DraftBoard, DraftTeam } from "@/lib/draft-types";
@@ -8,6 +11,8 @@ import { ConfirmMutation } from "./confirm-mutation";
 import { DraftOrderEditor } from "./draft-order-editor";
 import { DraftBoardView } from "./draft-board";
 function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
+  const tr = useAppTranslations();
+
   const state = data.session?.state ?? "setup";
   const version = data.session?.version ?? 0;
   const allowed = [
@@ -44,7 +49,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
   }
   return (
     <section className="panel form-stack">
-      <h2>Staff controls</h2>
+      <h2>{tr("Staff controls")}</h2>
 
       {state === "setup" && <DraftOrderEditor slug={slug} data={data} />}
       <div className="actions">
@@ -53,19 +58,31 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
             key={action}
             requireConfirmation={!["pause", "resume"].includes(action)}
             label={labels[action]}
-            title={`${labels[action]}?`}
+            title={`${tr(labels[action])}?`}
             description={
               action === "publish"
-                ? "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick."
+                ? tr(
+                    "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick.",
+                  )
                 : action === "abort"
-                  ? "Stop the draft. Committed picks are retained; no further picks are accepted until recovery."
+                  ? tr(
+                      "Stop the draft. Committed picks are retained; no further picks are accepted until recovery.",
+                    )
                   : action === "undo"
-                    ? "Void the last pick and remove that player from the roster. Later turns may need review."
+                    ? tr(
+                        "Void the last pick and remove that player from the roster. Later turns may need review.",
+                      )
                     : action === "finalize"
-                      ? "Finalize the drafted rosters. Normal roster edits will be locked."
+                      ? tr(
+                          "Finalize the drafted rosters. Normal roster edits will be locked.",
+                        )
                       : action === "start"
-                        ? "Release this approved draft and start the captain turns. Confirmed picks and turn changes will appear live. Only the active captain can pick."
-                        : "Reopen draft setup. Review the existing order and rosters before freezing again."
+                        ? tr(
+                            "Release this approved draft and start the captain turns. Confirmed picks and turn changes will appear live. Only the active captain can pick.",
+                          )
+                        : tr(
+                            "Reopen draft setup. Review the existing order and rosters before freezing again.",
+                          )
             }
             url={`/api/admin/tournaments/${slug}/draft`}
             payload={actionPayload(action)}
@@ -82,6 +99,8 @@ export function StaffDraftRoom({
   slug: string;
   initial: StaffDraft;
 }) {
+  const tr = useAppTranslations();
+
   const [feedback, setFeedback] = useState<{
     message: string;
     version: number;
@@ -93,7 +112,9 @@ export function StaffDraftRoom({
   if (!data)
     return (
       <p className="notice" role="alert">
-        Staff access is unavailable. Sign in again or contact the organizer.
+        {tr(
+          "Staff access is unavailable. Sign in again or contact the organizer.",
+        )}
       </p>
     );
   const session = data.session;
@@ -142,8 +163,8 @@ export function StaffDraftRoom({
     <>
       <p role="status" className="connection-state small">
         {connected
-          ? "Connected · updates every 2s"
-          : "Reconnecting · actions may be stale"}
+          ? tr("Connected · updates every 2s")
+          : tr("Reconnecting · actions may be stale")}
       </p>
       {feedback && feedback.version === session?.publicVersion && (
         <p className="notice" role="status">
@@ -181,9 +202,11 @@ export function StaffDraftRoom({
               }
             />
           )}
-          <h2 className="section-space">Staff preview</h2>
+          <h2 className="section-space">{tr("Staff preview")}</h2>
           <p className="muted small">
-            Private operational state. This preview is not the public broadcast.
+            {tr(
+              "Private operational state. This preview is not the public broadcast.",
+            )}
           </p>
           {preview && <DraftBoardView board={preview} privatePreview />}
         </>

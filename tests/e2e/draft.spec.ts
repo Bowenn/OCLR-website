@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { assertTestDatabase } from "../database";
 import { captureResponsiveLayout } from "./responsive";
 import { writeFileSync } from "node:fs";
@@ -35,6 +36,7 @@ test.describe("isolated multi-captain rehearsal", () => {
   test.afterAll(async () => closeDb());
   async function actor(browser: Browser, id: number | null, mobile: boolean) {
     const context = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
       viewport: mobile
         ? { width: 390, height: 844 }
@@ -441,7 +443,9 @@ test.describe("isolated multi-captain rehearsal", () => {
     ])
       expect(payload).not.toContain(forbidden);
     await a.context.clearCookies();
+    await a.context.addCookies(englishStorage.cookies);
     await staff.context.clearCookies();
+    await staff.context.addCookies(englishStorage.cookies);
     await expect(
       a.page.getByRole("heading", {
         name: "Sign-in or captain access changed.",

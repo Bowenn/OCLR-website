@@ -1,10 +1,14 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar } from "./avatar";
 import { ThemeControl } from "./theme-control";
 import type { Theme } from "@/lib/preferences";
+import { LanguageControl } from "./language-control";
 type Account = { osuId: number; username: string; staff?: boolean };
 function AccountControl({
   user,
@@ -15,6 +19,8 @@ function AccountControl({
   path: string;
   onOpen: () => void;
 }) {
+  const tr = useAppTranslations();
+
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -45,7 +51,7 @@ function AccountControl({
   const content = (
     <>
       <Avatar osuId={user.osuId} username={user.username} />
-      <span>Dashboard</span>
+      <span>{tr("Dashboard")}</span>
     </>
   );
   if (!user.staff)
@@ -145,7 +151,7 @@ function AccountControl({
           className="account-dropdown"
           id={id}
           role="menu"
-          aria-label="Dashboards"
+          aria-label={tr("Dashboards")}
           onKeyDown={keyboard}
         >
           {[
@@ -182,7 +188,7 @@ function AccountControl({
                   </>
                 )}
               </svg>
-              <span>{label}</span>
+              <span>{tr(label)}</span>
             </Link>
           ))}
         </div>
@@ -203,12 +209,14 @@ export function Header({
   user: Account | null;
   theme: Theme;
 }) {
+  const tr = useAppTranslations();
+
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
     <header className="site-header">
       <div className="nav-wrap">
-        <Link href="/" className="brand" aria-label="OCLR home">
+        <Link href="/" className="brand" aria-label={tr("OCLR home")}>
           OCLR
         </Link>
         <button
@@ -217,11 +225,11 @@ export function Header({
           aria-controls="main-navigation"
           onClick={() => setOpen(!open)}
         >
-          {open ? "Close" : "Menu"}
+          {open ? tr("Close") : tr("Menu")}
         </button>
         <nav
           id="main-navigation"
-          aria-label="Main navigation"
+          aria-label={tr("Main navigation")}
           className={open ? "main-nav open" : "main-nav"}
         >
           {links.map(([href, label]) => (
@@ -239,14 +247,19 @@ export function Header({
               }
               onClick={() => setOpen(false)}
             >
-              {label}
+              {tr(href === "/" ? "navigation_home" : label)}
             </Link>
           ))}
         </nav>
         <div className="site-preferences">
           <ThemeControl initialTheme={theme} />
+          <LanguageControl />
         </div>
-        <div className="nav-actions" role="group" aria-label="Account actions">
+        <div
+          className="nav-actions"
+          role="group"
+          aria-label={tr("Account actions")}
+        >
           {user ? (
             <AccountControl
               key={path}
@@ -261,7 +274,7 @@ export function Header({
               aria-current={path === "/login" ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
-              Login with osu!
+              {tr("Login with osu!")}
             </Link>
           )}
         </div>

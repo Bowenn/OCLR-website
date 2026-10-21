@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,6 +32,8 @@ function FixtureForm({
   fixture?: Fixture;
   onSaved?: () => void;
 }) {
+  const tr = useAppTranslations();
+
   const [label, setLabel] = useState(fixture?.label ?? "");
   const [roundId, setRound] = useState(
     fixture?.roundId ?? data.rounds[0]?.round.id ?? "",
@@ -95,9 +100,13 @@ function FixtureForm({
     return (
       <div className="form-stack">
         <label className="field">
-          <span>{side === "home" ? "Home" : "Away"} bracket source</span>
+          <span>
+            {side === "home" ? tr("Home") : tr("Away")} {tr(" bracket source")}
+          </span>
           <select value={id} onChange={(e) => setId(e.target.value)}>
-            <option value="">Direct team slot — no progression link</option>
+            <option value="">
+              {tr("Direct team slot — no progression link")}
+            </option>
             {data.fixtures
               .filter(
                 (f) =>
@@ -114,13 +123,16 @@ function FixtureForm({
         </label>
         {id && (
           <label className="field">
-            <span>{side === "home" ? "Home" : "Away"} source outcome</span>
+            <span>
+              {side === "home" ? tr("Home") : tr("Away")}{" "}
+              {tr(" source outcome")}
+            </span>
             <select
               value={outcome}
               onChange={(e) => setOutcome(e.target.value as "winner" | "loser")}
             >
-              <option value="winner">Winner</option>
-              <option value="loser">Loser</option>
+              <option value="winner">{tr("Winner")}</option>
+              <option value="loser">{tr("Loser")}</option>
             </select>
           </label>
         )}
@@ -130,7 +142,7 @@ function FixtureForm({
   return (
     <div className="form-stack">
       <label className="field">
-        <span>Fixture label</span>
+        <span>{tr("Fixture label")}</span>
         <input
           value={label}
           maxLength={100}
@@ -138,7 +150,7 @@ function FixtureForm({
         />
       </label>
       <label className="field">
-        <span>Competition round</span>
+        <span>{tr("Competition round")}</span>
         <select
           value={roundId}
           onChange={(e) => {
@@ -148,36 +160,37 @@ function FixtureForm({
           }}
         >
           {!data.rounds.length && (
-            <option value="">No rounds configured</option>
+            <option value="">{tr("No rounds configured")}</option>
           )}
           {data.rounds.map((r) => (
             <option key={r.round.id} value={r.round.id}>
-              {r.stage === "group" ? "Group" : "Knockout"} / {r.round.name}
+              {r.stage === "group" ? tr("Group") : tr("Knockout")} /{" "}
+              {r.round.name}
             </option>
           ))}
         </select>
       </label>
       <label className="field">
-        <span>Home team</span>
+        <span>{tr("Home team")}</span>
         <select value={homeTeamId} onChange={(e) => setHome(e.target.value)}>
-          <option value="">Team TBD</option>
+          <option value="">{tr("Team TBD")}</option>
           {teamOptions}
         </select>
       </label>
       <label className="field">
-        <span>Away team</span>
+        <span>{tr("Away team")}</span>
         <select value={awayTeamId} onChange={(e) => setAway(e.target.value)}>
-          <option value="">Team TBD</option>
+          <option value="">{tr("Team TBD")}</option>
           {teamOptions}
         </select>
       </label>
       {(!homeTeamId || !awayTeamId) && (
         <p className="muted small">
-          Reporting needs two finalized, published teams.
+          {tr("Reporting needs two finalized, published teams.")}
         </p>
       )}
       <ZonedDateInput
-        label="Scheduled date and time"
+        label={tr("Scheduled date and time")}
         value={time}
         timeZone={timeZone}
         onChange={setTime}
@@ -185,10 +198,10 @@ function FixtureForm({
         optional
       />
       <details className="form-options">
-        <summary>Match options</summary>
+        <summary>{tr("Match options")}</summary>
         <div className="form-stack">
           <label className="field">
-            <span>Fixture order within round</span>
+            <span>{tr("Fixture order within round")}</span>
             <input
               type="number"
               min={1}
@@ -198,9 +211,9 @@ function FixtureForm({
             />
           </label>
           <label className="field">
-            <span>Associated mappool</span>
+            <span>{tr("Associated mappool")}</span>
             <select value={mappoolId} onChange={(e) => setPool(e.target.value)}>
-              <option value="">No pool associated</option>
+              <option value="">{tr("No pool associated")}</option>
               {data.pools
                 .filter((p) => p.roundId === roundId)
                 .map((p) => (
@@ -212,27 +225,29 @@ function FixtureForm({
           </label>
           <TimeZonePicker value={timeZone} onChange={setZone} />
           <p className="muted small">
-            Changing the time zone keeps the scheduled instant and updates the
-            displayed local time.
+            {tr(
+              "Changing the time zone keeps the scheduled instant and updates the displayed local time.",
+            )}
           </p>
 
           <label className="field">
-            <span>Fixture status</span>
+            <span>{tr("Fixture status")}</span>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as Fixture["status"])}
             >
-              <option value="scheduled">Scheduled</option>
-              <option value="in_progress">In progress</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="scheduled">{tr("Scheduled")}</option>
+              <option value="in_progress">{tr("In progress")}</option>
+              <option value="cancelled">{tr("Cancelled")}</option>
             </select>
           </label>
           {round?.stage === "knockout" && (
             <details>
-              <summary>Explicit bracket progression</summary>
+              <summary>{tr("Explicit bracket progression")}</summary>
               <p className="muted">
-                Link planned slots to a previous match. Confirm the official
-                teams before reporting results.
+                {tr(
+                  "Link planned slots to a previous match. Confirm the official teams before reporting results.",
+                )}
               </p>
               {sourceSelect("home")}
               {sourceSelect("away")}
@@ -244,8 +259,8 @@ function FixtureForm({
         requireConfirmation={false}
         onSuccess={onSaved}
         disabled={!timeValid}
-        label={fixture ? "Save fixture amendment" : "Create fixture"}
-        title={fixture ? "Amend fixture?" : "Create fixture?"}
+        label={fixture ? tr("Save fixture amendment") : tr("Create fixture")}
+        title={fixture ? tr("Amend fixture?") : tr("Create fixture?")}
         url={`/api/admin/tournaments/${slug}/matches`}
         payload={payload}
       />
@@ -253,6 +268,8 @@ function FixtureForm({
   );
 }
 function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
+  const tr = useAppTranslations();
+
   const { round, stage } = entry;
   const rules = round.scoringRules;
   const standings = round.standingsRules;
@@ -299,8 +316,9 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
   return (
     <div className="form-stack">
       <p className="notice small">
-        Only save organizer-approved rules. Unconfigured scoring cannot produce
-        an official result; unconfigured standings cannot produce a ranking.
+        {tr(
+          "Only save organizer-approved rules. Unconfigured scoring cannot produce an official result; unconfigured standings cannot produce a ranking.",
+        )}
       </p>
       <label className="checkbox-row">
         <input
@@ -308,17 +326,17 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
         />
-        <span>Configure approved scoring rules</span>
+        <span>{tr("Configure approved scoring rules")}</span>
       </label>
       {enabled && (
         <>
           <label className="field">
-            <span>Game mode</span>
+            <span>{tr("Game mode")}</span>
             <select
               value={mode}
               onChange={(e) => setMode(e.target.value as typeof mode)}
             >
-              <option value="">Unconfirmed</option>
+              <option value="">{tr("Unconfirmed")}</option>
               {["osu", "taiko", "fruits", "mania"].map((m) => (
                 <option value={m} key={m}>
                   {m}
@@ -327,49 +345,49 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
             </select>
           </label>
           <p className="small muted">
-            Automatic scoring supports configured roster aggregation with Score
-            or Score v2. Other provider modes require review and cannot silently
-            produce winners.
+            {tr(
+              "Automatic scoring supports configured roster aggregation with Score or Score v2. Other provider modes require review and cannot silently produce winners.",
+            )}
           </p>
           <label className="field">
-            <span>Multiplayer team mode</span>
+            <span>{tr("Multiplayer team mode")}</span>
             <select
               value={teamType}
               onChange={(e) => setTeamType(e.target.value)}
             >
-              <option value="">Unconfirmed</option>
-              <option value="team-vs">Team vs</option>
+              <option value="">{tr("Unconfirmed")}</option>
+              <option value="team-vs">{tr("Team vs")}</option>
               <option value="head-to-head">
-                Head-to-head with explicit roster aggregation
+                {tr("Head-to-head with explicit roster aggregation")}
               </option>
             </select>
           </label>
           <label className="field">
-            <span>Scoring type</span>
+            <span>{tr("Scoring type")}</span>
             <select
               value={scoreType}
               onChange={(e) => setScoreType(e.target.value as typeof scoreType)}
             >
-              <option value="">Unconfirmed</option>
-              <option value="score">Score</option>
-              <option value="scorev2">Score v2</option>
+              <option value="">{tr("Unconfirmed")}</option>
+              <option value="score">{tr("Score")}</option>
+              <option value="scorev2">{tr("Score v2")}</option>
             </select>
           </label>
           <label className="field">
-            <span>Team score aggregation</span>
+            <span>{tr("Team score aggregation")}</span>
             <select
               value={aggregation}
               onChange={(e) =>
                 setAggregation(e.target.value as typeof aggregation)
               }
             >
-              <option value="">Unconfirmed</option>
-              <option value="sum">Sum</option>
-              <option value="average">Average</option>
+              <option value="">{tr("Unconfirmed")}</option>
+              <option value="sum">{tr("Sum")}</option>
+              <option value="average">{tr("Average")}</option>
             </select>
           </label>
           <label className="field">
-            <span>Players per team per game</span>
+            <span>{tr("Players per team per game")}</span>
             <input
               type="number"
               min={1}
@@ -379,21 +397,23 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
             />
           </label>
           <label className="field">
-            <span>Series format</span>
+            <span>{tr("Series format")}</span>
             <select
               value={series}
               onChange={(e) => setSeries(e.target.value as typeof series)}
             >
-              <option value="">Unconfirmed</option>
+              <option value="">{tr("Unconfirmed")}</option>
               <option value="first_to">
-                First to a configured number of map wins
+                {tr("First to a configured number of map wins")}
               </option>
-              <option value="fixed_maps">Fixed number of maps</option>
+              <option value="fixed_maps">{tr("Fixed number of maps")}</option>
             </select>
           </label>
           <label className="field">
             <span>
-              {series === "first_to" ? "Map wins required" : "Maps to play"}
+              {series === "first_to"
+                ? tr("Map wins required")
+                : tr("Maps to play")}
             </span>
             <input
               type="number"
@@ -405,61 +425,63 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
           </label>
           {series === "fixed_maps" && (
             <label className="field">
-              <span>Tied series policy</span>
+              <span>{tr("Tied series policy")}</span>
               <select value={draws} onChange={(e) => setDraws(e.target.value)}>
-                <option value="">Unconfirmed</option>
-                <option value="true">Draw permitted</option>
-                <option value="false">Draw not permitted</option>
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="true">{tr("Draw permitted")}</option>
+                <option value="false">{tr("Draw not permitted")}</option>
               </select>
             </label>
           )}
           <label className="field">
-            <span>Failed player scores</span>
+            <span>{tr("Failed player scores")}</span>
             <select
               value={failure}
               onChange={(e) => setFailure(e.target.value)}
             >
-              <option value="">Unconfirmed</option>
-              <option value="include">Count the recorded score</option>
-              <option value="zero">Count failed scores as zero</option>
+              <option value="">{tr("Unconfirmed")}</option>
+              <option value="include">{tr("Count the recorded score")}</option>
+              <option value="zero">{tr("Count failed scores as zero")}</option>
             </select>
           </label>
           <label className="field">
-            <span>Tied map policy</span>
+            <span>{tr("Tied map policy")}</span>
             <select
               value={mapTies}
               onChange={(e) => setMapTies(e.target.value)}
             >
-              <option value="">Unconfirmed</option>
+              <option value="">{tr("Unconfirmed")}</option>
               <option value="require_replay">
-                Require replay; exclude the tied original
+                {tr("Require replay; exclude the tied original")}
               </option>
               <option value="count_as_draw">
-                Count as a drawn map, without a map win
+                {tr("Count as a drawn map, without a map win")}
               </option>
             </select>
           </label>
           <label className="field">
-            <span>Understrength teams</span>
+            <span>{tr("Understrength teams")}</span>
             <select
               value={shortHanded}
               onChange={(e) => setShortHanded(e.target.value)}
             >
-              <option value="">Unconfirmed</option>
-              <option value="false">Require the configured player count</option>
+              <option value="">{tr("Unconfirmed")}</option>
+              <option value="false">
+                {tr("Require the configured player count")}
+              </option>
               <option value="true">
-                Allow fewer players with explicit review
+                {tr("Allow fewer players with explicit review")}
               </option>
             </select>
           </label>
           <label className="field">
-            <span>Substitution policy</span>
+            <span>{tr("Substitution policy")}</span>
             <select value={subs} onChange={(e) => setSubs(e.target.value)}>
-              <option value="">Unconfirmed</option>
+              <option value="">{tr("Unconfirmed")}</option>
               <option value="true">
-                Allow explicitly reviewed substitutions
+                {tr("Allow explicitly reviewed substitutions")}
               </option>
-              <option value="false">No substitutions</option>
+              <option value="false">{tr("No substitutions")}</option>
             </select>
           </label>
         </>
@@ -472,12 +494,12 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
               checked={ranked}
               onChange={(e) => setRanked(e.target.checked)}
             />
-            <span>Configure approved group ranking rules</span>
+            <span>{tr("Configure approved group ranking rules")}</span>
           </label>
           {ranked && (
             <>
               <label className="field">
-                <span>Points for a win</span>
+                <span>{tr("Points for a win")}</span>
                 <input
                   type="number"
                   value={winPoints}
@@ -487,7 +509,7 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
                 />
               </label>
               <label className="field">
-                <span>Points for a loss</span>
+                <span>{tr("Points for a loss")}</span>
                 <input
                   type="number"
                   value={lossPoints}
@@ -497,7 +519,9 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
                 />
               </label>
               <label className="field">
-                <span>Points for a draw (leave blank if unconfirmed)</span>
+                <span>
+                  {tr("Points for a draw (leave blank if unconfirmed)")}
+                </span>
                 <input
                   type="number"
                   min={-100}
@@ -507,26 +531,30 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
                 />
               </label>
               <label className="field">
-                <span>Ranking criteria, in order</span>
+                <span>{tr("Ranking criteria, in order")}</span>
                 <input
                   value={tiebreakers}
                   onChange={(e) => setTiebreakers(e.target.value)}
                   maxLength={100}
-                  placeholder="Approved criteria only"
+                  placeholder={tr("Approved criteria only")}
                 />
               </label>
               <p className="small muted">
-                Supported explicit criteria: points, wins, map_difference,
-                maps_won. Separate by commas. Unresolved ties remain tied.
+                {tr(
+                  "Supported explicit criteria: points, wins, map_difference, maps_won. Separate by commas. Unresolved ties remain tied.",
+                )}
               </p>
             </>
           )}
         </>
       )}
       <ConfirmMutation
-        label="Save approved round rules"
-        title="Confirm competition rules?"
-        description={`Save the explicitly configured rules for ${round.name}. This does not publish any imported score.`}
+        label={tr("Save approved round rules")}
+        title={tr("Confirm competition rules?")}
+        description={tr(
+          "Save the explicitly configured rules for {value0}. This does not publish any imported score.",
+          { value0: round.name },
+        )}
         url={`/api/admin/tournaments/${slug}/matches`}
         payload={{
           action: "round_rules",
@@ -579,21 +607,29 @@ function StageGroups({
   data: FixtureWorkspace;
   stage: FixtureWorkspace["stages"][number];
 }) {
+  const tr = useAppTranslations();
+
   const [groups, setGroups] = useState(stage.groupConfiguration?.groups ?? []);
   const [published, setPublished] = useState(Boolean(stage.groupsPublishedAt));
   return (
     <details className="form-stack">
-      <summary>Approved Group Stage assignments</summary>
+      <summary>{tr("Approved Group Stage assignments")}</summary>
       <p className="muted">
-        Configure the actual groups and team membership. Unpublished assignments
-        never appear in standings. Each team may belong to one group in this
-        stage.
+        {tr(
+          "Configure the actual groups and team membership. Unpublished assignments never appear in standings. Each team may belong to one group in this stage.",
+        )}
       </p>
       {groups.map((group, index) => (
         <fieldset key={index}>
-          <legend>Group {index + 1}</legend>
+          <legend>
+            {tr("Group ")}
+            {index + 1}
+          </legend>
           <label className="field">
-            <span>Group identifier {index + 1}</span>
+            <span>
+              {tr("Group identifier ")}
+              {index + 1}
+            </span>
             <input
               value={group.key}
               maxLength={60}
@@ -607,7 +643,10 @@ function StageGroups({
             />
           </label>
           <label className="field">
-            <span>Group name {index + 1}</span>
+            <span>
+              {tr("Group name ")}
+              {index + 1}
+            </span>
             <input
               value={group.name}
               maxLength={80}
@@ -650,7 +689,8 @@ function StageGroups({
               setGroups((old) => old.filter((_, i) => i !== index))
             }
           >
-            Remove group {index + 1}
+            {tr("Remove group ")}
+            {index + 1}
           </button>
         </fieldset>
       ))}
@@ -661,7 +701,7 @@ function StageGroups({
           setGroups((old) => [...old, { key: "", name: "", teamIds: [] }])
         }
       >
-        Add group
+        {tr("Add group")}
       </button>
       <label className="checkbox-row">
         <input
@@ -669,12 +709,14 @@ function StageGroups({
           checked={published}
           onChange={(e) => setPublished(e.target.checked)}
         />
-        <span>Publish approved group assignments</span>
+        <span>{tr("Publish approved group assignments")}</span>
       </label>
       <ConfirmMutation
-        label="Save group assignments"
-        title="Save approved Group Stage configuration?"
-        description="This updates the group membership used by public standings when published. Scores remain governed by reviewed results and the configured round ranking rules."
+        label={tr("Save group assignments")}
+        title={tr("Save approved Group Stage configuration?")}
+        description={tr(
+          "This updates the group membership used by public standings when published. Scores remain governed by reviewed results and the configured round ranking rules.",
+        )}
         url={`/api/admin/tournaments/${slug}/matches`}
         payload={{
           action: "stage_groups",
@@ -695,6 +737,8 @@ export function FixtureManager({
   slug: string;
   data: FixtureWorkspace;
 }) {
+  const tr = useAppTranslations();
+
   const router = useRouter(),
     query = useSearchParams();
   const requested = query.get("view");
@@ -716,7 +760,7 @@ export function FixtureManager({
       <>
         <div className="match-meta">
           <h3 id={`match-${f.id}`}>{f.label}</h3>
-          <span>{f.status.replaceAll("_", " ")}</span>
+          <span>{tr(f.status)}</span>
         </div>
         <p className="small muted">{round?.round.name}</p>
         {(["home", "away"] as const).map((side) => {
@@ -727,31 +771,40 @@ export function FixtureManager({
               <span>{slot.label}</span>
               {source && slot.teamId && (
                 <small className="muted">
-                  {slot.kind === "loser" ? "Loser" : "Winner"} of {source.label}
+                  {slot.kind === "loser" ? tr("Loser") : tr("Winner")}{" "}
+                  {tr(" of ")}
+                  {source.label}
                 </small>
               )}
             </div>
           );
         })}
         <p className="small muted">
-          {f.scheduledAt ? formatDate(f.scheduledAt, f.timeZone) : "Time TBA"}
+          {f.scheduledAt
+            ? tr(formatDate(f.scheduledAt, f.timeZone, tr.locale))
+            : tr("Time TBA")}
         </p>
         <p className="small">
           <span className="badge">
-            {f.publishedAt ? "Published fixture" : "Unpublished fixture"}
+            {f.publishedAt
+              ? tr("Published fixture")
+              : tr("Unpublished fixture")}
           </span>{" "}
-          · {f.result ? `${f.result.state} report` : "No result submitted"}
+          ·{" "}
+          {f.result
+            ? tr("{value0} report", { value0: f.result.state })
+            : tr("No result submitted")}
         </p>
         <p className="small muted">
-          Assigned referees:{" "}
-          {f.referees.map((r) => r.username).join(", ") || "None"}
+          {tr("Assigned referees:")}{" "}
+          {f.referees.map((r) => r.username).join(", ") || tr("None")}
         </p>
         <div className="actions fixture-actions">
           <Link
             className="button secondary"
             href={`/admin/tournaments/${slug}/matches/${f.id}`}
           >
-            Open match
+            {tr("Open match")}
           </Link>
           {data.canManage && (
             <>
@@ -761,7 +814,7 @@ export function FixtureManager({
                 type="button"
                 onClick={() => open(f)}
               >
-                Manage fixture
+                {tr("Manage fixture")}
               </button>
             </>
           )}
@@ -789,7 +842,7 @@ export function FixtureManager({
       <div className="fixture-toolbar">
         <WorkspaceTabs
           id="fixture-views"
-          label="Fixture views"
+          label={tr("Fixture views")}
           value={view}
           items={[
             { value: "schedule", label: "Schedule" },
@@ -809,7 +862,7 @@ export function FixtureManager({
             disabled={!data.rounds.length}
             onClick={() => open("new")}
           >
-            Create a fixture
+            {tr("Create a fixture")}
           </button>
         )}
       </div>
@@ -825,19 +878,19 @@ export function FixtureManager({
           ) : (
             <p className="muted">
               {data.canManage
-                ? "No fixtures yet."
-                : "No matches assigned to you."}
+                ? tr("No fixtures yet.")
+                : tr("No matches assigned to you.")}
             </p>
           ))}
         {view === "groups" && (
           <div className="stack">
             <label className="field fixture-round-filter">
-              <span>Group round</span>
+              <span>{tr("Group round")}</span>
               <select
                 value={roundId}
                 onChange={(e) => setRound(e.target.value)}
               >
-                <option value="">All rounds</option>
+                <option value="">{tr("All rounds")}</option>
                 {data.rounds
                   .filter((r) => r.stage === "group")
                   .map((r) => (
@@ -855,7 +908,7 @@ export function FixtureManager({
                 </section>
               ))
             ) : (
-              <p className="muted">No group fixtures in this round.</p>
+              <p className="muted">{tr("No group fixtures in this round.")}</p>
             )}
           </div>
         )}
@@ -868,17 +921,19 @@ export function FixtureManager({
               }
             />
           ) : (
-            <p className="muted">No knockout fixtures yet.</p>
+            <p className="muted">{tr("No knockout fixtures yet.")}</p>
           ))}
       </div>
       {data.canManage && (
         <>
           <details className="fixture-configuration">
-            <summary>Competition configuration</summary>
+            <summary>{tr("Competition configuration")}</summary>
             <div className="form-stack">
               {!data.rounds.length && (
                 <p className="muted">
-                  Create competition rounds in Mappools before scheduling.
+                  {tr(
+                    "Create competition rounds in Mappools before scheduling.",
+                  )}
                 </p>
               )}
               {data.stages
@@ -893,7 +948,10 @@ export function FixtureManager({
                 ))}
               {data.rounds.map((r) => (
                 <details key={r.round.id}>
-                  <summary>{r.round.name}: approved competition rules</summary>
+                  <summary>
+                    {r.round.name}
+                    {tr(": approved competition rules")}
+                  </summary>
                   <RoundRules
                     key={`${r.round.id}-${r.round.version}`}
                     slug={slug}
@@ -910,35 +968,39 @@ export function FixtureManager({
           >
             <div className="fixture-toolbar">
               <h2 id={`${id}-editor`}>
-                {editing === "new" ? "Create a fixture" : editing?.label}
+                {editing === "new" ? tr("Create a fixture") : editing?.label}
               </h2>
               <button
                 type="button"
                 className="secondary"
                 onClick={() => editor.current?.close()}
               >
-                Close
+                {tr("Close")}
               </button>
             </div>
             {editing && editing !== "new" && (
               <div className="form-stack">
                 <p className="small muted">
                   {editing.publishedAt
-                    ? "Saved changes update this public fixture immediately."
-                    : "Changes are private until publication."}
+                    ? tr(
+                        "Saved changes update this public fixture immediately.",
+                      )
+                    : tr("Changes are private until publication.")}
                 </p>
                 <ConfirmMutation
                   label={
                     editing.publishedAt
-                      ? "Unpublish fixture"
-                      : "Publish fixture"
+                      ? tr("Unpublish fixture")
+                      : tr("Publish fixture")
                   }
                   title={
                     editing.publishedAt
-                      ? "Withdraw fixture publication?"
-                      : "Publish fixture schedule?"
+                      ? tr("Withdraw fixture publication?")
+                      : tr("Publish fixture schedule?")
                   }
-                  description="This controls fixture visibility. Scores still require a separately approved and published result."
+                  description={tr(
+                    "This controls fixture visibility. Scores still require a separately approved and published result.",
+                  )}
                   url={`/api/admin/tournaments/${slug}/matches`}
                   payload={{
                     action: "publish",

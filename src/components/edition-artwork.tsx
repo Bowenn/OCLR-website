@@ -1,3 +1,4 @@
+import { useAppTranslations } from "@/i18n/shared";
 import Image from "next/image";
 /** Artwork is presentation only; it never publishes an edition or opens entry. */
 export function EditionArtwork({
@@ -7,6 +8,8 @@ export function EditionArtwork({
   slug: string;
   logo?: string | null;
 }) {
+  const tr = useAppTranslations();
+
   const image =
     logo === undefined && slug === "s11" ? "/oclr-s11-square-logo.webp" : logo;
   return (
@@ -25,7 +28,7 @@ export function EditionArtwork({
         />
       ) : (
         <span>
-          OCLR<small>THE ROOKIE STAGE</small>
+          OCLR<small>{tr("THE ROOKIE STAGE")}</small>
         </span>
       )}
     </div>

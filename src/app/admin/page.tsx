@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { authorizedPage } from "@/lib/auth/page";
@@ -5,12 +6,18 @@ import { requireStaff, staffAccess } from "@/lib/auth/staff";
 import { listApplications, parseFilters } from "@/lib/staff";
 import { tournamentList } from "@/lib/tournaments";
 import { PageHeading, Action } from "@/components/ui";
-export const metadata = { title: "Administration overview" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Administration overview") };
+}
+
 export default async function Admin({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const actor = await requireStaff();
     const params = await searchParams;
@@ -29,39 +36,42 @@ export default async function Admin({
     return (
       <>
         <PageHeading
-          eyebrow="OCLR OPERATIONS"
-          title="Administration overview"
+          eyebrow={tr("OCLR OPERATIONS")}
+          title={tr("Administration overview")}
         />
         <div className="actions">
           <Action href="/admin/tournaments">
-            {isAdmin ? "Manage tournaments" : "Assigned tournaments"}
+            {isAdmin ? tr("Manage tournaments") : tr("Assigned tournaments")}
           </Action>
           {data.canCreate && (
             <Action href="/admin/tournaments/new" secondary>
-              Create tournament
+              {tr("Create tournament")}
             </Action>
           )}
         </div>
         {pending && (
           <section className="panel spaced admin-task">
             <div>
-              <h2>Registration review</h2>
+              <h2>{tr("Registration review")}</h2>
               <p className="muted small">
-                {pending.total} pending application
-                {pending.total === 1 ? "" : "s"} across your authorized
-                editions.
+                {tr(
+                  "{count, plural, one {# pending application across your authorized editions.} other {# pending applications across your authorized editions.}}",
+                  { count: pending.total },
+                )}
               </p>
             </div>
             <Link
               className="button secondary"
               href="/admin/registrations?status=pending"
             >
-              Review applications
+              {tr("Review applications")}
             </Link>
           </section>
         )}
         <section className="section-space">
-          <h2>{isAdmin ? "Accessible tournaments" : "Your tournaments"}</h2>
+          <h2>
+            {isAdmin ? tr("Accessible tournaments") : tr("Your tournaments")}
+          </h2>
           {data.rows.length ? (
             <div className="stack spaced">
               {data.rows.slice(0, 6).map((row) => (
@@ -69,15 +79,19 @@ export default async function Admin({
                   <div>
                     <h3>{row.name}</h3>
                     <p className="muted small">
-                      {row.season ? `Season ${row.season} · ` : ""}
-                      {row.status} · {row.published ? "Published" : "Draft"}
+                      {row.season
+                        ? tr("Season {value0} · ", { value0: row.season })
+                        : ""}
+                      {tr(row.status)} ·{" "}
+                      {row.published ? tr("Published") : tr("Draft")}
                     </p>
                   </div>
                   <Link
                     className="button secondary"
                     href={`/admin/tournaments/${row.slug}`}
                   >
-                    Open tournament<span className="sr-only"> {row.name}</span>
+                    {tr("Open tournament")}
+                    <span className="sr-only"> {row.name}</span>
                   </Link>
                 </article>
               ))}
@@ -85,8 +99,8 @@ export default async function Admin({
           ) : (
             <p className="notice small">
               {isAdmin
-                ? "No tournaments yet. Create a private edition to begin."
-                : "No tournaments have been assigned to you yet."}
+                ? tr("No tournaments yet. Create a private edition to begin.")
+                : tr("No tournaments have been assigned to you yet.")}
             </p>
           )}
         </section>

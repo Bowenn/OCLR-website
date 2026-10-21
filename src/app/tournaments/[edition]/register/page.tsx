@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { readTournament } from "@/lib/tournaments";
@@ -8,12 +9,18 @@ import {
 } from "@/lib/registrations";
 import { Action, EmptyState, PageHeading } from "@/components/ui";
 import { ApplicationForm } from "@/components/application-form";
-export const metadata = { title: "Individual registration" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Individual registration") };
+}
+
 export default async function Register({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition: slug } = await params;
   const record = process.env.DATABASE_URL
     ? await readTournament(slug, db(), true)
@@ -27,36 +34,43 @@ export default async function Register({
     : null;
   return (
     <>
-      <PageHeading eyebrow={edition.name} title="Individual registration">
-        Apply as yourself. Teams are formed later through the captain draft.
+      <PageHeading eyebrow={edition.name} title={tr("Individual registration")}>
+        {tr(
+          "Apply as yourself. Teams are formed later through the captain draft.",
+        )}
       </PageHeading>
       {existing ? (
         <div className="panel">
-          <h2>You have an application</h2>
-          <p className="muted">Current status: {existing.status}.</p>
-          <Action href="/dashboard">View my application</Action>
+          <h2>{tr("You have an application")}</h2>
+          <p className="muted">
+            {tr("Current status: ")}
+            {tr(existing.status)}.
+          </p>
+          <Action href="/dashboard">{tr("View my application")}</Action>
         </div>
       ) : availability !== "open" ? (
         <EmptyState
           title={
             availability === "unavailable"
-              ? "Registration temporarily unavailable"
-              : "Registration is not open"
+              ? tr("Registration temporarily unavailable")
+              : tr("Registration is not open")
           }
         >
-          Check the tournament overview for registration dates.
+          {tr("Check the tournament overview for registration dates.")}
         </EmptyState>
       ) : !user ? (
         <div className="panel">
-          <h2>Sign in before applying</h2>
-          <p className="muted">Use your own osu! identity to register.</p>
-          <Action href="/login">Login with osu!</Action>
+          <h2>{tr("Sign in before applying")}</h2>
+          <p className="muted">
+            {tr("Use your own osu! identity to register.")}
+          </p>
+          <Action href="/login">{tr("Login with osu!")}</Action>
         </div>
       ) : (
         <>
           {edition.eligibility && (
             <section className="notice spaced">
-              <h2>Eligibility</h2>
+              <h2>{tr("Eligibility")}</h2>
               <p>{edition.eligibility}</p>
             </section>
           )}

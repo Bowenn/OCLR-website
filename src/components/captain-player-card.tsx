@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "./avatar";
 export type CaptainIdentity = {
@@ -17,6 +20,8 @@ export function CaptainPlayerCard({
   username: string;
   identity?: CaptainIdentity;
 }) {
+  const tr = useAppTranslations();
+
   const root = useRef<HTMLDivElement>(null);
   const [profile, setProfile] = useState(identity);
   const [loading, setLoading] = useState(false);
@@ -89,13 +94,18 @@ export function CaptainPlayerCard({
         >
           {username}
         </a>
-        <p className="muted small">osu! ID {userId}</p>
+        <p className="muted small">
+          {tr("osu! ID ")}
+          {userId}
+        </p>
         <p className="captain-player-country small">
           {flag ? (
             <>
               <span
                 role="img"
-                aria-label={`${profile?.countryName ?? country} flag`}
+                aria-label={tr("{value0} flag", {
+                  value0: profile?.countryName ?? country ?? "",
+                })}
               >
                 {flag}
               </span>{" "}
@@ -103,7 +113,7 @@ export function CaptainPlayerCard({
             </>
           ) : (
             <span className="muted">
-              {loading ? "Loading country…" : "Country unavailable"}
+              {loading ? tr("Loading country…") : tr("Country unavailable")}
             </span>
           )}
         </p>

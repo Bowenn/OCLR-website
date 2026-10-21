@@ -1,4 +1,6 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useMemo, useState } from "react";
 import { rulesSectionIds } from "@/lib/rules-navigation";
 export function RulesHandbook({
@@ -6,6 +8,8 @@ export function RulesHandbook({
 }: {
   sections: { heading: string; body: string }[];
 }) {
+  const tr = useAppTranslations();
+
   const ids = useMemo(
     () => rulesSectionIds(sections.map((s) => s.heading)),
     [sections],
@@ -32,7 +36,7 @@ export function RulesHandbook({
   }, [ids]);
   function contents() {
     return (
-      <nav aria-label="Rules contents">
+      <nav aria-label={tr("Rules contents")}>
         {sections.map((s, i) => (
           <a
             href={`#${ids[i]}`}
@@ -53,12 +57,12 @@ export function RulesHandbook({
   return (
     <div className="rules-handbook">
       <aside className="rules-desktop-contents">
-        <p className="eyebrow">Contents</p>
+        <p className="eyebrow">{tr("Contents")}</p>
         {contents()}
       </aside>
       <div className="rules-reading">
         <details className="rules-mobile-contents">
-          <summary>On this page</summary>
+          <summary>{tr("On this page")}</summary>
           {contents()}
         </details>
         <article className="rules-article">

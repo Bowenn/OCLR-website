@@ -1,14 +1,21 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { publicFixture } from "@/lib/public-competition";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
-export const metadata = { title: "Match details" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Match details") };
+}
+
 export default async function MatchPage({
   params,
 }: {
   params: Promise<{ edition: string; fixtureId: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition: slug, fixtureId } = await params;
   const f = await publicFixture(slug, fixtureId);
   if (!f) notFound();
@@ -22,17 +29,17 @@ export default async function MatchPage({
   return (
     <>
       <Link className="text-link" href={`/tournaments/${slug}/results`}>
-        ← All matches
+        {tr("← All matches")}
       </Link>
       <PageHeading
         eyebrow={`${f.stage === "group" ? "GROUP STAGE" : "KNOCKOUT STAGE"} / ${f.roundName}`}
         title={f.label}
       >
         {f.status === "cancelled"
-          ? "Cancelled — no winner assumed"
+          ? tr("Cancelled — no winner assumed")
           : result
-            ? "Approved and published result"
-            : "Awaiting published result"}
+            ? tr("Approved and published result")
+            : tr("Awaiting published result")}
       </PageHeading>
       <section className="panel stack">
         <div className="match-versus">
@@ -49,7 +56,7 @@ export default async function MatchPage({
             )}
           </span>
           <strong>
-            {result ? `${result.homeWins} : ${result.awayWins}` : "vs"}
+            {result ? `${result.homeWins} : ${result.awayWins}` : tr("vs")}
           </strong>
           <span>
             {f.away.team ? (
@@ -66,8 +73,8 @@ export default async function MatchPage({
         </div>
         <p>
           {f.scheduledAt
-            ? formatDate(f.scheduledAt, f.timeZone)
-            : "Match time TBA"}{" "}
+            ? tr(formatDate(f.scheduledAt, f.timeZone, tr.locale))
+            : tr("Match time TBA")}{" "}
           · {f.timeZone}
         </p>
         {f.pool && (
@@ -75,22 +82,25 @@ export default async function MatchPage({
             className="text-link"
             href={`/tournaments/${slug}/mappools/${f.pool.id}`}
           >
-            Released mappool: {f.pool.name}
+            {tr("Released mappool: ")}
+            {f.pool.name}
           </Link>
         )}
         {!f.confirmed && (
           <p className="notice">
-            This fixture awaits confirmation against published progression. No
-            score or multiplayer source is shown until the teams agree with the
-            approved record.
+            {tr(
+              "This fixture awaits confirmation against published progression. No score or multiplayer source is shown until the teams agree with the approved record.",
+            )}
           </p>
         )}
         {result ? (
           <>
             <p>
               {result.draw
-                ? "Approved draw"
-                : `Winner: ${teamName(result.winnerTeamId)}`}
+                ? tr("Approved draw")
+                : tr("Winner: {value0}", {
+                    value0: teamName(result.winnerTeamId),
+                  })}
             </p>
             {result.publicNote && <p className="notice">{result.publicNote}</p>}
             <a
@@ -99,30 +109,34 @@ export default async function MatchPage({
               target="_blank"
               rel="noreferrer"
             >
-              osu! multiplayer source #{result.mpId} ↗
+              {tr("osu! multiplayer source #")}
+              {result.mpId} ↗
             </a>
             <p className="muted small">
-              Published · Updated {formatDate(result.updatedAt, f.timeZone)}
+              {tr("Published · Updated")}{" "}
+              {tr(formatDate(result.updatedAt, f.timeZone, tr.locale))}
             </p>
           </>
         ) : (
           <p className="muted">
-            Scores and source links appear after separate review, approval and
-            publication.
+            {tr(
+              "Scores and source links appear after separate review, approval and publication.",
+            )}
           </p>
         )}
       </section>
       {result && (
         <section className="section-space stack">
-          <h2>Played maps</h2>
+          <h2>{tr("Played maps")}</h2>
           {result.games.map((g, i) => (
             <article className="panel" key={g.gameId}>
               <p className="eyebrow">
-                MAP {i + 1} · {g.mods.join(" / ") || "NM"} · {g.scoringType}
+                {tr("MAP ")}
+                {i + 1} · {g.mods.join(" / ") || "NM"} · {g.scoringType}
               </p>
               <h3>
                 {g.beatmap?.artist ? `${g.beatmap.artist} — ` : ""}
-                {g.beatmap?.title ?? "Beatmap unavailable"}
+                {g.beatmap?.title ?? tr("Beatmap unavailable")}
               </h3>
               <p className="muted">{g.beatmap?.difficulty}</p>
               {g.beatmapId && (
@@ -132,7 +146,8 @@ export default async function MatchPage({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Beatmap {g.beatmapId} ↗
+                  {tr("Beatmap ")}
+                  {g.beatmapId} ↗
                 </a>
               )}
               <p>
@@ -141,8 +156,10 @@ export default async function MatchPage({
               </p>
               <p>
                 {g.tied
-                  ? "Approved tied map"
-                  : `Map winner: ${teamName(g.winnerTeamId)}`}
+                  ? tr("Approved tied map")
+                  : tr("Map winner: {value0}", {
+                      value0: teamName(g.winnerTeamId),
+                    })}
               </p>
             </article>
           ))}

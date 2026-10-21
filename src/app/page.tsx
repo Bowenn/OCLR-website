@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { Action, Badge } from "@/components/ui";
 import { publicNewsContext } from "@/lib/public-news";
@@ -6,8 +7,10 @@ import { registrationAvailability } from "@/lib/registrations";
 import { formatDate, publicEditionSummary } from "@/lib/editions";
 export const dynamic = "force-dynamic";
 export default async function Home() {
+  const tr = await getAppTranslations();
+
   const now = new Date();
-  const { editions, items } = await publicNewsContext();
+  const { editions, items } = await publicNewsContext(undefined, tr);
   const featured =
     editions.find((e) => e.status === "live") ??
     editions.find((e) => e.status === "upcoming") ??
@@ -30,38 +33,46 @@ export default async function Home() {
         />
         <div className="hero-shade" aria-hidden="true" />
         <div className="container hero-content">
-          <p className="eyebrow hero-kicker">osu! Chinese League Rookie</p>
+          <p className="eyebrow hero-kicker">{"osu! Chinese League Rookie"}</p>
           <h1 id="hero-title">{featured?.name ?? "OCLR"}</h1>
           {summary && <p className="hero-copy">{summary}</p>}
           {!featured && (
             <p className="hero-copy">
-              The next edition has not been announced yet.
+              {tr("The next edition has not been announced yet.")}
             </p>
           )}
           {featured && availability !== "open" && (
             <Badge>
               {availability === "upcoming"
-                ? `Registration opens ${formatDate(featured.registration?.opensAt ?? null, featured.timeZone)}`
+                ? tr("Registration opens {value0}", {
+                    value0: tr(
+                      formatDate(
+                        featured.registration?.opensAt ?? null,
+                        featured.timeZone,
+                        tr.locale,
+                      ),
+                    ),
+                  })
                 : availability === "paused"
-                  ? "Registration paused"
+                  ? tr("Registration paused")
                   : availability === "closed"
-                    ? "Registration closed"
+                    ? tr("Registration closed")
                     : availability === "unavailable"
-                      ? "Registration temporarily unavailable"
-                      : "Registration not announced"}
+                      ? tr("Registration temporarily unavailable")
+                      : tr("Registration not announced")}
             </Badge>
           )}
           <div className="actions">
             {availability === "open" && (
               <Action href={`/tournaments/${featured!.slug}/register`}>
-                Register
+                {tr("Register")}
               </Action>
             )}
             <Action
               href={featured ? `/tournaments/${featured.slug}` : "/tournaments"}
               secondary={availability === "open"}
             >
-              {featured ? "View tournament" : "Browse tournaments"}
+              {featured ? tr("View tournament") : tr("Browse tournaments")}
             </Action>
           </div>
         </div>
@@ -69,9 +80,9 @@ export default async function Home() {
       <div className="container home-updates">
         <section aria-labelledby="latest-news-title">
           <div className="section-title">
-            <h2 id="latest-news-title">Latest news</h2>
+            <h2 id="latest-news-title">{tr("Latest news")}</h2>
             <Action href="/news" secondary>
-              All news
+              {tr("All news")}
             </Action>
           </div>
           {news.length ? (
@@ -79,8 +90,8 @@ export default async function Home() {
               {news.map((item) => (
                 <li key={item.slug}>
                   <p className="muted small">
-                    {item.future ? "Scheduled for " : ""}
-                    {formatDate(item.at, item.timeZone)}
+                    {item.future ? tr("Scheduled for ") : ""}
+                    {tr(formatDate(item.at, item.timeZone, tr.locale))}
                   </p>
                   <h3>
                     <Link className="news-headline" href={`/news/${item.slug}`}>
@@ -92,23 +103,27 @@ export default async function Home() {
               ))}
             </ol>
           ) : (
-            <p className="muted">No announcements yet.</p>
+            <p className="muted">{tr("No announcements yet.")}</p>
           )}
         </section>
         <aside aria-labelledby="next-milestone-title">
-          <p className="eyebrow">COMING UP</p>
-          <h2 id="next-milestone-title">Next milestone</h2>
+          <p className="eyebrow">{tr("COMING UP")}</p>
+          <h2 id="next-milestone-title">{tr("Next milestone")}</h2>
           {milestone ? (
             <>
               <p className="muted small">{milestone.edition}</p>
               <h3>{milestone.label}</h3>
-              <p>{formatDate(milestone.at, milestone.timeZone)}</p>
+              <p>
+                {tr(formatDate(milestone.at, milestone.timeZone, tr.locale))}
+              </p>
               <Action href={milestone.url} secondary>
-                View schedule
+                {tr("View schedule")}
               </Action>
             </>
           ) : (
-            <p className="muted">No future milestone has been confirmed.</p>
+            <p className="muted">
+              {tr("No future milestone has been confirmed.")}
+            </p>
           )}
         </aside>
       </div>

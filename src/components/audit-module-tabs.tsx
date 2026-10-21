@@ -1,4 +1,6 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { WorkspaceTabs } from "./workspace-tabs";
@@ -12,13 +14,15 @@ export function AuditModuleTabs({
   query: string;
   items: { value: string; label: string }[];
 }) {
+  const tr = useAppTranslations();
+
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (
     <div className="audit-module-tabs" aria-busy={pending}>
       <WorkspaceTabs
         id="audit-modules"
-        label="Audit modules"
+        label={tr("Audit modules")}
         items={items}
         value={value}
         onChange={(module) => {
@@ -31,7 +35,7 @@ export function AuditModuleTabs({
         }}
       />
       <span className="sr-only" role="status">
-        {pending ? "Loading audit events…" : ""}
+        {pending ? tr("Loading audit events…") : ""}
       </span>
     </div>
   );

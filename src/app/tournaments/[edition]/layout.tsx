@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import { TournamentShell } from "@/components/tournament-navigation";
 import { notFound } from "next/navigation";
 import { publicDraft } from "@/lib/draft";
@@ -10,6 +11,8 @@ export default async function EditionLayout({
   children: React.ReactNode;
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition: slug } = await params;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
@@ -25,8 +28,9 @@ export default async function EditionLayout({
     >
       {liveUnavailable && (
         <p className="notice" role="status">
-          Live tournament information is temporarily unavailable. Confirmed
-          rules and dates remain accessible.
+          {tr(
+            "Live tournament information is temporarily unavailable. Confirmed rules and dates remain accessible.",
+          )}
         </p>
       )}
       {children}

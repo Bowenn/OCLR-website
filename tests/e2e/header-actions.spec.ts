@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
@@ -231,6 +232,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
       accounts.getByRole("link", { name: "Dashboard", exact: true }),
     ).toHaveAttribute("aria-current", "page");
     const staff = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
       viewport: page.viewportSize()!,
     });
@@ -338,6 +340,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
     }
     await seedEditions(prepared);
     await context.clearCookies();
+    await context.addCookies(englishStorage.cookies);
     await context.addCookies([adminCookie]);
     await page.goto("/admin");
     const appearance = await page.locator("main .button").evaluateAll((nodes) =>

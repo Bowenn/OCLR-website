@@ -1,3 +1,4 @@
+import { useAppTranslations } from "@/i18n/shared";
 import type { DraftBoard } from "@/lib/draft-types";
 export const draftLabels = {
   setup: "Setup",
@@ -15,9 +16,14 @@ export function DraftBoardView({
   board: DraftBoard;
   privatePreview?: boolean;
 }) {
+  const tr = useAppTranslations();
+
   return (
     <>
-      <section className="draft-turn panel" aria-label="Current draft turn">
+      <section
+        className="draft-turn panel"
+        aria-label={tr("Current draft turn")}
+      >
         <div>
           <span
             className={`badge ${board.state === "live" ? "status-accepted" : "status-pending"}`}
@@ -26,19 +32,24 @@ export function DraftBoardView({
           </span>
           <p className="eyebrow spaced">
             {board.turnCount
-              ? `Pick ${Math.min(board.turnIndex + 1, board.turnCount)} of ${board.turnCount}`
-              : "No picks configured"}
+              ? tr("Pick {value0} of {value1}", {
+                  value0: Math.min(board.turnIndex + 1, board.turnCount),
+                  value1: board.turnCount,
+                })
+              : tr("No picks configured")}
           </p>
           <h2>
             {board.activeTeam?.name ??
               (board.state === "completed" || board.state === "finalized"
-                ? "The draft is complete."
-                : "Awaiting the next stage.")}
+                ? tr("The draft is complete.")
+                : tr("Awaiting the next stage."))}
           </h2>
           <p className="muted">
             {board.activeTeam
-              ? `Captain ${board.activeTeam.captain.username}`
-              : "Follow the published tournament announcements."}
+              ? tr("Captain {value0}", {
+                  value0: board.activeTeam.captain.username,
+                })
+              : tr("Follow the published tournament announcements.")}
           </p>
         </div>
         <span className="draft-turn-mark" aria-hidden="true">
@@ -46,20 +57,23 @@ export function DraftBoardView({
         </span>
       </section>
       <div className="draft-layout">
-        <section aria-label="Published rosters">
+        <section aria-label={tr("Published rosters")}>
           <div className="section-title">
-            <h2>Team rosters</h2>
+            <h2>{tr("Team rosters")}</h2>
             <span className="muted small">
               {privatePreview
-                ? "Private roster preview"
-                : "Published draft progress"}
+                ? tr("Private roster preview")
+                : tr("Published draft progress")}
             </span>
           </div>
           <div className="roster-grid">
             {board.rosters.map((r) => (
               <article className="roster-panel" key={r.team.id}>
                 <h3>{r.team.name}</h3>
-                <p className="eyebrow">Captain: {r.team.captain.username}</p>
+                <p className="eyebrow">
+                  {tr("Captain: ")}
+                  {r.team.captain.username}
+                </p>
                 <ul>
                   {r.players.map((p) => (
                     <li key={p.osuId}>
@@ -70,7 +84,7 @@ export function DraftBoardView({
                         {p.username}
                       </a>
                       {p.osuId === r.team.captain.osuId && (
-                        <span className="muted small">Captain</span>
+                        <span className="muted small">{tr("Captain")}</span>
                       )}
                     </li>
                   ))}
@@ -79,8 +93,11 @@ export function DraftBoardView({
             ))}
           </div>
         </section>
-        <section className="pick-history" aria-label="Published pick history">
-          <h2>Pick history</h2>
+        <section
+          className="pick-history"
+          aria-label={tr("Published pick history")}
+        >
+          <h2>{tr("Pick history")}</h2>
           {board.picks.length ? (
             <ol
               aria-live="polite"
@@ -95,20 +112,21 @@ export function DraftBoardView({
                   <div>
                     <strong>{p.player.username}</strong>
                     <p>
-                      {p.team.name} · Captain {p.team.captain.username}
+                      {p.team.name} {tr(" · Captain ")}
+                      {p.team.captain.username}
                     </p>
                   </div>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className="muted small">No picks published yet.</p>
+            <p className="muted small">{tr("No picks published yet.")}</p>
           )}
         </section>
       </div>
       {board.pool && (
         <section className="section-space">
-          <h2>Remaining published pool</h2>
+          <h2>{tr("Remaining published pool")}</h2>
           <ul className="public-pool">
             {board.pool.map((p) => (
               <li key={p.osuId}>{p.username}</li>

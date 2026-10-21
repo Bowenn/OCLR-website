@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appUrl } from "@/lib/http";
+import { localeCookie, readLocale } from "@/i18n/config";
 export function proxy(request: NextRequest) {
   let canonical: URL | null = null;
   try {
@@ -37,6 +38,12 @@ export function proxy(request: NextRequest) {
   headers.set("Content-Security-Policy", policy);
   headers.set("x-nonce", nonce);
   const response = NextResponse.next({ request: { headers } });
+  if (!request.nextUrl.pathname.startsWith("/api/")) {
+    response.headers.set(
+      "Content-Language",
+      readLocale(request.cookies.get(localeCookie)?.value),
+    );
+  }
   response.headers.set("Content-Security-Policy", policy);
   if (canonical?.protocol === "https:")
     response.headers.set("Strict-Transport-Security", "max-age=31536000");

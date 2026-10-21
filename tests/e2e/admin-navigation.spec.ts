@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { captureResponsiveLayout } from "./responsive";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -168,14 +169,17 @@ test.describe("tournament-centered administration", () => {
       fullPage: true,
     });
     const mapper = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
       viewport: page.viewportSize()!,
     });
     const referee = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
       viewport: page.viewportSize()!,
     });
     const ordinary = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     try {
@@ -200,6 +204,7 @@ test.describe("tournament-centered administration", () => {
         ]);
       const unassignedId = ordinaryId + 1;
       const unassigned = await browser.newContext({
+        storageState: englishStorage,
         baseURL: "http://127.0.0.1:3100",
       });
       try {

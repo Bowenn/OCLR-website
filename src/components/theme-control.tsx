@@ -1,16 +1,21 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
 
 import { useState } from "react";
 import { themeCookie, type Theme } from "@/lib/preferences";
 
 export function ThemeControl({ initialTheme }: { initialTheme: Theme }) {
+  const tr = useAppTranslations();
+
   const [theme, setTheme] = useState(initialTheme);
   return (
     <button
       type="button"
       className="secondary theme-control"
-      aria-label={`Switch tournament to ${theme === "light" ? "dark" : "light"} theme`}
-      title={`Tournament appearance: ${theme}`}
+      aria-label={tr("Switch tournament to {value0} theme", {
+        value0: tr(theme === "light" ? "dark" : "light"),
+      })}
+      title={tr("Tournament appearance: {value0}", { value0: tr(theme) })}
       onClick={() => {
         const next = theme === "light" ? "dark" : "light";
         document.documentElement.dataset.theme = next;

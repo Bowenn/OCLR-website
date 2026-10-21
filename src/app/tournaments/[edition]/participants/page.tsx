@@ -1,14 +1,21 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicCaptains } from "@/lib/captains";
 import { publishedTeams } from "@/lib/teams";
 import { publicDraft } from "@/lib/draft";
 import { EmptyState, PageHeading } from "@/components/ui";
-export const metadata = { title: "Captains & rosters" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Captains & rosters") };
+}
+
 export default async function Participants({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition } = await params;
   const [captains, teams, draft] = await Promise.all([
     publicCaptains(edition),
@@ -17,26 +24,30 @@ export default async function Participants({
   ]);
   return (
     <>
-      <PageHeading eyebrow="THE COMMUNITY" title="Captains & rosters">
-        Approved captains and finalized team rosters.
+      <PageHeading
+        eyebrow={tr("THE COMMUNITY")}
+        title={tr("Captains & rosters")}
+      >
+        {tr("Approved captains and finalized team rosters.")}
       </PageHeading>
       <p className="notice small">
-        Accepted players appear in the{" "}
+        {tr("Accepted players appear in the")}{" "}
         <Link href={`/tournaments/${edition}/players`} className="text-link">
-          Players directory
+          {tr("Players directory")}
         </Link>
-        . Captain appointments and team rosters appear here only when released.
-        Application answers and staff review notes remain private; see the{" "}
+        {tr(
+          ". Captain appointments and team rosters appear here only when released. Application answers and staff review notes remain private; see the",
+        )}{" "}
         <Link href="/privacy" className="text-link">
-          privacy notice
+          {tr("privacy notice")}
         </Link>{" "}
-        for access, correction and removal requests.
+        {tr("for access, correction and removal requests.")}
       </p>
       {captains.length || teams.length ? (
         <>
           {captains.length > 0 && (
             <section className="section-space">
-              <h2>Published captains</h2>
+              <h2>{tr("Published captains")}</h2>
               <ol className="schedule-list">
                 {captains.map((c, i) => (
                   <li key={c.osuId}>
@@ -50,7 +61,10 @@ export default async function Participants({
                           {c.username} ↗
                         </a>
                       </h3>
-                      <p className="small muted">osu! ID {c.osuId}</p>
+                      <p className="small muted">
+                        {tr("osu! ID ")}
+                        {c.osuId}
+                      </p>
                     </div>
                   </li>
                 ))}
@@ -59,7 +73,7 @@ export default async function Participants({
           )}
           {teams.length > 0 && (
             <section className="section-space">
-              <h2>Teams & finalized rosters</h2>
+              <h2>{tr("Teams & finalized rosters")}</h2>
               <div className="stack">
                 {teams.map((t) => (
                   <article className="panel" key={t.id}>
@@ -83,7 +97,7 @@ export default async function Participants({
                       </ul>
                     ) : (
                       <p className="muted small">
-                        Roster awaiting finalization and publication.
+                        {tr("Roster awaiting finalization and publication.")}
                       </p>
                     )}
                   </article>
@@ -93,9 +107,10 @@ export default async function Participants({
           )}
         </>
       ) : (
-        <EmptyState title="No participants published">
-          Approved captains and team identities will appear here when organizers
-          release them.
+        <EmptyState title={tr("No participants published")}>
+          {tr(
+            "Approved captains and team identities will appear here when organizers release them.",
+          )}
         </EmptyState>
       )}
       {draft && (
@@ -104,7 +119,7 @@ export default async function Participants({
             className="button secondary"
             href={`/tournaments/${edition}/draft`}
           >
-            View the published draft
+            {tr("View the published draft")}
           </Link>
         </p>
       )}

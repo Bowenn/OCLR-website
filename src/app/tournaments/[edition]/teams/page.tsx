@@ -1,13 +1,20 @@
+import { getAppTranslations } from "@/i18n/server";
 import { publishedTeams } from "@/lib/teams";
 import { publicCompetition } from "@/lib/public-competition";
 import { PageHeading, EmptyState } from "@/components/ui";
 import { PublicTeams } from "@/components/public-teams";
-export const metadata = { title: "Published teams" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Published teams") };
+}
+
 export default async function Teams({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   const { edition } = await params;
   const [teams, competition] = await Promise.all([
     publishedTeams(edition),
@@ -15,8 +22,8 @@ export default async function Teams({
   ]);
   return (
     <>
-      <PageHeading eyebrow="TEAM COMPETITION" title="Teams">
-        Published team identities and finalized rosters.
+      <PageHeading eyebrow={tr("TEAM COMPETITION")} title={tr("Teams")}>
+        {tr("Published team identities and finalized rosters.")}
       </PageHeading>
       {teams.length ? (
         <PublicTeams
@@ -25,8 +32,8 @@ export default async function Teams({
           slug={edition}
         />
       ) : (
-        <EmptyState title="No teams published">
-          Approved team identities will appear here when released.
+        <EmptyState title={tr("No teams published")}>
+          {tr("Approved team identities will appear here when released.")}
         </EmptyState>
       )}
     </>

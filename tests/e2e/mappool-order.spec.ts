@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { test, expect, type Locator } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { sql } from "drizzle-orm";
@@ -384,6 +385,7 @@ test.describe("quick paste and mappool ordering", () => {
       animations: "disabled",
     });
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     try {

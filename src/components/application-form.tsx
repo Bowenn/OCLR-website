@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -12,6 +15,8 @@ export function ApplicationForm({
   username: string;
   configurationVersion: number;
 }) {
+  const tr = useAppTranslations();
+
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -65,14 +70,15 @@ export function ApplicationForm({
   return (
     <form onSubmit={submit} className="panel form-stack">
       <p>
-        Applying individually as <strong>{username}</strong>. Your osu! identity
-        comes from your signed-in session.
+        {tr("Applying individually as ")}
+        <strong>{username}</strong>
+        {tr(". Your osu! identity comes from your signed-in session.")}
       </p>
       {edition.registration?.questions.map((q) => (
         <label key={q.id} className="field">
           <span>
             {q.label}
-            {q.required ? " (required)" : " (optional)"}
+            {q.required ? tr(" (required)") : tr(" (optional)")}
           </span>
           <textarea
             name={q.id}
@@ -86,16 +92,17 @@ export function ApplicationForm({
         <label className="check-field">
           <input name="rules" type="checkbox" required />
           <span>
-            I have read and agree to the{" "}
+            {tr("I have read and agree to the")}{" "}
             <Link
               className="text-link"
               href={`/tournaments/${edition.slug}/rules`}
               target="_blank"
               rel="noopener"
             >
-              published rules (opens a new tab)
+              {tr("published rules (opens a new tab)")}
             </Link>
-            , version {edition.rules.version}.
+            {tr(", version ")}
+            {edition.rules.version}.
           </span>
         </label>
       )}
@@ -103,28 +110,30 @@ export function ApplicationForm({
         <label className="check-field">
           <input name="eligibility" type="checkbox" required />
           <span>
-            I have read the eligibility requirements and confirm I meet them.
+            {tr(
+              "I have read the eligibility requirements and confirm I meet them.",
+            )}
           </span>
         </label>
       )}
       <p className="small muted">
-        Applications are reviewed by tournament staff. Submitting is not
-        acceptance or official osu! validation. If accepted, your osu! username,
-        osu! ID and accepted participation in this tournament appear
-        automatically in its public Players directory. Application answers and
-        staff review notes remain private. Read the{" "}
+        {tr(
+          "Applications are reviewed by tournament staff. Submitting is not acceptance or official osu! validation. If accepted, your osu! username, osu! ID and accepted participation in this tournament appear automatically in its public Players directory. Application answers and staff review notes remain private. Read the",
+        )}{" "}
         <Link href="/privacy" className="text-link">
-          privacy notice
+          {tr("privacy notice")}
         </Link>{" "}
-        before applying.
+        {tr("before applying.")}
       </p>
       {error && (
         <p className="notice error-text" role="alert">
-          {error}
+          {tr(error)}
         </p>
       )}
       <button disabled={pending} type="submit">
-        {pending ? "Saving application…" : "Submit individual application"}
+        {pending
+          ? tr("Saving application…")
+          : tr("Submit individual application")}
       </button>
     </form>
   );

@@ -38,7 +38,9 @@ test.describe("derived public content", () => {
     };
     await seedEditions([published, privateEdition]);
     try {
-      expect(await context.cookies()).toEqual([]);
+      expect(
+        (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+      ).toEqual([]);
       await page.goto("/tournaments/test-cup/rules");
       await expect(
         page.getByRole("heading", { name: "Rules to be announced" }),

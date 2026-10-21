@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { useState } from "react";
 import type { MatchReview } from "@/lib/results";
@@ -21,6 +24,8 @@ function Operation({
   extra?: Record<string, unknown>;
   onError: (message: string) => void;
 }) {
+  const tr = useAppTranslations();
+
   const [requestKey, setKey] = useState(() => crypto.randomUUID());
   const [decisionNote, setDecisionNote] = useState("");
   const needsExplanation = action === "reject" || action === "void";
@@ -29,7 +34,15 @@ function Operation({
       canConfirm={!needsExplanation || Boolean(decisionNote.trim())}
       label={label}
       title={label}
-      description={`Fixture: ${data.context.fixture.label}. ${action === "approve_publish" || action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "Review the selected result proposal before confirming."}`}
+      description={tr("Fixture: {value0}. {value1}", {
+        value0: data.context.fixture.label,
+        value1:
+          action === "approve_publish" ||
+          action === "publish" ||
+          action === "void"
+            ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming."
+            : "Review the selected result proposal before confirming.",
+      })}
       url={`/api/admin/tournaments/${slug}/matches/${data.context.fixture.id}/results`}
       payload={{
         action,
@@ -50,8 +63,8 @@ function Operation({
         <label className="field">
           <span>
             {action === "reject"
-              ? "Proposal rejection explanation"
-              : "Result withdrawal explanation"}
+              ? tr("Proposal rejection explanation")
+              : tr("Result withdrawal explanation")}
           </span>
           <textarea
             value={decisionNote}
@@ -73,6 +86,8 @@ function SourceReview({
   slug: string;
   onError: (message: string) => void;
 }) {
+  const tr = useAppTranslations();
+
   const source = data.source!;
   const [decisions, setDecisions] = useState<Record<number, GameDecision>>({});
   const [rulesConfirmed, setRules] = useState(false);
@@ -100,11 +115,11 @@ function SourceReview({
   return (
     <section className="section-space stack" aria-labelledby="games-heading">
       <div>
-        <h2 id="games-heading">Review every game</h2>
+        <h2 id="games-heading">{tr("Review every game")}</h2>
         <p className="muted">
-          Include valid games and explicitly exclude warmups, rematches or
-          invalid games with a reason. Raw provider scores cannot be edited
-          here.
+          {tr(
+            "Include valid games and explicitly exclude warmups, rematches or invalid games with a reason. Raw provider scores cannot be edited here.",
+          )}
         </p>
       </div>
       {source.warnings.map((warning, i) => (
@@ -114,11 +129,14 @@ function SourceReview({
       ))}
       {data.diff && (
         <div className="notice">
-          <strong>Upstream changes require review</strong>
+          <strong>{tr("Upstream changes require review")}</strong>
           <p>
-            Added games: {data.diff.added.join(", ") || "None"}. Removed games:{" "}
-            {data.diff.removed.join(", ") || "None"}. Changed games:{" "}
-            {data.diff.changed.join(", ") || "None"}.
+            {tr("Added games: ")}
+            {data.diff.added.join(", ") || tr("None")}
+            {tr(". Removed games:")}{" "}
+            {data.diff.removed.join(", ") || tr("None")}
+            {tr(". Changed games:")}{" "}
+            {data.diff.changed.join(", ") || tr("None")}.
           </p>
         </div>
       )}
@@ -135,23 +153,25 @@ function SourceReview({
           <details className="panel" key={g.game.id} open={undefined}>
             <summary>
               <strong>
-                Game {i + 1} ·{" "}
+                {tr("Game ")}
+                {i + 1} ·{" "}
                 {g.game.beatmap?.title ??
                   (g.game.beatmapId
-                    ? `Beatmap ${g.game.beatmapId}`
-                    : "Unavailable beatmap")}
+                    ? tr("Beatmap {value0}", { value0: g.game.beatmapId })
+                    : tr("Unavailable beatmap"))}
               </strong>{" "}
               ·{" "}
               {decision
                 ? decision.included
-                  ? "Included"
-                  : "Excluded"
-                : "Unreviewed"}
+                  ? tr("Included")
+                  : tr("Excluded")
+                : tr("Unreviewed")}
             </summary>
             <div className="form-stack">
               <p className="muted">
-                Game ID {g.game.id} · {g.game.teamType ?? "Unknown team mode"} ·{" "}
-                {g.game.scoringType ?? "Unknown scoring"} ·{" "}
+                {tr("Game ID ")}
+                {g.game.id} · {g.game.teamType ?? tr("Unknown team mode")} ·{" "}
+                {g.game.scoringType ?? tr("Unknown scoring")} ·{" "}
                 {g.game.mods.join(", ") || "NM"}
               </p>
               {g.game.beatmapId && (
@@ -161,24 +181,30 @@ function SourceReview({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open beatmap ↗
+                  {tr("Open beatmap ↗")}
                 </a>
               )}
               <div
                 className="table-scroll"
                 role="region"
                 tabIndex={0}
-                aria-label={`Recorded game ${i + 1} scores; scroll horizontally`}
+                aria-label={tr(
+                  "Recorded game {value0} scores; scroll horizontally",
+                  { value0: i + 1 },
+                )}
               >
                 <table>
-                  <caption>Recorded player scores for game {i + 1}</caption>
+                  <caption>
+                    {tr("Recorded player scores for game ")}
+                    {i + 1}
+                  </caption>
                   <thead>
                     <tr>
-                      <th>osu! player</th>
-                      <th>Team evidence</th>
-                      <th>Score</th>
-                      <th>Lobby side</th>
-                      <th>Passed</th>
+                      <th>{tr("osu! player")}</th>
+                      <th>{tr("Team evidence")}</th>
+                      <th>{tr("Score")}</th>
+                      <th>{tr("Lobby side")}</th>
+                      <th>{tr("Passed")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -188,21 +214,25 @@ function SourceReview({
                           {data.context.teams
                             .flatMap((t) => t.members)
                             .find((m) => m.osuId === p.osuId)?.username ??
-                            `osu! ID ${p.osuId ?? "unavailable"}`}
+                            tr("osu! ID {value0}", {
+                              value0: p.osuId ?? "unavailable",
+                            })}
                         </td>
                         <td>
                           {p.teamId
                             ? `${teamName(p.teamId)} (${p.evidence})`
-                            : "Unresolved"}
+                            : tr("Unresolved")}
                         </td>
-                        <td>{p.total?.toLocaleString() ?? "Unavailable"}</td>
-                        <td>{p.team ?? "Unknown"}</td>
+                        <td>
+                          {p.total?.toLocaleString() ?? tr("Unavailable")}
+                        </td>
+                        <td>{p.team ?? tr("Unknown")}</td>
                         <td>
                           {p.passed === null
-                            ? "Unknown"
+                            ? tr("Unknown")
                             : p.passed
-                              ? "Yes"
-                              : "No"}
+                              ? tr("Yes")
+                              : tr("No")}
                         </td>
                       </tr>
                     ))}
@@ -210,7 +240,10 @@ function SourceReview({
                 </table>
               </div>
               <label className="field">
-                <span>Game {i + 1} decision</span>
+                <span>
+                  {tr("Game ")}
+                  {i + 1} {tr(" decision")}
+                </span>
                 <select
                   value={decision ? String(decision.included) : ""}
                   onChange={(e) => {
@@ -226,18 +259,19 @@ function SourceReview({
                       });
                   }}
                 >
-                  <option value="">Choose after reviewing</option>
-                  <option value="true">Include in result</option>
-                  <option value="false">Exclude from result</option>
+                  <option value="">{tr("Choose after reviewing")}</option>
+                  <option value="true">{tr("Include in result")}</option>
+                  <option value="false">{tr("Exclude from result")}</option>
                 </select>
               </label>
               {decision && (!decision.included || g.warnings.length > 0) && (
                 <label className="field">
                   <span>
-                    Game {i + 1}{" "}
+                    {tr("Game ")}
+                    {i + 1}{" "}
                     {decision.included
-                      ? "scoring decision explanation"
-                      : "exclusion explanation"}
+                      ? tr("scoring decision explanation")
+                      : tr("exclusion explanation")}
                   </span>
                   <textarea
                     maxLength={1000}
@@ -256,7 +290,9 @@ function SourceReview({
                     update(g.game.id, { complianceConfirmed: e.target.checked })
                   }
                 />
-                Game {i + 1}: I verified mods and the approved tournament rules
+                {tr("Game ")}
+                {i + 1}
+                {tr(": I verified mods and the approved tournament rules")}
               </label>
               {unknown.map((p) => {
                 const existing = decision?.substitutions.find(
@@ -274,21 +310,27 @@ function SourceReview({
                 return (
                   <fieldset key={p.osuId}>
                     <legend>
-                      Non-roster player {p.osuId}: substitution evidence
+                      {tr("Non-roster player ")}
+                      {p.osuId}
+                      {tr(": substitution evidence")}
                     </legend>
                     <p className="muted">
-                      Requires a configured substitution policy. This does not
-                      change the official roster.
+                      {tr(
+                        "Requires a configured substitution policy. This does not change the official roster.",
+                      )}
                     </p>
                     <label className="field">
-                      <span>Confirmed team for osu! ID {p.osuId}</span>
+                      <span>
+                        {tr("Confirmed team for osu! ID ")}
+                        {p.osuId}
+                      </span>
                       <select
                         value={existing?.teamId ?? ""}
                         onChange={(e) =>
                           replace(e.target.value, existing?.reason ?? "")
                         }
                       >
-                        <option value="">Unresolved</option>
+                        <option value="">{tr("Unresolved")}</option>
                         {data.context.teams.map((t) => (
                           <option key={t.id} value={t.id}>
                             {t.name}
@@ -297,7 +339,10 @@ function SourceReview({
                       </select>
                     </label>
                     <label className="field">
-                      <span>Substitution reason for osu! ID {p.osuId}</span>
+                      <span>
+                        {tr("Substitution reason for osu! ID ")}
+                        {p.osuId}
+                      </span>
                       <input
                         value={existing?.reason ?? ""}
                         maxLength={500}
@@ -320,13 +365,15 @@ function SourceReview({
                 </p>
               ))}
               <p>
-                Calculated team score: {g.homeScore ?? "—"} :{" "}
-                {g.awayScore ?? "—"}.{" "}
+                {tr("Calculated team score: ")}
+                {g.homeScore ?? "—"} : {g.awayScore ?? "—"}.{" "}
                 {g.tied
-                  ? "Tied game"
+                  ? tr("Tied game")
                   : g.winnerTeamId
-                    ? `Winner: ${teamName(g.winnerTeamId)}`
-                    : "No verified winner"}
+                    ? tr("Winner: {value0}", {
+                        value0: teamName(g.winnerTeamId),
+                      })
+                    : tr("No verified winner")}
                 .
               </p>
             </div>
@@ -334,17 +381,19 @@ function SourceReview({
         );
       })}
       <article className="panel stack">
-        <h3>New review preview</h3>
+        <h3>{tr("New review preview")}</h3>
         <p className="score">
           {preview.series.homeWins} : {preview.series.awayWins}
         </p>
         <p>
           {preview.series.complete
             ? preview.series.draw
-              ? "Configured draw"
-              : `Proposed winner: ${teamName(preview.series.winnerTeamId)}`
-            : "Series not resolved"}{" "}
-          · {preview.series.includedGames} included games
+              ? tr("Configured draw")
+              : tr("Proposed winner: {value0}", {
+                  value0: teamName(preview.series.winnerTeamId),
+                })
+            : tr("Series not resolved")}{" "}
+          · {preview.series.includedGames} {tr(" included games")}
         </p>
         {preview.blockers.map((b, i) => (
           <p className="notice" key={i}>
@@ -352,7 +401,9 @@ function SourceReview({
           </p>
         ))}
         <label className="field">
-          <span>Public result note (optional, visible after publication)</span>
+          <span>
+            {tr("Public result note (optional, visible after publication)")}
+          </span>
           <textarea
             maxLength={1000}
             value={publicNote}
@@ -365,8 +416,9 @@ function SourceReview({
             checked={rulesConfirmed}
             onChange={(e) => setRules(e.target.checked)}
           />
-          I verified the configured scoring rules against the approved OCLR
-          rules
+          {tr(
+            "I verified the configured scoring rules against the approved OCLR rules",
+          )}
         </label>
         <label className="check-label">
           <input
@@ -374,11 +426,13 @@ function SourceReview({
             checked={sourceConfirmed}
             onChange={(e) => setSource(e.target.checked)}
           />
-          I reviewed the current source snapshot and all reported changes
+          {tr(
+            "I reviewed the current source snapshot and all reported changes",
+          )}
         </label>
         {preview.canSubmit && rulesConfirmed && sourceConfirmed ? (
           <Operation
-            label="Submit proposed result"
+            label={tr("Submit proposed result")}
             action="submit"
             data={data}
             slug={slug}
@@ -393,8 +447,9 @@ function SourceReview({
           />
         ) : (
           <p className="muted">
-            Complete every game decision, resolve blockers and confirm the
-            review to submit.
+            {tr(
+              "Complete every game decision, resolve blockers and confirm the review to submit.",
+            )}
           </p>
         )}
       </article>
@@ -408,6 +463,8 @@ export function MatchReviewPanel({
   data: MatchReview;
   slug: string;
 }) {
+  const tr = useAppTranslations();
+
   const [match, setMatch] = useState("");
 
   const [requestKey, setKey] = useState(() => crypto.randomUUID());
@@ -420,16 +477,16 @@ export function MatchReviewPanel({
     <div className="stack">
       {notice && (
         <p className="notice error-text" role="alert">
-          {notice}
+          {tr(notice)}
         </p>
       )}
       <section className="panel form-stack">
-        <h2>Import official multiplayer data</h2>
+        <h2>{tr("Import official multiplayer data")}</h2>
         <p className="muted">
-          Imports stay private until a result is approved and published.
+          {tr("Imports stay private until a result is approved and published.")}
         </p>
         <label className="field">
-          <span>osu! MP link or match ID</span>
+          <span>{tr("osu! MP link or match ID")}</span>
           <input
             type="text"
             inputMode="url"
@@ -441,9 +498,11 @@ export function MatchReviewPanel({
         </label>
         <ConfirmMutation
           requireConfirmation={false}
-          label="Retrieve match data"
-          title="Import an official osu! match snapshot"
-          description="The provider snapshot will be stored for staff review. Any existing published result stays unchanged."
+          label={tr("Retrieve match data")}
+          title={tr("Import an official osu! match snapshot")}
+          description={tr(
+            "The provider snapshot will be stored for staff review. Any existing published result stays unchanged.",
+          )}
           url={`${base}/imports`}
           payload={{
             requestKey,
@@ -459,7 +518,7 @@ export function MatchReviewPanel({
           onError={setNotice}
         />
         <p className="muted">
-          {state ? state.state.replaceAll("_", " ") : "No report yet"}
+          {state ? state.state.replaceAll("_", " ") : tr("No report yet")}
         </p>
         {data.sourceError && <p className="notice">{data.sourceError}</p>}
         {data.source && (
@@ -470,50 +529,55 @@ export function MatchReviewPanel({
               target="_blank"
               rel="noreferrer"
             >
-              MP #{data.source.match.id} ↗
+              {tr("MP #")}
+              {data.source.match.id} ↗
             </a>
             <p>{data.source.match.title}</p>
             <p className="muted">
-              Lobby titles do not establish official team identity. Retrieved{" "}
+              {tr(
+                "Lobby titles do not establish official team identity. Retrieved",
+              )}{" "}
               {new Date(data.source.fetchedAt).toISOString()} ·{" "}
               {data.source.complete
-                ? "Completed source history"
-                : "Incomplete / ongoing source"}
+                ? tr("Completed source history")
+                : tr("Incomplete / ongoing source")}
             </p>
             <details>
-              <summary>Advanced source details</summary>
+              <summary>{tr("Advanced source details")}</summary>
               <p className="break-anywhere">
-                Fingerprint: {data.source.fingerprint}
+                {tr("Fingerprint: ")}
+                {data.source.fingerprint}
               </p>
               <p>
-                {data.source.pages} API pages · {data.source.events.length}{" "}
-                normalized events
+                {data.source.pages} {tr(" API pages · ")}
+                {data.source.events.length} {tr("normalized events")}
               </p>
             </details>
           </div>
         )}
       </section>
       <section className="panel stack">
-        <h2>Official teams and scoring rules</h2>
+        <h2>{tr("Official teams and scoring rules")}</h2>
         {context.teams.map((t) => (
           <div key={t.id}>
             <h3>{t.name}</h3>
             <p>
               {t.members.map((m) => `${m.username} (${m.osuId})`).join(" · ") ||
-                "No published roster"}
+                tr("No published roster")}
             </p>
           </div>
         ))}
         <details>
-          <summary>Configured round scoring rules</summary>
+          <summary>{tr("Configured round scoring rules")}</summary>
           {context.round.scoringRules ? (
             <pre className="rules-json">
               {JSON.stringify(context.round.scoringRules, null, 2)}
             </pre>
           ) : (
             <p className="notice">
-              Awaiting approved scoring configuration. No winner will be
-              assumed.
+              {tr(
+                "Awaiting approved scoring configuration. No winner will be assumed.",
+              )}
             </p>
           )}
         </details>
@@ -528,36 +592,40 @@ export function MatchReviewPanel({
         />
       )}
       <section className="panel stack">
-        <h2>Approval and publication</h2>
+        <h2>{tr("Approval and publication")}</h2>
         <p>
           {state?.state === "submitted"
-            ? "Pending approval"
+            ? tr("Pending approval")
             : state?.state === "approved" && data.current?.approvedAt
-              ? "Approved result"
+              ? tr("Approved result")
               : data.current
-                ? "Draft result"
-                : "No proposed result"}{" "}
-          · {data.published ? "Published result" : "Not published"}
+                ? tr("Draft result")
+                : tr("No proposed result")}{" "}
+          · {data.published ? tr("Published result") : tr("Not published")}
         </p>
         {data.current?.proposal && (
           <p>
-            Current proposal: {data.current.proposal.series.homeWins} :{" "}
+            {tr("Current proposal: ")}
+            {data.current.proposal.series.homeWins} :{" "}
             {data.current.proposal.series.awayWins} ·{" "}
-            {data.current.approvedAt ? "Approved" : "Awaiting approval"}
+            {data.current.approvedAt ? tr("Approved") : tr("Awaiting approval")}
           </p>
         )}
         {data.published?.proposal && (
           <p>
-            Published score: {data.published.proposal.series.homeWins} :{" "}
-            {data.published.proposal.series.awayWins}. It remains visible while
-            a correction is under review.
+            {tr("Published score: ")}
+            {data.published.proposal.series.homeWins} :{" "}
+            {data.published.proposal.series.awayWins}
+            {tr(". It remains visible while a correction is under review.")}
           </p>
         )}
         {context.canApprove ? (
           <>
             {data.dependents.length > 0 && (
               <div>
-                <h3>Dependent fixtures requiring review after a correction</h3>
+                <h3>
+                  {tr("Dependent fixtures requiring review after a correction")}
+                </h3>
                 <ul>
                   {data.dependents.map((f) => (
                     <li key={f.id}>
@@ -567,7 +635,10 @@ export function MatchReviewPanel({
                       >
                         {f.label}
                       </Link>{" "}
-                      · {f.published ? "Published fixture" : "Private fixture"}
+                      ·{" "}
+                      {f.published
+                        ? tr("Published fixture")
+                        : tr("Private fixture")}
                     </li>
                   ))}
                 </ul>
@@ -579,15 +650,16 @@ export function MatchReviewPanel({
                 checked={progression}
                 onChange={(e) => setProgression(e.target.checked)}
               />
-              I reviewed the effect on dependent fixtures and public standings
-              or brackets
+              {tr(
+                "I reviewed the effect on dependent fixtures and public standings or brackets",
+              )}
             </label>
             <div className="actions">
               {state?.state === "submitted" && (
                 <>
                   {progression && (
                     <Operation
-                      label="Approve & publish result"
+                      label={tr("Approve & publish result")}
                       action="approve_publish"
                       data={data}
                       slug={slug}
@@ -599,7 +671,7 @@ export function MatchReviewPanel({
                     />
                   )}
                   <Operation
-                    label="Reject proposed result"
+                    label={tr("Reject proposed result")}
                     action="reject"
                     data={data}
                     slug={slug}
@@ -612,7 +684,7 @@ export function MatchReviewPanel({
                 progression &&
                 state.currentRevision !== state.publishedRevision && (
                   <Operation
-                    label="Publish approved result"
+                    label={tr("Publish approved result")}
                     action="publish"
                     data={data}
                     slug={slug}
@@ -625,7 +697,7 @@ export function MatchReviewPanel({
                 )}
               {state?.publishedRevision && (
                 <Operation
-                  label="Unpublish result"
+                  label={tr("Unpublish result")}
                   action="unpublish"
                   data={data}
                   slug={slug}
@@ -635,7 +707,7 @@ export function MatchReviewPanel({
               )}
               {state && state.currentRevision > 0 && progression && (
                 <Operation
-                  label="Withdraw official result"
+                  label={tr("Withdraw official result")}
                   action="void"
                   data={data}
                   slug={slug}
@@ -645,50 +717,59 @@ export function MatchReviewPanel({
               )}
             </div>
             <p className="muted">
-              Withdrawing retains the audit trail and source history. It does
-              not award a forfeit or change team rosters. Publish the fixture
-              before publishing its result.
+              {tr(
+                "Withdrawing retains the audit trail and source history. It does not award a forfeit or change team rosters. Publish the fixture before publishing its result.",
+              )}
             </p>
           </>
         ) : (
           <p className="notice">
-            An Admin must approve and publish submitted results.
+            {tr("An Admin must approve and publish submitted results.")}
           </p>
         )}
       </section>
       <section className="section-space">
-        <h2>Review history</h2>
+        <h2>{tr("Review history")}</h2>
         <div className="stack">
           {data.revisions.map((r) => (
             <details className="panel" key={r.revision}>
               <summary>
                 {r.revision === state?.publishedRevision
-                  ? "Published result"
+                  ? tr("Published result")
                   : r.approvedAt
-                    ? "Approved result"
-                    : "Submitted result"}{" "}
+                    ? tr("Approved result")
+                    : tr("Submitted result")}{" "}
                 · {new Date(r.createdAt).toISOString()}
               </summary>
               {r.reason && <p>{r.reason}</p>}
-              <p>Submitted by osu! ID {r.createdBy}</p>
+              <p>
+                {tr("Submitted by osu! ID ")}
+                {r.createdBy}
+              </p>
               {r.proposal && (
                 <p>
-                  Score {r.proposal.series.homeWins} :{" "}
-                  {r.proposal.series.awayWins}
+                  {tr("Score ")}
+                  {r.proposal.series.homeWins} : {r.proposal.series.awayWins}
                 </p>
               )}
-              {r.approvedBy && <p>Approved by osu! ID {r.approvedBy}</p>}
-              <details>
-                <summary>Technical provenance</summary>
+              {r.approvedBy && (
                 <p>
-                  Result reference: {r.revision} · Scoring release:{" "}
-                  {r.proposal?.rulesSnapshot.version ?? "Unavailable"}
+                  {tr("Approved by osu! ID ")}
+                  {r.approvedBy}
+                </p>
+              )}
+              <details>
+                <summary>{tr("Technical provenance")}</summary>
+                <p>
+                  {tr("Result reference: ")}
+                  {r.revision} {tr(" · Scoring release:")}{" "}
+                  {r.proposal?.rulesSnapshot.version ?? tr("Unavailable")}
                 </p>
               </details>
             </details>
           ))}
           {!data.revisions.length && (
-            <p className="muted">No results submitted.</p>
+            <p className="muted">{tr("No results submitted.")}</p>
           )}
         </div>
       </section>

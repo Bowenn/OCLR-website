@@ -1,15 +1,22 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff, staffAccess, permits } from "@/lib/auth/staff";
 import { tournamentForAdmin, tournamentList } from "@/lib/tournaments";
 import { HttpError } from "@/lib/http";
 import { formatDate } from "@/lib/editions";
-export const metadata = { title: "Tournament dashboard" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Tournament dashboard") };
+}
+
 export default async function Tournament({
   params,
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const actor = await requireStaff();
     const { edition: slug } = await params;
@@ -26,7 +33,7 @@ export default async function Tournament({
       <>
         <header className="tournament-dashboard-heading">
           <div>
-            <p className="eyebrow">TOURNAMENT DASHBOARD</p>
+            <p className="eyebrow">{tr("TOURNAMENT DASHBOARD")}</p>
             <h1>{row.name}</h1>
           </div>
           <div className="actions">
@@ -36,13 +43,15 @@ export default async function Tournament({
                 href={primary.href}
               >
                 {data
-                  ? "Configure tournament"
-                  : `Open ${primary.label.toLowerCase()}`}
+                  ? tr("Configure tournament")
+                  : tr("Open {value0}", {
+                      value0: primary.label.toLowerCase(),
+                    })}
               </Link>
             )}
             {row.published && (
               <Link className="button secondary" href={`/tournaments/${slug}`}>
-                View public tournament
+                {tr("View public tournament")}
               </Link>
             )}
           </div>
@@ -52,19 +61,22 @@ export default async function Tournament({
           aria-labelledby="registration-heading"
         >
           <div className="registration-readiness-header">
-            <h2 id="registration-heading">Registration</h2>
+            <h2 id="registration-heading">{tr("Registration")}</h2>
             <div className="registration-summary">
               <span
                 className={`badge registration-state state-${row.registrationState}`}
               >
-                {row.registration ? row.registrationState : "Not configured"}
+                {row.registration
+                  ? row.registrationState
+                  : tr("Not configured")}
               </span>
               {data && (
                 <Link
                   className="button secondary"
                   href={`/admin/tournaments/${slug}/registrations`}
                 >
-                  View applications ({data.applications})
+                  {tr("View applications (")}
+                  {data.applications})
                 </Link>
               )}
             </div>
@@ -73,44 +85,62 @@ export default async function Tournament({
             className={`registration-overview-body${data ? "" : " is-single"}`}
           >
             <div>
-              <h3>Registration window</h3>
+              <h3>{tr("Registration window")}</h3>
               {row.registration ? (
                 <dl className="registration-window">
                   <div>
-                    <dt>Opens</dt>
+                    <dt>{tr("Opens")}</dt>
                     <dd>
-                      {formatDate(row.registration.opensAt, row.timeZone)}
+                      {tr(
+                        formatDate(
+                          row.registration.opensAt,
+                          row.timeZone,
+                          tr.locale,
+                        ),
+                      )}
                     </dd>
                   </div>
                   <div>
-                    <dt>Closes</dt>
+                    <dt>{tr("Closes")}</dt>
                     <dd>
-                      {formatDate(row.registration.closesAt, row.timeZone)}
+                      {tr(
+                        formatDate(
+                          row.registration.closesAt,
+                          row.timeZone,
+                          tr.locale,
+                        ),
+                      )}
                     </dd>
                   </div>
                 </dl>
               ) : (
                 <p className="muted small">
-                  Registration dates have not been configured.
+                  {tr("Registration dates have not been configured.")}
                 </p>
               )}
-              <p className="registration-timezone">Time zone: {row.timeZone}</p>
+              <p className="registration-timezone">
+                {tr("Time zone: ")}
+                {row.timeZone}
+              </p>
             </div>
             {data && (
               <div>
-                <h3>Registration checks</h3>
+                <h3>{tr("Registration checks")}</h3>
                 <ul className="readiness-list">
                   {data.readiness.map((item) => (
                     <li key={item.label}>
-                      <span>{item.label}</span>
+                      <span>{tr(item.label)}</span>
                       <span className="readiness-outcome">
                         {!item.ready && item.label === "Registration dates" && (
                           <Link
                             className="button secondary"
                             href={`/admin/tournaments/${slug}/settings?section=registration`}
                           >
-                            Configure
-                            <span className="sr-only"> registration dates</span>
+                            {tr("Configure")}
+                            <span className="sr-only">
+                              {" "}
+                              {tr(" registration dates")}
+                            </span>
                           </Link>
                         )}
                         <span
@@ -118,7 +148,7 @@ export default async function Tournament({
                             item.ready ? "readiness-ready" : "readiness-pending"
                           }
                         >
-                          {item.ready ? "Ready" : "Pending"}
+                          {item.ready ? tr("Ready") : tr("Pending")}
                         </span>
                       </span>
                     </li>

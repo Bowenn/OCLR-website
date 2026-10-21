@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FixtureWorkspace } from "@/lib/fixtures";
@@ -12,6 +15,8 @@ export function RefereeAssignment({
   fixture: FixtureWorkspace["fixtures"][number];
   data: FixtureWorkspace;
 }) {
+  const tr = useAppTranslations();
+
   const id = useId(),
     dialog = useRef<HTMLDialogElement>(null),
     router = useRouter();
@@ -112,7 +117,7 @@ export function RefereeAssignment({
           dialog.current?.showModal();
         }}
       >
-        Assign Referee
+        {tr("Assign Referee")}
       </button>
       <dialog
         ref={dialog}
@@ -121,18 +126,22 @@ export function RefereeAssignment({
           if (pending) e.preventDefault();
         }}
       >
-        <h2 id={`${id}-title`}>Referees · {fixture.label}</h2>
+        <h2 id={`${id}-title`}>
+          {tr("Referees · ")}
+          {fixture.label}
+        </h2>
         <p className="muted small">
           {fixture.scheduledAt
-            ? formatDate(fixture.scheduledAt, fixture.timeZone)
-            : "Match time TBA"}
+            ? tr(formatDate(fixture.scheduledAt, fixture.timeZone, tr.locale))
+            : tr("Match time TBA")}
         </p>
         <p className="small">
-          Current:{" "}
-          {fixture.referees.map((r) => r.username).join(", ") || "Unassigned"}
+          {tr("Current:")}{" "}
+          {fixture.referees.map((r) => r.username).join(", ") ||
+            tr("Unassigned")}
         </p>
         <label className="field">
-          <span>Search referees</span>
+          <span>{tr("Search referees")}</span>
           <input
             type="search"
             value={query}
@@ -144,7 +153,7 @@ export function RefereeAssignment({
         <ul
           className="referee-choices"
           tabIndex={0}
-          aria-label="Eligible referee choices"
+          aria-label={tr("Eligible referee choices")}
         >
           {names
             .filter(
@@ -176,8 +185,9 @@ export function RefereeAssignment({
                     <span>
                       {u.username}{" "}
                       <small className="muted">
-                        osu! ID {u.osuId}
-                        {!eligible && " · Role no longer active"}
+                        {tr("osu! ID ")}
+                        {u.osuId}
+                        {!eligible && tr(" · Role no longer active")}
                       </small>
                     </span>
                   </label>
@@ -187,37 +197,40 @@ export function RefereeAssignment({
         </ul>
         {!names.length && (
           <p className="muted small">
-            No eligible Referees. Grant an edition-scoped Referee role in Staff
-            Management.
+            {tr(
+              "No eligible Referees. Grant an edition-scoped Referee role in Staff Management.",
+            )}
           </p>
         )}
-        <p className="muted small">{selected.length} selected</p>
+        <p className="muted small">
+          {selected.length} {tr(" selected")}
+        </p>
         {conflicts.length > 0 && (
           <p className="notice small">
-            Also assigned at this exact time:{" "}
-            {conflicts.map((f) => f.label).join(", ")}. Match duration and
-            availability have not been assumed.
+            {tr("Also assigned at this exact time:")}{" "}
+            {conflicts.map((f) => f.label).join(", ")}
+            {tr(". Match duration and availability have not been assumed.")}
           </p>
         )}
         {error && (
           <p className="notice error-text" role="alert">
-            {error}
+            {tr(error)}
           </p>
         )}
         <div className="actions">
           <button disabled={pending} onClick={save}>
-            {pending ? "Saving…" : "Save assignments"}
+            {pending ? tr("Saving…") : tr("Save assignments")}
           </button>
           <button
             className="secondary"
             disabled={pending}
             onClick={() => dialog.current?.close()}
           >
-            Cancel
+            {tr("Cancel")}
           </button>
           {error && (
             <button className="secondary" disabled={pending} onClick={reload}>
-              Reload assignments
+              {tr("Reload assignments")}
             </button>
           )}
         </div>

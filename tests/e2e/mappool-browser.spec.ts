@@ -94,7 +94,9 @@ test.describe("anonymous inline mappool browser", () => {
     ).toHaveCount(0);
     const firstRound = await round("group", "Group Round 1", 1);
     const first = await pool(firstRound, "Opening pool", 6);
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+    ).toEqual([]);
     await page.goto(index);
     await expect(
       page.getByRole("tablist", { name: "Mappool stages" }),

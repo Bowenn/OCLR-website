@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeading } from "@/components/ui";
@@ -5,7 +6,11 @@ import { PlayerProfile } from "@/components/player-profile";
 import { publishedPlayerProfile } from "@/lib/player-profiles";
 import { modeNames, profileModes } from "@/lib/osu-profile-model";
 import { HttpError } from "@/lib/http";
-export const metadata = { title: "Player profile" };
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return { title: tr("Player profile") };
+}
+
 export default async function Profile({
   params,
   searchParams,
@@ -13,6 +18,8 @@ export default async function Profile({
   params: Promise<{ osuId: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const tr = await getAppTranslations();
+
   const { osuId } = await params;
   const query = await searchParams;
   if (
@@ -50,22 +57,22 @@ export default async function Profile({
             : "/tournaments"
         }
       >
-        {query.edition ? "← Tournament players" : "← Tournaments"}
+        {query.edition ? tr("← Tournament players") : tr("← Tournaments")}
       </Link>
       <PageHeading
-        eyebrow="OCLR PLAYER"
+        eyebrow={tr("OCLR PLAYER")}
         title={
           data.snapshot?.profile.username ?? data.participation[0].username
         }
       >
-        Public osu! statistics and published OCLR participation.
+        {tr("Public osu! statistics and published OCLR participation.")}
       </PageHeading>
       <form method="get" className="filters">
         {query.edition && (
           <input type="hidden" name="edition" value={query.edition as string} />
         )}
         <div className="field">
-          <label htmlFor="profile-ruleset">Ruleset</label>
+          <label htmlFor="profile-ruleset">{tr("Ruleset")}</label>
           <select
             id="profile-ruleset"
             name="mode"
@@ -78,17 +85,18 @@ export default async function Profile({
             ))}
           </select>
         </div>
-        <button>View ruleset</button>
+        <button>{tr("View ruleset")}</button>
       </form>
       {data.snapshot ? (
         <PlayerProfile snapshot={data.snapshot} />
       ) : (
         <p className="notice" role="status">
-          {data.error?.message} Published OCLR participation is shown below.
+          {data.error?.message}{" "}
+          {tr(" Published OCLR participation is shown below.")}
         </p>
       )}
       <section className="spaced" aria-labelledby="participation">
-        <h2 id="participation">Published participation</h2>
+        <h2 id="participation">{tr("Published participation")}</h2>
         <ul className="player-directory">
           {data.participation.map((p) => (
             <li className="panel" key={p.editionSlug}>
@@ -102,10 +110,10 @@ export default async function Profile({
               </h3>
               <p>
                 {p.captain
-                  ? "Captain"
+                  ? tr("Captain")
                   : p.participation === "finalized_roster"
-                    ? "Finalized roster player"
-                    : "Accepted player"}
+                    ? tr("Finalized roster player")
+                    : tr("Accepted player")}
               </p>
               {p.team ? (
                 <Link
@@ -115,7 +123,7 @@ export default async function Profile({
                   {p.team.name}
                 </Link>
               ) : (
-                <p className="muted">Team awaiting publication</p>
+                <p className="muted">{tr("Team awaiting publication")}</p>
               )}
             </li>
           ))}

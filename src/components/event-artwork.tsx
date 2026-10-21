@@ -1,7 +1,11 @@
 "use client";
+import { useAppTranslations } from "@/i18n/shared";
+
 import Image from "next/image";
 import { useState } from "react";
 export function EventArtwork({ src, name }: { src: string; name: string }) {
+  const tr = useAppTranslations();
+
   const [failed, setFailed] = useState(false);
   return (
     <div className="event-artwork">
@@ -13,7 +17,7 @@ export function EventArtwork({ src, name }: { src: string; name: string }) {
       ) : (
         <Image
           src={src}
-          alt={`${name} key visual`}
+          alt={tr("{value0} key visual", { value0: name })}
           width={1672}
           height={941}
           sizes="(max-width: 760px) 100vw, 55vw"

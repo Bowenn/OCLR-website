@@ -1,13 +1,17 @@
+import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { BroadcastDraft } from "@/components/broadcast-draft";
 import { getPublicEdition } from "@/lib/content";
 import { publicDraft } from "@/lib/draft";
 import type { DraftBoard } from "@/lib/draft-types";
 
-export const metadata = {
-  title: "Draft broadcast",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  const tr = await getAppTranslations();
+  return {
+    title: tr("Draft broadcast"),
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function Overlay({
   params,

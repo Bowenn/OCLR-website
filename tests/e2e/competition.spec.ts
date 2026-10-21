@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -27,6 +28,7 @@ test.describe("anonymous tournament competition center", () => {
       true,
     );
     const admin = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     await admin.addCookies([adminCookie]);
@@ -49,7 +51,9 @@ test.describe("anonymous tournament competition center", () => {
       return response.json();
     }
     try {
-      expect(await context.cookies()).toEqual([]);
+      expect(
+        (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+      ).toEqual([]);
       const initial = await (await context.request.get(publicEndpoint)).json();
       expect(initial.pool).toMatchObject({
         id: seed.poolId,
@@ -227,7 +231,9 @@ test.describe("anonymous tournament competition center", () => {
           await context.request.get("/api/tournaments/private-test-cup/matches")
         ).status(),
       ).toBe(404);
-      expect(await context.cookies()).toEqual([]);
+      expect(
+        (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+      ).toEqual([]);
     } finally {
       await admin.close();
     }

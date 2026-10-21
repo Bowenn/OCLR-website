@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { captureResponsiveLayout } from "./responsive";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -17,9 +18,11 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
     const cookie = await seedSession(operatorId);
     await context.addCookies([await seedSession(adminId)]);
     const operator = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     const guest = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     await operator.addCookies([cookie]);
@@ -39,6 +42,7 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       );
       const scopedCookie = await seedSession(operatorId + 2);
       const scoped = await browser.newContext({
+        storageState: englishStorage,
         baseURL: "http://127.0.0.1:3100",
       });
       try {

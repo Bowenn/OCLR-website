@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useState } from "react";
 import type { StaffDraft } from "@/lib/draft";
 import {
@@ -16,6 +19,8 @@ export function DraftOrderEditor({
   slug: string;
   data: StaffDraft;
 }) {
+  const tr = useAppTranslations();
+
   const teamIds = data.teams.map((t) => t.team.id);
   const saved = data.session?.turnSequence ?? [];
   const [mode, setMode] = useState<DraftOrderMode | "">(() =>
@@ -69,23 +74,29 @@ export function DraftOrderEditor({
   );
   return (
     <div className="draft-order-setup">
-      <h3>Pick order</h3>
-      <ol className="draft-captain-order" aria-label="Reviewed captain order">
+      <h3>{tr("Pick order")}</h3>
+      <ol
+        className="draft-captain-order"
+        aria-label={tr("Reviewed captain order")}
+      >
         {data.teams.map(({ team, captainName }) => (
           <li key={team.id}>
             <strong>{team.name}</strong>
             <span className="muted small">
-              Captain {captainName} ·{" "}
+              {tr("Captain ")}
+              {captainName} ·{" "}
               {team.capacity === null
-                ? "Capacity not configured"
-                : `Capacity ${team.capacity}, including captain`}
+                ? tr("Capacity not configured")
+                : tr("Capacity {value0}, including captain", {
+                    value0: team.capacity,
+                  })}
             </span>
           </li>
         ))}
       </ol>
       <div className="draft-order-fields">
         <label className="field">
-          <span>Order mode</span>
+          <span>{tr("Order mode")}</span>
           <select
             value={mode}
             onChange={(e) => {
@@ -95,16 +106,16 @@ export function DraftOrderEditor({
             }}
           >
             <option value="" disabled>
-              Choose a pattern
+              {tr("Choose a pattern")}
             </option>
-            <option value="snake">Snake</option>
-            <option value="forward">Repeat forward</option>
-            <option value="custom">Custom</option>
+            <option value="snake">{tr("Snake")}</option>
+            <option value="forward">{tr("Repeat forward")}</option>
+            <option value="custom">{tr("Custom")}</option>
           </select>
         </label>
         {mode && mode !== "custom" && (
           <label className="field">
-            <span>Pick rounds</span>
+            <span>{tr("Pick rounds")}</span>
             <input
               type="number"
               min={1}
@@ -121,7 +132,10 @@ export function DraftOrderEditor({
             {custom.map((teamId, i) => (
               <li key={i}>
                 <label className="field">
-                  <span>Turn {i + 1}</span>
+                  <span>
+                    {tr("Turn ")}
+                    {i + 1}
+                  </span>
                   <select
                     value={teamId}
                     onChange={(e) =>
@@ -139,10 +153,10 @@ export function DraftOrderEditor({
                 </label>
                 <button
                   className="secondary"
-                  aria-label={`Remove turn ${i + 1}`}
+                  aria-label={tr("Remove turn {value0}", { value0: i + 1 })}
                   onClick={() => setCustom(custom.filter((_, n) => n !== i))}
                 >
-                  Remove
+                  {tr("Remove")}
                 </button>
               </li>
             ))}
@@ -154,21 +168,22 @@ export function DraftOrderEditor({
             }
             onClick={() => setCustom([...custom, ...teamIds])}
           >
-            Append captain order
+            {tr("Append captain order")}
           </button>
         </>
       )}
       <div className="draft-order-summary">
-        <h3>Sequence preview</h3>
+        <h3>{tr("Sequence preview")}</h3>
         <span className="muted small">
-          {sequence.length} picks · {data.setupPoolSize ?? 0} eligible players
+          {sequence.length} {tr(" picks · ")}
+          {data.setupPoolSize ?? 0} {tr(" eligible players")}
         </span>
       </div>
       {sequence.length > 0 && (
         <div
           className="draft-order-preview"
           role="region"
-          aria-label="Full turn sequence preview"
+          aria-label={tr("Full turn sequence preview")}
           tabIndex={0}
         >
           <ol>
@@ -176,8 +191,11 @@ export function DraftOrderEditor({
               <li key={i}>
                 <span className="muted small">
                   {mode === "custom"
-                    ? `Turns ${i * teamIds.length + 1}–${i * teamIds.length + group.length}`
-                    : `Round ${i + 1}`}
+                    ? tr("Turns {value0}–{value1}", {
+                        value0: i * teamIds.length + 1,
+                        value1: i * teamIds.length + group.length,
+                      })
+                    : tr("Round {value0}", { value0: i + 1 })}
                 </span>
                 <ol>
                   {group.map((id, j) => {
@@ -188,7 +206,7 @@ export function DraftOrderEditor({
                           {i * teamIds.length + j + 1}
                         </span>
                         <span>
-                          {t?.team.name ?? "Unknown team"}
+                          {t?.team.name ?? tr("Unknown team")}
                           <small className="muted">{t?.captainName}</small>
                         </span>
                       </li>
@@ -207,15 +225,17 @@ export function DraftOrderEditor({
       )}
       {!data.edition?.lockedAt && (
         <p className="notice small">
-          Lock the reviewed captain/team setup before saving the draft order.
+          {tr(
+            "Lock the reviewed captain/team setup before saving the draft order.",
+          )}
         </p>
       )}
       <div className="actions">
         <ConfirmMutation
           requireConfirmation={false}
-          label="Save turn sequence"
-          title="Save turn sequence"
-          description="Save the reviewed explicit sequence."
+          label={tr("Save turn sequence")}
+          title={tr("Save turn sequence")}
+          description={tr("Save the reviewed explicit sequence.")}
           disabled={Boolean(problem) || !data.edition?.lockedAt}
           url={url}
           payload={{
@@ -230,9 +250,11 @@ export function DraftOrderEditor({
         />
         {data.session && (
           <ConfirmMutation
-            label="Freeze draft setup"
-            title="Freeze draft setup?"
-            description="Freeze the saved order and eligible player pool. Further configuration requires supervised recovery."
+            label={tr("Freeze draft setup")}
+            title={tr("Freeze draft setup?")}
+            description={tr(
+              "Freeze the saved order and eligible player pool. Further configuration requires supervised recovery.",
+            )}
             disabled={!sameSaved || Boolean(problem) || !data.edition?.lockedAt}
             url={url}
             payload={{
@@ -244,7 +266,9 @@ export function DraftOrderEditor({
         )}
       </div>
       {!sameSaved && data.session && (
-        <p className="muted small">Save these changes before freezing.</p>
+        <p className="muted small">
+          {tr("Save these changes before freezing.")}
+        </p>
       )}
     </div>
   );

@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import {
   useEffect,
   useId,
@@ -31,6 +34,8 @@ export function MappoolOrder({
   onFeedback: (message: string, failed?: boolean) => void;
   renderActions: (entry: Entry) => ReactNode;
 }) {
+  const tr = useAppTranslations();
+
   const router = useRouter();
   const helpId = useId();
   const list = useRef<HTMLOListElement>(null);
@@ -189,13 +194,14 @@ export function MappoolOrder({
       {editable && (
         <div className="mappool-order-toolbar">
           <p id={helpId} className="sr-only">
-            Drag to a drop indicator, or use Arrow Up / Down, Home / End on a
-            handle. Move buttons and the position picker also change the
-            preview.
+            {tr(
+              "Drag to a drop indicator, or use Arrow Up / Down, Home / End on a handle. Move buttons and the position picker also change the preview.",
+            )}
           </p>
           <p className="muted small">
-            Drag a handle, use Move up / down, or choose a position. Save once
-            to apply the order.
+            {tr(
+              "Drag a handle, use Move up / down, or choose a position. Save once to apply the order.",
+            )}
           </p>
           <div className="actions">
             <button
@@ -203,7 +209,7 @@ export function MappoolOrder({
               disabled={!changed || busy || !!dragging}
               onClick={save}
             >
-              {busy ? "Saving order…" : "Save order"}
+              {busy ? tr("Saving order…") : tr("Save order")}
             </button>
             <button
               type="button"
@@ -214,12 +220,13 @@ export function MappoolOrder({
                 onFeedback("Saved order restored.");
               }}
             >
-              Reset order
+              {tr("Reset order")}
             </button>
           </div>
           {changed && (
             <p className="small muted">
-              Unsaved order · {category} slots will be renumbered.
+              {tr("Unsaved order · ")}
+              {category} {tr(" slots will be renumbered.")}
             </p>
           )}
         </div>
@@ -227,7 +234,7 @@ export function MappoolOrder({
       <ol
         ref={list}
         className="mappool-order"
-        aria-label={`${category} map order`}
+        aria-label={tr("{value0} map order", { value0: category })}
       >
         {ordered.map((entry, index) => {
           const label = slotLabel(
@@ -252,7 +259,7 @@ export function MappoolOrder({
                   <button
                     type="button"
                     className="secondary mappool-drag-handle"
-                    aria-label={`Move ${label}`}
+                    aria-label={tr("Move {value0}", { value0: label })}
                     aria-describedby={helpId}
                     disabled={!canMove}
                     onPointerDown={(event) => start(event, entry.id)}
@@ -296,7 +303,7 @@ export function MappoolOrder({
                       type="button"
                       className="secondary"
                       disabled={!canMove || !!dragging || index === 0}
-                      aria-label={`Move ${label} up`}
+                      aria-label={tr("Move {value0} up", { value0: label })}
                       onClick={() => move(entry.id, index - 1)}
                     >
                       ↑
@@ -307,16 +314,21 @@ export function MappoolOrder({
                       disabled={
                         !canMove || !!dragging || index === ordered.length - 1
                       }
-                      aria-label={`Move ${label} down`}
+                      aria-label={tr("Move {value0} down", { value0: label })}
                       onClick={() => move(entry.id, index + 1)}
                     >
                       ↓
                     </button>
                   </div>
                   <label className="mappool-position">
-                    <span className="sr-only">Position for {label}</span>
+                    <span className="sr-only">
+                      {tr("Position for ")}
+                      {label}
+                    </span>
                     <select
-                      aria-label={`Position for ${label}`}
+                      aria-label={tr("Position for {value0}", {
+                        value0: label,
+                      })}
                       disabled={!canMove || !!dragging}
                       value={index + 1}
                       onChange={(event) =>
@@ -341,7 +353,7 @@ export function MappoolOrder({
               {editable && (
                 <fieldset
                   className="mappool-entry-actions"
-                  aria-label={`Map actions for ${label}`}
+                  aria-label={tr("Map actions for {value0}", { value0: label })}
                   disabled={changed || busy || !!dragging}
                 >
                   {renderActions(entry)}

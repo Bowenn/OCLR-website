@@ -1,3 +1,4 @@
+import { getAppTranslations } from "@/i18n/server";
 import { desc, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { userProfileCache } from "@/db/schema";
@@ -12,6 +13,8 @@ export default async function Captains({
 }: {
   params: Promise<{ edition: string }>;
 }) {
+  const tr = await getAppTranslations();
+
   return authorizedPage(async () => {
     const actor = await requireStaff();
     const { edition } = await params;
@@ -42,9 +45,13 @@ export default async function Captains({
         };
     return (
       <>
-        <PageHeading eyebrow="PARTICIPANTS" title="Captains & player pool" />
+        <PageHeading
+          eyebrow={tr("PARTICIPANTS")}
+          title={tr("Captains & player pool")}
+        />
         <p className="small muted">
-          Setup {setup.locked ? "locked" : "unlocked"}
+          {tr("Setup ")}
+          {setup.locked ? tr("locked") : tr("unlocked")}
         </p>
         <CaptainManager slug={edition} setup={setup} identities={identities} />
       </>

@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useId, useRef, useState, type ReactNode } from "react";
@@ -13,6 +16,8 @@ function Navigation({
   liveDraft: boolean;
   mobileMenu?: boolean;
 }) {
+  const tr = useAppTranslations();
+
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -52,10 +57,11 @@ function Navigation({
           aria-controls={id}
           onClick={() => setOpen(!open)}
         >
-          Tournament menu <span aria-hidden="true">{open ? "−" : "+"}</span>
+          {tr("Tournament menu ")}
+          <span aria-hidden="true">{open ? "−" : "+"}</span>
         </button>
       )}
-      <nav id={id} aria-label="Tournament navigation">
+      <nav id={id} aria-label={tr("Tournament navigation")}>
         {links.map(([section, label]) => (
           <Link
             key={section}
@@ -63,7 +69,7 @@ function Navigation({
             aria-current={active === section ? "page" : undefined}
             onClick={() => setOpen(false)}
           >
-            {label}
+            {tr(label)}
           </Link>
         ))}
       </nav>
@@ -93,6 +99,8 @@ export function TournamentShell({
   liveDraft: boolean;
   children: ReactNode;
 }) {
+  const tr = useAppTranslations();
+
   const path = usePathname();
   const search = useSearchParams();
   const base = `/tournaments/${slug}`;
@@ -106,7 +114,7 @@ export function TournamentShell({
       <div className="container page workspace tournament-workspace">
         <aside className="sidebar">
           <Link href="/tournaments" className="eyebrow">
-            Tournaments
+            {tr("Tournaments")}
           </Link>
           <h2>{name}</h2>
           <TournamentNavigation slug={slug} liveDraft={liveDraft} />
@@ -119,11 +127,16 @@ export function TournamentShell({
       <div className="event-context">
         <div className="event-identity">
           <Link href="/tournaments" className="text-link">
-            Tournaments
+            {tr("Tournaments")}
           </Link>
           <span aria-hidden="true">/</span>
           <Link href={base}>{name}</Link>
-          {season && <span className="badge">Season {season}</span>}
+          {season && (
+            <span className="badge">
+              {tr("Season ")}
+              {season}
+            </span>
+          )}
         </div>
         <TournamentNavigation slug={slug} liveDraft={liveDraft} mobileMenu />
       </div>

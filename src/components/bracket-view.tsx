@@ -1,4 +1,7 @@
 "use client";
+
+import { useAppTranslations } from "@/i18n/shared";
+
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { ResolvedBracket, ResolvedMatch } from "@/lib/bracket-model";
@@ -9,6 +12,8 @@ export function BracketView({
   bracket: ResolvedBracket;
   renderMatch?: (match: ResolvedMatch) => ReactNode;
 }) {
+  const tr = useAppTranslations();
+
   const [groupId, setGroup] = useState(bracket.groups[0].id);
   const frame = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<{
@@ -60,7 +65,7 @@ export function BracketView({
         <div
           className="bracket-tabs"
           role="group"
-          aria-label="Bracket sections"
+          aria-label={tr("Bracket sections")}
         >
           {bracket.groups.map((g) => (
             <button
@@ -77,13 +82,19 @@ export function BracketView({
       )}
       <p className="muted small">
         {renderMatch
-          ? "Scroll across rounds. Switch to Schedule for a chronological list."
-          : "Scroll across rounds. A complete match list is available below."}
+          ? tr(
+              "Scroll across rounds. Switch to Schedule for a chronological list.",
+            )
+          : tr(
+              "Scroll across rounds. A complete match list is available below.",
+            )}
       </p>
       <div
         className="bracket-scroll"
         role="region"
-        aria-label={`${group.label} bracket; scroll horizontally`}
+        aria-label={tr("{value0} bracket; scroll horizontally", {
+          value0: group.label,
+        })}
         tabIndex={0}
       >
         <div className="bracket-frame" ref={frame}>
@@ -120,8 +131,8 @@ export function BracketView({
                           <h3 id={`match-${match.id}`}>{match.label}</h3>
                           <span>
                             {match.status === "completed"
-                              ? "Completed"
-                              : "Pending"}
+                              ? tr("Completed")
+                              : tr("Pending")}
                           </span>
                         </div>
                         {match.slots.map((slot, index) => (
@@ -141,11 +152,16 @@ export function BracketView({
                                 slot.label
                               )}
                               {match.winnerSlot === index && (
-                                <span className="sr-only"> (winner)</span>
+                                <span className="sr-only">
+                                  {" "}
+                                  {tr(" (winner)")}
+                                </span>
                               )}
                             </span>
                             <strong
-                              aria-label={`Score ${match.scores[index] ?? "unreported"}`}
+                              aria-label={tr("Score {value0}", {
+                                value0: match.scores[index] ?? "unreported",
+                              })}
                             >
                               {match.scores[index] ?? "—"}
                             </strong>
@@ -157,7 +173,7 @@ export function BracketView({
                         {match.detailsUrl && (
                           <p className="match-note">
                             <Link className="text-link" href={match.detailsUrl}>
-                              Match details & source
+                              {tr("Match details & source")}
                             </Link>
                           </p>
                         )}
@@ -172,7 +188,9 @@ export function BracketView({
       </div>
       {!renderMatch && (
         <details className="section-space match-alternative">
-          <summary>Accessible match list — all sections and rounds</summary>
+          <summary>
+            {tr("Accessible match list — all sections and rounds")}
+          </summary>
           {bracket.groups.map((g) => (
             <section key={g.id}>
               <h2>{g.label}</h2>
@@ -184,17 +202,20 @@ export function BracketView({
                       <li key={m.id}>
                         <div>
                           <h4>
-                            {m.label} · {m.status}
+                            {m.label} · {tr(m.status)}
                           </h4>
                           <p>
-                            {m.slots.map((s) => s.label).join(" vs ")}. Scores:{" "}
+                            {m.slots.map((s) => s.label).join(" vs ")}
+                            {tr(". Scores:")}{" "}
                             {m.scores.map((s) => s ?? "unreported").join(" – ")}
                             .
                           </p>
                           <p className="muted small">
                             {m.winnerSlot !== null
-                              ? `Winner: ${m.slots[m.winnerSlot].label}.`
-                              : "Winner not announced."}
+                              ? tr("Winner: {value0}.", {
+                                  value0: m.slots[m.winnerSlot].label,
+                                })
+                              : tr("Winner not announced.")}
                             {m.note && ` ${m.note}`}
                           </p>
                         </div>

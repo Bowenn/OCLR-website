@@ -1,3 +1,4 @@
+import { englishStorage } from "../fixtures/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { seedSession } from "./session";
@@ -294,6 +295,7 @@ test.describe("registration readiness and confirmation layout", () => {
       },
     });
     const player = await browser.newContext({
+      storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",
     });
     try {
