@@ -20,7 +20,9 @@
     "test:integration": "vitest run tests/integration",
     "db:cleanup": "tsx scripts/cleanup.ts",
     "release:check": "tsx scripts/check-release.ts",
-    "db:import-editions": "tsx scripts/import-editions.ts"
+    "db:import-editions": "tsx scripts/import-editions.ts",
+    "production:setup": "node scripts/production.mjs setup",
+    "production:start": "node scripts/production.mjs start"
   },
   "dependencies": {
     "@next/env": "16.4.2",

@@ -1,6 +1,6 @@
 # Deployment and operations
 
-This is a conventional Node.js 24 LTS + PostgreSQL 17 application. No deployment, domain, DNS or OAuth application has been provisioned by this repository. The local isolated tests are not a production launch.
+The deployment target is a Rocky Linux 10 Node.js application host, an existing separate PostgreSQL server and an existing separate Nginx proxy. CI verifies Node.js 24 and PostgreSQL 17; the actual external database version, permissions and networking must be rehearsed before launch. No deployment, domain, DNS or OAuth application has been provisioned by this repository. The local isolated tests are not a production launch.
 
 ## Required configuration
 
@@ -98,7 +98,7 @@ Confirm actual captain/team counts, eligibility, maximum roster capacity (includ
 
 Registration links check the configured window, required privacy configuration and persisted draft lock. Temporary database failures hide submission controls; server mutations always recheck independently. Static tournament rules/dates remain readable during database outages, while private queries fail closed. An idle database connection failure is handled without terminating the process; subsequent requests reconnect. Polling has a bounded timeout, retains the last published snapshot on network errors and clears protected data after a 401/403.
 
-Committed roster corrections remain private until a corrected snapshot is published. Revoking public pool approval removes the published pool immediately, including an older stored snapshot. Browser caches must never override these publication checks.
+Once the draft has been explicitly released, committed picks and guarded corrections update spectator/captain snapshots in the same transaction. Finalized team roster release remains separate. Revoking public pool approval removes the published pool immediately, including an older stored snapshot. Browser caches must never override these publication checks.
 
 A local recovery rehearsal also stopped and restarted the scratch PostgreSQL process during an ongoing synthetic draft: the public homepage remained readable, private API access returned a generic failure during the outage, the existing session recovered, and persisted revision/picks/memberships were unchanged. This verifies local recovery only; it does not replace a hosting failover or backup-restore drill.
 
@@ -137,3 +137,88 @@ In staging, exercise import, repeated import, changed-history comparison, warmup
 The earlier unauthenticated official request for example MP `117427458` returned HTTP 403; that match remains unverified. The successful local beatmap API check does not establish MP retrieval, pagination or the hosted referee integration. Synthetic fixtures validate parser/scorer, PostgreSQL transactions and browser workflows without claiming that example's teams or result. Verify current official API behavior, a real authorized match and the actual hosted referee workflow before a live event. Production hosting/TLS, OAuth callback consent, approved tournament rules and operational backup/retention remain organizer dependencies; automated CI does not establish deployment.
 
 The competition-operations recovery rehearsal also used an independent synthetic database containing staff roles, finalized rosters, a mappool, imported games, an approved published result, audit history and a session. The production-build server returned the same result and authorized history after a real PostgreSQL stop/start and a separate Next.js process restart. During the database outage, the homepage remained readable and private APIs returned a generic failure. A custom-format backup was restored into a new UTF-8 database; ordered JSON fingerprints matched for all **27 application tables plus the migration journal**, and migration replay succeeded. This is local recovery evidence, not verification of a production provider's backup operations.
+
+## Rocky Linux 10 application host
+
+Rocky 10 uses ordinary DNF packages, not the old AppStream module-enable workflow ([Rocky release notes](https://docs.rockylinux.org/latest/releases/release_notes/10_0/)). Install only the app prerequisites on this host:
+
+```sh
+sudo dnf install nodejs nodejs-npm git
+node --version
+npm --version
+```
+
+The base Node.js 22 packages meet the application's **>=22.13** requirement; update them through your managed repositories. Node.js 24 is the CI reference, but versioned `nodejs24` packages can expose `node-24`/`npm-24` rather than standard names. If choosing that runtime, configure a consistent standard `node`/`npm` PATH for both build and service, and adjust the service executable; do not mix runtimes. Package availability is in the [official Rocky repository](https://download.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/Packages/n/).
+
+Provision an unprivileged service account and a release directory, for example `oclr` and `/opt/oclr/current`. These are examples to create/adapt, not existing accounts. Place the checked-out release there; never run Node as root. The service account needs read access to the build/content and write access to `.next/cache`; the deployment operator needs permission to install/build the release. Keep secrets in a managed environment or restricted `/etc/oclr/runtime.env`, not Git. Configure approved APP_URL/OAuth/privacy/Admin values from `.env.example` and the **runtime** database connection below. For the separate proxy, set OCLR_BIND_HOST to this host's actual private IP and PORT=3000. Do not expose the app port to the Internet.
+
+Take a recoverable database backup. Inject MIGRATION_DATABASE_URL for this setup invocation only (using your secret manager, not a literal shell-history password), then:
+
+```sh
+npm run production:setup -- --dry-run
+npm run production:setup
+npm run production:start -- --dry-run
+```
+
+Setup installs locked dependencies including build tools, runs migrations with the migration URL, runs release preflight with the runtime URL, then builds. Failed steps stop the sequence; there is no automated legacy import, account provisioning, publication or rollback. The migration secret is excluded from build/start subprocesses. Start only checks configuration/schema and serves an existing build; restarting never runs migrations.
+
+Adapt [oclr.service](examples/oclr.service), then install it as `/etc/systemd/system/oclr.service`. The example uses `/usr/bin/node`; verify that path and the working directory. Make runtime.env root-owned mode 0600; systemd reads it before switching to the service user. Do not include MIGRATION_DATABASE_URL in that file. After reviewing the adapted unit:
+
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now oclr
+sudo systemctl status oclr
+```
+
+During upgrades, build a separate release directory and switch the service only after setup succeeds; preserve the last verified release. Do not run npm ci/build inside the release currently serving users. Restrict inbound app-port access to the actual Nginx source IP with your host/cloud firewall. Keep SELinux enforcing; do not disable it to solve connectivity failures. This repository has not verified execution on the actual Rocky host.
+
+## Existing separate PostgreSQL: deployment steps
+
+Do **not** install/init a second database, upgrade the existing cluster, or overwrite an existing OCLR database. Confirm the actual server version, host/port, CA certificate, backup procedure and application-source IP with its administrator. PostgreSQL 17 is tested in CI; another version needs migration/staging verification. The names below describe a **new dedicated database**; for an existing installation, have its DBA adapt grants to the current object owner without recreating anything.
+
+1. As the database administrator, create restricted login roles and a database. Use interactive psql password prompts; no passwords belong in SQL files or history:
+
+```sql
+CREATE ROLE oclr_migrator LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
+CREATE ROLE oclr_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
+\password oclr_migrator
+\password oclr_runtime
+CREATE DATABASE oclr OWNER oclr_migrator;
+\connect oclr
+REVOKE ALL ON DATABASE oclr FROM PUBLIC;
+GRANT CONNECT ON DATABASE oclr TO oclr_runtime;
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO oclr_runtime;
+ALTER DEFAULT PRIVILEGES FOR ROLE oclr_migrator IN SCHEMA public
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO oclr_runtime;
+ALTER DEFAULT PRIVILEGES FOR ROLE oclr_migrator IN SCHEMA public
+  GRANT USAGE, SELECT ON SEQUENCES TO oclr_runtime;
+```
+
+2. Configure the **existing** database listener/TLS and pg_hba.conf to permit only the actual Rocky app/deployment IPs. A self-managed server may use `hostssl oclr oclr_runtime APP_IP/32 scram-sha-256` plus a corresponding restricted migration-role rule. Replace APP_IP; account for rule order and IPv6 where used. Do not introduce broad `trust` or `0.0.0.0/0` access. Managed database providers use equivalent access controls. See [PostgreSQL client authentication](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html).
+
+3. Put the runtime connection in the app environment: `postgresql://oclr_runtime:ENCODED_PASSWORD@DB_HOST:5432/oclr?sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem`. Replace every example value; URL-encode password characters, use the certificate's real host name, and install the trusted CA readably for the service. The migration connection uses the same verified server/database with oclr_migrator. Do not disable certificate validation. The existing [node-postgres connection-string parser](https://github.com/brianc/node-postgres/blob/master/packages/pg-connection-string/README.md) supports sslrootcert; no second DB client is required.
+
+4. Back up first, then run production:setup on the app release with the migration URL injected. Migrations create public application tables and the Drizzle migration ledger. Existing configurations and slugs are preserved; S11 stays unpublished on a fresh install. Only use the explicit legacy-import workflow above when required; subsequent deployments never overwrite database content from JSON.
+
+5. For a database that already had objects before default grants, its DBA/actual object owner must also apply:
+
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO oclr_runtime;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO oclr_runtime;
+```
+
+Run release preflight using runtime credentials, then rehearse sign-in, one synthetic staging registration and authorized staff work. Runtime must not be a superuser or have schema-creation/TRUNCATE privileges. Never point TEST_DATABASE_URL at this database. Keep encrypted backups and test restoration into an isolated target before release. On failure, stop writes and follow the existing rollback section; never automatically down-migrate or restore over new player data.
+
+## Existing separate Nginx: example configuration
+
+Copy and adapt [oclr-nginx.conf](examples/oclr-nginx.conf) **on the Nginx host**, not the app host. `192.0.2.20`, `oclr.example.com` and certificate filenames are documentation placeholders. Replace them with the Rocky application's private IP, actual canonical public domain and existing certificate paths. Set APP_URL=https://YOUR_REAL_DOMAIN and register the exact OAuth callback https://YOUR_REAL_DOMAIN/auth/osu/callback.
+
+The example terminates HTTPS on the existing proxy and forwards to Node over a restricted private network. If that path crosses an untrusted network, use a verified encrypted tunnel or separately configured TLS upstream instead of plain HTTP. Host and forwarded protocol are set explicitly, which keeps canonical redirects, secure cookies and Origin validation consistent. The public browser's Origin header is preserved. Do not cache authenticated responses or OAuth callbacks; do not hide the application's CSP/no-store headers. Drafts use controlled polling; no WebSocket upgrade is needed. See official [proxy directives](https://nginx.org/en/docs/http/ngx_http_proxy_module.html) and [TLS settings](https://nginx.org/en/docs/http/ngx_http_ssl_module.html).
+
+```sh
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Run those commands only after adapting/installing the file and certificates; syntax and hosted traffic have not been verified here. Nginx must reach the app's private port, and the app must reach PostgreSQL; no Nginx-to-database connection is needed. If the existing Nginx host also uses SELinux, follow its approved proxy network policy (Rocky's [Nginx guidance](https://docs.rockylinux.org/it/guides/web/nginx-mainline/) documents httpd_can_network_connect); do not disable SELinux. Verify HTTPS, redirects, real-account OAuth login/logout, POST Origin checks, private cache behavior and draft polling on staging before declaring release ready.

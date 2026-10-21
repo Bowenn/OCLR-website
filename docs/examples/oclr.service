@@ -1,0 +1,27 @@
+# Example only: provision this service user and adapt release/Node paths first.
+# /etc/oclr/runtime.env is root-owned mode 0600. Do not include migration credentials.
+[Unit]
+Description=OCLR website
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=oclr
+Group=oclr
+WorkingDirectory=/opt/oclr/current
+Environment=NODE_ENV=production
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/etc/oclr/runtime.env
+ExecStart=/usr/bin/node /opt/oclr/current/scripts/production.mjs start
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
