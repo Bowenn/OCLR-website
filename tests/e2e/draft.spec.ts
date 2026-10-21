@@ -240,18 +240,27 @@ test.describe("isolated multi-captain rehearsal", () => {
         exact: true,
       }),
     ).toBeEnabled();
+    // Each room polls independently. Wait for Staff's own turn transition
+    // before staging a proposal; a proposal for the previous captain is invalidated.
+    const staffConfirm = staff.page.getByRole("button", {
+      name: `Select for Captain ${fixture.b.username}`,
+      exact: true,
+    });
+    await expect(staffConfirm).toBeVisible();
+    await expect(staffConfirm).toBeDisabled();
+    await expect(
+      staff.page.getByRole("region", { name: "Receiving team", exact: true }),
+    ).toContainText(fixture.b.username);
     await staff.page
       .getByRole("button", {
         name: `Choose ${fixture.players[1].username}`,
         exact: true,
       })
       .click();
-    await staff.page
-      .getByRole("button", {
-        name: `Select for Captain ${fixture.b.username}`,
-        exact: true,
-      })
-      .click();
+    await expect(
+      staff.page.getByLabel("Pending selection", { exact: true }),
+    ).toContainText(fixture.players[1].username);
+    await staffConfirm.click();
 
     await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(2);
     await expect(
