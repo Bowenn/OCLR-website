@@ -139,6 +139,28 @@ UNIT
   rm -f -- "$policy"
 }
 
+# Install the trusted invocation, even when a subsequent deployment fails.
+# /usr/local/bin is on the operator PATH; refresh the former /usr/sbin copy
+# only when it already exists, so previously installed commands remain current.
+install_command() {
+  local snapshot=$1 command_file
+  shift
+  for command_file in "$@"; do
+    [[ ! -L "${command_file%/*}" ]] || fail 'The command directory must not be a symlink.'
+    if [[ -e "$command_file" || -L "$command_file" ]]; then
+      [[ ! -L "$command_file" && -f "$command_file" ]] && grep -q '^# Rocky Linux 10 convenience entry point' "$command_file" || fail "An unrelated oclr command exists at $command_file; preserve it before installing this shortcut."
+    fi
+  done
+  local first=true
+  for command_file in "$@"; do
+    if "$first" || [[ -e "$command_file" ]]; then
+      [[ -d "${command_file%/*}" ]] || install -d -m 0755 "${command_file%/*}"
+      install -o root -g root -m 0755 "$snapshot" "$command_file"
+    fi
+    first=false
+  done
+}
+
 main() {
   if [[ ${1-} == --worker ]]; then
     [[ $# == 5 ]] || fail 'Invalid worker invocation.'
@@ -146,14 +168,18 @@ main() {
     return
   fi
   local action=${1-} option=${2-} sha server_major dump_version restore_version architecture working_tree origin
-  [[ $# -ge 1 && $# -le 2 && ( "$action" == deploy || "$action" == update ) && ( -z "$option" || "$option" == --dry-run ) ]] || fail 'Usage: sudo bash scripts/oclr.sh deploy|update [--dry-run]'
+  [[ $# -ge 1 && $# -le 2 && ( "$action" == deploy || "$action" == update || "$action" == install-command ) && ( -z "$option" || "$option" == --dry-run ) ]] || fail 'Usage: sudo bash scripts/oclr.sh deploy|update|install-command [--dry-run]'
   if [[ "$option" == --dry-run ]]; then
+    if [[ "$action" == install-command ]]; then
+      printf '%s\n' 'Install command preview only; no commands or files changed.' 'Install this reviewed script as /usr/local/bin/oclr without changing the application, service or database.'
+      return
+    fi
     printf '%s\n' "$action preview only; no commands or files changed." \
       'Load /etc/oclr/runtime.env as oclr; preserve the existing database and Nginx.' \
       'Prepare the app account, dependencies, matching PostgreSQL clients and systemd permissions.' \
       'Fetch main into /opt/oclr/repository and pin its SHA; prompt for migration username/password.' \
       'Build a new release, verify backup, apply pending migrations, activate and check local/public health.' \
-      'Install the oclr command; retain backups and previous releases for recovery.'
+      'Install the oclr command before deployment; retain backups and previous releases for recovery.'
     return
   fi
   [[ $EUID -eq 0 ]] || fail 'Run with sudo: sudo bash scripts/oclr.sh deploy (or update).'
@@ -165,22 +191,22 @@ main() {
   cat -- "${BASH_SOURCE[0]}" > "$script_snapshot"
   trap 'rm -f -- "$script_snapshot"' EXIT
   local missing=false name directory
-  for name in node npm git flock tar runuser visudo systemctl; do command -v "$name" >/dev/null || missing=true; done
-  if "$missing"; then dnf install -y nodejs nodejs-npm git util-linux tar sudo; fi
   root=/opt/oclr
   env_file=/etc/oclr/runtime.env
   service_file=/etc/systemd/system/oclr.service
   sudoers_file=/etc/sudoers.d/oclr-site
-  if [[ -e /usr/sbin/oclr || -L /usr/sbin/oclr ]]; then
-    [[ ! -L /usr/sbin/oclr ]] && grep -q '^# Rocky Linux 10 convenience entry point' /usr/sbin/oclr || fail 'An unrelated oclr command already exists; preserve it before installing this shortcut.'
-  fi
-  [[ -f "$env_file" && ! -L "$env_file" ]] || fail 'Create /etc/oclr/runtime.env first; see docs/deployment.md.'
-  [[ ! -L /etc/oclr && ! -L "$root" ]] || fail 'Configuration/install parents must be real directories.'
   # Root's lock must not live in an app-writable directory (symlink/truncation risk).
   [[ ! -L /run/oclr-deploy ]] || fail 'The root deployment lock directory must not be a symlink.'
   install -d -o root -g root -m 0700 /run/oclr-deploy
   exec 8>/run/oclr-deploy/lock
   flock -n 8 || fail 'Another OCLR deployment is running.'
+  install_command "$script_snapshot" /usr/local/bin/oclr /usr/sbin/oclr
+  printf 'Command installed: /usr/local/bin/oclr (sudo oclr update)\n'
+  [[ "$action" != install-command ]] || return 0
+  for name in node npm git flock tar runuser visudo systemctl; do command -v "$name" >/dev/null || missing=true; done
+  if "$missing"; then dnf install -y nodejs nodejs-npm git util-linux tar sudo; fi
+  [[ -f "$env_file" && ! -L "$env_file" ]] || fail 'Create /etc/oclr/runtime.env first; see docs/deployment.md.'
+  [[ ! -L /etc/oclr && ! -L "$root" ]] || fail 'Configuration/install parents must be real directories.'
   mkdir -p -- "$root"
   if ! id oclr >/dev/null 2>&1; then useradd --system --create-home --home-dir /var/lib/oclr --shell /bin/bash oclr; fi
   [[ $(id -u oclr) -ne 0 ]] || fail 'The application account must be unprivileged.'
@@ -242,7 +268,6 @@ main() {
   configure_service
   as_oclr bash "$root/repository/scripts/oclr.sh" --worker "$action" "$root" "$env_file" "$sha"
   systemctl enable oclr.service
-  install -o root -g root -m 0755 "$script_snapshot" /usr/sbin/oclr
   printf '\nOCLR %s finished. Future updates: sudo oclr update\n' "$action"
 }
 

@@ -12,6 +12,7 @@ import {
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import http from "node:http";
 import { Client } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
@@ -186,6 +187,80 @@ async function backup(url: URL, directory: string) {
   });
   console.log(`Verified database archive: ${final}`);
 }
+// Fetch can discard Host overrides. Use HTTP directly for the private listener,
+// otherwise canonical-host redirects make a healthy application fail activation.
+function localResponse(url: URL, host: string) {
+  return new Promise<Response>((resolve, reject) => {
+    const request = http.get(
+      url,
+      { headers: { Host: host }, signal: AbortSignal.timeout(5000) },
+      (response) => {
+        const options = {
+          status: response.statusCode || 502,
+          headers: { "content-type": response.headers["content-type"] || "" },
+        };
+        if (url.pathname !== "/api/health") {
+          resolve(new Response(null, options));
+          response.destroy();
+          return;
+        }
+        const chunks: Buffer[] = [];
+        let size = 0;
+        response.on("data", (chunk: Buffer) => {
+          size += chunk.length;
+          if (size > 16384) {
+            reject(new Error("Oversized health response."));
+            response.destroy();
+          } else chunks.push(chunk);
+        });
+        response.on("error", reject);
+        response.on("end", () =>
+          resolve(new Response(size ? Buffer.concat(chunks) : null, options)),
+        );
+      },
+    );
+    request.on("error", reject);
+  });
+}
+
+function networkFailure(error: unknown): string {
+  const code =
+    error && typeof error === "object"
+      ? "cause" in error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "code" in error.cause
+        ? error.cause.code
+        : "code" in error
+          ? error.code
+          : undefined
+      : undefined;
+  // Never echo provider messages, response bodies, credentials or redirect URLs.
+  if (
+    typeof code === "string" &&
+    [
+      "ECONNREFUSED",
+      "ECONNRESET",
+      "ENOTFOUND",
+      "EAI_AGAIN",
+      "ETIMEDOUT",
+      "EHOSTUNREACH",
+      "ENETUNREACH",
+      "CERT_HAS_EXPIRED",
+      "DEPTH_ZERO_SELF_SIGNED_CERT",
+      "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+      "ERR_TLS_CERT_ALTNAME_INVALID",
+    ].includes(code)
+  )
+    return `connection failed (${code})`;
+  if (
+    error instanceof Error &&
+    ["AbortError", "TimeoutError"].includes(error.name)
+  )
+    return "request timed out";
+  return "request failed (check listener, DNS, TLS and proxy connectivity)";
+}
+
 async function health(sha: string) {
   if (!/^[a-f0-9]{40}$/.test(sha))
     throw new Error("Expected a release SHA for health verification.");
@@ -200,44 +275,73 @@ async function health(sha: string) {
   )
     throw new Error("APP_URL must be the canonical HTTPS origin.");
   const host = process.env.OCLR_BIND_HOST || "127.0.0.1";
-  const address = ["0.0.0.0", "::"].includes(host) ? "127.0.0.1" : host;
+  const address =
+    host === "0.0.0.0" ? "127.0.0.1" : host === "::" ? "::1" : host;
   const local = new URL(
     `http://${address.includes(":") ? `[${address}]` : address}:${process.env.PORT || "3000"}`,
   );
-  for (let attempt = 0; attempt < 20; attempt++) {
+  const request = (url: URL, privateListener: boolean) =>
+    privateListener
+      ? localResponse(url, canonical.host)
+      : fetch(url, { redirect: "manual", signal: AbortSignal.timeout(5000) });
+  const check = async (origin: URL, privateListener: boolean) => {
+    let path = "/api/health";
     try {
-      for (const origin of [local, canonical]) {
-        const response = await fetch(
-          new URL(`/api/health?release=${sha}`, origin),
-          {
-            headers: { Host: canonical.host },
-            redirect: "error",
-            signal: AbortSignal.timeout(3000),
-          },
-        );
-        const body = await response.json();
-        if (!response.ok || body.status !== "ok" || body.release !== sha)
-          throw new Error("Release not ready.");
-        const page = await fetch(origin, {
-          headers: { Host: canonical.host },
-          redirect: "error",
-          signal: AbortSignal.timeout(3000),
-        });
-        if (
-          !page.ok ||
-          !page.headers.get("content-type")?.includes("text/html")
-        )
-          throw new Error("Public page not ready.");
-        await page.body?.cancel();
+      const response = await request(
+        new URL(`${path}?release=${sha}`, origin),
+        privateListener,
+      );
+      if (!response.ok) {
+        await response.body?.cancel();
+        return `${path}: HTTP ${response.status}${response.status >= 300 && response.status < 400 ? " (unexpected redirect; check canonical hostname/proxy)" : ""}`;
       }
+      let body;
+      try {
+        body = await response.json();
+      } catch {
+        return `${path}: invalid JSON (check proxy routing)`;
+      }
+      if (body?.status !== "ok")
+        return `${path}: application/database not ready`;
+      if (body.release !== sha)
+        return `${path}: release SHA mismatch (check service working directory, release marker and proxy upstream/cache)`;
+      path = "/";
+      const page = await request(origin, privateListener);
+      await page.body?.cancel();
+      if (!page.ok) return `${path}: HTTP ${page.status}`;
+      if (!page.headers.get("content-type")?.includes("text/html"))
+        return `${path}: expected HTML (check proxy routing)`;
+      return null;
+    } catch (error) {
+      return `${path}: ${networkFailure(error)}`;
+    }
+  };
+  const deadline = Date.now() + 120000;
+  let last = "";
+  console.log(
+    `Checking release health: local ${local.origin}; public ${canonical.origin} (up to 120 seconds).`,
+  );
+  do {
+    const failures: string[] = [];
+    for (const [label, origin, privateListener] of [
+      ["Local listener", local, true],
+      ["Public HTTPS", canonical, false],
+    ] as const) {
+      const error = await check(origin, privateListener);
+      if (error) failures.push(`${label}: ${error}`);
+    }
+    if (!failures.length) {
       console.log(`Healthy local and public release: ${sha}`);
       return;
-    } catch {
-      await new Promise((done) => setTimeout(done, 1000));
     }
-  }
+    const detail = failures.join("; ");
+    if (detail !== last) console.log(`Waiting for release: ${detail}`);
+    last = detail;
+    if (Date.now() >= deadline) break;
+    await new Promise((done) => setTimeout(done, 1000));
+  } while (Date.now() < deadline);
   throw new Error(
-    "Release health failed locally or through public HTTPS. Service remains stopped for recovery review.",
+    `Release health failed: ${last}. Inspect journalctl -u oclr.service and the update log before recovery.`,
   );
 }
 export async function main(args = process.argv.slice(2)) {

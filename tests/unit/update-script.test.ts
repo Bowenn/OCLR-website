@@ -265,6 +265,12 @@ describe("Bash site updates", () => {
       expect(run.active).toBe("no");
       expect(run.oldPreserved).toBe(true);
       expect(run.result.stdout).toContain("Service kept stopped");
+      expect(run.result.stdout).toContain("Update failed during");
+      expect(run.result.stdout).toContain("sudo journalctl -u oclr.service");
+      if (failure === "health")
+        expect(run.result.stdout).toContain(
+          "verifying local and public release health (exit 7)",
+        );
     },
   );
 });

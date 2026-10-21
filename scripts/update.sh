@@ -99,6 +99,7 @@ exec > >(tee -a "$backup_dir/update.log") 2>&1
 stopped=false
 activated=false
 child=''
+phase='extracting and validating release files'
 log() { printf '[%s] %s\n' "$(date -u +%FT%TZ)" "$1"; }
 finish() {
   local code=$?
@@ -106,7 +107,8 @@ finish() {
   set +e
   if [[ -n "$child" ]]; then kill -TERM "$child" 2>/dev/null; wait "$child" 2>/dev/null; fi
   if [[ $code -ne 0 ]]; then
-    log 'Update failed. No automatic database rollback or release deletion was performed.'
+    log "Update failed during $phase (exit $code). No automatic database rollback or release deletion was performed."
+    log "Service diagnostics: sudo systemctl status $service --no-pager; sudo journalctl -u $service -n 80 --no-pager"
     if "$stopped"; then
       if "$initial" || [[ -f "$backup_dir/migration.started" ]] || "$activated"; then
         sudo -n "$systemctl_bin" stop "$service"
@@ -142,14 +144,20 @@ fi
 printf '%s\n' "$sha" > "$release/.oclr-release"
 cd -- "$release"
 log 'Preparing the new release while the old service stays online.'
+phase='building and checking the new release'
 run bash scripts/production.sh prepare --apply
+phase='checking database target and migration history'
 run database inspect
 log 'Stopping writes before backup/migration; this is a maintenance-window deployment.'
+phase='stopping service writes'
 stopped=true
 run sudo -n "$systemctl_bin" stop "$service"
+phase='backing up and applying database migrations'
 run database apply "$backup_dir"
 unset migration_url
+phase='checking runtime configuration and database access'
 run npm run release:check
+phase='switching release symlinks'
 if ! "$initial"; then
   ln -s -- "$previous" "$install_dir/.previous.$$"
   mv -Tf -- "$install_dir/.previous.$$" "$install_dir/previous"
@@ -157,7 +165,10 @@ fi
 activated=true
 ln -s -- "$release" "$install_dir/.current.$$"
 mv -Tf -- "$install_dir/.current.$$" "$install_dir/current"
+phase='starting the new service'
 run sudo -n "$systemctl_bin" start "$service"
+phase='verifying local and public release health'
 run node --import tsx scripts/deployment-db.ts health "$sha"
+phase='checking final service state'
 "$systemctl_bin" is-active --quiet "$service"
 log "Deployment complete: $sha; previous release: ${previous:-none (initial installation)}; backup/log: $backup_dir"

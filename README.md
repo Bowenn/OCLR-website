@@ -66,6 +66,8 @@ sudo bash scripts/oclr.sh deploy   # first installation
 sudo oclr update                 # subsequent code releases
 ```
 
+The shortcut is installed in `/usr/local/bin` before deployment, so failures do not remove it. Repair an older missing shortcut with `sudo bash scripts/oclr.sh install-command` from a reviewed new installer. This does not deploy or change the service/database; see the [recovery steps](docs/deployment.md#routine-whole-site-updates) for a stopped release.
+
 It prepares the app account, required packages/compatible PostgreSQL client tools, protected configuration permissions, service and narrowly scoped service-control rights. It loads the environment, derives the DB target, pins the latest `origin/main` SHA and asks for the migration username/password (normal text, hidden password; URL escaping is automatic). Builds and the existing backup/migration/activation workflow run as the unprivileged `oclr` account. The database and separate Nginx are retained. Configure the existing HTTPS proxy first so final public health verification can succeed. Use a reviewed main release whose CI passed. See [the short walkthrough](docs/deployment.md#simple-deployment-and-update).
 
 For advanced/manual operation, first-install/start commands use `bash scripts/production.sh`; whole-site updates use `bash scripts/update.sh` (also available through npm aliases).

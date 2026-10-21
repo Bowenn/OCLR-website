@@ -8,6 +8,7 @@ import {
   readFileSync,
   rmSync,
   existsSync,
+  symlinkSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -81,7 +82,7 @@ NODE
 }
 
 describe("simple deploy/update shell entry point", () => {
-  it.each(["deploy", "update"])(
+  it.each(["deploy", "update", "install-command"])(
     "previews %s without dependencies, privileges or configuration reads",
     (action) => {
       const result = spawnSync("/bin/bash", [script, action, "--dry-run"], {
@@ -163,6 +164,68 @@ describe("simple deploy/update shell entry point", () => {
 });
 
 describe("privileged service provisioning", () => {
+  function commandInstall(existing = "", failureAfterInstall = false) {
+    const root = mkdtempSync(join(tmpdir(), "oclr-command-"));
+    const command = join(root, "bin/oclr"),
+      legacy = join(root, "sbin/oclr");
+    try {
+      mkdirSync(join(root, "sbin"));
+      if (existing === "linked") symlinkSync(script, legacy);
+      else if (existing) writeFileSync(legacy, existing);
+      const result = spawnSync(
+        "/bin/bash",
+        [
+          "-c",
+          `
+source "$1"
+install() {
+  local args=()
+  while [[ $# -gt 0 ]]; do case "$1" in -o|-g) shift 2 ;; *) args+=("$1"); shift ;; esac; done
+  /usr/bin/install "\${args[@]}"
+}
+install_command "$1" "$2" "$3"
+[[ "$4" != fail ]]
+`,
+          "test",
+          script,
+          command,
+          legacy,
+          failureAfterInstall ? "fail" : "ok",
+        ],
+        { encoding: "utf8" },
+      );
+      return {
+        result,
+        command: existsSync(command) ? readFileSync(command, "utf8") : "",
+        legacy: existsSync(legacy) ? readFileSync(legacy, "utf8") : "",
+      };
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+  it("installs a usable command that survives subsequent deployment failure", () => {
+    const run = commandInstall("", true);
+    expect(run.result.status).toBe(1);
+    expect(run.command).toBe(readFileSync(script, "utf8"));
+    expect(run.legacy).toBe("");
+  });
+  it("refreshes a previously managed legacy command from the trusted invocation", () => {
+    const run = commandInstall(
+      "# Rocky Linux 10 convenience entry point\n# old installer\n",
+    );
+    expect(run.result.status, run.result.stderr).toBe(0);
+    expect(run.command).toBe(readFileSync(script, "utf8"));
+    expect(run.legacy).toBe(run.command);
+  });
+  it.each(["unrelated local command", "linked"])(
+    "preserves a conflicting %s before installing either shortcut",
+    (existing) => {
+      const run = commandInstall(existing);
+      expect(run.result.status).toBe(1);
+      expect(run.command).toBe("");
+      expect(run.result.stderr).toContain("unrelated oclr command");
+    },
+  );
   it("isolates the app terminal, normalizes captured output and propagates worker failure", () => {
     for (const status of [0, 19]) {
       const result = spawnSync(
