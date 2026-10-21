@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { mappoolEntries } from "../../src/db/schema";
+import { mappoolEntries, mappools } from "../../src/db/schema";
 import { categories, slotLabel } from "../../src/lib/mappool-model";
 import { mappoolCommand } from "../../src/lib/mappools";
 import { assertTestDatabase } from "../database";
@@ -69,13 +69,26 @@ test.describe("published mappool mainsheet", () => {
               title: `Synthetic ${slotLabel(category, position)}`,
               difficulty: "Expert",
               mapper: "Provider Mapper",
-              stars: 4.125,
+              stars: category === "NM" ? 6.01 : 4.125,
               bpm: 180.25,
               duration: 123,
               ar: position === 2 ? null : 9.2,
               od: 8.5,
               cs: 4,
               hp: 6,
+              ...(category === "HD" && position === 1
+                ? {
+                    attributes: {
+                      configuration: "HD" as const,
+                      mods: ["HD"],
+                      ruleset: "osu" as const,
+                      stars: 4.25,
+                      maxCombo: 900,
+                      values: {} as Record<string, number>,
+                      fetchedAt: new Date().toISOString(),
+                    },
+                  }
+                : {}),
               ...(category === "DT" && position === 1
                 ? {
                     attributes: {
@@ -115,9 +128,38 @@ test.describe("published mappool mainsheet", () => {
         )
       ).status(),
     ).toBe(404);
+    const publicUrl = `/api/tournaments/test-cup/mappools/${poolId}`;
+    const beforeRead = await (await context.request.get(publicUrl)).json();
+    const poolBefore = await db()
+      .select()
+      .from(mappools)
+      .where(eq(mappools.id, poolId));
     await page.goto(`/tournaments/test-cup/mappools/${poolId}`);
     const sheet = page.locator(".mappool-public");
     await expect(sheet.locator("tbody tr")).toHaveCount(30);
+    await expect(sheet.getByText(/Unconfigured/)).toHaveCount(0);
+    const nmRow = sheet.locator(`#pool-${poolId}-maps-NM tbody tr`).first();
+    await expect(nmRow.locator(".mappool-base-sr").first()).toContainText(
+      "6.01",
+    );
+    await expect(nmRow.locator(".mappool-mod-attributes")).toHaveCount(0);
+    await expect(
+      nmRow.locator(".mappool-mobile-details summary"),
+    ).toContainText("6.01 ★ base");
+    const hdRow = sheet.locator(`#pool-${poolId}-maps-HD tbody tr`).first();
+    await expect(hdRow.locator(".mappool-base-sr").first()).toContainText(
+      "4.13",
+    );
+    await expect(
+      hdRow.locator(".mappool-mod-attributes").first(),
+    ).toContainText("4.25");
+    await expect(
+      hdRow.locator(".mappool-mod-attributes small").first(),
+    ).toHaveText("HD");
+    await expect(
+      sheet.locator(`#pool-${poolId}-maps-HD tbody tr`).nth(1),
+    ).toContainText("Not calculated");
+
     expect(
       await sheet
         .getByRole("navigation", {
@@ -222,6 +264,12 @@ test.describe("published mappool mainsheet", () => {
       fullPage: true,
       animations: "disabled",
     });
+    expect(await (await context.request.get(publicUrl)).json()).toEqual(
+      beforeRead,
+    );
+    expect(
+      await db().select().from(mappools).where(eq(mappools.id, poolId)),
+    ).toEqual(poolBefore);
     await page.goto(`/tournaments/test-cup/mappools/${privatePool}`);
     await expect(
       page.getByRole("heading", { name: "Off the beat.", exact: true }),

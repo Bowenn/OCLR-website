@@ -100,6 +100,26 @@ describe("explicit official difficulty attributes", () => {
     });
     expect(map.metadata.attributes).toBeUndefined();
   });
+  it("keeps No Mod base SR authoritative and only calculates an explicitly requested mod", async () => {
+    const { fetchBeatmap, withBeatmapAttributes, api } = await setup();
+    api.mockResolvedValueOnce({ ...base, difficulty_rating: 6.01 });
+    const map = await fetchBeatmap(123);
+    expect(await withBeatmapAttributes(map, null)).toBe(map);
+    expect(map.metadata.stars).toBe(6.01);
+    expect(map.metadata.attributes).toBeUndefined();
+    expect(api).toHaveBeenCalledTimes(1);
+    const hd = await withBeatmapAttributes(map, "HD");
+    expect(api).toHaveBeenLastCalledWith("/beatmaps/123/attributes", {
+      mods: ["HD"],
+      ruleset: "osu",
+    });
+    expect(hd.metadata.stars).toBe(6.01);
+    expect(hd.metadata.attributes).toMatchObject({
+      configuration: "HD",
+      stars: 6.75,
+    });
+    expect(map.metadata.attributes).toBeUndefined();
+  });
   it("expires calculated snapshots and coalesces refreshes without mutating the last saved value", async () => {
     vi.useFakeTimers();
     const { fetchBeatmap, withBeatmapAttributes, api } = await setup();
