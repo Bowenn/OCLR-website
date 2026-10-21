@@ -82,6 +82,8 @@ test.describe("bulk mappool operations", () => {
     await expect(page.getByLabel("Select DT3", { exact: true })).toBeAttached();
     await expect(page.getByLabel("Select DT3", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Select DT4", { exact: true })).toBeVisible();
+    // router.refresh() can stream metadata after the updated map rows arrive.
+    await expect(page).toHaveTitle("Manage mappools");
     expect(
       (
         await new AxeBuilder({ page })
