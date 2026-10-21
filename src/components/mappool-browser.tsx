@@ -203,8 +203,9 @@ export function MappoolBrowser({
   return (
     <div className="mappool-browse">
       <div className="pool-summary">
-        <span>
-          <strong>{pool.entries.length}</strong> released maps
+        <span role="status">
+          <strong>{entries.length}</strong> / {pool.entries.length} released
+          maps
         </span>
         {mean !== null && (
           <span>
@@ -263,10 +264,9 @@ export function MappoolBrowser({
             </button>
           ))}
         </div>
-      </div>
-      <div className="map-browse-filters">
-        <label className="field">
-          <span>Search {pool.name}</span>
+
+        <label className="field map-search">
+          <span className="sr-only">Search {pool.name}</span>
           <input
             type="search"
             value={search}
@@ -277,8 +277,8 @@ export function MappoolBrowser({
             }}
           />
         </label>
-        <label className="field">
-          <span>Sort {pool.name}</span>
+        <label className="field map-sort">
+          <span className="sr-only">Sort {pool.name}</span>
           <select
             value={sort}
             onChange={(e) => {
@@ -292,19 +292,16 @@ export function MappoolBrowser({
           </select>
         </label>
       </div>
-      <p className="muted small" role="status">
-        {entries.length} / {pool.entries.length} maps
-      </p>
+
       {view === "compact" ? (
         <MappoolView pool={{ ...pool, entries }} headingLevel={headingLevel} />
       ) : (
         <>
-          <p className="muted small">
-            Stars, BPM and length show base map values. Official mod difficulty
-            is listed separately when available.
+          <p className="map-values-note muted small">
+            Base stars, BPM and length · Official mod SR shown separately.
           </p>
           {pool.entries.some((e) => e.category === "FM") && (
-            <p className="notice">
+            <p className="map-values-note muted small">
               {pool.fmMode === "force_mod" ? "Force Mod" : "Free Mod"}
               {pool.fmRestrictions
                 ? `: ${pool.fmRestrictions}`

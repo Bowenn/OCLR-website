@@ -651,11 +651,11 @@ body:has(.public-tournament) .site-footer {
   gap: 1rem;
   flex-wrap: wrap;
   align-items: center;
-  padding: 1rem;
+  padding: 0.65rem 1rem;
   background: #f8f4fb;
   border: 1px solid #ded5e7;
   border-radius: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   font-size: 0.8rem;
   color: #6d6278;
 }
@@ -670,11 +670,23 @@ body:has(.public-tournament) .site-footer {
   gap: 0.5rem;
   flex-wrap: wrap;
 }
-.map-browse-filters {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(140px, 1fr);
-  gap: 0.75rem;
-  margin-block: 1rem;
+.map-browse-toolbar {
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.map-browse-toolbar .map-search {
+  flex: 1 1 220px;
+  order: 2;
+}
+.map-browse-toolbar .map-sort {
+  flex: 0 1 170px;
+  order: 3;
+}
+.map-browse-toolbar [aria-label$=": map view"] {
+  order: 4;
+}
+.map-values-note {
+  margin: 0.5rem 0;
 }
 .map-card-grid {
   display: grid;
@@ -841,9 +853,6 @@ body:has(dialog[open].map-dialog) {
   }
   .map-card-copy {
     padding: 0.75rem;
-  }
-  .map-browse-filters {
-    grid-template-columns: minmax(0, 1fr);
   }
   .map-dialog {
     max-height: calc(100dvh - 1rem);

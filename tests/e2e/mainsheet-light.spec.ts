@@ -134,6 +134,11 @@ test.describe("MainSheet Light public experience", () => {
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBeLessThanOrEqual(width);
+        if (section === "/mappools" && width === 1440) {
+          expect(
+            (await page.locator(".map-browse-card").first().boundingBox())!.y,
+          ).toBeLessThan(900);
+        }
         if (!isMobile || width === 390)
           await page.screenshot({
             path: info.outputPath(
