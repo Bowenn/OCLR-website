@@ -548,9 +548,13 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       await create
         .getByLabel("Fixture label", { exact: true })
         .fill("Planned final");
+      await create.getByLabel("Time zone (IANA)", { exact: true }).fill("UTC");
       await create
-        .getByLabel("Scheduled date and time (UTC; optional)", { exact: true })
-        .fill("2026-11-02T12:00");
+        .getByLabel("Scheduled date and time: date", { exact: true })
+        .fill("2026-11-02");
+      await create
+        .getByLabel("Scheduled date and time: time (HH:mm)", { exact: true })
+        .fill("12:00");
       await create
         .getByRole("button", { name: "Create fixture", exact: true })
         .click();

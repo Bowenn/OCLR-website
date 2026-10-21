@@ -37,3 +37,61 @@ export function zonedInstants(local: string, timeZone: string) {
     ),
   ].sort();
 }
+
+/** Resolve completed fields only; undefined means the caller must not save. */
+export function dateTimeDraft(
+  date: string,
+  time: string,
+  timeZone: string,
+  original: string | null,
+  optional: boolean,
+  offset = "",
+) {
+  const invalid = (error: string, candidates: string[] = []) => ({
+    value: undefined,
+    error,
+    candidates,
+  });
+  try {
+    new Intl.DateTimeFormat("en", { timeZone });
+  } catch {
+    return invalid("Enter a valid IANA time zone.");
+  }
+  if (!date && !time && optional)
+    return { value: null, error: "", candidates: [] };
+  if (!date || !time) return invalid("Enter both a date and a time.");
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    !Number.isFinite(Date.parse(`${date}T00:00:00Z`)) ||
+    new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date
+  )
+    return invalid("Enter a valid calendar date.");
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))
+    return invalid("Use 24-hour HH:mm, from 00:00 to 23:59.");
+  const local = `${date}T${time}`;
+  const candidates = zonedInstants(local, timeZone);
+  if (!candidates.length)
+    return invalid(
+      "This local time does not exist. Choose a time outside the clock change.",
+    );
+  // Retain the exact saved representation, seconds and offset on a no-op edit.
+  if (
+    (!offset ||
+      Math.floor(Date.parse(offset) / 60000) ===
+        Math.floor(Date.parse(original ?? "") / 60000)) &&
+    original &&
+    Number.isFinite(Date.parse(original)) &&
+    localDateTime(original, timeZone) === local
+  )
+    return { value: original, error: "", candidates };
+  if (candidates.length > 1 && !candidates.includes(offset))
+    return invalid(
+      "This time occurs twice. Choose the intended UTC offset.",
+      candidates,
+    );
+  return {
+    value: candidates.length === 1 ? candidates[0] : offset,
+    error: "",
+    candidates,
+  };
+}

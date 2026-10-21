@@ -151,13 +151,18 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Milestone 2 label", { exact: true })
         .fill("Synthetic competition start");
-      await page.getByLabel(/^Milestone 2 time/).fill("2027-04-20T20:30");
+      await page
+        .getByLabel("Milestone 2 time: date", { exact: true })
+        .fill("2027-04-20");
+      await page
+        .getByLabel("Milestone 2 time: time (HH:mm)", { exact: true })
+        .fill("20:30");
       await page
         .getByRole("button", { name: "Move milestone 2 up", exact: true })
         .click();
-      await expect(page.getByLabel(/^Milestone 1 time/)).toHaveValue(
-        "2027-04-20T20:30",
-      );
+      await expect(
+        page.getByLabel("Milestone 1 time: date", { exact: true }),
+      ).toHaveValue("2027-04-20");
       await page
         .getByRole("button", { name: "Save milestones", exact: true })
         .click();
@@ -174,9 +179,24 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Configure registration window", { exact: true })
         .check();
-      await page.getByLabel(/^Registration opens \(/).fill("2025-01-01T12:00");
-      await page.getByLabel(/^Registration closes \(/).fill("2099-01-01T20:00");
-      await page.getByLabel(/^Withdrawal deadline \(/).fill("2099-01-01T19:00");
+      await page
+        .getByLabel("Registration opens: date", { exact: true })
+        .fill("2025-01-01");
+      await page
+        .getByLabel("Registration opens: time (HH:mm)", { exact: true })
+        .fill("12:00");
+      await page
+        .getByLabel("Registration closes: date", { exact: true })
+        .fill("2099-01-01");
+      await page
+        .getByLabel("Registration closes: time (HH:mm)", { exact: true })
+        .fill("20:00");
+      await page
+        .getByLabel("Withdrawal deadline: date", { exact: true })
+        .fill("2099-01-01");
+      await page
+        .getByLabel("Withdrawal deadline: time (HH:mm)", { exact: true })
+        .fill("19:00");
       await page
         .getByRole("button", { name: "Add question", exact: true })
         .click();

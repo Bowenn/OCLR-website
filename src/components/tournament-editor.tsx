@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { registrationBlockers, type Edition } from "@/lib/editions";
 import type { tournamentForAdmin } from "@/lib/tournaments";
@@ -408,6 +408,9 @@ function Registration({ data, saved }: EditorProps) {
   const [withdrawUntil, setWithdraw] = useState<string | null>(
     e.registration?.withdrawUntil ?? null,
   );
+  const [opensValid, setOpensValid] = useState(Boolean(opensAt));
+  const [closesValid, setClosesValid] = useState(Boolean(closesAt));
+  const [withdrawValid, setWithdrawValid] = useState(true);
   const [questions, setQuestions] = useState(e.registration?.questions ?? []);
   const blockers = registrationBlockers(
     e,
@@ -439,18 +442,21 @@ function Registration({ data, saved }: EditorProps) {
             value={opensAt}
             timeZone={e.timeZone}
             onChange={setOpens}
+            onValidityChange={setOpensValid}
           />
           <ZonedDateInput
             label="Registration closes"
             value={closesAt}
             timeZone={e.timeZone}
             onChange={setCloses}
+            onValidityChange={setClosesValid}
           />
           <ZonedDateInput
             label="Withdrawal deadline"
             value={withdrawUntil}
             timeZone={e.timeZone}
             onChange={setWithdraw}
+            onValidityChange={setWithdrawValid}
             optional
           />
           {blockers.length > 0 && (
@@ -593,14 +599,21 @@ function Registration({ data, saved }: EditorProps) {
         label="Save registration settings"
         disabled={
           configured &&
-          (!opensAt || !closesAt || (enabled && blockers.length > 0))
+          (!opensValid ||
+            !closesValid ||
+            !withdrawValid ||
+            (enabled && blockers.length > 0))
         }
       />
     </section>
   );
 }
 function Schedule({ data, saved }: EditorProps) {
-  const [schedule, setSchedule] = useState(data.edition.schedule);
+  const [schedule, setSchedule] = useState(
+    data.edition.schedule.map((s, id) => ({ ...s, id })),
+  );
+  const nextId = useRef(schedule.length);
+  const [invalid, setInvalid] = useState<Record<number, boolean>>({});
   return (
     <section className="panel form-stack">
       <h2>Tournament milestones</h2>
@@ -609,7 +622,7 @@ function Schedule({ data, saved }: EditorProps) {
         blank for TBA.
       </p>
       {schedule.map((s, i) => (
-        <fieldset key={i} className="form-stack">
+        <fieldset key={s.id} className="form-stack">
           <legend>Milestone {i + 1}</legend>
           <label className="field">
             <span>Milestone {i + 1} label</span>
@@ -627,6 +640,11 @@ function Schedule({ data, saved }: EditorProps) {
           </label>
           <ZonedDateInput
             label={`Milestone ${i + 1} time`}
+            onValidityChange={(valid) =>
+              setInvalid((old) =>
+                old[s.id] === !valid ? old : { ...old, [s.id]: !valid },
+              )
+            }
             value={s.at}
             timeZone={data.edition.timeZone}
             optional
@@ -663,7 +681,12 @@ function Schedule({ data, saved }: EditorProps) {
         type="button"
         className="secondary"
         disabled={schedule.length >= 64}
-        onClick={() => setSchedule([...schedule, { label: "", at: null }])}
+        onClick={() =>
+          setSchedule([
+            ...schedule,
+            { label: "", at: null, id: nextId.current++ },
+          ])
+        }
       >
         Add milestone
       </button>
@@ -671,7 +694,8 @@ function Schedule({ data, saved }: EditorProps) {
         data={data}
         saved={saved}
         action="schedule"
-        fields={{ schedule }}
+        fields={{ schedule: schedule.map(({ label, at }) => ({ label, at })) }}
+        disabled={schedule.some((s) => invalid[s.id])}
         label="Save milestones"
       />
     </section>

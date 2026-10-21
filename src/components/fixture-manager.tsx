@@ -13,6 +13,7 @@ import {
 import { formatDate } from "@/lib/editions";
 import type { FixtureWorkspace } from "@/lib/fixtures";
 import { RefereeAssignment } from "./referee-assignment";
+import { ZonedDateInput } from "./zoned-date-input";
 import { ConfirmMutation } from "./confirm-mutation";
 type Fixture = FixtureWorkspace["fixtures"][number];
 type Round = FixtureWorkspace["rounds"][number];
@@ -35,9 +36,10 @@ function FixtureForm({
   const [awayTeamId, setAway] = useState(fixture?.awayTeamId ?? "");
   const [mappoolId, setPool] = useState(fixture?.mappoolId ?? "");
   const [position, setPosition] = useState(String(fixture?.position ?? 1));
-  const [time, setTime] = useState(
-    fixture?.scheduledAt?.toISOString().slice(0, 19) ?? "",
+  const [time, setTime] = useState<string | null>(
+    fixture?.scheduledAt?.toISOString() ?? null,
   );
+  const [timeValid, setTimeValid] = useState(true);
   const [timeZone, setZone] = useState(fixture?.timeZone ?? data.timeZone);
   const [status, setStatus] = useState(fixture?.status ?? "scheduled");
   const [homeSourceId, setHomeSource] = useState(fixture?.homeSourceId ?? "");
@@ -56,7 +58,7 @@ function FixtureForm({
     awayTeamId: awayTeamId || null,
     mappoolId: mappoolId || null,
     position: Number(position),
-    scheduledAt: time ? `${time}${time.length === 16 ? ":00" : ""}Z` : null,
+    scheduledAt: time,
     timeZone,
     status,
     homeSourceId: homeSourceId || null,
@@ -185,22 +187,25 @@ function FixtureForm({
         </select>
       </label>
       <label className="field">
-        <span>Scheduled date and time (UTC; optional)</span>
-        <input
-          type="datetime-local"
-          step={1}
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-        />
-      </label>
-      <label className="field">
-        <span>Display time zone (IANA)</span>
+        <span>Time zone (IANA)</span>
         <input
           value={timeZone}
           maxLength={80}
           onChange={(e) => setZone(e.target.value)}
         />
       </label>
+      <p className="muted small">
+        Changing the time zone keeps the scheduled instant and updates the
+        displayed local time.
+      </p>
+      <ZonedDateInput
+        label="Scheduled date and time"
+        value={time}
+        timeZone={timeZone}
+        onChange={setTime}
+        onValidityChange={setTimeValid}
+        optional
+      />
       <label className="field">
         <span>Fixture status</span>
         <select
@@ -226,9 +231,10 @@ function FixtureForm({
       <ConfirmMutation
         requireConfirmation={false}
         onSuccess={onSaved}
+        disabled={!timeValid}
         label={fixture ? "Save fixture amendment" : "Create fixture"}
         title={fixture ? "Amend fixture?" : "Create fixture?"}
-        description={`${fixture ? "Amend" : "Create"} ${label || "the fixture"}. Times are entered in UTC and displayed in ${timeZone || "the configured zone"}. Referee assignments and all changes are audited.`}
+        description={`${fixture ? "Amend" : "Create"} ${label || "the fixture"}. Times are entered in ${timeZone || "the configured zone"}. Referee assignments and all changes are audited.`}
         url={`/api/admin/tournaments/${slug}/matches`}
         payload={payload}
       />

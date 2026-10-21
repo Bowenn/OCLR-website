@@ -3248,3 +3248,44 @@ body:has(.presenter-view) .site-footer,
   white-space: nowrap;
   border: 0;
 }
+
+/* Compact wall-clock editing; the browser calendar is separate from 24-hour text. */
+.form-stack .zoned-date-input {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.form-stack .zoned-date-input legend {
+  padding-inline: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.zoned-date-input > p {
+  margin: 0.35rem 0 0.65rem;
+}
+.zoned-date-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.65rem;
+}
+.zoned-date-fields > .field:first-child {
+  flex: 0 1 11rem;
+  min-width: 0;
+}
+.zoned-date-fields > .field:nth-child(2) {
+  flex: 0 1 7rem;
+  min-width: 0;
+}
+.zoned-date-fields input {
+  min-height: 44px;
+  font-variant-numeric: tabular-nums;
+}
+.zoned-date-fields input[type="date"] {
+  max-width: 100%;
+}
+.zoned-offset {
+  margin-top: 0.65rem;
+  max-width: 28rem;
+}
