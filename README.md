@@ -56,7 +56,7 @@ Staff enter `/admin` for a role-aware overview, then select a tournament at `/ad
 
 ## Release operations
 
-The entry point is `bash scripts/production.sh` (also available through the npm aliases).
+First-install/start commands use `bash scripts/production.sh`; routine whole-site updates use `bash scripts/update.sh` (also available through npm aliases).
 
 Target topology: Rocky Linux 10 application host, existing separate PostgreSQL, and existing separate Nginx. See [host/database/proxy steps and example configuration](docs/deployment.md#rocky-linux-10-application-host).
 
@@ -65,6 +65,8 @@ After configuring approved server environment variables, injecting `MIGRATION_DA
 Run `npm run production:start` under your process supervisor. It rechecks configuration/schema, then serves the existing build on `127.0.0.1:3000` by default. For the separate Nginx host, set `OCLR_BIND_HOST` to the app host’s actual private IP and restrict `PORT` (default 3000) to Nginx’s source IP. Start never migrates or builds. The shell executes Node directly so systemd signals reach the server. Use Node.js 24 LTS and an HTTPS reverse proxy configured for the real `APP_URL`; no domain, TLS or service account is assumed. Both commands use exported environment variables; the shell script does not load environment files. Source only a trusted, protected shell-compatible configuration file before setup, or inject settings through your secret manager/systemd. Keep production checkout directories free of local environment files; Next.js itself still supports its normal environment-file behavior. Keep all environment files untracked.
 
 Preview either command safely with `-- --dry-run`; dry-run does not read environment files, install packages, connect to the database or start a server. These commands do not certify live OAuth, hosted deployment, approved rules or organizer rehearsal. See `docs/deployment.md` for backup, privileges, rollback and external release gates.
+
+For subsequent updates, use a clean operator checkout and `npm run production:update -- --ref FULL_REVIEWED_COMMIT_SHA --apply`. The single-host Bash workflow builds a new release, checks the expected database and migration hashes, stops writes, creates/decodes a private PostgreSQL backup, applies only pending migrations, checks runtime readiness, switches the systemd service and verifies the exact release locally and through HTTPS. The previous directory stays available. It never resets/restores the database automatically; uncertain schema/activation failures leave the service stopped for deliberate recovery. Configure the service permissions and follow [the update/recovery runbook](docs/deployment.md#routine-whole-site-updates) first; preview with `--dry-run`.
 
 [Deployment and recovery](docs/deployment.md) covers environments, migrations, HTTPS/Host routing, privacy operations, backups/rollback, logging, ingress limits and the unresolved external launch gates. `npm run release:check` is an explicit configuration/database preflight; it is not a claim that deployment or live osu! verification succeeded. `npm run db:cleanup` removes expired sessions/state. CI provisions isolated PostgreSQL, applies migrations and runs static checks, database tests, production build, desktop/mobile browser workflows, accessibility checks and the production dependency audit.
 

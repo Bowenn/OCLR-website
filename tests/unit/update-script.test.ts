@@ -1,0 +1,235 @@
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import {
+  mkdtempSync,
+  mkdirSync,
+  copyFileSync,
+  writeFileSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  readlinkSync,
+  realpathSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const source = fileURLToPath(new URL("../../scripts/", import.meta.url));
+const old = "1".repeat(40),
+  next = "2".repeat(40);
+function rehearsal(failure = "") {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "oclr-update-test-")));
+  const repo = join(root, "repository"),
+    install = join(root, "install"),
+    bin = join(root, "bin");
+  const previous = join(install, "releases/previous"),
+    archive = join(root, "archive");
+  for (const path of [
+    bin,
+    join(repo, "scripts"),
+    previous,
+    join(archive, "scripts"),
+  ])
+    mkdirSync(path, { recursive: true });
+  for (const file of ["update.sh", "production.sh"])
+    copyFileSync(join(source, file), join(repo, "scripts", file));
+  copyFileSync(
+    join(source, "production.sh"),
+    join(archive, "scripts/production.sh"),
+  );
+  writeFileSync(
+    join(archive, "scripts/deployment-db.ts"),
+    "// mocked database transport in this orchestration test\n",
+  );
+  writeFileSync(join(previous, ".oclr-release"), old);
+  symlinkSync(previous, join(install, "current"));
+  writeFileSync(join(root, "active"), "yes");
+  writeFileSync(join(root, "commands"), "");
+  // Commands replace external systems only. The actual Bash updater owns sequencing,
+  // activation and failure cleanup, including real temporary directories/symlinks.
+  const mock = `#!${process.execPath}
+const fs = require('fs'), cp = require('child_process');
+const path = require('path');
+const name = path.basename(process.argv[1]), a = process.argv.slice(2), env = process.env;
+const root = env.REHEARSAL_ROOT, fail = env.REHEARSAL_FAILURE;
+const log = line => fs.appendFileSync(root+'/commands', line+'\\n');
+if (name === 'git') {
+ const args = a.slice(2), op = args[0];
+ if (op === 'status') { if (fail === 'dirty') console.log(' M user-file'); }
+ else if (op === 'archive') { const r=cp.spawnSync('/usr/bin/tar',['-c','-C',root+'/archive','.']); process.stdout.write(r.stdout); process.exit(r.status); }
+ else if (op === 'diff') process.exit(0);
+ else log('git '+args.join(' '));
+} else if (name === 'node') {
+ if (a[0] === '--version') console.log(process.version);
+ else {
+  const mode = a[3];
+  log('db '+mode+' migration='+Boolean(env.MIGRATION_DATABASE_URL));
+  if (mode === 'apply' && fail !== 'backup') fs.writeFileSync(a[4]+'/migration.started','test-migration');
+  if (mode === 'apply' && fail === 'interrupt') { process.kill(process.ppid, 'SIGTERM'); setInterval(() => {}, 1000); }
+  if ((mode === 'inspect' && fail === 'inspect') || (mode === 'apply' && ['backup','migration'].includes(fail)) || (mode === 'health' && fail === 'health')) process.exit(7);
+ }
+} else if (name === 'npm') {
+ log('npm '+a.join(' ')+' migration='+Boolean(env.MIGRATION_DATABASE_URL));
+ if ((a.join(' ') === 'run build' && fail === 'build') || (a.join(' ') === 'run release:check' && fail === 'preflight')) process.exit(7);
+} else if (name === 'systemctl') {
+ if (a[0] === 'show') console.log(a[1].includes('User') ? cp.execFileSync('/usr/bin/id',['-un'],{encoding:'utf8'}).trim() : root+'/install/current');
+ else if (a[0] === 'is-active') process.exit(fs.readFileSync(root+'/active','utf8') === 'yes' ? 0 : 3);
+ else { log('service '+a[0]); fs.writeFileSync(root+'/active',a[0]==='start'?'yes':'no'); if (a[0] === 'start' && fail === 'start') process.exit(7); }
+} else if (name === 'sudo') {
+ if (a.includes('-l')) process.exit(0);
+ const r=cp.spawnSync(a[1],a.slice(2),{stdio:'inherit',env}); process.exit(r.status);
+} else if (name === 'stat') console.log(process.getuid());
+else if (name === 'readlink') console.log(fs.realpathSync(a.at(-1)));
+else if (name === 'mv') fs.renameSync(a.at(-2),a.at(-1));
+else if (name === 'chmod') fs.chmodSync(a.at(-1), 0o700);
+else if (name === 'ln') fs.symlinkSync(a.at(-2), a.at(-1));
+else if (name === 'flock') process.exit(fail === 'lock' ? 1 : 0);
+else throw new Error('Unexpected external backup command');
+`;
+  for (const name of [
+    "git",
+    "node",
+    "npm",
+    "systemctl",
+    "sudo",
+    "stat",
+    "readlink",
+    "mv",
+    "flock",
+    "pg_dump",
+    "pg_restore",
+    "chmod",
+    "ln",
+  ])
+    writeFileSync(join(bin, name), mock, { mode: 0o700 });
+  try {
+    const result = spawnSync(
+      "/bin/bash",
+      [
+        join(repo, "scripts/update.sh"),
+        "--ref",
+        failure === "same" ? old : next,
+        "--apply",
+      ],
+      {
+        encoding: "utf8",
+        timeout: 10000,
+        env: {
+          ...process.env,
+          PATH: `${bin}:/usr/bin:/bin`,
+          REHEARSAL_ROOT: root,
+          REHEARSAL_FAILURE: failure,
+          OCLR_INSTALL_DIR: install,
+          OCLR_BACKUP_DIR: join(root, "backups"),
+          OCLR_ENVIRONMENT: "staging",
+          OCLR_EXPECTED_DB_HOST: "db.invalid",
+          OCLR_EXPECTED_DB_NAME: "oclr_test",
+          DATABASE_URL: "postgres://runtime@db.invalid/oclr_test",
+          MIGRATION_DATABASE_URL:
+            "postgres://must-not-be-logged@db.invalid/oclr_test",
+          APP_URL: "https://oclr.example.test",
+        },
+      },
+    );
+    return {
+      result,
+      calls: readFileSync(join(root, "commands"), "utf8").trim().split("\n"),
+      active: readFileSync(join(root, "active"), "utf8"),
+      switched: readlinkSync(join(install, "current")) !== previous,
+      oldPreserved:
+        readFileSync(join(previous, ".oclr-release"), "utf8") === old,
+    };
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+}
+describe("Bash site updates", () => {
+  it("previews a pinned update without commands, dependencies or credentials", () => {
+    const result = spawnSync(
+      "/bin/bash",
+      [join(source, "update.sh"), "--ref", next, "--dry-run"],
+      {
+        encoding: "utf8",
+        env: {
+          NODE_ENV: "test",
+          PATH: "/nonexistent",
+          MIGRATION_DATABASE_URL: "secret-url",
+        },
+      },
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(next);
+    expect(result.stdout).not.toContain("secret-url");
+    expect(
+      spawnSync("/bin/bash", [
+        join(source, "update.sh"),
+        "--ref",
+        "main",
+        "--apply",
+      ]).status,
+    ).toBe(1);
+  });
+  it("builds separately, stops writes before backup/migration, activates and checks health", () => {
+    const run = rehearsal();
+    expect(run.result.status, run.result.stderr).toBe(0);
+    expect(run.active).toBe("yes");
+    expect(run.switched).toBe(true);
+    expect(run.oldPreserved).toBe(true);
+    const calls = run.calls;
+    expect(calls.indexOf("npm run build migration=false")).toBeLessThan(
+      calls.indexOf("service stop"),
+    );
+    expect(calls.indexOf("service stop")).toBeLessThan(
+      calls.indexOf("db apply migration=true"),
+    );
+    expect(calls.indexOf("npm run release:check migration=false")).toBeLessThan(
+      calls.indexOf("service start"),
+    );
+    expect(calls.at(-1)).toBe("db health migration=false");
+    expect(run.result.stdout + run.result.stderr).not.toContain(
+      "must-not-be-logged",
+    );
+  });
+  it("retries an already active SHA by checking health without migration or service changes", () => {
+    const run = rehearsal("same");
+    expect(run.result.status, run.result.stderr).toBe(0);
+    expect(run.active).toBe("yes");
+    expect(run.switched).toBe(false);
+    expect(run.calls.filter((call) => call.startsWith("db "))).toEqual([
+      "db health migration=false",
+    ]);
+    expect(
+      run.calls.some(
+        (call) => call.startsWith("npm ") || call.startsWith("service "),
+      ),
+    ).toBe(false);
+  });
+  it.each(["build", "inspect", "lock", "dirty"])(
+    "leaves the existing release online when %s fails before maintenance",
+    (failure) => {
+      const run = rehearsal(failure);
+      expect(run.result.status).not.toBe(0);
+      expect(run.active).toBe("yes");
+      expect(run.switched).toBe(false);
+      expect(run.calls).not.toContain("service stop");
+    },
+  );
+  it("restarts the unchanged release if backup fails before any migration", () => {
+    const run = rehearsal("backup");
+    expect(run.result.status).toBe(7);
+    expect(run.active).toBe("yes");
+    expect(run.switched).toBe(false);
+    expect(run.calls).toContain("service start");
+  });
+  it.each(["migration", "preflight", "start", "health", "interrupt"])(
+    "keeps service stopped and preserves the previous release after uncertain %s failure",
+    (failure) => {
+      const run = rehearsal(failure);
+      expect(run.result.status).toBe(failure === "interrupt" ? 143 : 7);
+      expect(run.active).toBe("no");
+      expect(run.oldPreserved).toBe(true);
+      expect(run.result.stdout).toContain("Service kept stopped");
+    },
+  );
+});

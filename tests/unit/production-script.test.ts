@@ -22,7 +22,7 @@ function run(args: string[], env: Record<string, string> = {}) {
   });
 }
 describe("production operator commands", () => {
-  function simulatedSetup(failMigration = false) {
+  function simulatedSetup(failMigration = false, action = "setup") {
     const directory = mkdtempSync(join(tmpdir(), "oclr-shell-deploy-"));
     try {
       const log = join(directory, "commands.log");
@@ -38,7 +38,7 @@ exit 0
 `,
         { mode: 0o700 },
       );
-      const result = run(["setup", "--apply"], {
+      const result = run([action, "--apply"], {
         PATH: directory,
         DATABASE_URL: "postgres://runtime@db.invalid/oclr",
         MIGRATION_DATABASE_URL: "postgres://migrator@db.invalid/oclr",
@@ -61,6 +61,15 @@ exit 0
       "run build|runtime|unset",
     ]);
     expect(result.stdout + result.stderr).not.toContain("postgres://");
+  });
+  it("prepares a candidate without exposing migration credentials or changing the database", () => {
+    const { result, calls } = simulatedSetup(false, "prepare");
+    expect(result.status).toBe(0);
+    expect(calls).toEqual([
+      "ci --include=dev|runtime|unset",
+      "run check|runtime|unset",
+      "run build|runtime|unset",
+    ]);
   });
   it("stops on failed migration and never reaches release checking or build", () => {
     const { result, calls } = simulatedSetup(true);

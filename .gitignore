@@ -8,3 +8,6 @@ test-results/
 .env*
 !.env.example
 .DS_Store
+
+# Generated only in versioned deployment releases.
+.oclr-release

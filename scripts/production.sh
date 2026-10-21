@@ -5,13 +5,13 @@ set +x
 set -Eeuo pipefail
 
 fail() { printf '%s\n' "$1" >&2; exit 1; }
-usage='Usage: bash scripts/production.sh setup --apply | setup --dry-run | start [--dry-run]'
+usage='Usage: bash scripts/production.sh setup|prepare --apply|--dry-run | start [--dry-run]'
 action=${1-}
 option=${2-}
 [[ $# -le 2 ]] || fail "$usage"
 case "$action:$option" in
-  setup:--dry-run|start:--dry-run) dry_run=true ;;
-  setup:--apply|start:) dry_run=false ;;
+  setup:--dry-run|prepare:--dry-run|start:--dry-run) dry_run=true ;;
+  setup:--apply|prepare:--apply|start:) dry_run=false ;;
   setup:) fail 'Setup changes the database. Verify the target, reviewed release and recoverable backup, then run: bash scripts/production.sh setup --apply' ;;
   *) fail "$usage" ;;
 esac
@@ -72,19 +72,25 @@ if ! "$dry_run"; then
   [[ "$APP_URL" == https://* ]] || fail 'Production APP_URL must use HTTPS.'
 fi
 
-if [[ "$action" == setup ]]; then
-  if ! "$dry_run"; then
+if [[ "$action" == setup || "$action" == prepare ]]; then
+  if [[ "$action" == setup ]] && ! "$dry_run"; then
     [[ -n "$migration_url" ]] || fail 'Setup requires MIGRATION_DATABASE_URL for this invocation only.'
   fi
   run 'npm ci --include=dev' npm ci --include=dev
-  run 'npm run db:migrate' migrate
+  if [[ "$action" == setup ]]; then
+    run 'npm run db:migrate' migrate
+  fi
   unset migration_url
-  run 'npm run release:check' npm run release:check
+  if [[ "$action" == setup ]]; then
+    run 'npm run release:check' npm run release:check
+  else
+    run 'npm run check' npm run check
+  fi
   run 'npm run build' npm run build
   if "$dry_run"; then
-    printf '%s\n' 'Setup preview only; no commands executed.'
+    printf '%s\n' 'Preparation preview only; no commands executed.'
   else
-    printf '%s\n' 'Setup complete. Start with bash scripts/production.sh start.'
+    printf '%s\n' "$action complete. Start with bash scripts/production.sh start."
   fi
 else
   unset migration_url
