@@ -4,7 +4,7 @@ import { getPublicEdition } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { HttpError } from "@/lib/http";
 import { Action, PageHeading } from "@/components/ui";
-import { Avatar } from "@/components/avatar";
+import { PublicPlayerIdentity } from "@/components/public-player-identity";
 export const metadata = {
   title: "Players",
   description: "Accepted players and announced teams for this OCLR tournament.",
@@ -62,28 +62,8 @@ export default async function Players({
         <ul className="player-directory">
           {rows.map((p) => (
             <li className="panel" key={`${p.editionSlug}-${p.osuId}`}>
-              <div className="directory-identity">
-                <Avatar osuId={p.osuId} username={p.username} />
-                <div>
-                  <h2>
-                    <a
-                      className="text-link"
-                      href={`https://osu.ppy.sh/users/${p.osuId}`}
-                    >
-                      {p.username} ↗
-                    </a>
-                  </h2>
-                  <p className="small muted">
-                    osu! ID {p.osuId}
-                    {p.captain && (
-                      <>
-                        {" "}
-                        · <span className="badge">Captain</span>
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
+              <PublicPlayerIdentity osuId={p.osuId} username={p.username} />
+              {p.captain && <span className="badge">Captain</span>}
               <dl className="directory-details">
                 <div>
                   <dt>Edition</dt>

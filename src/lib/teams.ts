@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -8,6 +8,7 @@ import {
   memberships,
   teams,
   users,
+  userProfileCache,
   draftSessions,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
@@ -254,6 +255,7 @@ export async function publishedTeams(slug: string) {
           id: teams.id,
           name: teams.name,
           captainId: teams.captainId,
+          captainName: users.username,
           finalizedAt: teams.finalizedAt,
           rosterPublished: teams.rosterPublished,
         })
@@ -265,6 +267,7 @@ export async function publishedTeams(slug: string) {
             eq(captains.userId, teams.captainId),
           ),
         )
+        .innerJoin(users, eq(users.osuId, teams.captainId))
         .where(
           and(
             eq(teams.editionSlug, slug),
@@ -279,9 +282,26 @@ export async function publishedTeams(slug: string) {
         const members =
           team.finalizedAt && team.rosterPublished
             ? await tx
-                .select({ osuId: memberships.userId, username: users.username })
+                .select({
+                  osuId: memberships.userId,
+                  username: users.username,
+                  countryCode: sql<
+                    string | null
+                  >`${userProfileCache.profile}->>'countryCode'`,
+                  countryName: sql<
+                    string | null
+                  >`${userProfileCache.profile}->>'countryName'`,
+                })
                 .from(memberships)
                 .innerJoin(users, eq(users.osuId, memberships.userId))
+                .leftJoin(
+                  userProfileCache,
+                  and(
+                    eq(userProfileCache.osuId, memberships.userId),
+                    eq(userProfileCache.mode, "osu"),
+                    sql`${userProfileCache.errorStatus} IS DISTINCT FROM 404`,
+                  ),
+                )
                 .where(
                   and(
                     eq(memberships.teamId, team.id),
@@ -294,6 +314,7 @@ export async function publishedTeams(slug: string) {
           id: team.id,
           name: team.name,
           captainId: team.captainId,
+          captainName: team.captainName,
           finalized: Boolean(team.finalizedAt),
           members,
         });

@@ -35,7 +35,13 @@ export default async function Profile({
     throw e;
   }
   return (
-    <div className="container page">
+    <div
+      className={
+        query.edition
+          ? "public-tournament public-player-page"
+          : "container page"
+      }
+    >
       <Link
         className="text-link"
         href={
