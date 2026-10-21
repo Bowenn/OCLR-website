@@ -1619,13 +1619,6 @@ body:has(.presenter-view) .site-footer,
     gap: 3rem;
   }
 }
-.loading-state {
-  padding: 3rem 1.25rem;
-  width: 100%;
-  max-width: 1240px;
-  margin-inline: auto;
-  min-height: 35vh;
-}
 @media (max-width: 380px) {
   .nav-wrap {
     padding-inline: 0.9rem;
