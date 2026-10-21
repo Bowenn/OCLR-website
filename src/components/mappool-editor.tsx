@@ -348,7 +348,12 @@ export function MappoolEditor({
   const [category, setCategory] = useState<(typeof categories)[number]>("NM");
   const [task, setTask] = useState<Task>("maps");
   const [setup, setSetup] = useState<Setup | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const [feedback, updateFeedback] = useState("");
+  const [feedbackFailed, setFeedbackFailed] = useState(false);
+  function setFeedback(message: string, failed = false) {
+    updateFeedback(message);
+    setFeedbackFailed(failed);
+  }
   const rounds = data.rounds.filter((r) => r.stage === stage);
   const round = rounds.find((r) => r.id === roundId) ?? rounds[0];
   const pools = data.pools.filter((p) => p.roundId === round?.id);
@@ -521,7 +526,10 @@ export function MappoolEditor({
         </section>
       )}
       {feedback && (
-        <div role="status" className="mappool-feedback">
+        <div
+          role={feedbackFailed ? "alert" : "status"}
+          className={`mappool-feedback${feedbackFailed ? " is-error" : ""}`}
+        >
           {feedback}
         </div>
       )}

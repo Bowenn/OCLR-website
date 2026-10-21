@@ -28,7 +28,7 @@ export function MappoolOrder({
   category: MappoolCategory;
   entries: Entry[];
   editable: boolean;
-  onFeedback: (message: string) => void;
+  onFeedback: (message: string, failed?: boolean) => void;
   renderActions: (entry: Entry) => ReactNode;
 }) {
   const router = useRouter();
@@ -176,6 +176,7 @@ export function MappoolOrder({
       setOrder(entries.map((e) => e.id));
       onFeedback(
         `Order could not be confirmed. Refreshing the saved order. ${error instanceof Error ? error.message : "Check your connection before retrying."}`,
+        true,
       );
       router.refresh();
     } finally {

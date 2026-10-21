@@ -2712,6 +2712,9 @@ body:has(.presenter-view) .site-footer,
   font-size: 0.8rem;
   color: #84e4c2;
 }
+.mappool-feedback.is-error {
+  color: var(--color-danger);
+}
 @media (max-width: 600px) {
   .mappool-context > .mappool-toolbar {
     align-items: stretch;

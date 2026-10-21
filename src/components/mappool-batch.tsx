@@ -22,7 +22,7 @@ export function MappoolBatch({
   url: string;
   pool: Pool;
   entries: MappoolWorkspace["entries"];
-  onFeedback: (message: string) => void;
+  onFeedback: (message: string, failed?: boolean) => void;
 }) {
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<MappoolBatchPreview | null>(null);
@@ -243,6 +243,7 @@ export function MappoolBatch({
                 onError={(message) =>
                   onFeedback(
                     `Batch was not saved. ${message} Preview the batch again.`,
+                    true,
                   )
                 }
                 payload={{

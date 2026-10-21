@@ -57,6 +57,7 @@ test.describe("quick paste and mappool ordering", () => {
       "2 · NM2",
       "3 · NM3",
     ]);
+    await expect(page).toHaveTitle("Manage mappools");
     expect(
       (
         await new AxeBuilder({ page })
@@ -111,6 +112,9 @@ test.describe("quick paste and mappool ordering", () => {
     await expect(page.locator(".mappool-feedback")).toContainText(
       "Batch was not saved",
     );
+    await expect(
+      page.getByRole("alert").filter({ hasText: "Batch was not saved" }),
+    ).toHaveClass(/is-error/);
     await expect(rows).toHaveValue("101\n102\nHD1 123");
     await expect(table).toHaveCount(0);
     await page
@@ -346,6 +350,9 @@ test.describe("quick paste and mappool ordering", () => {
     await expect(page.locator(".mappool-feedback")).toContainText(
       "This pool changed",
     );
+    await expect(
+      page.getByRole("alert").filter({ hasText: "This pool changed" }),
+    ).toHaveCSS("color", "rgb(255, 158, 175)");
     await expect.poll(uiOrder).toEqual(authoritative);
     await expect(save).toBeDisabled();
     data = await (await page.request.get(api)).json();
@@ -353,6 +360,7 @@ test.describe("quick paste and mappool ordering", () => {
       data.entries.find((e: { category: string }) => e.category === "HD")
         .position,
     ).toBe(7);
+    await expect(page).toHaveTitle("Manage mappools");
     expect(
       (
         await new AxeBuilder({ page })
