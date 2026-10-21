@@ -3545,7 +3545,7 @@ body:has(.presenter-view) .site-footer,
 }
 .account-menu {
   --account-surface: #151827;
-  --account-border: #996ab0;
+  --account-border: #685175;
   position: relative;
   isolation: isolate;
 }
@@ -3568,9 +3568,9 @@ body:has(.presenter-view) .site-footer,
   z-index: 1;
   right: 0;
   top: calc(100% - 1px);
-  width: 14.5rem;
+  width: 16.5rem;
   max-width: calc(100vw - 2rem);
-  padding: 0.45rem;
+  padding: 0.3rem;
   background: var(--account-surface);
   border: 1px solid var(--account-border);
   border-radius: 0.65rem 0 0.65rem 0.65rem;
@@ -3582,7 +3582,7 @@ body:has(.presenter-view) .site-footer,
   align-items: center;
   gap: 0.65rem;
   min-height: 44px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.4rem 0.65rem;
   border-radius: 0.35rem;
   font-size: 0.85rem;
   color: #d3d4e2;
