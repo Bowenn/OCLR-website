@@ -423,9 +423,7 @@ function Registration({ data, saved }: EditorProps) {
     <section className="panel form-stack">
       <h2>Registration settings</h2>
       <p className="muted small">
-        Publication and entry availability are separate. Configure dates with
-        registration paused, then explicitly enable it after the prerequisites
-        are ready.
+        Enable ahead of time; applications are accepted only within this window.
       </p>
       <label className="check-field">
         <input
@@ -469,10 +467,6 @@ function Registration({ data, saved }: EditorProps) {
               </ul>
             </aside>
           )}
-          <p className="muted small">
-            Enable in advance to open automatically. Submissions are accepted
-            only between the opening and closing times, in {e.timeZone}.
-          </p>
           <label className="check-field">
             <input
               type="checkbox"

@@ -68,6 +68,12 @@ export function ZonedDateInput({
         Math.floor(Date.parse(candidate) / 60000) ===
           Math.floor(Date.parse(value) / 60000),
     ) ?? draft.offset;
+  const offset =
+    result.value && timeZone !== "UTC"
+      ? new Intl.DateTimeFormat("en", { timeZone, timeZoneName: "longOffset" })
+          .formatToParts(new Date(result.value))
+          .find((part) => part.type === "timeZoneName")?.value
+      : null;
   return (
     <fieldset
       className="zoned-date-input"
@@ -75,14 +81,11 @@ export function ZonedDateInput({
     >
       <legend>
         {label}
-        {optional ? " · optional / TBA" : " · required"}
+        {optional ? " (optional)" : ""}
       </legend>
-      <p id={`${id}-help`} className="muted small">
-        {timeZone} · 24-hour time
-      </p>
       <div className="zoned-date-fields">
         <label className="field">
-          <span>Date</span>
+          <span className="sr-only">Date</span>
           <input
             aria-label={`${label}: date`}
             type="date"
@@ -93,41 +96,47 @@ export function ZonedDateInput({
             onChange={(event) => edit(event.target.value, draft.time)}
           />
         </label>
-        <label className="field">
-          <span>Time (HH:mm)</span>
-          <input
-            aria-label={`${label}: time (HH:mm)`}
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="HH:mm"
-            maxLength={5}
-            required={!optional}
-            value={draft.time}
-            aria-invalid={!valid}
-            aria-describedby={result.error ? `${id}-error` : `${id}-help`}
-            onChange={(event) => {
-              const text = event.target.value;
-              // Numeric mobile keyboards need no colon key: 1510 → 15:10.
-              edit(
-                draft.date,
-                /^\d{4}$/.test(text)
-                  ? `${text.slice(0, 2)}:${text.slice(2)}`
-                  : text,
-              );
-            }}
-          />
-        </label>
-        {optional && (
-          <button
-            type="button"
-            className="secondary"
-            disabled={!draft.date && !draft.time}
-            onClick={() => edit("", "")}
-          >
-            Clear / TBA<span className="sr-only"> {label}</span>
-          </button>
-        )}
+        <div className="zoned-time">
+          <label className="field">
+            <span className="sr-only">Time (HH:mm)</span>
+            <input
+              aria-label={`${label}: time (HH:mm)`}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="HH:mm"
+              maxLength={5}
+              required={!optional}
+              value={draft.time}
+              aria-invalid={!valid}
+              aria-describedby={result.error ? `${id}-error` : `${id}-help`}
+              onChange={(event) => {
+                const text = event.target.value;
+                // Numeric mobile keyboards need no colon key: 1510 → 15:10.
+                edit(
+                  draft.date,
+                  /^\d{4}$/.test(text)
+                    ? `${text.slice(0, 2)}:${text.slice(2)}`
+                    : text,
+                );
+              }}
+            />
+          </label>
+          <span id={`${id}-help`} className="zoned-date-zone muted small">
+            {timeZone}
+            {offset ? ` (${offset})` : ""}
+          </span>
+          {optional && (
+            <button
+              type="button"
+              className="secondary"
+              disabled={!draft.date && !draft.time}
+              onClick={() => edit("", "")}
+            >
+              Clear<span className="sr-only"> {label}</span>
+            </button>
+          )}
+        </div>
       </div>
       {result.candidates.length > 1 && (
         <label className="field zoned-offset">

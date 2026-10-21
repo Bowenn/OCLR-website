@@ -125,7 +125,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
     ).toBeDisabled();
     await page
       .getByRole("button", {
-        name: "Clear / TBA Withdrawal deadline",
+        name: "Clear Withdrawal deadline",
         exact: true,
       })
       .click();
@@ -198,7 +198,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
     );
     await page
       .getByRole("button", {
-        name: "Clear / TBA Milestone 1 time",
+        name: "Clear Milestone 1 time",
         exact: true,
       })
       .click();
@@ -314,5 +314,109 @@ test.describe("compact zoned date and 24-hour time editing", () => {
     ).json();
     expect(amended.fixtures[0].scheduledAt).toBe(precise);
     expect(amended.fixtures[0].timeZone).toBe("UTC");
+  });
+  test("keeps compact zone suffixes authoritative after saved General settings", async ({
+    page,
+    context,
+    isMobile,
+  }) => {
+    const slug = `compact-zone-${isMobile ? "mobile" : "desktop"}`;
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await db().delete(editionState).where(eq(editionState.slug, slug));
+    const instant = "2026-10-11T15:10:42.123Z";
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        timeZone: "UTC",
+        registration: {
+          ...edition.registration!,
+          enabled: false,
+          opensAt: instant,
+          withdrawUntil: null,
+        },
+        schedule: [{ label: "Synthetic milestone", at: instant }],
+      },
+    ]);
+    const endpoint = `/api/admin/tournaments/${slug}`;
+    const group = () =>
+      page.getByRole("group", { name: "Registration opens", exact: true });
+    const suffix = () => group().locator(".zoned-date-zone");
+    const time = () =>
+      page.getByLabel("Registration opens: time (HH:mm)", { exact: true });
+    const tab = (name: string) =>
+      page
+        .getByRole("tablist", { name: "Tournament settings", exact: true })
+        .getByRole("tab", { name, exact: true })
+        .click();
+    async function saveZone(zone: string) {
+      await tab("General");
+      await page.getByLabel("IANA time zone", { exact: true }).fill(zone);
+      const response = page.waitForResponse(
+        (r) => r.url().endsWith(endpoint) && r.request().method() === "POST",
+      );
+      await page
+        .getByRole("button", { name: "Save general settings", exact: true })
+        .click();
+      expect((await response).status()).toBe(200);
+      await expect(page.getByRole("status")).toContainText("saved");
+      await tab("Registration");
+    }
+    await page.goto(`/admin/tournaments/${slug}/settings?section=registration`);
+    await expect(suffix()).toHaveText("UTC");
+    await expect(group().getByText("UTC", { exact: true })).toHaveCount(1);
+    await expect(time()).toHaveValue("15:10");
+    expect(
+      await suffix().evaluate((node) =>
+        Boolean(
+          node.previousElementSibling?.querySelector('input[type="text"]'),
+        ),
+      ),
+    ).toBe(true);
+    await tab("General");
+    await page
+      .getByLabel("IANA time zone", { exact: true })
+      .fill("Asia/Hong_Kong");
+    await tab("Registration");
+    await expect(suffix()).toHaveText("UTC");
+    await expect(time()).toHaveValue("15:10");
+    await saveZone("Asia/Hong_Kong");
+    await expect(suffix()).toHaveText("Asia/Hong_Kong (GMT+08:00)");
+    await expect(time()).toHaveValue("23:10");
+    expect(
+      (await (await context.request.get(endpoint)).json()).edition.registration
+        .opensAt,
+    ).toBe(instant);
+    await tab("Milestones");
+    await expect(
+      page.getByLabel("Milestone 1 time: time (HH:mm)", { exact: true }),
+    ).toHaveValue("23:10");
+    await expect(page.locator(".zoned-date-zone")).toHaveText(
+      "Asia/Hong_Kong (GMT+08:00)",
+    );
+    await saveZone("America/New_York");
+    await expect(time()).toHaveValue("11:10");
+    await expect(suffix()).toHaveText("America/New_York (GMT-04:00)");
+    await page
+      .getByLabel("Registration opens: date", { exact: true })
+      .fill("2026-11-10");
+    await expect(suffix()).toHaveText("America/New_York (GMT-05:00)");
+    expect(
+      (await (await context.request.get(endpoint)).json()).edition.registration
+        .opensAt,
+    ).toBe(instant);
+    await page.setViewportSize({ width: isMobile ? 320 : 1440, height: 900 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
   });
 });

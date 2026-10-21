@@ -3515,9 +3515,26 @@ body:has(.presenter-view) .site-footer,
   flex: 0 1 11rem;
   min-width: 0;
 }
-.zoned-date-fields > .field:nth-child(2) {
-  flex: 0 1 7rem;
+.zoned-date-fields {
+  margin-top: 0.5rem;
+  align-items: center;
+}
+.zoned-time {
+  display: flex;
+  flex: 1 1 15rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
   min-width: 0;
+}
+.zoned-time > .field {
+  flex: 0 0 7rem;
+}
+.zoned-date-zone {
+  overflow-wrap: anywhere;
+}
+.zoned-time > button {
+  flex-shrink: 0;
 }
 .zoned-date-fields input {
   min-height: 44px;
