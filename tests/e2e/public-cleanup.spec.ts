@@ -46,10 +46,18 @@ test.describe("concise public tournament surfaces", () => {
     await expect(page.getByRole("status")).toHaveText(
       "No players published yet",
     );
-    await expect(page.locator("footer")).toContainText("Emik");
-    await expect(
-      page.locator("footer a, footer button, footer nav"),
-    ).toHaveCount(0);
+    await expect(page.locator("footer")).not.toContainText("Emik");
+    const credit = page
+      .locator("footer")
+      .getByRole("link", { name: "Lapis", exact: true });
+    await expect(credit).toHaveAttribute(
+      "href",
+      "https://osu.ppy.sh/users/1176704",
+    );
+    await expect(credit).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(credit).toHaveAttribute("target", "_blank");
+    await expect(page.locator("footer a")).toHaveCount(1);
+    await expect(page.locator("footer button, footer nav")).toHaveCount(0);
     await page.goto("/about");
     await page
       .getByRole("link", { name: "privacy notice", exact: true })

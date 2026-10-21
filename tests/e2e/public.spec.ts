@@ -19,9 +19,7 @@ test("shared navigation works at desktop and mobile widths", async ({
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBeTruthy();
-  await expect(page.locator("footer a, footer button, footer nav")).toHaveCount(
-    0,
-  );
+  await expect(page.locator("footer button, footer nav")).toHaveCount(0);
   await page
     .getByRole("link", { name: "Login with osu!", exact: true })
     .click();

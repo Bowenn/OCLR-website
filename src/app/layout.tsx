@@ -59,8 +59,16 @@ export default async function RootLayout({
         <main id="main">{children}</main>
         <footer className="site-footer">
           <p>
-            © {new Date().getUTCFullYear()} Emik · OCLR — osu! Chinese League
-            Rookie
+            © {new Date().getUTCFullYear()}{" "}
+            <a
+              className="footer-credit"
+              href="https://osu.ppy.sh/users/1176704"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Lapis
+            </a>{" "}
+            · OCLR — osu! Chinese League Rookie
           </p>
           <p className="muted">Not affiliated with or endorsed by osu!.</p>
         </footer>

@@ -266,6 +266,17 @@ button:hover {
 .site-footer p {
   margin: 0;
 }
+.site-footer .footer-credit {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: #d6b5e880;
+  text-underline-offset: 0.2em;
+}
+.site-footer .footer-credit:hover,
+.site-footer .footer-credit:focus-visible {
+  color: #e6bcfa;
+  text-decoration-color: currentColor;
+}
 
 .skip-link {
   position: fixed;
