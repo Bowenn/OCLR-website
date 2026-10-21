@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
-import { EmptyState, PageHeading } from "@/components/ui";
+import { Action, EmptyState, PageHeading } from "@/components/ui";
 export const metadata = { title: "Tournament rules" };
 export default async function Rules({
   params,
@@ -13,7 +13,7 @@ export default async function Rules({
   return (
     <>
       <PageHeading eyebrow={edition.name} title="Rules">
-        Read the confirmed rules before applying.
+        Published rules and organizer updates for this edition.
       </PageHeading>
       {edition.rules ? (
         <article className="prose">
@@ -26,9 +26,17 @@ export default async function Rules({
           ))}
         </article>
       ) : (
-        <EmptyState title="Rules to be announced">
-          Registration remains unavailable until the rules are published.
-        </EmptyState>
+        <>
+          <EmptyState title="Rules to be announced">
+            Rules have not been published for this edition. Check the
+            registration page for current availability.
+          </EmptyState>
+          <div className="actions spaced">
+            <Action href={`/tournaments/${slug}/register`} secondary>
+              View registration →
+            </Action>
+          </div>
+        </>
       )}
     </>
   );

@@ -266,6 +266,22 @@ test.describe("private referee review and Admin publication", () => {
         fullPage: true,
         animations: "disabled",
       });
+      const publicPage = await guest.newPage();
+      await publicPage.goto("/news");
+      await publicPage
+        .getByRole("link", {
+          name: /Result published: Synthetic Reviewed Fixture/,
+        })
+        .click();
+      await expect(publicPage.locator(".page-heading")).toContainText("2–1");
+      await expect(publicPage.locator(".page-heading")).not.toContainText(
+        /revision|version/i,
+      );
+      await expect(
+        publicPage.locator(
+          `a[href="/tournaments/test-cup/matches/${seed.fixtureId}"]`,
+        ),
+      ).toBeVisible();
     } finally {
       await guest.close();
     }

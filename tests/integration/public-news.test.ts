@@ -86,8 +86,43 @@ describe.skipIf(!url)("published News sources and retraction", () => {
     expect(published.find((i) => i.kind === "result")?.summary).toContain(
       "2–1",
     );
+    const item = published.find((i) => i.kind === "result")!;
+    expect(item.summary).toContain("Synthetic Review Round");
+    expect(item.summary).not.toMatch(/revision|version/i);
+    expect(item.title).toContain("Synthetic test edition");
+    expect(item.source?.url).toBe(
+      `/tournaments/test-cup/matches/${seed.fixtureId}`,
+    );
+    await command({
+      action: "submit",
+      importId: seed.importId,
+      rulesConfirmed: true,
+      sourceChangesConfirmed: true,
+      publicNote: "Synthetic reviewed update",
+      decisions: seed.source.games.map((g) => ({
+        gameId: g.id,
+        included: true,
+        complianceConfirmed: true,
+        reason: "",
+        substitutions: [],
+      })),
+    });
+    await command({ action: "approve", revision: 2 });
+    expect((await publicNews(now)).find((i) => i.kind === "result")).toEqual(
+      item,
+    );
+    await command({
+      action: "publish",
+      revision: 2,
+      progressionAcknowledged: true,
+    });
+    const republished = await publicNews(now);
+    const updated = republished.find((i) => i.kind === "result")!;
+    expect(updated.slug).toBe(item.slug);
+    expect(updated.summary).toBe(item.summary);
+    expect(Date.parse(updated.at)).toBeGreaterThanOrEqual(Date.parse(item.at));
     const audit = await db().select().from(resultAuditEvents);
-    expect(await publicNews(now)).toEqual(published);
+    expect(await publicNews(now)).toEqual(republished);
     expect(await db().select().from(resultAuditEvents)).toEqual(audit);
     expect(JSON.stringify(published)).not.toMatch(
       /fingerprint|rosterSnapshot|sourceChangesConfirmed|grantedBy|private note/,

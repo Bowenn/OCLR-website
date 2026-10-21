@@ -21,6 +21,8 @@ test.describe("derived public content", () => {
       ...edition,
       season: "12",
       name: "Synthetic Season 12",
+      rules: null,
+      eligibility: null,
       schedule: [
         { label: "Captain draft", at: "2098-11-01T12:00:00Z" },
         { label: "Past planned final", at: "2026-01-01T12:00:00Z" },
@@ -36,6 +38,19 @@ test.describe("derived public content", () => {
     await seedEditions([published, privateEdition]);
     try {
       expect(await context.cookies()).toEqual([]);
+      await page.goto("/tournaments/test-cup/rules");
+      await expect(
+        page.getByRole("heading", { name: "Rules to be announced" }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/Registration remains unavailable|before applying/),
+      ).toHaveCount(0);
+      await page
+        .getByRole("link", { name: "View registration", exact: false })
+        .click();
+      await expect(
+        page.getByRole("heading", { name: "Sign in before applying" }),
+      ).toBeVisible();
       await page.goto("/");
       await expect(page.locator(".hero-kicker")).toHaveText(published.name);
       await expect(page.locator(".home-news li")).toHaveCount(3);

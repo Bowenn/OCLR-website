@@ -65,7 +65,7 @@ async function loadNews(now: Date) {
             kind: "result",
             id: f.id,
             title: `Result published: ${f.label}`,
-            summary: `${f.home.label} ${f.result.homeWins}–${f.result.awayWins} ${f.away.label}. Approved result revision ${f.result.revision}.`,
+            summary: `${f.roundName}: ${f.home.label} ${f.result.homeWins}–${f.result.awayWins} ${f.away.label}. View the approved match result and latest published updates.`,
             at: f.result.updatedAt,
             url: `/tournaments/${slug}/matches/${f.id}`,
           });
