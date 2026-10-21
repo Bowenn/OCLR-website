@@ -102,6 +102,9 @@ test.describe("anonymous inline mappool browser", () => {
     await expect(
       page.getByRole("heading", { name: "Group Stage", exact: true }),
     ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Compact table", exact: true })
+      .click();
     for (let i = 1; i <= 6; i++)
       await expect(
         page.getByRole("rowheader", { name: `NM${i}`, exact: true }),
@@ -134,6 +137,10 @@ test.describe("anonymous inline mappool browser", () => {
     const hiddenRound = await round("knockout", "PRIVATE_ROUND", 2);
     const hidden = await pool(hiddenRound, "PRIVATE_POOL", 1, false);
     await page.reload();
+    for (const button of await page
+      .getByRole("button", { name: "Compact table", exact: true })
+      .all())
+      await button.click();
     const tabs = page.getByRole("tablist", {
       name: "Mappool stages",
       exact: true,
@@ -186,14 +193,22 @@ test.describe("anonymous inline mappool browser", () => {
     await page.keyboard.press("ArrowRight");
     await expect(ko).toBeFocused();
     await expect(ko).toHaveAttribute("aria-selected", "true");
+    await page
+      .getByRole("button", { name: "Compact table", exact: true })
+      .click();
     await expect(page.locator(`#pool-${knockout}-maps-NM`)).toBeVisible();
     await expect(page.locator(`#pool-${first}-maps-NM`)).toHaveCount(0);
+    await ko.focus();
     await page.keyboard.press("Home");
     await expect(group).toBeFocused();
     await page.keyboard.press("End");
     await expect(ko).toBeFocused();
     await page.keyboard.press("ArrowLeft");
     await expect(group).toBeFocused();
+    for (const button of await page
+      .getByRole("button", { name: "Compact table", exact: true })
+      .all())
+      await button.click();
     expect(navigations).toBe(0);
     await expect(page).toHaveURL(index);
     const roundSummary = page
@@ -254,6 +269,9 @@ test.describe("anonymous inline mappool browser", () => {
     }
     await page.getByRole("link", { name: "Opening pool", exact: true }).click();
     await expect(page).toHaveURL(`${index}/${first}`);
+    await page
+      .getByRole("button", { name: "Compact table", exact: true })
+      .click();
     await expect(
       page.getByRole("rowheader", { name: "NM6", exact: true }),
     ).toBeVisible();

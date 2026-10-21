@@ -16,11 +16,7 @@ export default async function Rules({
       <PageHeading eyebrow={edition.name} title="Rules">
         Published rules and organizer updates for this edition.
       </PageHeading>
-      <p className="small muted">
-        Accepted registrations automatically appear in this tournament’s public
-        Players directory with their osu! username, osu! ID and participation
-        status. Application answers and review notes stay private.
-      </p>
+
       {edition.rules ? (
         <>
           <p className="rules-version muted small">
@@ -42,6 +38,11 @@ export default async function Rules({
           </div>
         </>
       )}
+      <p className="small muted spaced">
+        Accepted registrations automatically appear in this tournament’s public
+        Players directory with their osu! username, osu! ID and participation
+        status. Application answers and review notes stay private.
+      </p>
     </>
   );
 }

@@ -160,6 +160,7 @@ export function MappoolBrowser({
   slug: string;
   headingLevel?: 2 | 5;
 }) {
+  const CardHeading = headingLevel === 5 ? "h5" : "h2";
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("slot");
@@ -328,7 +329,7 @@ export function MappoolBrowser({
                   <p className="eyebrow">
                     {categoryNames[e.category]} · {e.metadata.artist}
                   </p>
-                  <h5>
+                  <CardHeading>
                     <button
                       className="map-open-button"
                       type="button"
@@ -337,7 +338,7 @@ export function MappoolBrowser({
                     >
                       {e.metadata.title}
                     </button>
-                  </h5>
+                  </CardHeading>
                   <p className="muted small">[{e.metadata.difficulty}]</p>
                   <p className="muted small">
                     {e.metadata.mapper} · BID {e.beatmapId}

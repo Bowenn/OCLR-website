@@ -171,16 +171,17 @@ test.describe("anonymous tournament competition center", () => {
         }),
       ).toBeVisible();
       await page
-        .getByRole("combobox", { name: /^Competition stage/ })
-        .selectOption("group");
+        .getByRole("searchbox", { name: "Search matches" })
+        .fill("NO_MATCHING_TEAM");
       await expect(
         page.getByText("No published fixtures match these filters.", {
           exact: false,
         }),
       ).toBeVisible();
+      await page.getByRole("searchbox", { name: "Search matches" }).fill("");
       await page
-        .getByRole("combobox", { name: /^Competition stage/ })
-        .selectOption("knockout");
+        .getByRole("button", { name: "Knockout Stage", exact: true })
+        .click();
       await expect(
         page.getByRole("link", {
           name: "Synthetic Reviewed Fixture",

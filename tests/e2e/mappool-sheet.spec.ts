@@ -135,6 +135,9 @@ test.describe("published mappool mainsheet", () => {
       .from(mappools)
       .where(eq(mappools.id, poolId));
     await page.goto(`/tournaments/test-cup/mappools/${poolId}`);
+    await page
+      .getByRole("button", { name: "Compact table", exact: true })
+      .click();
     const sheet = page.locator(".mappool-public");
     await expect(sheet.locator("tbody tr")).toHaveCount(30);
     await expect(sheet.getByText(/Unconfigured/)).toHaveCount(0);

@@ -564,13 +564,6 @@ body:has(.public-tournament) .site-footer {
   background: #fff;
   border-color: #ded5e7;
 }
-.public-tournament .bracket-slot {
-  border-color: #ded5e7;
-}
-.public-tournament .bracket-slot.winner {
-  background: #ece5f3;
-  color: #6c2e91;
-}
 .public-tournament .bracket-connectors path {
   stroke: #bfa9d0;
 }
@@ -736,7 +729,7 @@ body:has(.public-tournament) .site-footer {
   letter-spacing: 0.06em;
   margin-bottom: 0.25rem;
 }
-.map-card-copy h5 {
+.map-card-copy :is(h2, h5) {
   margin: 0 0 0.25rem;
   font-size: 1rem;
 }
@@ -1075,4 +1068,88 @@ body:has(dialog[open].map-dialog) {
     align-content: center;
     font-weight: 650;
   }
+}
+
+/* Retained compact/bracket surfaces use the same readable light palette. */
+.public-tournament .bracket-round > h2,
+.public-tournament .match-slot strong,
+.public-tournament .match-meta > span,
+.public-tournament .match-note,
+.public-tournament .match-loser {
+  color: #6d6278;
+}
+.public-tournament
+  :is(
+    .match-slot + .match-slot,
+    .match-meta,
+    .match-note,
+    .match-alternative,
+    .table-scroll
+  ) {
+  border-color: #ded5e7;
+}
+.public-tournament .match-winner {
+  background: #ece5f3;
+  box-shadow: inset 3px 0 #6c2e91;
+  color: #552074;
+}
+.public-tournament .match-winner strong {
+  color: #6c2e91;
+}
+.public-tournament .mappool-category-heading {
+  background: #ece5f3;
+  border-color: #6c2e91;
+}
+.public-tournament .mappool-category-heading strong {
+  color: #6c2e91;
+}
+.public-tournament .mappool-fm-note {
+  background: #f8f4fb;
+  color: #453a50;
+}
+.public-tournament .mappool-map-title > span {
+  color: #6d6278;
+}
+.public-tournament .mappool-public-round > summary {
+  padding-inline: 1rem;
+}
+.public-tournament .mappool-public-round > summary::before {
+  color: #6c2e91;
+}
+.public-tournament .mappool-release {
+  padding: 1rem;
+}
+.public-tournament .mappool-release-heading {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+}
+
+.public-tournament .match-alternative summary {
+  color: #6c2e91;
+}
+.public-tournament .mappool-category-heading > span {
+  color: #6d6278;
+}
+
+body:has(.public-tournament) .site-footer .footer-credit:hover,
+body:has(.public-tournament) .site-footer .footer-credit:focus-visible {
+  color: #6c2e91;
+}
+
+.public-tournament .match-versus strong {
+  color: #6c2e91;
+}
+.public-tournament :is(.connection-state, .draft-picks p, .public-pool) {
+  color: #6d6278;
+}
+.public-tournament .draft-turn-mark {
+  color: #6c2e91;
+}
+.public-tournament .roster-panel {
+  background: #fff;
+  border-color: #6c2e91;
+  border-radius: 1.1rem;
+}
+.public-tournament :is(.roster-panel li, .draft-picks li) {
+  border-color: #ded5e7;
 }

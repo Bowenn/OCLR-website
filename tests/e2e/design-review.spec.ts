@@ -169,17 +169,22 @@ test.describe("concept-aligned tournament surfaces", () => {
             "animation-name",
             "none",
           );
-        if (name === "overview")
+        if (name === "overview") {
+          if (isMobile)
+            await page.getByRole("button", { name: /Tournament menu/ }).click();
           await expect(
             page
               .getByRole("navigation", { name: "Tournament navigation" })
               .locator('[aria-current="page"]'),
           ).toHaveText("Overview");
+        }
         expect(await page.locator("main").innerText()).not.toContain(
           "VISUAL_PRIVATE_ANSWER",
         );
       }
       await capture(page, "bracket", "/tournaments/test-cup/bracket", true);
+      if (isMobile)
+        await page.getByRole("button", { name: /Tournament menu/ }).click();
       const tournamentNav = page.getByRole("navigation", {
         name: "Tournament navigation",
       });
@@ -193,6 +198,8 @@ test.describe("concept-aligned tournament surfaces", () => {
         .getByRole("link", { name: "Mappools", exact: true })
         .focus();
       await page.keyboard.press("Enter");
+      if (isMobile)
+        await page.getByRole("button", { name: /Tournament menu/ }).click();
       await expect(tournamentNav.locator('[aria-current="page"]')).toHaveText(
         "Mappools",
       );

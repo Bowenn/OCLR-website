@@ -44,13 +44,15 @@ test.describe("anonymous published player directory", () => {
     ).toBeVisible();
     await expect(
       page.getByRole("link", {
-        name: `Synthetic Directory ${base} Captain ↗`,
+        name: `Synthetic Directory ${base} Captain`,
         exact: true,
       }),
     ).toHaveAttribute("href", `https://osu.ppy.sh/users/${base}`);
     await expect(
       page.getByText("Private Applicant", { exact: false }),
     ).toHaveCount(0);
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
     await expect(
       page
         .getByRole("navigation", { name: "Tournament navigation" })

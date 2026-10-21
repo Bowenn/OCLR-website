@@ -237,6 +237,9 @@ test.describe("published mappools and restricted editing", () => {
         /actorId|reason|before|lockedAt/,
       );
       await guestPage.goto(`/tournaments/test-cup/mappools/${pool.id}`);
+      await guestPage
+        .getByRole("button", { name: "Compact table", exact: true })
+        .click();
       await expect(
         guestPage.getByText(/Force Mod: Synthetic test restrictions/),
       ).toBeVisible();

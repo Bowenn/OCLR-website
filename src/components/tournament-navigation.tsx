@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useId, useRef, useState, type ReactNode } from "react";
 import { publicTournamentSection } from "@/lib/public-navigation";
 
@@ -94,8 +94,10 @@ export function TournamentShell({
   children: ReactNode;
 }) {
   const path = usePathname();
+  const search = useSearchParams();
   const base = `/tournaments/${slug}`;
   const privateView =
+    (path === `${base}/draft` && search.get("presenter") === "1") ||
     path === `${base}/team` ||
     path.startsWith(`${base}/draft/captain`) ||
     path.includes("/draft/overlay");

@@ -16,6 +16,8 @@ One Next.js App Router application uses strict TypeScript, React and Tailwind CS
 
 The committed `docs/design/oclr-website-concept.webp` is a visual reference only. Its dates, statistics, format, identities and expanded tournament name are placeholders. The correct name is **osu! Chinese League Rookie**. Registration is individual; teams are formed through the staff-appointed captain draft.
 
+Public tournament editions now follow the organizer-supplied [MainSheet Light reference](docs/design/mainsheet-light/README.md): lavender surfaces, horizontal section navigation, artwork-led overview, match card/compact views, visual mappools with map details, team browsing and an indexed rules handbook. Admin, private Player/Captain tools and OBS retain their existing layouts. Reference sample teams, dates, scores and rules are never production tournament content. Localization is tracked separately in [#72](https://github.com/PhoenixEmik/OCLR-website/issues/72).
+
 ## Tournament content
 
 Tournament editions live in PostgreSQL and are managed through `/admin/tournaments`. Global Admins create private editions; edition-scoped Admins configure their assigned tournaments. Creation needs only a name: the URL slug is suggested and editable before creation; UTC is the neutral initial zone. Drafts may have no summary, season or artwork. Add public copy before publishing. Save general information, rules/eligibility, registration and milestones independently, then deliberately publish. The slug is immutable. S11 starts unpublished with its existing artwork and no invented dates, rules or registration window.

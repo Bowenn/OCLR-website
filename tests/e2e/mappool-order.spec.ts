@@ -418,6 +418,9 @@ test.describe("quick paste and mappool ordering", () => {
       ).toEqual(authoritative);
       const publicPage = await guest.newPage();
       await publicPage.goto(`/tournaments/test-cup/mappools/${pool.id}`);
+      await publicPage
+        .getByRole("button", { name: "Compact table", exact: true })
+        .click();
       const nm = publicPage.getByRole("table", {
         name: `${pool.name}: NM / No Mod beatmaps`,
         exact: true,
