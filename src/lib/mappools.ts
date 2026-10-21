@@ -25,6 +25,7 @@ import {
   difficultyConfigurations,
   parseBeatmapId,
   parseMappoolRows,
+  moveMappoolEntries,
   type BeatmapSnapshot,
   type BeatmapMetadata,
 } from "./mappool-model";
@@ -56,6 +57,8 @@ const commandSchema = z.discriminatedUnion("action", [
       ...confirmation,
       ...versioned,
       action: z.literal("batch_import"),
+      text: z.string().max(16000),
+      category: z.enum(categories),
       rows: z.array(batchRow).min(1).max(50),
     })
     .strict(),
@@ -267,7 +270,11 @@ export async function previewMappoolBatch(
 ) {
   const data = await mappoolWorkspace(actor, slug);
   const parsed = z
-    .object({ ...versioned, text: z.string().max(16000) })
+    .object({
+      ...versioned,
+      text: z.string().max(16000),
+      category: z.enum(categories).default("NM"),
+    })
     .strict()
     .safeParse(input);
   if (!parsed.success)
@@ -282,11 +289,14 @@ export async function previewMappoolBatch(
     );
   let rows;
   try {
-    rows = parseMappoolRows(c.text);
+    rows = parseMappoolRows(
+      c.text,
+      c.category,
+      data.entries.filter((e) => e.poolId === pool.id),
+    );
   } catch {
     throw new HttpError(400, "Enter between 1 and 50 map rows.");
   }
-  const existing = data.entries.filter((e) => e.poolId === pool.id);
   const [round] = await db()
     .select({ rules: tournamentRounds.scoringRules })
     .from(tournamentRounds)
@@ -295,17 +305,9 @@ export async function previewMappoolBatch(
     ...r,
     error:
       r.error ??
-      (existing.some(
-        (e) => e.category === r.category && e.position === r.position,
-      )
-        ? "Slot already exists; edit it separately."
-        : existing.some(
-              (e) => e.category === r.category && e.beatmapId === r.beatmapId,
-            )
-          ? "Beatmap already exists in this category."
-          : r.category === "FM" && !pool.fmMode
-            ? "Configure Free Mod or Force Mod first."
-            : null),
+      (r.category === "FM" && !pool.fmMode
+        ? "Configure Free Mod or Force Mod first."
+        : null),
   }));
   const ids = rows.filter((r) => !r.error).map((r) => r.beatmapId!);
   const snapshots = ids.length
@@ -335,6 +337,48 @@ export async function previewMappoolBatch(
 export type MappoolBatchPreview = Awaited<
   ReturnType<typeof previewMappoolBatch>
 >;
+function validateImport(
+  command: {
+    text: string;
+    category: (typeof categories)[number];
+    rows: z.infer<typeof batchRow>[];
+  },
+  entries: NonNullable<Parameters<typeof parseMappoolRows>[2]>,
+) {
+  let resolved;
+  try {
+    resolved = parseMappoolRows(command.text, command.category, entries);
+  } catch {
+    throw new HttpError(400, "Enter between 1 and 50 map rows.");
+  }
+  const invalid = resolved.find((row) => row.error);
+  if (invalid) {
+    const conflict = entries.some(
+      (entry) =>
+        entry.category === invalid.category &&
+        (entry.position === invalid.position ||
+          entry.beatmapId === invalid.beatmapId),
+    );
+    throw new HttpError(
+      conflict ? 409 : 400,
+      `Row ${invalid.line}: ${invalid.error}`,
+    );
+  }
+  if (
+    resolved.length !== command.rows.length ||
+    resolved.some(
+      (row, i) =>
+        row.category !== command.rows[i].category ||
+        row.position !== command.rows[i].position ||
+        row.beatmapId !== parseBeatmapId(command.rows[i].beatmap),
+    )
+  )
+    throw new HttpError(
+      409,
+      "Resolved slots changed. Preview the batch again before saving.",
+    );
+  return resolved;
+}
 export async function mappoolCommand(
   actor: User,
   slug: string,
@@ -365,11 +409,13 @@ export async function mappoolCommand(
     let ids: number[];
     let refreshEntries: (typeof mappoolEntries.$inferSelect)[] = [];
     if (c.action === "batch_import") {
-      const rows = parseMappoolRows(
-        c.rows.map((r) => `${r.category}${r.position} ${r.beatmap}`).join("\n"),
-      );
-      if (rows.some((r) => r.error))
-        throw new HttpError(400, "Correct invalid or duplicate batch entries.");
+      const existing = await db()
+        .select()
+        .from(mappoolEntries)
+        .where(eq(mappoolEntries.poolId, pool.id));
+      const rows = validateImport(c, existing);
+      if (rows.some((r) => r.category === "FM") && !pool.fmMode)
+        throw new HttpError(409, "Configure FM before importing FM slots.");
       ids = rows.map((r) => r.beatmapId!);
     } else {
       const entries = await db()
@@ -635,6 +681,7 @@ export async function mappoolCommand(
         );
 
       if (c.action === "batch_import") {
+        validateImport(c, entries);
         for (const row of c.rows) {
           const id = parseBeatmapId(row.beatmap)!;
           if (
@@ -689,33 +736,30 @@ export async function mappoolCommand(
               .where(eq(mappoolEntries.id, entry!.id));
           }
         } else {
-          if (c.position + c.entryIds.length - 1 > 999)
-            throw new HttpError(400, "Slot numbers must remain within 1–999.");
           if (c.category === "FM" && !pool.fmMode)
             throw new HttpError(409, "Configure FM first.");
-          const positions = c.entryIds.map((_, i) => c.position + i);
-          if (
-            entries.some(
-              (e) =>
-                !c.entryIds.includes(e.id) &&
-                e.category === c.category &&
-                positions.includes(e.position),
-            )
-          )
-            throw new HttpError(
-              409,
-              "Target slots are occupied. No maps were moved.",
+          let moved;
+          try {
+            moved = moveMappoolEntries(
+              entries,
+              c.entryIds,
+              c.category,
+              c.position,
             );
-          for (let i = 0; i < c.entryIds.length; i++)
+          } catch (error) {
+            throw new HttpError(400, (error as Error).message);
+          }
+          // Vacate every affected slot first, including occupied destination rows.
+          for (let i = 0; i < moved.length; i++)
             await tx
               .update(mappoolEntries)
               .set({ position: 10000 + i })
-              .where(eq(mappoolEntries.id, c.entryIds[i]));
-          for (let i = 0; i < c.entryIds.length; i++)
+              .where(eq(mappoolEntries.id, moved[i].id));
+          for (const entry of moved)
             await tx
               .update(mappoolEntries)
-              .set({ category: c.category, position: c.position + i })
-              .where(eq(mappoolEntries.id, c.entryIds[i]));
+              .set({ category: entry.category, position: entry.position })
+              .where(eq(mappoolEntries.id, entry.id));
         }
       } else if (c.action === "pool_settings") {
         if (!c.fmMode && entries.some((e) => e.category === "FM"))

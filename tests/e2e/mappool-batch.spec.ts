@@ -75,13 +75,13 @@ test.describe("bulk mappool operations", () => {
     await page
       .getByLabel("Move to category", { exact: true })
       .selectOption("DT");
-    await page.getByLabel("Starting slot", { exact: true }).fill("3");
+    await page.getByLabel("Insert at position", { exact: true }).fill("1");
     await page
       .getByRole("button", { name: "Move / renumber selected", exact: true })
       .click();
-    await expect(page.getByLabel("Select DT3", { exact: true })).toBeAttached();
-    await expect(page.getByLabel("Select DT3", { exact: true })).toBeVisible();
-    await expect(page.getByLabel("Select DT4", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Select DT1", { exact: true })).toBeAttached();
+    await expect(page.getByLabel("Select DT1", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Select DT2", { exact: true })).toBeVisible();
     // router.refresh() can stream metadata after the updated map rows arrive.
     await expect(page).toHaveTitle("Manage mappools");
     expect(
@@ -99,10 +99,10 @@ test.describe("bulk mappool operations", () => {
 
     await page.getByRole("tab", { name: "Maps", exact: true }).click();
     await page.getByRole("button", { name: /^DT \(2\)$/ }).click();
-    await page.getByText("Edit or replace DT3", { exact: true }).click();
+    await page.getByText("Edit or replace DT1", { exact: true }).click();
     const editor = page
       .locator("details")
-      .filter({ has: page.getByText("Edit or replace DT3", { exact: true }) });
+      .filter({ has: page.getByText("Edit or replace DT1", { exact: true }) });
     await editor
       .getByLabel("Difficulty calculation mods", { exact: true })
       .selectOption("DT");
@@ -154,8 +154,8 @@ test.describe("bulk mappool operations", () => {
     });
     await page.reload();
     await page.getByRole("tab", { name: "Batch edit", exact: true }).click();
-    await page.getByLabel("Select DT3", { exact: true }).check();
-    await page.getByLabel("Select DT4", { exact: true }).check();
+    await page.getByLabel("Select DT1", { exact: true }).check();
+    await page.getByLabel("Select DT2", { exact: true }).check();
     await page
       .getByRole("button", { name: "Remove selected maps", exact: true })
       .click();

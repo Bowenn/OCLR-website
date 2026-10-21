@@ -6,6 +6,8 @@ import {
   slotLabel,
   formatBeatmapDuration,
   formatBeatmapNumber,
+  moveMappoolEntries,
+  type MappoolCategory,
 } from "@/lib/mappool-model";
 import { ConfirmMutation } from "./confirm-mutation";
 type Pool = MappoolWorkspace["pools"][number];
@@ -14,21 +16,30 @@ export function MappoolBatch({
   pool,
   entries,
   mode,
+  onFeedback,
 }: {
   mode: "import" | "batch";
   url: string;
   pool: Pool;
   entries: MappoolWorkspace["entries"];
+  onFeedback: (message: string) => void;
 }) {
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<MappoolBatchPreview | null>(null);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-  const [category, setCategory] = useState("NM"),
+  const [category, setCategory] = useState<MappoolCategory>("NM"),
     [position, setPosition] = useState("1");
   const request = useRef<AbortController | null>(null);
-  useEffect(() => () => request.current?.abort(), []);
+  const [version, setVersion] = useState(pool.version);
+  if (version !== pool.version) {
+    setVersion(pool.version);
+    setPreview(null);
+    setSelected([]);
+    setBusy(false);
+  }
+  useEffect(() => () => request.current?.abort(), [pool.version]);
   async function lookup() {
     request.current?.abort();
     const controller = new AbortController();
@@ -44,6 +55,7 @@ export function MappoolBatch({
           poolId: pool.id,
           expectedVersion: pool.version,
           text,
+          category,
         }),
         signal: controller.signal,
       });
@@ -64,16 +76,54 @@ export function MappoolBatch({
   };
   const ready =
     preview &&
+    preview.version === pool.version &&
     preview.rows.length > 0 &&
     preview.rows.every((r) => !r.error && r.snapshot);
+  let movePreview: typeof entries = [],
+    moveError = "";
+  if (selected.length) {
+    try {
+      movePreview = moveMappoolEntries(
+        entries,
+        entries.filter((e) => selected.includes(e.id)).map((e) => e.id),
+        category,
+        Number(position),
+      );
+    } catch (error) {
+      moveError = (error as Error).message;
+    }
+  }
   return (
     <section className="mappool-batch">
       {mode === "import" && (
         <div className="form-stack">
           <h3>Import multiple beatmaps</h3>
           <p className="muted small">
-            Up to 50 rows in the selected pool. Use a slot and a beatmap ID or
-            official difficulty URL. Existing slots are never replaced.
+            Paste up to 50 beatmap IDs or difficulty URLs in order. New slots
+            append after the highest saved slot; existing maps are never
+            replaced.
+          </p>
+          <label className="field">
+            <span>Import category</span>
+            <select
+              aria-label="Import category"
+              value={category}
+              onChange={(event) => {
+                request.current?.abort();
+                setBusy(false);
+                setPreview(null);
+                setError("");
+                setCategory(event.target.value as MappoolCategory);
+              }}
+            >
+              {categories.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <p className="muted small">
+            Advanced: explicit slots such as NM1 4184799 or HD1 URL can be mixed
+            with plain rows. Plain rows skip reserved explicit slots.
           </p>
           <label className="field">
             <span>Map rows</span>
@@ -82,7 +132,9 @@ export function MappoolBatch({
               rows={6}
               maxLength={16000}
               value={text}
-              placeholder={"NM1 4184799\nHD1 https://osu.ppy.sh/beatmaps/123"}
+              placeholder={
+                "4184799\nhttps://osu.ppy.sh/beatmaps/123\nhttps://osu.ppy.sh/beatmapsets/2010589#osu/4184800"
+              }
               onChange={(e) => {
                 request.current?.abort();
                 setBusy(false);
@@ -115,7 +167,12 @@ export function MappoolBatch({
           </div>
           {preview && (
             <>
-              <div className="table-scroll">
+              <div
+                className="table-scroll"
+                role="region"
+                aria-label="Batch preview"
+                tabIndex={0}
+              >
                 <table>
                   <caption>Batch preview — {pool.name}</caption>
                   <thead>
@@ -142,7 +199,7 @@ export function MappoolBatch({
                           {r.line} ·{" "}
                           {r.category && r.position
                             ? slotLabel(r.category, r.position)
-                            : "Invalid slot"}
+                            : "—"}
                         </th>
                         <td>{r.beatmapId ?? "—"}</td>
                         <td>
@@ -178,9 +235,21 @@ export function MappoolBatch({
                 description="Save the verified rows atomically."
                 url={url}
                 disabled={!ready}
+                onSuccess={() => {
+                  setText("");
+                  setPreview(null);
+                  onFeedback("Beatmap batch imported.");
+                }}
+                onError={(message) =>
+                  onFeedback(
+                    `Batch was not saved. ${message} Preview the batch again.`,
+                  )
+                }
                 payload={{
                   ...base,
                   action: "batch_import",
+                  text,
+                  category,
                   rows: preview.rows.map((r) => ({
                     category: r.category,
                     position: r.position,
@@ -198,8 +267,8 @@ export function MappoolBatch({
           <div className="form-stack">
             <h3>Manage multiple map slots</h3>
             <p className="muted small">
-              Select up to 50 maps. Moves assign consecutive slot numbers in the
-              displayed order; occupied target slots are rejected.
+              Select up to 50 maps. Insert them at a position in the destination
+              category; remaining maps shift and that category is renumbered.
             </p>
             <div className="table-scroll">
               <table>
@@ -245,7 +314,9 @@ export function MappoolBatch({
                 <select
                   aria-label="Move to category"
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) =>
+                    setCategory(e.target.value as MappoolCategory)
+                  }
                 >
                   {categories.map((c) => (
                     <option key={c}>{c}</option>
@@ -253,7 +324,7 @@ export function MappoolBatch({
                 </select>
               </label>
               <label className="field">
-                <span>Starting slot</span>
+                <span>Insert at position</span>
                 <input
                   type="number"
                   min={1}
@@ -263,14 +334,35 @@ export function MappoolBatch({
                 />
               </label>
             </div>
+            {moveError && (
+              <p className="error-text" role="status">
+                {moveError}
+              </p>
+            )}
+            {movePreview.length > 0 && (
+              <details open>
+                <summary>Preview destination order</summary>
+                <ol className="mappool-move-preview">
+                  {movePreview.map((e) => (
+                    <li key={e.id}>
+                      {slotLabel(e.category, e.position)} · {e.metadata.artist}{" "}
+                      — {e.metadata.title} · {e.beatmapId}
+                      {selected.includes(e.id) ? " (selected)" : ""}
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
             <div className="actions">
               <ConfirmMutation
                 requireConfirmation={false}
                 label="Move / renumber selected"
                 title="Move map slots"
-                description="Assign consecutive slots."
+                description="Insert the selected maps and renumber the destination category."
                 url={url}
-                disabled={!selected.length || selected.length > 50}
+                disabled={
+                  !selected.length || selected.length > 50 || !!moveError
+                }
                 payload={{
                   ...base,
                   action: "batch_move",

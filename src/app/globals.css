@@ -1760,6 +1760,66 @@ body:has(.presenter-view) .site-footer,
   padding-block: 1rem;
   border-bottom: 1px solid var(--color-border);
 }
+.mappool-order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mappool-order-toolbar {
+  padding-block: 0.75rem;
+}
+.mappool-order-toolbar p {
+  margin: 0 0 0.5rem;
+}
+.mappool-order-toolbar .actions + p {
+  margin-top: 0.5rem;
+}
+.mappool-order-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.mappool-order-controls button {
+  min-width: var(--button-height);
+}
+.mappool-drag-handle {
+  touch-action: none;
+  cursor: grab;
+}
+.mappool-drag-handle:hover {
+  transform: none;
+}
+.mappool-drag-handle:active {
+  cursor: grabbing;
+}
+.mappool-position {
+  width: 4.5rem;
+}
+.mappool-position select {
+  min-height: var(--button-height);
+  padding: 0.4rem;
+}
+.mappool-order .is-dragging {
+  background: #a45bd512;
+}
+.mappool-order .drop-before {
+  box-shadow: inset 0 3px var(--color-accent);
+}
+.mappool-order .drop-after {
+  box-shadow: inset 0 -3px var(--color-accent);
+}
+.mappool-entry-actions {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.mappool-move-preview {
+  padding-left: 1.5rem;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 600px) {
   .beatmap-row {
     grid-template-columns: 1fr;

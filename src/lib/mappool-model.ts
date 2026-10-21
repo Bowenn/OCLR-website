@@ -1,4 +1,5 @@
 export const categories = ["NM", "HD", "DT", "HR", "FM", "TB"] as const;
+export type MappoolCategory = (typeof categories)[number];
 export const categoryNames = {
   NM: "No Mod",
   HD: "Hidden",
@@ -69,33 +70,80 @@ export type BulkRow = {
   error: string | null;
   warning: string | null;
 };
-/** Plain-text rows only; a beatmapset without its difficulty is never guessed. */
-export function parseMappoolRows(text: string): BulkRow[] {
+type SavedSlot = {
+  category: MappoolCategory;
+  position: number;
+  beatmapId: number;
+};
+/** Resolve slots before any provider requests. Plain rows append, skipping reserved explicit slots. */
+export function parseMappoolRows(
+  text: string,
+  category?: MappoolCategory,
+  existing: SavedSlot[] = [],
+): BulkRow[] {
   const lines = text
     .split(/\r?\n/)
     .map((value, index) => ({ value: value.trim(), line: index + 1 }))
     .filter((row) => row.value);
   if (!lines.length || lines.length > 50 || text.length > 16000)
     throw new Error("Enter between 1 and 50 map rows.");
+  const parsed = lines.map(({ value, line }): BulkRow => {
+    const explicit = /\s/.test(value);
+    const match = /^(NM|HD|DT|HR|FM|TB)([1-9]\d{0,2})?\s+(\S+)$/.exec(value);
+    const mod = explicit
+      ? ((match?.[1] as MappoolCategory) ?? null)
+      : (category ?? null);
+    const position =
+      explicit && match ? Number(match[2] ?? (mod === "TB" ? 1 : NaN)) : null;
+    const beatmapId = parseBeatmapId(explicit ? (match?.[3] ?? "") : value);
+    const error =
+      explicit && (!mod || !position)
+        ? "Invalid slot. Use NM1–NM999 (or TB), followed by one BID or difficulty URL."
+        : !mod
+          ? "Choose a destination category for plain BIDs or URLs."
+          : !beatmapId
+            ? "Invalid beatmap ID or official difficulty URL. Include the difficulty in beatmapset URLs."
+            : null;
+    return { line, category: mod, position, beatmapId, error, warning: null };
+  });
+  const reserved = new Set(
+    parsed
+      .filter((r) => r.category && r.position)
+      .map((r) => `${r.category}:${r.position}`),
+  );
+  let next =
+    Math.max(
+      0,
+      ...existing.filter((e) => e.category === category).map((e) => e.position),
+    ) + 1;
   const slots = new Set<string>(),
     entries = new Set<string>(),
     maps = new Set<number>();
-  return lines.map(({ value, line }) => {
-    const match = /^(NM|HD|DT|HR|FM|TB)([1-9]\d{0,2})?\s+(\S+)$/.exec(value);
-    const category = (match?.[1] as BulkRow["category"]) ?? null;
-    const position = match
-      ? Number(match[2] ?? (category === "TB" ? 1 : NaN))
-      : null;
-    const beatmapId = match ? parseBeatmapId(match[3]) : null;
-    let error =
-      !category || !position || !beatmapId
-        ? "Use SLOT BID or SLOT canonical difficulty URL (e.g. NM1 4184799)."
-        : null;
+  return parsed.map((row) => {
+    const { line, category, beatmapId } = row;
+    let { position, error } = row;
+    if (category && position === null) {
+      while (reserved.has(`${category}:${next}`)) next++;
+      position = next++;
+      if (position > 999)
+        error =
+          "No append slots remain within 1–999. Reorder this category or choose another.";
+    }
     const slot = `${category}:${position}`,
       entry = `${category}:${beatmapId}`;
     if (!error && slots.has(slot)) error = "Duplicate slot in this batch.";
     if (!error && entries.has(entry))
       error = "Duplicate beatmap in the same category.";
+    if (
+      !error &&
+      existing.some((e) => e.category === category && e.position === position)
+    )
+      error = "Slot already exists; edit it separately.";
+    if (
+      !error &&
+      existing.some((e) => e.category === category && e.beatmapId === beatmapId)
+    )
+      error = "Beatmap already exists in this category.";
     const warning =
       beatmapId && maps.has(beatmapId)
         ? "Beatmap reused; verify the intended mod categories."
@@ -105,6 +153,42 @@ export function parseMappoolRows(text: string): BulkRow[] {
     if (beatmapId) maps.add(beatmapId);
     return { line, category, position, beatmapId, error, warning };
   });
+}
+
+/** Insert into the final category order, retaining stable records and normalizing its slots. */
+export function moveMappoolEntries<T extends SavedSlot & { id: string }>(
+  entries: T[],
+  entryIds: string[],
+  category: MappoolCategory,
+  position: number,
+) {
+  const selected = entryIds.map((id) => entries.find((e) => e.id === id));
+  if (
+    !entryIds.length ||
+    new Set(entryIds).size !== entryIds.length ||
+    selected.some((e) => !e)
+  )
+    throw new Error("Select each saved map exactly once.");
+  const remaining = entries
+    .filter((e) => e.category === category && !entryIds.includes(e.id))
+    .sort((a, b) => a.position - b.position);
+  if (
+    !Number.isInteger(position) ||
+    position < 1 ||
+    position > remaining.length + 1
+  )
+    throw new Error(
+      `Choose an insertion position from 1 to ${remaining.length + 1}.`,
+    );
+  const result = [...remaining];
+  result.splice(position - 1, 0, ...(selected as T[]));
+  if (result.length > 999)
+    throw new Error("A category cannot exceed 999 slots.");
+  if (new Set(result.map((e) => e.beatmapId)).size !== result.length)
+    throw new Error(
+      "A selected beatmap already exists in the destination category.",
+    );
+  return result.map((e, i) => ({ ...e, category, position: i + 1 }));
 }
 
 // Explicit standard mod combinations. FM/TB never select one automatically.

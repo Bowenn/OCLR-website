@@ -615,6 +615,8 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     return {
       ...confirm,
       action: "batch_import",
+      text,
+      category: "NM",
       poolId,
       expectedVersion,
       rows: p.rows.map((r) => ({
@@ -665,6 +667,198 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     });
     expect(p.rows[0].error).toContain("exists");
   });
+  it("resolves plain imports on the server, rejects forged slots before lookup and protects stale previews", async () => {
+    const pool = await create();
+    const first = await batch(
+      pool.id,
+      0,
+      "123\nhttps://osu.ppy.sh/beatmaps/456\nhttps://osu.ppy.sh/beatmapsets/42#osu/789",
+    );
+    expect(first.rows.map((r) => r.position)).toEqual([1, 2, 3]);
+    await mappoolCommand(mapper, edition.slug, first);
+    const next = await batch(pool.id, 1, "42\n43\n44");
+    expect(next.rows.map((r) => r.position)).toEqual([4, 5, 6]);
+    vi.mocked(fetchBeatmaps).mockClear();
+    await expect(
+      mappoolCommand(mapper, edition.slug, {
+        ...next,
+        rows: next.rows.map((r, i) => ({ ...r, position: i + 7 })),
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(fetchBeatmaps).not.toHaveBeenCalled();
+    await mappoolCommand(mapper, edition.slug, next);
+    await expect(
+      mappoolCommand(mapper, edition.slug, next),
+    ).rejects.toMatchObject({ status: 409 });
+    const bad = await previewMappoolBatch(mapper, edition.slug, {
+      poolId: pool.id,
+      expectedVersion: 2,
+      category: "NM",
+      text: "123\nhttps://osu.ppy.sh/beatmaps/123",
+    });
+    expect(bad.rows.every((r) => r.error && !r.snapshot)).toBe(true);
+    expect((await mappoolWorkspace(mapper, edition.slug)).entries).toHaveLength(
+      6,
+    );
+  });
+  it("inserts into occupied slots atomically, normalizes only the destination and preserves metadata", async () => {
+    const pool = await create();
+    await db()
+      .insert(mappoolEntries)
+      .values([
+        ...[1, 2, 3, 4, 5].map((i) => ({
+          poolId: pool.id,
+          category: "NM" as const,
+          position: i * 2,
+          beatmapId: i,
+          metadata,
+        })),
+        {
+          poolId: pool.id,
+          category: "HD" as const,
+          position: 7,
+          beatmapId: 99,
+          metadata,
+        },
+      ]);
+    const original = (await mappoolWorkspace(mapper, edition.slug)).entries;
+    const nm = original.filter((e) => e.category === "NM");
+    const payload = {
+      ...confirm,
+      action: "batch_move",
+      poolId: pool.id,
+      expectedVersion: 0,
+      category: "NM",
+      position: 2,
+      entryIds: [nm[4].id],
+    };
+    const outcomes = await Promise.allSettled([
+      mappoolCommand(mapper, edition.slug, payload),
+      mappoolCommand(admin, edition.slug, { ...payload, position: 1 }),
+    ]);
+    expect(outcomes.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(outcomes.find((r) => r.status === "rejected")).toMatchObject({
+      reason: { status: 409 },
+    });
+    const winner = outcomes.find(
+      (r) => r.status === "fulfilled",
+    )! as PromiseFulfilledResult<Awaited<ReturnType<typeof mappoolCommand>>>;
+    let data = winner.value;
+    expect(data.entries.find((e) => e.category === "HD")).toEqual(
+      original.find((e) => e.category === "HD"),
+    );
+    expect(
+      data.entries.filter((e) => e.category === "NM").map((e) => e.position),
+    ).toEqual([1, 2, 3, 4, 5]);
+    const resultIds = data.entries
+      .filter((e) => e.category === "NM")
+      .map((e) => e.id);
+    expect(resultIds).toEqual(
+      outcomes[0].status === "fulfilled"
+        ? [nm[0].id, nm[4].id, nm[1].id, nm[2].id, nm[3].id]
+        : [nm[4].id, ...nm.slice(0, 4).map((e) => e.id)],
+    );
+    for (const entry of data.entries)
+      expect(entry.metadata).toEqual(
+        original.find((e) => e.id === entry.id)!.metadata,
+      );
+    const events = (await auditEvents()).filter(
+      (e) => e.action === "batch_move",
+    );
+    expect(events).toHaveLength(1);
+    expect(events[0].actorId).toBe(
+      outcomes[0].status === "fulfilled" ? mapper.osuId : admin.osuId,
+    );
+    data = await mappoolCommand(mapper, edition.slug, {
+      ...payload,
+      expectedVersion: 1,
+      category: "HD",
+      position: 1,
+      entryIds: [nm[4].id],
+    });
+    expect(
+      data.entries.filter((e) => e.category === "HD").map((e) => e.beatmapId),
+    ).toEqual([5, 99]);
+    expect(
+      data.entries.filter((e) => e.category === "HD").map((e) => e.position),
+    ).toEqual([1, 2]);
+    await mappoolCommand(mapper, edition.slug, {
+      ...confirm,
+      action: "pool_publish",
+      poolId: pool.id,
+      expectedVersion: 2,
+      published: true,
+    });
+    expect(
+      (await publicMappools(edition.slug, pool.id))[0].entries
+        .filter((e) => e.category === "HD")
+        .map((e) => e.beatmapId),
+    ).toEqual([5, 99]);
+    await expect(
+      mappoolCommand(mapper, edition.slug, { ...payload, expectedVersion: 3 }),
+    ).rejects.toMatchObject({ status: 409 });
+  });
+  it("rolls back an occupied insertion when its audit fails and rejects locked/cross-edition reorder", async () => {
+    const pool = await create();
+    await mappoolCommand(
+      mapper,
+      edition.slug,
+      await batch(pool.id, 0, "NM1 123\nNM2 456"),
+    );
+    const original = (await mappoolWorkspace(mapper, edition.slug)).entries;
+    const payload = {
+      ...confirm,
+      action: "batch_move",
+      poolId: pool.id,
+      expectedVersion: 1,
+      category: "NM",
+      position: 1,
+      entryIds: [original[1].id],
+    };
+    await db().execute(
+      sql`CREATE FUNCTION oclr_test_fail_move() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Synthetic reorder audit failure'; END $$`,
+    );
+    try {
+      await db().execute(
+        sql`CREATE TRIGGER oclr_test_fail_move BEFORE INSERT ON mappool_events FOR EACH ROW EXECUTE FUNCTION oclr_test_fail_move()`,
+      );
+      await expect(
+        mappoolCommand(mapper, edition.slug, payload),
+      ).rejects.toThrow();
+      const current = await mappoolWorkspace(mapper, edition.slug);
+      expect(current.entries).toEqual(original);
+      expect(current.pools[0].version).toBe(1);
+    } finally {
+      await db().execute(sql`DROP FUNCTION oclr_test_fail_move() CASCADE`);
+    }
+    const reorder = {
+      ...confirm,
+      action: "reorder",
+      poolId: pool.id,
+      expectedVersion: 1,
+      category: "NM",
+      entryIds: original.map((e) => e.id).reverse(),
+    };
+    for (const actor of [referee, player])
+      await expect(
+        mappoolCommand(actor, edition.slug, reorder),
+      ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      mappoolCommand(admin, "other-test-cup", reorder),
+    ).rejects.toMatchObject({ status: 404 });
+    await db()
+      .update(mappools)
+      .set({ lockedAt: new Date() })
+      .where(eq(mappools.id, pool.id));
+    await expect(
+      mappoolCommand(mapper, edition.slug, reorder),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(
+      (await auditEvents()).filter(
+        (e) => e.action === "batch_move" || e.action === "reorder",
+      ),
+    ).toHaveLength(0);
+  });
   it("rolls back every row and its audit on lookup, collision or audit failure", async () => {
     const pool = await create();
     const payload = await batch(pool.id);
@@ -707,8 +901,8 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
         entryIds: ids,
         ...extra,
       });
-    data = await command("batch_move", { category: "DT", position: 3 });
-    expect(data.entries.map((e) => e.position)).toEqual([3, 4]);
+    data = await command("batch_move", { category: "DT", position: 1 });
+    expect(data.entries.map((e) => e.position)).toEqual([1, 2]);
     expect(data.entries.every((e) => e.category === "DT")).toBe(true);
     await db()
       .update(mappoolEntries)

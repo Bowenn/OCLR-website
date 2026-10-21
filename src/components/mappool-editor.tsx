@@ -13,7 +13,7 @@ import {
   type BeatmapSnapshot,
 } from "@/lib/mappool-model";
 import { ConfirmMutation } from "./confirm-mutation";
-import { BeatmapDetails } from "./beatmap-details";
+import { MappoolOrder } from "./mappool-order";
 import { MappoolBatch } from "./mappool-batch";
 import { BeatmapPreview } from "./beatmap-preview";
 type Pool = MappoolWorkspace["pools"][number];
@@ -648,14 +648,16 @@ export function MappoolEditor({
                       : "Force Mod"
                     : categoryNames[category]}
                 </h3>
-                {entries.map((entry, i) => (
-                  <article className="mappool-entry-controls" key={entry.id}>
-                    <BeatmapDetails
-                      beatmapId={entry.beatmapId}
-                      metadata={entry.metadata}
-                      label={slotLabel(entry.category, entry.position)}
-                    />
-                    {editable && (
+                {entries.length > 0 && (
+                  <MappoolOrder
+                    key={`${pool.id}-${category}`}
+                    url={change.url}
+                    pool={pool}
+                    category={category}
+                    entries={entries}
+                    editable={editable}
+                    onFeedback={setFeedback}
+                    renderActions={(entry) => (
                       <>
                         <EntryEditor
                           key={`${entry.id}-${pool.version}`}
@@ -665,28 +667,6 @@ export function MappoolEditor({
                           entry={entry}
                         />
                         <div className="actions">
-                          {i > 0 && (
-                            <Save
-                              change={change}
-                              label={`Move ${slotLabel(entry.category, entry.position)} up`}
-                              description="Reorder this category and renumber its slots. No maps are removed."
-                              payload={{
-                                action: "reorder",
-                                poolId: pool.id,
-                                expectedVersion: pool.version,
-                                category,
-                                entryIds: entries
-                                  .map((e) => e.id)
-                                  .map((id, j, ids) =>
-                                    j === i - 1
-                                      ? ids[i]
-                                      : j === i
-                                        ? ids[i - 1]
-                                        : id,
-                                  ),
-                              }}
-                            />
-                          )}
                           <Save
                             change={change}
                             label={`Refresh ${slotLabel(entry.category, entry.position)} metadata`}
@@ -712,8 +692,8 @@ export function MappoolEditor({
                         </div>
                       </>
                     )}
-                  </article>
-                ))}
+                  />
+                )}
                 {!entries.length && (
                   <p className="notice spaced">
                     No {category} slots configured.
@@ -739,11 +719,12 @@ export function MappoolEditor({
             )}
             {(activeTask === "import" || activeTask === "batch") && (
               <MappoolBatch
-                key={`${pool.id}-${pool.version}-${activeTask}`}
+                key={`${pool.id}-${activeTask}`}
                 url={change.url}
                 pool={pool}
                 entries={poolEntries}
                 mode={activeTask}
+                onFeedback={setFeedback}
               />
             )}
             {activeTask === "settings" && (

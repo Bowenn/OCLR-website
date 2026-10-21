@@ -52,7 +52,7 @@ globalThis.fetch = async (input, init) => {
     if (id === 666) return Response.json({ id });
     if (id === 555)
       throw new DOMException("Synthetic provider timeout", "TimeoutError");
-    if (id === 123 || id === 456)
+    if ([123, 456, 789, 101, 102].includes(id))
       return Response.json({
         id,
         beatmapset_id: 42,
@@ -70,7 +70,9 @@ globalThis.fetch = async (input, init) => {
           title:
             id === 123
               ? "Synthetic Browser Song"
-              : "Synthetic Replacement Song",
+              : id === 456
+                ? "Synthetic Replacement Song"
+                : `Synthetic Beatmap ${id}`,
           creator: "Synthetic Mapper",
         },
       });

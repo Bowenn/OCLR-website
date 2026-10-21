@@ -371,7 +371,10 @@ test.describe("published mappools and restricted editing", () => {
       page
         .getByRole("region", { name: "Selected mappool", exact: true })
         .getByRole("combobox"),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
+    await expect(
+      page.getByLabel("Position for NM1", { exact: true }),
+    ).toBeVisible();
     const maps = page.getByRole("tab", { name: "Maps", exact: true });
     await page
       .getByRole("button", { name: "+ New round", exact: true })
