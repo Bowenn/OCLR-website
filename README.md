@@ -56,7 +56,17 @@ Staff enter `/admin` for a role-aware overview, then select a tournament at `/ad
 
 ## Release operations
 
-First-install/start commands use `bash scripts/production.sh`; routine whole-site updates use `bash scripts/update.sh` (also available through npm aliases).
+With `/etc/oclr/runtime.env` prepared on Rocky Linux 10, the simple entry point is:
+
+```sh
+sudo bash scripts/oclr.sh deploy   # first installation
+# If OCLR is already installed, use `update` instead of `deploy`.
+sudo oclr update                 # subsequent code releases
+```
+
+It prepares the app account, required packages/compatible PostgreSQL client tools, protected configuration permissions, service and narrowly scoped service-control rights. It loads the environment, derives the DB target, pins the latest `origin/main` SHA and asks for the migration username/password (normal text, hidden password; URL escaping is automatic). Builds and the existing backup/migration/activation workflow run as the unprivileged `oclr` account. The database and separate Nginx are retained. Configure the existing HTTPS proxy first so final public health verification can succeed. Use a reviewed main release whose CI passed. See [the short walkthrough](docs/deployment.md#simple-deployment-and-update).
+
+For advanced/manual operation, first-install/start commands use `bash scripts/production.sh`; whole-site updates use `bash scripts/update.sh` (also available through npm aliases).
 
 Target topology: Rocky Linux 10 application host, existing separate PostgreSQL, and existing separate Nginx. See [host/database/proxy steps and example configuration](docs/deployment.md#rocky-linux-10-application-host).
 

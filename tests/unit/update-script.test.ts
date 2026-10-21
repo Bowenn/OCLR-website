@@ -10,6 +10,7 @@ import {
   symlinkSync,
   readlinkSync,
   realpathSync,
+  existsSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -18,7 +19,7 @@ import { describe, expect, it } from "vitest";
 const source = fileURLToPath(new URL("../../scripts/", import.meta.url));
 const old = "1".repeat(40),
   next = "2".repeat(40);
-function rehearsal(failure = "") {
+function rehearsal(failure = "", initial = false) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "oclr-update-test-")));
   const repo = join(root, "repository"),
     install = join(root, "install"),
@@ -42,9 +43,10 @@ function rehearsal(failure = "") {
     join(archive, "scripts/deployment-db.ts"),
     "// mocked database transport in this orchestration test\n",
   );
-  writeFileSync(join(previous, ".oclr-release"), old);
-  symlinkSync(previous, join(install, "current"));
-  writeFileSync(join(root, "active"), "yes");
+  if (failure !== "legacy") writeFileSync(join(previous, ".oclr-release"), old);
+  writeFileSync(join(previous, "retained"), old);
+  if (!initial) symlinkSync(previous, join(install, "current"));
+  writeFileSync(join(root, "active"), initial ? "no" : "yes");
   writeFileSync(join(root, "commands"), "");
   // Commands replace external systems only. The actual Bash updater owns sequencing,
   // activation and failure cleanup, including real temporary directories/symlinks.
@@ -59,6 +61,7 @@ if (name === 'git') {
  if (op === 'status') { if (fail === 'dirty') console.log(' M user-file'); }
  else if (op === 'archive') { const r=cp.spawnSync('/usr/bin/tar',['-c','-C',root+'/archive','.']); process.stdout.write(r.stdout); process.exit(r.status); }
  else if (op === 'diff') process.exit(0);
+ else if (op === 'rev-parse') console.log('1111111111111111111111111111111111111111');
  else log('git '+args.join(' '));
 } else if (name === 'node') {
  if (a[0] === '--version') console.log(process.version);
@@ -109,8 +112,9 @@ else throw new Error('Unexpected external backup command');
       [
         join(repo, "scripts/update.sh"),
         "--ref",
-        failure === "same" ? old : next,
+        ["same", "legacy"].includes(failure) ? old : next,
         "--apply",
+        ...(initial ? ["--initial"] : []),
       ],
       {
         encoding: "utf8",
@@ -136,9 +140,11 @@ else throw new Error('Unexpected external backup command');
       result,
       calls: readFileSync(join(root, "commands"), "utf8").trim().split("\n"),
       active: readFileSync(join(root, "active"), "utf8"),
-      switched: readlinkSync(join(install, "current")) !== previous,
-      oldPreserved:
-        readFileSync(join(previous, ".oclr-release"), "utf8") === old,
+      switched:
+        existsSync(join(install, "current")) &&
+        readlinkSync(join(install, "current")) !== previous,
+      previousLink: existsSync(join(install, "previous")),
+      oldPreserved: readFileSync(join(previous, "retained"), "utf8") === old,
     };
   } finally {
     rmSync(root, { force: true, recursive: true });
@@ -190,6 +196,35 @@ describe("Bash site updates", () => {
     expect(run.result.stdout + run.result.stderr).not.toContain(
       "must-not-be-logged",
     );
+  });
+  it("installs a first release through the same backup/migration/health pipeline", () => {
+    const run = rehearsal("", true);
+    expect(run.result.status, run.result.stderr).toBe(0);
+    expect(run.active).toBe("yes");
+    expect(run.switched).toBe(true);
+    expect(run.previousLink).toBe(false);
+    expect(run.calls).toContain("db apply migration=true");
+    expect(run.calls.at(-1)).toBe("db health migration=false");
+  });
+  it.each(["build", "backup", "migration", "health"])(
+    "leaves an initial installation stopped after %s failure",
+    (failure) => {
+      const run = rehearsal(failure, true);
+      expect(run.result.status).not.toBe(0);
+      expect(run.active).toBe("no");
+      expect(run.previousLink).toBe(false);
+      if (["build", "backup"].includes(failure))
+        expect(run.switched).toBe(false);
+      if (failure === "backup")
+        expect(run.calls).not.toContain("service start");
+    },
+  );
+  it("converts a manually installed same-SHA release into a verified release without mutating its files", () => {
+    const run = rehearsal("legacy");
+    expect(run.result.status, run.result.stderr).toBe(0);
+    expect(run.switched).toBe(true);
+    expect(run.oldPreserved).toBe(true);
+    expect(run.calls).toContain("npm run build migration=false");
   });
   it("retries an already active SHA by checking health without migration or service changes", () => {
     const run = rehearsal("same");

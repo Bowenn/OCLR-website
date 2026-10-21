@@ -2,6 +2,35 @@
 
 The deployment target is a Rocky Linux 10 Node.js application host, an existing separate PostgreSQL server and an existing separate Nginx proxy. CI verifies Node.js 24 and PostgreSQL 17; the actual external database version, permissions and networking must be rehearsed before launch. No deployment, domain, DNS or OAuth application has been provisioned by this repository. The local isolated tests are not a production launch.
 
+## Simple deployment and update
+
+Prepare `/etc/oclr/runtime.env` once using the configuration below. Keep your existing PostgreSQL accounts/database and configure the existing Nginx HTTPS upstream to the Rocky app's private IP/port first. In the environment file, `OCLR_BIND_HOST` is that **app private IP**, `APP_URL` is the public HTTPS origin, and the chosen internal database URL may use `sslmode=disable`. Approved OAuth/Admin/privacy settings are still required. The script never creates a database or configures the separate Nginx/DNS/certificates.
+
+Run from a normal sudo-capable operator session on Rocky Linux 10. If you need a new installer checkout (do not modify the release currently serving users):
+
+```sh
+sudo dnf install -y git
+git clone https://github.com/PhoenixEmik/OCLR-website.git oclr-installer
+cd oclr-installer
+sudo bash scripts/oclr.sh deploy
+```
+
+If OCLR was already installed using the earlier manual instructions, use `sudo bash scripts/oclr.sh update` instead of `deploy`. After the first successful run, subsequent whole-site updates are simply:
+
+```sh
+sudo oclr update
+```
+
+The command reads `runtime.env` automatically as the unprivileged app user, prints the pinned release SHA and database target, then asks for the migration username (Enter defaults to `oclr_migrator`) and password. Type the **normal password**; it is hidden and escaped internally. There is no manual connection-URL construction, host/name export, sudoers editing or symlink switching for the operator. Runtime configuration stays outside releases and is never rewritten. Use a reviewed `main` release with passing CI; each invocation fetches `origin/main`, resolves a full SHA and deploys that exact tree. An existing dirty operator clone is preserved and rejected.
+
+On first use it prepares the `oclr` Unix account/directories, Node/npm/Git/utilities and systemd service, then installs the `oclr` shortcut. It queries PostgreSQL's version with the runtime identity and selects compatible existing `pg_dump`/`pg_restore` clients; when needed, it installs **client packages only** from Rocky/the [official PostgreSQL Yum repository](https://www.postgresql.org/download/linux/redhat/). This may add the PGDG repository. No PostgreSQL server is installed, initialized or restarted. Package repositories/network access and sudo privileges are prerequisites.
+
+Root handles packages and service configuration only. It does not source `runtime.env` or run npm/migrations. Those run as `oclr` through the existing engine: separate release build → target/history checks → verified private backup → pending migrations → runtime preflight → service activation → exact-release local/public HTTPS health. First installation uses the same pipeline with `--initial`, requires no existing current/previous release, and leaves the service stopped on a maintenance-stage failure. Existing installations retain the previous release. The service gets no migration credentials; none are saved to disk by the prompt. Private backups/logs remain under `/var/lib/oclr/backups`; apply your backup retention/encryption policy.
+
+The root-owned shortcut and fixed service definition come from the trusted installer invocation, not the app-writable checkout. Ordinary site updates do not silently replace privileged bootstrap code. To upgrade that bootstrap itself, review a new installer checkout and explicitly invoke it with sudo. Existing local service units are retained, and conflicting managed sudo policies are preserved/rejected. Nonstandard paths/services can continue using the advanced commands below.
+
+Preview either action safely with `sudo bash scripts/oclr.sh deploy --dry-run` or `sudo oclr update --dry-run`; previews perform no configuration reads, downloads or writes. `deploy` refuses to overwrite an installed release. `update` refuses to restart a stopped installation from an uncertain previous failure. On errors, read the reported private log and follow [recovery](#routine-whole-site-updates); no automatic database restore/down migration is attempted. Local simulated service tests and isolated DB fixtures do not verify your real Rocky host, package installation, TLS/proxy, OAuth or organizer rehearsal. #10 remains open until those release gates are met.
+
 ## Required configuration
 
 See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` prefix to credentials, database URLs or the bootstrap Admin IDs.
