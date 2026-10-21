@@ -71,6 +71,12 @@ test.describe("appearance and language preferences", () => {
     for (const locale of ["zh-Hans", "zh-Hant", "en"]) {
       await page.locator(".language-control select").selectOption(locale);
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
+      if (locale !== "en")
+        expect(
+          await page
+            .locator("body")
+            .evaluate((node) => getComputedStyle(node).fontFamily),
+        ).toContain(locale === "zh-Hant" ? "PingFang TC" : "PingFang SC");
       for (const theme of ["light", "dark"]) {
         if ((await page.locator("html").getAttribute("data-theme")) !== theme)
           await page.locator(".theme-control").click();

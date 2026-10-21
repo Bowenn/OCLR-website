@@ -71,15 +71,7 @@ body:has(.public-tournament) {
   --button-radius: 999px;
   --radius-panel: 1.375rem;
   color-scheme: light;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    "PingFang SC",
-    "Microsoft JhengHei",
-    sans-serif;
+  font-family: var(--font-sans);
 }
 body:has(.public-tournament) :focus-visible {
   outline-color: var(--public-focus);
