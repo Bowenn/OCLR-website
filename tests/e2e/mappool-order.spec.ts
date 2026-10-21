@@ -418,7 +418,7 @@ test.describe("quick paste and mappool ordering", () => {
       const publicPage = await guest.newPage();
       await publicPage.goto(`/tournaments/test-cup/mappools/${pool.id}`);
       const nm = publicPage.getByRole("table", {
-        name: "NM / No Mod beatmaps",
+        name: `${pool.name}: NM / No Mod beatmaps`,
         exact: true,
       });
       await expect(nm.locator("tbody th")).toHaveText([
