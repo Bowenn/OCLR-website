@@ -23,7 +23,11 @@ export default async function Schedule({
         Match times use each fixture’s IANA time zone. Unconfirmed times remain
         TBA.
       </PageHeading>
-      <PublicMatches fixtures={fixtures} slug={slug} />
+      <PublicMatches
+        fixtures={fixtures}
+        slug={slug}
+        groups={competition?.groups ?? []}
+      />
       <section className="section-space">
         <h2>Tournament milestones</h2>
         {edition.schedule.length ? (

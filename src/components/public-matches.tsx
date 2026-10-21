@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { PublicFixture, PublicGroup } from "@/lib/public-competition";
 import { formatDate } from "@/lib/editions";
+
 export function MatchCard({
   fixture: f,
   slug,
@@ -10,6 +11,14 @@ export function MatchCard({
   fixture: PublicFixture;
   slug: string;
 }) {
+  const status =
+    f.status === "cancelled"
+      ? "Cancelled"
+      : f.result
+        ? "Published result"
+        : f.confirmed
+          ? f.status.replaceAll("_", " ")
+          : "Awaiting fixture confirmation";
   return (
     <article className="panel public-match-card">
       <div className="match-meta">
@@ -17,15 +26,7 @@ export function MatchCard({
           {f.stage === "group" ? "GROUP STAGE" : "KNOCKOUT STAGE"} /{" "}
           {f.roundName}
         </span>
-        <span className="badge">
-          {f.status === "cancelled"
-            ? "Cancelled"
-            : f.result
-              ? "Published result"
-              : f.confirmed
-                ? f.status.replaceAll("_", " ")
-                : "Awaiting fixture confirmation"}
-        </span>
+        <span className="badge">{status}</span>
       </div>
       <h3>
         <Link
@@ -37,46 +38,83 @@ export function MatchCard({
       </h3>
       <div className="match-versus">
         <span>{f.home.label}</span>
-        <strong>
+        <strong
+          aria-label={
+            f.result
+              ? `Score ${f.result.homeWins} to ${f.result.awayWins}`
+              : "Versus"
+          }
+        >
           {f.result ? `${f.result.homeWins} : ${f.result.awayWins}` : "vs"}
         </strong>
         <span>{f.away.label}</span>
       </div>
-      <p className="muted">
-        {f.scheduledAt
-          ? formatDate(f.scheduledAt, f.timeZone)
-          : "Match time TBA"}{" "}
+      <p className="match-time muted">
+        {f.scheduledAt ? (
+          <time dateTime={f.scheduledAt}>
+            {formatDate(f.scheduledAt, f.timeZone)}
+          </time>
+        ) : (
+          "Match time TBA"
+        )}{" "}
         · {f.timeZone}
       </p>
-      {f.pool && (
-        <Link
-          className="text-link"
-          href={`/tournaments/${slug}/mappools/${f.pool.id}`}
-        >
-          Released mappool: {f.pool.name}
-        </Link>
-      )}
-      {f.result && (
-        <p className="small muted">
-          {f.result.draw
-            ? "Approved draw"
-            : `Winner: ${f.result.winnerTeamId === f.home.team?.id ? f.home.label : f.away.label}`}{" "}
-          · Updated {formatDate(f.result.updatedAt, f.timeZone)}
-        </p>
-      )}
+      <details className="match-public-details">
+        <summary>Match details</summary>
+        <div>
+          {f.pool && (
+            <p>
+              <Link
+                className="text-link"
+                href={`/tournaments/${slug}/mappools/${f.pool.id}`}
+              >
+                Released mappool: {f.pool.name}
+              </Link>
+            </p>
+          )}
+          {f.result && (
+            <>
+              <p className="small muted">
+                {f.result.draw
+                  ? "Approved draw"
+                  : `Winner: ${f.result.winnerTeamId === f.home.team?.id ? f.home.label : f.away.label}`}{" "}
+                · Updated {formatDate(f.result.updatedAt, f.timeZone)}
+              </p>
+              <a className="text-link" href={f.result.mpUrl}>
+                osu! match source
+              </a>
+            </>
+          )}
+          <p>
+            <Link
+              className="text-link"
+              href={`/tournaments/${slug}/matches/${f.id}`}
+            >
+              Open match
+            </Link>
+          </p>
+        </div>
+      </details>
     </article>
   );
 }
+
 export function PublicMatches({
   fixtures,
   slug,
+  groups = [],
 }: {
   fixtures: PublicFixture[];
   slug: string;
+  groups?: PublicGroup[];
 }) {
   const [stage, setStage] = useState("");
   const [round, setRound] = useState("");
   const [status, setStatus] = useState("");
+  const [group, setGroup] = useState("");
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState<"cards" | "compact">("cards");
+  const stages = [...new Set(fixtures.map((f) => f.stage))];
   const rounds = [
     ...new Map(
       fixtures
@@ -84,45 +122,107 @@ export function PublicMatches({
         .map((f) => [f.roundId, f.roundName]),
     ).entries(),
   ];
+  const selectedGroup = groups.find((g) => g.key === group);
+  const term = search.trim().toLocaleLowerCase();
   const matches = fixtures.filter(
     (f) =>
       (!stage || f.stage === stage) &&
       (!round || f.roundId === round) &&
+      (!selectedGroup ||
+        (selectedGroup.rows.some((r) => r.team.id === f.home.team?.id) &&
+          selectedGroup.rows.some((r) => r.team.id === f.away.team?.id))) &&
       (!status ||
         (status === "completed"
           ? Boolean(f.result)
           : status === "pending"
             ? !f.result && f.status !== "cancelled"
-            : f.status === "cancelled")),
+            : f.status === "cancelled")) &&
+      (!term ||
+        [f.label, f.roundName, f.home.label, f.away.label, f.result?.mpId]
+          .join(" ")
+          .toLocaleLowerCase()
+          .includes(term)),
   );
   return (
-    <section className="stack">
-      <div className="match-filters">
+    <section className="public-matches stack">
+      <div className="public-match-toolbar">
+        <div
+          className="event-pills"
+          role="group"
+          aria-label="Competition stage"
+        >
+          {[
+            ["", "All stages"],
+            ...stages.map((value) => [
+              value,
+              value === "group" ? "Group Stage" : "Knockout Stage",
+            ]),
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              className="secondary"
+              type="button"
+              aria-pressed={stage === value}
+              onClick={() => {
+                setStage(value);
+                setRound("");
+                setGroup("");
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="event-pills" role="group" aria-label="Match view">
+          {(["cards", "compact"] as const).map((value) => (
+            <button
+              className="secondary"
+              key={value}
+              type="button"
+              aria-pressed={view === value}
+              onClick={() => setView(value)}
+            >
+              {value === "cards" ? "Cards" : "Compact"}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="public-match-filters">
         <label className="field">
-          <span>Competition stage</span>
-          <select
-            value={stage}
-            onChange={(e) => {
-              setStage(e.target.value);
-              setRound("");
-            }}
-          >
-            <option value="">All stages</option>
-            <option value="group">Group Stage</option>
-            <option value="knockout">Knockout Stage</option>
-          </select>
+          <span>Search matches</span>
+          <input
+            type="search"
+            value={search}
+            placeholder="Team, match or MP ID"
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </label>
-        <label className="field">
-          <span>Competition round</span>
-          <select value={round} onChange={(e) => setRound(e.target.value)}>
-            <option value="">All rounds</option>
-            {rounds.map(([id, name]) => (
-              <option key={id} value={id}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {rounds.length > 1 && (
+          <label className="field">
+            <span>Competition round</span>
+            <select value={round} onChange={(e) => setRound(e.target.value)}>
+              <option value="">All rounds</option>
+              {rounds.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {groups.length > 0 && stage !== "knockout" && (
+          <label className="field">
+            <span>Group</span>
+            <select value={group} onChange={(e) => setGroup(e.target.value)}>
+              <option value="">All groups</option>
+              {groups.map((g) => (
+                <option key={g.key} value={g.key}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="field">
           <span>Match publication status</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -140,7 +240,7 @@ export function PublicMatches({
         const group = matches.filter((f) => f.roundId === roundId);
         return (
           <section
-            className="stack"
+            className="public-match-round"
             key={roundId}
             aria-labelledby={`public-round-${roundId}`}
           >
@@ -148,9 +248,11 @@ export function PublicMatches({
               {group[0].stage === "group" ? "Group Stage" : "Knockout Stage"} ·{" "}
               {group[0].roundName}
             </h2>
-            {group.map((f) => (
-              <MatchCard key={f.id} fixture={f} slug={slug} />
-            ))}
+            <div className="public-match-list" data-view={view}>
+              {group.map((f) => (
+                <MatchCard key={f.id} fixture={f} slug={slug} />
+              ))}
+            </div>
           </section>
         );
       })}

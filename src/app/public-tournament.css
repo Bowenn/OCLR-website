@@ -432,3 +432,171 @@ body:has(.public-tournament) .site-footer {
     max-width: none;
   }
 }
+
+/* The same published fixtures power both scanning modes. */
+.public-tournament .event-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid #ded5e7;
+  border-radius: 1.5rem;
+  background: #fff;
+}
+.public-tournament .event-pills button {
+  color: #6d6278;
+  border-color: transparent;
+  background: transparent;
+  padding-inline: 0.85rem;
+}
+.public-tournament .event-pills button[aria-pressed="true"] {
+  color: #fff;
+  background: #6c2e91;
+}
+.public-match-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.public-match-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+}
+.public-match-filters > .field {
+  flex: 1 1 150px;
+}
+.public-match-filters > .field:first-child {
+  flex: 2 1 240px;
+}
+.public-match-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.public-match-round h2 {
+  font-size: 1.15rem;
+}
+.public-tournament .public-match-card {
+  padding: 1rem 1.2rem;
+  border-radius: 1.15rem;
+  min-width: 0;
+}
+.public-tournament .public-match-card h3 {
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0.8rem;
+}
+.public-tournament .public-match-card .match-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.public-tournament .public-match-card .match-meta .eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+.public-tournament .public-match-card .match-versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.public-tournament .public-match-card .match-versus > :last-child {
+  text-align: right;
+}
+.public-tournament .public-match-card .match-versus strong {
+  color: #fff;
+  background: #6c2e91;
+  border-radius: 0.65rem;
+  padding: 0.25rem 0.65rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+}
+.public-tournament .match-time {
+  font-size: 0.8rem;
+  margin: 1rem 0 0.3rem;
+}
+.match-public-details > summary {
+  cursor: pointer;
+  color: #6c2e91;
+  font-size: 0.8rem;
+  padding-block: 0.5rem;
+  min-height: 44px;
+  align-content: center;
+}
+.match-public-details > div {
+  border-top: 1px solid #ded5e7;
+  padding-top: 0.75rem;
+}
+.match-public-details p {
+  margin-bottom: 0.5rem;
+}
+.public-match-list[data-view="compact"] {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid #ded5e7;
+  border-radius: 1rem;
+  overflow: clip;
+}
+.public-tournament .public-match-list[data-view="compact"] .public-match-card {
+  border: 0;
+  border-bottom: 1px solid #ded5e7;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr);
+  column-gap: 1.25rem;
+}
+.public-match-list[data-view="compact"] .match-meta {
+  grid-column: 1/-1;
+}
+.public-match-list[data-view="compact"] .match-public-details {
+  grid-column: 1/-1;
+}
+.public-tournament .match-card {
+  background: #fff;
+  border-color: #ded5e7;
+}
+.public-tournament .bracket-slot {
+  border-color: #ded5e7;
+}
+.public-tournament .bracket-slot.winner {
+  background: #ece5f3;
+  color: #6c2e91;
+}
+.public-tournament .bracket-connectors path {
+  stroke: #bfa9d0;
+}
+.public-tournament .bracket-tabs button {
+  background: #fff;
+  color: #6c2e91;
+  border-color: #ded5e7;
+}
+.public-tournament .bracket-tabs button[aria-pressed="true"] {
+  background: #6c2e91;
+  color: #fff;
+}
+@media (max-width: 760px) {
+  .public-match-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .public-tournament
+    .public-match-list[data-view="compact"]
+    .public-match-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .public-match-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .public-match-filters > .field:first-child {
+    grid-column: 1/-1;
+  }
+}

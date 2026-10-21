@@ -19,7 +19,11 @@ export default async function Results({
         Published scores, verified match sources and group standings. Referee
         submissions remain private until approval and publication.
       </PageHeading>
-      <PublicMatches fixtures={data?.fixtures ?? []} slug={slug} />
+      <PublicMatches
+        fixtures={data?.fixtures ?? []}
+        slug={slug}
+        groups={data?.groups ?? []}
+      />
       <GroupStandings groups={data?.groups ?? []} slug={slug} />
     </>
   );
