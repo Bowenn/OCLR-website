@@ -1,9 +1,41 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { main } from "../../scripts/deployment-db";
+import { databaseUrl, main } from "../../scripts/deployment-db";
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.useRealTimers();
+});
+describe("explicit database transport", () => {
+  it.each(["10.20.0.5", "db.internal.example", "127.0.0.1"])(
+    "accepts disabled TLS for the operator-selected host %s in production",
+    (host) => {
+      vi.stubEnv("OCLR_ENVIRONMENT", "production");
+      const url = databaseUrl(
+        `postgresql://runtime@${host}:5432/oclr?sslmode=disable`,
+      );
+      expect(url.searchParams.get("sslmode")).toBe("disable");
+    },
+  );
+  it("preserves verified TLS support", () => {
+    expect(
+      databaseUrl(
+        "postgresql://runtime@db.example/oclr?sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem",
+      ).searchParams.get("sslmode"),
+    ).toBe("verify-full");
+  });
+  it.each([
+    "",
+    "?sslmode=prefer",
+    "?sslmode=no-verify",
+    "?sslmode=disable&sslmode=verify-full",
+  ])(
+    "rejects missing, ambiguous or unsupported transport options: %s",
+    (query) => {
+      expect(() =>
+        databaseUrl(`postgresql://runtime@db.internal/oclr${query}`),
+      ).toThrow("explicit PostgreSQL");
+    },
+  );
 });
 describe("update activation health", () => {
   it("requires the exact release and HTML from both the private listener and public HTTPS", async () => {

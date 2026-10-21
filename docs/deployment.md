@@ -6,18 +6,18 @@ The deployment target is a Rocky Linux 10 Node.js application host, an existing 
 
 See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` prefix to credentials, database URLs or the bootstrap Admin IDs.
 
-| Variable                             | Purpose                                                                                                                                  |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_URL`                            | Confirmed canonical origin, HTTPS in staging/production, no path or credentials                                                          |
-| `DATABASE_URL`                       | PostgreSQL connection; use verified TLS for remote servers, a least-privilege runtime role and a separate migration role where supported |
-| `OSU_CLIENT_ID`, `OSU_CLIENT_SECRET` | Organizer-owned OAuth application, exact callback `APP_URL/auth/osu/callback`                                                            |
-| `ADMIN_OSU_IDS`                      | Explicitly verified bootstrap global Admin IDs; legacy STAFF_OSU_IDS grants no access. Persistent grants are managed at /admin/staff     |
-| `PRIVACY_CONTACT_OSU_ID`             | Explicit single approved public osu! Admin ID (positive safe integer)                                                                    |
-| `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                               |
-| `OCLR_BRACKETS_FILE`                 | Optional absolute path to legacy bracket JSON (ignored for editions with DB fixtures); default is bundled `src/content/brackets.json`    |
-| `OCLR_ANNOUNCEMENTS_FILE`            | Optional absolute path to approved announcement JSON; default is bundled `src/content/announcements.json`                                |
-| `PORT`                               | Optional listening port (Next.js default 3000)                                                                                           |
-| `TEST_DATABASE_URL`                  | Isolated destructive-test database with a separate `test` name segment, e.g. `oclr_test`; never set it on production                     |
+| Variable                             | Purpose                                                                                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_URL`                            | Confirmed canonical origin, HTTPS in staging/production, no path or credentials                                                       |
+| `DATABASE_URL`                       | PostgreSQL connection; explicitly select internal plaintext or verified TLS, with separate least-privilege runtime/migration roles    |
+| `OSU_CLIENT_ID`, `OSU_CLIENT_SECRET` | Organizer-owned OAuth application, exact callback `APP_URL/auth/osu/callback`                                                         |
+| `ADMIN_OSU_IDS`                      | Explicitly verified bootstrap global Admin IDs; legacy STAFF_OSU_IDS grants no access. Persistent grants are managed at /admin/staff  |
+| `PRIVACY_CONTACT_OSU_ID`             | Explicit single approved public osu! Admin ID (positive safe integer)                                                                 |
+| `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                            |
+| `OCLR_BRACKETS_FILE`                 | Optional absolute path to legacy bracket JSON (ignored for editions with DB fixtures); default is bundled `src/content/brackets.json` |
+| `OCLR_ANNOUNCEMENTS_FILE`            | Optional absolute path to approved announcement JSON; default is bundled `src/content/announcements.json`                             |
+| `PORT`                               | Optional listening port (Next.js default 3000)                                                                                        |
+| `TEST_DATABASE_URL`                  | Isolated destructive-test database with a separate `test` name segment, e.g. `oclr_test`; never set it on production                  |
 
 Next.js reads `.env.local` for local development. Production shell commands expect exported environment variables or a secret manager injecting them. Do not place real secrets in command history, checked-in compose files or CI logs. A secret manager is preferred in production.
 
@@ -150,9 +150,9 @@ npm --version
 
 The base Node.js 22 packages meet the application's **>=22.13** requirement; update them through your managed repositories. Node.js 24 is the CI reference, but versioned `nodejs24` packages can expose `node-24`/`npm-24` rather than standard names. If choosing that runtime, configure a consistent standard `node`/`npm` PATH for both build and service, and adjust the service executable; do not mix runtimes. Package availability is in the [official Rocky repository](https://download.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/Packages/n/).
 
-Use this topology: **Browser → existing Nginx (HTTPS) → Rocky app (private port 3000) → existing PostgreSQL (TLS)**. The public domain must point to Nginx, not directly to Node. Replace all uppercase/example values below with your actual settings. No production services have been provisioned by this repository.
+Use this topology: **Browser → existing Nginx (HTTPS) → Rocky app (private port 3000) → existing PostgreSQL (private TCP or verified TLS)**. The public domain must point to Nginx, not directly to Node. Replace all uppercase/example values below with your actual settings. No production services have been provisioned by this repository.
 
-**1. Prepare your existing database.** Follow [the PostgreSQL steps below](#existing-separate-postgresql-deployment-steps). Obtain a runtime URL, a separate migration URL and the trusted CA certificate from its administrator. Do not install PostgreSQL on the app host. Permit database connections only from the app/deployment host's actual private IP.
+**1. Prepare your existing database.** Follow [the PostgreSQL steps below](#existing-separate-postgresql-deployment-steps). Obtain a runtime URL and a separate migration URL from its administrator; obtain a trusted CA certificate only if choosing database TLS. Do not install PostgreSQL on the app host. Permit database connections only from the app/deployment host's actual private IP.
 
 **2. Create an app account and first release directory.** On the Rocky application host, run these as your sudo-capable operator (fresh-install examples; reuse an existing account/path when appropriate):
 
@@ -170,7 +170,7 @@ Use a reviewed commit/release, not an unreviewed moving branch. Node/npm/setup r
 
 ```sh
 APP_URL='https://oclr.example.com'
-DATABASE_URL='postgresql://oclr_runtime:ENCODED_PASSWORD@DB_HOST:5432/oclr?sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem'
+DATABASE_URL='postgresql://oclr_runtime:ENCODED_PASSWORD@DB_HOST:5432/oclr?sslmode=disable'
 OSU_CLIENT_ID='YOUR_OSU_CLIENT_ID'
 OSU_CLIENT_SECRET='YOUR_OSU_CLIENT_SECRET'
 ADMIN_OSU_IDS='YOUR_VERIFIED_ADMIN_OSU_ID'
@@ -180,13 +180,14 @@ OCLR_BIND_HOST='APP_PRIVATE_IP'
 PORT=3000
 ```
 
-Use the real public domain for APP_URL and register **exactly** `https://YOUR_REAL_DOMAIN/auth/osu/callback` in your osu! OAuth application. ADMIN_OSU_IDS contains verified numeric IDs, not usernames. The privacy contact must be an approved global Admin; set the actual retention policy. OCLR_BIND_HOST is the Rocky host's own private IP, not Nginx's IP. Keep migration credentials out of this runtime file. Protect it and install the supplied DB CA:
+Use the real public domain for APP_URL and register **exactly** `https://YOUR_REAL_DOMAIN/auth/osu/callback` in your osu! OAuth application. ADMIN_OSU_IDS contains verified numeric IDs, not usernames. The privacy contact must be an approved global Admin; set the actual retention policy. OCLR_BIND_HOST is the Rocky host's own private IP, not Nginx's IP. Keep migration credentials out of this runtime file. Protect the runtime file:
 
 ```sh
 sudo chown root:oclr /etc/oclr/runtime.env
 sudo chmod 0640 /etc/oclr/runtime.env
-sudo install -o root -g oclr -m 0640 /PATH/TO/PROVIDED_DB_CA.pem /etc/oclr/db-ca.pem
 ```
+
+The example uses the organizer-selected internal database connection without TLS. If choosing verified DB TLS instead, set `sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem` and install the provided CA with `sudo install -o root -g oclr -m 0640 /PATH/TO/PROVIDED_DB_CA.pem /etc/oclr/db-ca.pem`. Public browser HTTPS remains required.
 
 Keep `.env.local` and other local environment files out of release directories. The shell script never sources them; Next.js/Drizzle themselves can still load Next.js environment files. Do not paste secrets into Git, chat, command arguments or shell history.
 
@@ -207,7 +208,7 @@ unset MIGRATION_DATABASE_URL
 exit
 ```
 
-The hidden prompt takes the **migration** connection URL, with the same database/verified TLS settings as the runtime URL and its separate migration-role credentials. It is not written into shell history. Check each command succeeds; stop if setup reports an error. Setup installs locked dependencies, runs committed migrations with migration credentials, checks runtime configuration/schema and builds. Only the migration subprocess receives the privileged URL. Dry-run executes nothing and does not validate real credentials or connectivity. The npm aliases invoke the same Bash script.
+The hidden prompt takes the **migration** connection URL, with the same database/transport settings as the runtime URL and its separate migration-role credentials. It is not written into shell history. Check each command succeeds; stop if setup reports an error. Setup installs locked dependencies, runs committed migrations with migration credentials, checks runtime configuration/schema and builds. Only the migration subprocess receives the privileged URL. Dry-run executes nothing and does not validate real credentials or connectivity. The npm aliases invoke the same Bash script.
 
 These first-install preparation/start commands require explicit `--apply` for setup after operator backup/target review. Use [the guarded update command](#routine-whole-site-updates) for later releases. #10 remains open for full hosted staging upgrades and external launch verification. There is no automatic legacy JSON import, account creation, publication or database rollback.
 
@@ -240,10 +241,10 @@ During upgrades, build a separate release directory and switch the service only 
 
 Do **not** install/init a second database, upgrade the existing cluster, or overwrite an existing OCLR database. Confirm the actual server version, host/port, CA certificate, backup procedure and application-source IP with its administrator. PostgreSQL 17 is tested in CI; another version needs migration/staging verification. The names below describe a **new dedicated database**; for an existing installation, have its DBA adapt grants to the current object owner without recreating anything.
 
-1. Connect to your **existing instance** as its database administrator. On a self-managed DB host, this is commonly `sudo -u postgres psql -d postgres`. For a remote/managed instance, use your actual admin login and trusted CA:
+1. Connect to your **existing instance** as its database administrator. On a self-managed DB host, this is commonly `sudo -u postgres psql -d postgres`. For the chosen internal connection, use your actual admin login (managed services may enforce their own TLS policy):
 
 ```sh
-psql 'host=DB_HOST port=5432 dbname=postgres user=DB_ADMIN sslmode=verify-full sslrootcert=/PATH/TO/DB_CA.pem' --password
+psql 'host=DB_PRIVATE_IP port=5432 dbname=postgres user=DB_ADMIN sslmode=disable' --password
 ```
 
 Replace the placeholders; do not run `initdb`, reinstall the server or recreate an existing OCLR database. In psql, `\l oclr` and `\du oclr_*` let you check whether these names already exist. For a **new** OCLR database, create restricted roles and use interactive password prompts; no passwords belong in SQL files/history:
@@ -266,16 +267,26 @@ ALTER DEFAULT PRIVILEGES FOR ROLE oclr_migrator IN SCHEMA public
   GRANT USAGE, SELECT ON SEQUENCES TO oclr_runtime;
 ```
 
-2. Configure the **existing** database listener/TLS and pg_hba.conf to permit only the actual Rocky app/deployment IPs. A self-managed server may use `hostssl oclr oclr_runtime APP_IP/32 scram-sha-256` plus a corresponding restricted migration-role rule. Replace APP_IP; account for rule order and IPv6 where used. Do not introduce broad `trust` or `0.0.0.0/0` access. Managed database providers use equivalent access controls. A typical pair of entries is:
+2. Configure the **existing** database listener and pg_hba.conf to permit only the actual Rocky app/deployment IPs. For the organizer-selected internal connection without TLS, use `hostnossl` with password authentication. Account for rule order and IPv6 where used. Do not introduce broad `trust` or `0.0.0.0/0` access. Managed database providers use equivalent access controls. A typical pair of entries is:
 
 ```text
-hostssl oclr oclr_runtime  APP_PRIVATE_IP/32 scram-sha-256
-hostssl oclr oclr_migrator APP_PRIVATE_IP/32 scram-sha-256
+hostnossl oclr oclr_runtime  APP_PRIVATE_IP/32 scram-sha-256
+hostnossl oclr oclr_migrator APP_PRIVATE_IP/32 scram-sha-256
 ```
 
-Also restrict the database firewall/security group to that source. In psql, `SHOW hba_file`, `SHOW listen_addresses` and `SHOW ssl` identify the existing configuration. Reload approved HBA changes with `SELECT pg_reload_conf();`; listener changes may require a DBA-coordinated restart of the shared server. Do not restart it casually or weaken existing clients' policy. See [PostgreSQL client authentication](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html).
+Use `hostssl` instead if choosing database TLS. You do not need to disable SSL globally on a shared server; `hostnossl` and the client URL select the unencrypted OCLR connection. Also restrict the database firewall/security group to that source. In psql, `SHOW hba_file`, `SHOW listen_addresses` and `SHOW ssl` identify the existing configuration. Reload approved HBA changes with `SELECT pg_reload_conf();`; listener changes may require a DBA-coordinated restart of the shared server. Do not restart it casually or weaken existing clients' policy. See [PostgreSQL client authentication](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html).
 
-3. Put the runtime connection in the app environment: `postgresql://oclr_runtime:ENCODED_PASSWORD@DB_HOST:5432/oclr?sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem`. Replace every example value; URL-encode password characters, use the certificate's real host name, and install the trusted CA readably for the service. The migration connection uses the same verified server/database with oclr_migrator. Do not disable certificate validation. The existing [node-postgres connection-string parser](https://github.com/brianc/node-postgres/blob/master/packages/pg-connection-string/README.md) supports sslrootcert; no second DB client is required.
+3. Put the runtime connection in the app environment: `postgresql://oclr_runtime:ENCODED_PASSWORD@DB_PRIVATE_IP:5432/oclr?sslmode=disable`. Use the actual internal address/port and URL-encode password characters. The migration connection uses the same host/database/transport with oclr_migrator. No CA or certificate parameters are needed when TLS is disabled. Password authentication still applies; traffic is unencrypted, so restrict it to the intended private network.
+
+For verified TLS, use `sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem`, the certificate's real host name and its trusted CA. The existing [node-postgres connection-string parser](https://github.com/brianc/node-postgres/blob/master/packages/pg-connection-string/README.md) supports both configurations; no second DB client is required.
+
+From the application host, test the existing runtime account without putting its password into history:
+
+```sh
+psql 'host=DB_PRIVATE_IP port=5432 dbname=oclr user=oclr_runtime sslmode=disable' --password
+```
+
+Then run `SELECT current_user, current_database();` and `SELECT ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid();` (expected `f` for this connection). If PostgreSQL still listens only on localhost, set its listener to the actual database private IP plus any addresses needed by existing clients, and coordinate the required restart with its DBA. HBA-only changes need a reload, not a new database. Keep the existing accounts, grants and data.
 
 4. Back up first, then run production:setup on the app release with the migration URL injected. Migrations create public application tables and the Drizzle migration ledger. Existing configurations and slugs are preserved; S11 stays unpublished on a fresh install. Only use the explicit legacy-import workflow above when required; subsequent deployments never overwrite database content from JSON.
 
@@ -340,7 +351,7 @@ Replace the SHA/host examples; a floating `main` is deliberately rejected. The n
 
 Health checks require a successful DB query and the **exact new SHA** at `/api/health`, plus public HTML, both through the configured private listener and the real HTTPS origin. No session or private records are returned. The canonical hostname must resolve from the app host back through Nginx. A network/certificate/proxy error fails activation verification. The script writes a timestamped private `update.log`, keeps `previous` and the database archive, and reports their paths. It checks committed migration history and detects a changed schema source without a new journal entry; it does not audit arbitrary out-of-band database DDL. Investigate any drift rather than resetting the ledger.
 
-Production and remote staging URLs require `sslmode=verify-full`. The only plaintext exception is explicit `OCLR_ENVIRONMENT=staging` with a literal loopback database address and `sslmode=disable`, for isolated local rehearsal. It never enables fake authentication. Staging uses a different database, OAuth app, paths, service and domain.
+Both production and staging database URLs must explicitly choose `sslmode=disable` for the approved internal network or `sslmode=verify-full` for verified TLS. Setup, runtime, backups and updates use the chosen transport without a separate opt-in flag. The updater still verifies the environment, host/database, credentials and migration history. Public HTTPS and OAuth requirements remain independent. Staging uses a different database, OAuth app, paths, service and domain.
 
 **Failure and recovery:** stop and inspect the script output/private log first. Build/initial preflight failures leave the existing service online. Backup failure before migration/activation requests a restart of the unchanged release. Once `migration.started` exists, or activation began, failures/interrupts deliberately keep the service stopped; the presence of that file means migration was attempted, not necessarily committed. A subsequent update refuses to proceed while the old service is down. Check the migration ledger and compatibility before recovering. Do not reset it or run a second operator concurrently.
 

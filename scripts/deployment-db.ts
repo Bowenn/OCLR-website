@@ -22,19 +22,17 @@ function required(name: string) {
   if (!value) throw new Error(`Export ${name} before updating.`);
   return value;
 }
-function databaseUrl(value: string) {
+export function databaseUrl(value: string) {
   const url = new URL(value);
-  const localStaging =
-    process.env.OCLR_ENVIRONMENT === "staging" &&
-    ["127.0.0.1", "[::1]"].includes(url.hostname) &&
-    url.searchParams.get("sslmode") === "disable";
   if (
     !["postgres:", "postgresql:"].includes(url.protocol) ||
     !url.hostname ||
     !url.username ||
     !!url.hash ||
     !url.pathname.slice(1) ||
-    (!localStaging && url.searchParams.get("sslmode") !== "verify-full") ||
+    !["verify-full", "disable"].includes(
+      url.searchParams.get("sslmode") || "",
+    ) ||
     [...url.searchParams.keys()].some(
       (key) =>
         !["sslmode", "sslrootcert", "sslcert", "sslkey"].includes(key) ||
@@ -42,7 +40,7 @@ function databaseUrl(value: string) {
     )
   )
     throw new Error(
-      "Use an explicit PostgreSQL database URL with verified TLS (sslmode=verify-full).",
+      "Use an explicit PostgreSQL database URL with sslmode=verify-full or sslmode=disable for the chosen network.",
     );
   return url;
 }
@@ -143,7 +141,7 @@ async function backup(url: URL, directory: string) {
     PGDATABASE: decodeURIComponent(url.pathname.slice(1)),
     PGUSER: decodeURIComponent(url.username),
     PGPASSWORD: decodeURIComponent(url.password),
-    PGSSLMODE: "verify-full",
+    PGSSLMODE: url.searchParams.get("sslmode")!,
     PGCONNECT_TIMEOUT: "10",
   });
   const supported = {
@@ -306,7 +304,7 @@ if (
     console.error(
       safe
         ? error.message.replace(/postgres(?:ql)?:\/\/\S+/gi, "[redacted]")
-        : "Deployment database check failed. Verify the configured target, TLS, roles and migrations privately.",
+        : "Deployment database check failed. Verify the configured target, transport, roles and migrations privately.",
     );
     process.exitCode = 1;
   });

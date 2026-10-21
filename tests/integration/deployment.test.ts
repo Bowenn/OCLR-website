@@ -121,7 +121,7 @@ describe.skipIf(!base)("deployment migrations and verified backups", () => {
       add(
         "ALTER TABLE retained ADD COLUMN reviewed boolean NOT NULL DEFAULT false;",
       );
-      result = run("apply");
+      result = run("apply", { OCLR_ENVIRONMENT: "production" });
       expect(result.status, result.stdout + result.stderr).toBe(0);
       expect(
         (await pool.query("SELECT label, reviewed FROM retained")).rows,
@@ -152,9 +152,7 @@ describe.skipIf(!base)("deployment migrations and verified backups", () => {
       expect(run("inspect", { PGPORT: "1" }).stderr).toContain(
         "Unset inherited PG*",
       );
-      expect(
-        run("inspect", { OCLR_ENVIRONMENT: "production" }).stderr,
-      ).toContain("verified TLS");
+      expect(run("inspect", { OCLR_ENVIRONMENT: "production" }).status).toBe(0);
       expect(
         run("inspect", {
           MIGRATION_DATABASE_URL: `${migration}&sslmode=verify-full`,
