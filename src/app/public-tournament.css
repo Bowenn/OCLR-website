@@ -981,3 +981,98 @@ body:has(dialog[open].map-dialog) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A continuous handbook, with a compact index rather than stacked rule cards. */
+.rules-handbook {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.rules-desktop-contents {
+  position: sticky;
+  top: 88px;
+  background: #fff;
+  border: 1px solid #ded5e7;
+  border-radius: 1rem;
+  padding: 1rem;
+  max-height: calc(100dvh - 110px);
+  overflow: auto;
+}
+.rules-handbook nav {
+  display: grid;
+  gap: 0.25rem;
+}
+.rules-handbook nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.65rem;
+  color: #6d6278;
+}
+.rules-handbook nav a span {
+  font-size: 0.7rem;
+  color: #6c2e91;
+}
+.rules-handbook nav a:hover,
+.rules-handbook nav a[aria-current] {
+  color: #6c2e91;
+  background: #ece5f3;
+}
+.rules-reading {
+  min-width: 0;
+}
+.rules-article {
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  background: #fff;
+  border: 1px solid #ded5e7;
+  border-radius: 1.375rem;
+}
+.rules-article section + section {
+  border-top: 1px solid #ded5e7;
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+.rules-article h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 1.35rem;
+}
+.rules-article h2 span {
+  color: #ae2679;
+  font-variant-numeric: tabular-nums;
+}
+.rules-article p {
+  max-width: 75ch;
+  line-height: 1.85;
+  margin-bottom: 0;
+}
+.rules-mobile-contents {
+  display: none;
+}
+@media (max-width: 760px) {
+  .rules-handbook {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rules-desktop-contents {
+    display: none;
+  }
+  .rules-mobile-contents {
+    display: block;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ded5e7;
+    border-radius: 1rem;
+    background: #fff;
+    margin-bottom: 1rem;
+  }
+  .rules-mobile-contents summary {
+    cursor: pointer;
+    min-height: 44px;
+    align-content: center;
+    font-weight: 650;
+  }
+}

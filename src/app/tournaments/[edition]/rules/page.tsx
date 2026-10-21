@@ -1,3 +1,4 @@
+import { RulesHandbook } from "@/components/rules-handbook";
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
 import { Action, EmptyState, PageHeading } from "@/components/ui";
@@ -21,15 +22,13 @@ export default async function Rules({
         status. Application answers and review notes stay private.
       </p>
       {edition.rules ? (
-        <article className="prose">
-          <p className="eyebrow">Version {edition.rules.version}</p>
-          {edition.rules.sections.map((s, i) => (
-            <section key={i}>
-              <h2>{s.heading}</h2>
-              <p className="preserve-lines">{s.body}</p>
-            </section>
-          ))}
-        </article>
+        <>
+          <p className="rules-version muted small">
+            Version {edition.rules.version} · {edition.rules.sections.length}{" "}
+            sections
+          </p>
+          <RulesHandbook sections={edition.rules.sections} />
+        </>
       ) : (
         <>
           <EmptyState title="Rules to be announced">
