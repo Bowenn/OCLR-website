@@ -1,7 +1,12 @@
 import { getAppTranslations } from "@/i18n/server";
 import { useAppTranslations } from "@/i18n/shared";
 import { PageHeading } from "@/components/ui";
-import { privacyContact, privacyReady } from "@/lib/auth/config";
+import {
+  privacyContact,
+  privacyReady,
+  privacyPolicyText,
+} from "@/lib/auth/config";
+import styles from "./privacy.module.css";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
   return { title: tr("Privacy") };
@@ -9,73 +14,59 @@ export async function generateMetadata() {
 
 export default function Privacy() {
   const tr = useAppTranslations();
-
   const contact = privacyContact();
-  // Keep stored policy terms intact; public contact is exclusively through osu!.
-  const retentionNotice = process.env.PRIVACY_RETENTION_NOTICE?.replace(
-    /(?:mailto:)?[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi,
-    "the designated osu! contact",
-  );
+  const policy = privacyPolicyText(process.env.PRIVACY_RETENTION_NOTICE);
   return (
-    <div className="container page prose">
-      <PageHeading eyebrow={tr("YOUR DATA")} title={tr("Privacy at OCLR")}>
-        {tr("How osu! Chinese League Rookie uses your information.")}
-      </PageHeading>
-      <h2>{tr("Your account and applications")}</h2>
+    <div className={`container page prose ${styles.page}`}>
+      <PageHeading title={tr("Privacy at OCLR")} />
+      <h2>{tr("Your data")}</h2>
       <p>
         {tr(
-          "We store your osu! ID, display name and a secure login session. We never receive your osu! password or retain your OAuth access and refresh tokens.",
+          "We store your osu! ID, display name, a login session and tournament applications (answers, acknowledgments, status and dates). We never receive your osu! password or keep OAuth tokens.",
+        )}
+      </p>
+      <h2>{tr("Public and private information")}</h2>
+      <p>
+        {tr(
+          "Accepted players appear in the published tournament’s Players directory with their osu! identity and participation status. Pending, rejected and withdrawn applications stay unlisted. Answers, contact details and staff notes remain private to authorized staff. Captain appointments, teams and finalized rosters require a separate release.",
         )}
       </p>
       <p>
         {tr(
-          "Applications include your answers, any rules or eligibility acknowledgment, status and submission dates. Only authorized staff can review them. Acceptance alone does not publish your application or assign you a team.",
+          "Public profiles may show cached osu! statistics with their update time. Released mappools and approved, published results are public. Staff review imports and game scores privately; administrative changes are audited.",
         )}
       </p>
-      <h2>{tr("What becomes public")}</h2>
+      <h2>{tr("Cookies and external services")}</h2>
       <p>
         {tr(
-          "Accepted registrations automatically appear in the published tournament’s Players directory with your osu! username, osu! ID and participation status. Pending, rejected and withdrawn applications are not listed. Application answers, contact details and staff review notes stay private. Captain appointments, team identities and finalized rosters require their separate release. Released mappools and approved, published results, scores and multiplayer source links are visible without signing in.",
+          "Essential sign-in sessions expire after seven days. Language and appearance preferences last up to one year. Avatars and beatmap covers load from osu! image services. We use no advertising or analytics cookies.",
         )}
       </p>
-      <p>
-        {tr(
-          "Published profiles may include public osu! statistics, cached with an update time. Older data is labeled when osu! is unavailable. Staff profile lookups do not publish applications or determine eligibility.",
-        )}
-      </p>
-      <h2>{tr("Staff access and services")}</h2>
-      <p>
-        {tr(
-          "Authorized referees and administrators review player IDs and game scores. Unreviewed imports, internal notes and score evidence stay private. Staff actions are logged with the operator, changes and time for accountability.",
-        )}
-      </p>
-      <p>
-        {tr(
-          "Essential cookies secure sign-in and sessions, which expire after seven days. Avatars and beatmap covers load from osu! image services. We use no advertising or analytics cookies.",
-        )}
-      </p>
-      <p>
-        {tr(
-          "We remember your language and tournament appearance choices for up to one year. These preference cookies do not track you.",
-        )}
-      </p>
-      <h2>{tr("Retention and requests")}</h2>
       {privacyReady() && contact ? (
         <>
-          <p className="preserve-lines">{retentionNotice}</p>
           <p>
-            {tr(
-              "To request access, correction or deletion of your information, contact the OCLR Admin on osu!.",
-            )}
+            {tr("For access, correction or deletion requests:")}{" "}
+            <a className="text-link" href={contact.url}>
+              {tr("Contact OCLR Admin on osu!")}
+            </a>
           </p>
-          <a className="button secondary" href={contact.url}>
-            {contact.label}
-          </a>
+          {policy ? (
+            <details className={styles.policy}>
+              <summary>{tr("Data retention policy")}</summary>
+              <p>{policy}</p>
+            </details>
+          ) : (
+            <p className="muted small">
+              {tr(
+                "Detailed retention terms have not been published. Please contact the organizer before submitting personal information.",
+              )}
+            </p>
+          )}
         </>
       ) : (
         <p className="notice">
           {tr(
-            "The organizer’s privacy contact and retention policy are awaiting confirmation. Sign-in and data collection remain unavailable until these are configured.",
+            "Privacy contact and retention terms are not configured. Sign-in and registration are unavailable.",
           )}
         </p>
       )}

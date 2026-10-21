@@ -9,6 +9,7 @@ import {
   oauthConfig,
   privacyContact,
   privacyReady,
+  privacyPolicyText,
 } from "../../src/lib/auth/config";
 
 describe("explicit osu! privacy contact", () => {
@@ -76,7 +77,7 @@ describe("explicit osu! privacy contact", () => {
     expect(authReady()).toBe(false);
     expect(() => oauthConfig()).toThrow(/not configured/);
     const page = html();
-    expect(page).toContain("awaiting");
+    expect(page).toContain("not configured");
     expect(page).not.toContain("https://osu.ppy.sh/users/");
     expect(page).not.toContain("mailto:");
   });
@@ -91,7 +92,10 @@ describe("explicit osu! privacy contact", () => {
       "Synthetic approved policy context: archive@example.test <retention>";
     vi.stubEnv("PRIVACY_RETENTION_NOTICE", notice);
     const page = html();
-    expect(page).toContain("the designated osu! contact &lt;retention&gt;");
+    expect(page).toContain(
+      "Synthetic approved policy context: &lt;retention&gt;",
+    );
+    expect(page).not.toContain("the designated osu! contact");
     expect(page).not.toContain("archive@example.test");
     expect(process.env.PRIVACY_RETENTION_NOTICE).toBe(notice);
     expect(page).not.toContain("mailto:");
@@ -107,6 +111,21 @@ describe("explicit osu! privacy contact", () => {
     expect(
       page.match(/href="https:\/\/osu.ppy.sh\/users\/60001"/g),
     ).toHaveLength(1);
+  });
+  it("keeps retention terms without a redundant contact block or a fabricated period", () => {
+    expect(
+      privacyPolicyText(
+        "Keep applications for 30 days. Contact: mailto:private@example.test or OTHER@EXAMPLE.ORG.",
+      ),
+    ).toBe("Keep applications for 30 days.");
+    expect(privacyPolicyText("mailto:private@example.test")).toBe("");
+    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "mailto:private@example.test");
+    expect(html()).toContain(
+      "Detailed retention terms have not been published",
+    );
+    expect(html()).not.toContain("Retention and requests");
+    expect(html()).not.toContain('class="button');
+    expect(html()).not.toContain("the designated osu! contact");
   });
   it("accepts a single trimmed safe numeric ID and does not grant staff access", () => {
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", ` ${Number.MAX_SAFE_INTEGER} `);

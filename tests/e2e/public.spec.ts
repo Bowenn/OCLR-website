@@ -119,7 +119,15 @@ test("Privacy and About share one explicit osu! contact without publishing the a
     "https://osu.ppy.sh/users/60001",
   );
   await expect(
-    page.getByText("Synthetic isolated browser-test policy."),
+    page.getByRole("heading", { name: "Retention and requests" }),
+  ).toHaveCount(0);
+  await expect(contact).not.toHaveClass(/button/);
+  await expect(
+    page.getByText("the designated osu! contact", { exact: true }),
+  ).toHaveCount(0);
+  await page.getByText("Data retention policy", { exact: true }).click();
+  await expect(
+    page.getByText("Synthetic isolated browser-test policy.", { exact: true }),
   ).toBeVisible();
   await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
   const html = await page.content();

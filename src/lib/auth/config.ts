@@ -17,6 +17,24 @@ export function privacyContact() {
       }
     : null;
 }
+/** Presentation only: keep approved terms, omit email/contact-only fragments.
+ * Readiness still uses the original configured policy and explicit contact. */
+export function privacyPolicyText(notice: string | undefined) {
+  return (notice ?? "")
+    .replace(
+      /(?:mailto:)?[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi,
+      "",
+    )
+    .replace(
+      /(?:^|(?<=[.!?。！？])\s+)(?:contact|e-?mail|联系邮箱|聯絡電郵|聯繫郵箱)\s*[:：]?\s*(?:(?:or|and|或|及|和)[\s,;/]*)*[.!?。！？]?(?=\s|$)/gi,
+      "",
+    )
+    .replace(/[ \t]{2,}/g, " ")
+    .split(/\r?\n/)
+    .filter((line) => /[\p{L}\p{N}]/u.test(line))
+    .join("\n")
+    .trim();
+}
 export function privacyReady() {
   return Boolean(
     privacyContact() && process.env.PRIVACY_RETENTION_NOTICE?.trim(),

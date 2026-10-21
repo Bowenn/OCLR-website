@@ -1540,7 +1540,6 @@
     "ma4ae81ab329d": "Your application could not be saved.",
     "mb2b6652fb4c0": "Your connection was interrupted. Check your dashboard before trying again.",
     "m7280aeb95804": "all editions",
-    "mf2535890081b": "the designated osu! contact",
     "mfac75b37196d": "the receiving team",
     "mfa622d4f104f": "your team",
     "m62a2fed3d6e0": "pending",
@@ -1669,6 +1668,18 @@
     "me517e3641584": "Published draft board and pick history",
     "m11eccea42bca": "Your team is awaiting publication.",
     "draft_members": "{count, plural, one {# member} other {# members}}",
-    "draft_pick_committed": "Pick committed to {team}."
+    "draft_pick_committed": "Pick committed to {team}.",
+    "mee5ef73aae18": "Your data",
+    "mb82b7b2f1815": "We store your osu! ID, display name, a login session and tournament applications (answers, acknowledgments, status and dates). We never receive your osu! password or keep OAuth tokens.",
+    "m236bbcd87128": "Public and private information",
+    "m3184862e5d78": "Accepted players appear in the published tournament’s Players directory with their osu! identity and participation status. Pending, rejected and withdrawn applications stay unlisted. Answers, contact details and staff notes remain private to authorized staff. Captain appointments, teams and finalized rosters require a separate release.",
+    "mc6726e1496ef": "Public profiles may show cached osu! statistics with their update time. Released mappools and approved, published results are public. Staff review imports and game scores privately; administrative changes are audited.",
+    "mbe51407cb3cd": "Cookies and external services",
+    "m3d05b9d8ca46": "Essential sign-in sessions expire after seven days. Language and appearance preferences last up to one year. Avatars and beatmap covers load from osu! image services. We use no advertising or analytics cookies.",
+    "m168e93a0964e": "For access, correction or deletion requests:",
+    "mcb19828c0b96": "Contact OCLR Admin on osu!",
+    "mb960033953dc": "Data retention policy",
+    "me60ebceea3a6": "Detailed retention terms have not been published. Please contact the organizer before submitting personal information.",
+    "m95f2a3eb0412": "Privacy contact and retention terms are not configured. Sign-in and registration are unavailable."
   }
 }
