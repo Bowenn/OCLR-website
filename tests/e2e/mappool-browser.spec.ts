@@ -219,6 +219,8 @@ test.describe("anonymous inline mappool browser", () => {
       .first();
     for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
+      if (width <= 768) await expect(mobileDetails).toBeVisible();
+      else await expect(mobileDetails).not.toBeVisible();
       if (width === 320) {
         await mobileDetails.locator("summary").first().focus();
         await page.keyboard.press("Enter");

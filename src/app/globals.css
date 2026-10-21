@@ -1631,6 +1631,9 @@ body:has(.presenter-view) .site-footer,
 .mappool-browser {
   min-width: 0;
 }
+.mappool-public {
+  container-type: inline-size;
+}
 .mappool-browser > .workspace-tabs {
   display: inline-flex;
   border: 1px solid var(--color-border);
@@ -1907,6 +1910,8 @@ body:has(.presenter-view) .site-footer,
     width: 100%;
     margin-left: 2rem;
   }
+}
+@container (max-width: 760px) {
   .mappool-sheet {
     min-width: 0;
     width: 100%;
