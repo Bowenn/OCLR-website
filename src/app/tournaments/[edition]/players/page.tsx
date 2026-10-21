@@ -5,6 +5,7 @@ import { getPublicEdition } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { HttpError } from "@/lib/http";
 import { Action, PageHeading } from "@/components/ui";
+import styles from "./players.module.css";
 import { PublicPlayerIdentity } from "@/components/public-player-identity";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
@@ -37,7 +38,7 @@ export default async function Players({
   } catch (error) {
     if (!(error instanceof HttpError) || error.status !== 400) throw error;
     return (
-      <div className="directory-page">
+      <div className="directory-page edition-players">
         <PageHeading eyebrow={tr("PUBLIC DIRECTORY")} title={tr("Players")}>
           {error.message}
         </PageHeading>
@@ -48,7 +49,7 @@ export default async function Players({
   const { rows, total, filters } = result;
   const query = new URLSearchParams({ q: filters.q });
   return (
-    <div className="directory-page">
+    <div className="directory-page edition-players">
       <PageHeading title={tr("Players")} />
       <form action={base} method="get" className="filters">
         <label className="field">
@@ -69,51 +70,38 @@ export default async function Players({
         </p>
       )}
       {rows.length ? (
-        <ul className="player-directory">
+        <ul className={styles.grid}>
           {rows.map((p) => (
-            <li className="panel" key={`${p.editionSlug}-${p.osuId}`}>
+            <li className={styles.card} key={p.osuId}>
               <PublicPlayerIdentity osuId={p.osuId} username={p.username} />
-              {p.captain && <span className="badge">{tr("Captain")}</span>}
-              <dl className="directory-details">
-                <div>
-                  <dt>{tr("Edition")}</dt>
-                  <dd>
-                    <Link
-                      className="text-link"
-                      href={`/tournaments/${p.editionSlug}`}
-                    >
-                      {p.editionName}
-                    </Link>
-                  </dd>
-                </div>
-                <div>
-                  <dt>{tr("Team")}</dt>
-                  <dd>
-                    {p.team ? (
-                      <Link
-                        className="text-link"
-                        href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
-                      >
-                        {p.team.name}
-                      </Link>
-                    ) : (
-                      tr("Not announced")
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt>{tr("Status")}</dt>
-                  <dd>
-                    {p.participation === "finalized_roster"
-                      ? tr("Finalized roster")
-                      : p.captain
-                        ? tr("Appointed captain")
-                        : tr("Accepted player")}
-                  </dd>
-                </div>
-              </dl>
+              <p className={styles.status}>
+                <span className="badge">
+                  {p.participation === "finalized_roster"
+                    ? tr("Finalized roster")
+                    : p.captain
+                      ? tr("Appointed captain")
+                      : tr("Accepted player")}
+                </span>
+                {p.captain && p.participation === "finalized_roster" && (
+                  <span className="badge">{tr("Captain")}</span>
+                )}
+              </p>
+              <p className={styles.team}>
+                <span className="muted">{tr("Team")}</span>
+                {" · "}
+                {p.team ? (
+                  <Link
+                    className="context-link"
+                    href={`/tournaments/${edition}/teams/${p.team.id}`}
+                  >
+                    {p.team.name}
+                  </Link>
+                ) : (
+                  tr("Not announced")
+                )}
+              </p>
               <Link
-                className="text-link"
+                className="context-link"
                 href={`/players/${p.osuId}?edition=${edition}`}
                 prefetch={false}
               >
@@ -130,7 +118,7 @@ export default async function Players({
               : tr("No accepted players yet")}
           </p>
           {filters.q && (
-            <Link className="text-link" href={base}>
+            <Link className="context-link" href={base}>
               {tr("Clear filters")}
             </Link>
           )}
