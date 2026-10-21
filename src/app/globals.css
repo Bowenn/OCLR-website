@@ -3561,20 +3561,19 @@ body:has(.presenter-view) .site-footer,
   z-index: 2;
   background: var(--account-surface);
   border-color: var(--account-border);
-  border-bottom-color: transparent;
-  border-radius: var(--button-radius) var(--button-radius) 0 0;
+  border-radius: var(--button-radius);
 }
 .account-dropdown {
   position: absolute;
   z-index: 1;
   right: 0;
-  top: calc(100% - 1px);
+  top: calc(100% + 0.5rem);
   width: 16.5rem;
   max-width: calc(100vw - 2rem);
   padding: 0.3rem;
   background: var(--account-surface);
   border: 1px solid var(--account-border);
-  border-radius: 0.65rem 0 0.65rem 0.65rem;
+  border-radius: 0.75rem;
   box-shadow: 0 16px 36px #0007;
   animation: account-menu-reveal 100ms ease-out;
 }

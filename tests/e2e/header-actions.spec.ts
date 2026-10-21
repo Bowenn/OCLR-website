@@ -66,9 +66,34 @@ test.describe("role-aware header actions and compact tournament context", () => 
         expect(bounds.x).toBeGreaterThanOrEqual(0);
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
         expect(bounds.x + bounds.width).toBeCloseTo(after.x + after.width, 1);
-        expect(
-          Math.abs(bounds.y - (after.y + after.height)),
-        ).toBeLessThanOrEqual(1.1);
+        const gap = bounds.y - (after.y + after.height);
+        expect(gap).toBeGreaterThanOrEqual(6);
+        expect(gap).toBeLessThanOrEqual(9);
+        for (const corner of [
+          "border-top-left-radius",
+          "border-top-right-radius",
+          "border-bottom-left-radius",
+          "border-bottom-right-radius",
+        ]) {
+          expect(
+            parseFloat(
+              await menu.evaluate(
+                (node, property) =>
+                  getComputedStyle(node).getPropertyValue(property),
+                corner,
+              ),
+            ),
+          ).toBeGreaterThan(0);
+          expect(
+            parseFloat(
+              await control.evaluate(
+                (node, property) =>
+                  getComputedStyle(node).getPropertyValue(property),
+                corner,
+              ),
+            ),
+          ).toBeGreaterThan(0);
+        }
         expect(bounds.height).toBeLessThanOrEqual(108);
         expect(bounds.width).toBeLessThanOrEqual(300);
         expect(bounds.width).toBeGreaterThanOrEqual(260);
