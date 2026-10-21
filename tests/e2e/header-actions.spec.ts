@@ -48,6 +48,9 @@ test.describe("role-aware header actions and compact tournament context", () => 
       for (const width of [320, 390, 768, 1024, 1440]) {
         await target.setViewportSize({ width, height: 900 });
         await target.evaluate(() => window.scrollTo(0, 0));
+        // Measure the same stable target that Playwright waits for before tapping.
+        if (isMobile) await control.tap({ trial: true });
+        else await control.click({ trial: true });
         const before = (await control.boundingBox())!;
         const contentBefore = (await target.locator("main").boundingBox())!;
         if (isMobile) await control.tap();

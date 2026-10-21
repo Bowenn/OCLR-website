@@ -3486,6 +3486,10 @@ body:has(.presenter-view) .site-footer,
   white-space: nowrap;
   gap: 0.5rem;
   padding: 0.4rem 0.7rem;
+  transform: none;
+  transition:
+    background 120ms,
+    border-color 120ms;
 }
 .account-control .avatar {
   width: 28px;
