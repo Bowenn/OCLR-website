@@ -58,7 +58,7 @@ export default async function MappoolsPage({
                         <h4 id={`pool-${pool.id}-name`}>
                           <Link
                             href={`/tournaments/${edition}/mappools/${pool.id}`}
-                            className="text-link"
+                            className="context-link"
                           >
                             {pool.name}
                           </Link>

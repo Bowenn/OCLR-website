@@ -299,6 +299,27 @@ button:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+/* Standalone navigation is quiet at rest; prose/legal links retain underlines. */
+.context-link,
+.prose a.context-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.125rem 0.2rem;
+  border-radius: 0.35rem;
+  color: var(--public-accent, #dfabfb);
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+.context-link:hover,
+.context-link:focus-visible,
+.prose a.context-link:hover,
+.prose a.context-link:focus-visible {
+  background: var(--public-tint, #a65bd41a);
+  text-decoration: underline;
+}
 .prose h2 {
   margin-top: 2.5rem;
 }

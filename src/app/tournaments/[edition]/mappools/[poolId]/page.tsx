@@ -21,7 +21,7 @@ export default async function PoolPage({
   if (!pool) notFound();
   return (
     <>
-      <Link className="text-link" href={`/tournaments/${edition}/mappools`}>
+      <Link className="context-link" href={`/tournaments/${edition}/mappools`}>
         {tr("← All mappools")}
       </Link>
       <PageHeading

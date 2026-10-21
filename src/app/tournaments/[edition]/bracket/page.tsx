@@ -37,7 +37,7 @@ export default async function Bracket({
             {tr(" · Source:")}{" "}
             {bracket.source.url ? (
               <a
-                className="text-link"
+                className="context-link"
                 href={bracket.source.url}
                 target="_blank"
                 rel="noopener noreferrer"

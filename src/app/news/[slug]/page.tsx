@@ -30,7 +30,7 @@ export default async function Announcement({
   if (!item) notFound();
   return (
     <article className="container page prose">
-      <Link href="/news" className="text-link">
+      <Link href="/news" className="context-link">
         {tr("← All announcements")}
       </Link>
       <div className="spaced">

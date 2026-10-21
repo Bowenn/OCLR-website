@@ -157,7 +157,7 @@ export default async function Dashboard({
         <section className="section-space" id="registrations">
           <div className="section-title">
             <h2>{tr("My registrations")}</h2>
-            <Link href="/tournaments" className="text-link">
+            <Link href="/tournaments" className="context-link">
               {tr("Browse tournaments")}
             </Link>
           </div>

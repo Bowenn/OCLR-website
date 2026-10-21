@@ -125,7 +125,7 @@ export default async function Overview({
             <section aria-labelledby="upcoming-heading">
               <div className="section-title">
                 <h2 id="upcoming-heading">{tr("Coming up")}</h2>
-                <Link className="text-link" href={`${base}/schedule`}>
+                <Link className="context-link" href={`${base}/schedule`}>
                   {tr("Full schedule")}
                 </Link>
               </div>
@@ -140,7 +140,7 @@ export default async function Overview({
             <section aria-labelledby="latest-heading">
               <div className="section-title">
                 <h2 id="latest-heading">{tr("Latest results")}</h2>
-                <Link className="text-link" href={`${base}/results`}>
+                <Link className="context-link" href={`${base}/results`}>
                   {tr("All results")}
                 </Link>
               </div>
@@ -158,7 +158,7 @@ export default async function Overview({
             <section className="panel">
               <div className="section-title">
                 <h2>{tr("Released mappools")}</h2>
-                <Link className="text-link" href={`${base}/mappools`}>
+                <Link className="context-link" href={`${base}/mappools`}>
                   {tr("All mappools")}
                 </Link>
               </div>
@@ -185,7 +185,7 @@ export default async function Overview({
                   "Confirmed matches, released mappools and results will appear here as the tournament progresses.",
                 )}
               </p>
-              <Link className="text-link" href={`${base}/schedule`}>
+              <Link className="context-link" href={`${base}/schedule`}>
                 {tr("View tournament schedule")}
               </Link>
             </section>
@@ -240,7 +240,7 @@ export default async function Overview({
             )}
             {edition.rules && (
               <p className="spaced">
-                <Link href={`${base}/rules`} className="text-link">
+                <Link href={`${base}/rules`} className="context-link">
                   {tr("Read the rules")}
                 </Link>
               </p>
@@ -261,13 +261,13 @@ export default async function Overview({
               <ul className="event-team-links">
                 {teams.slice(0, 6).map((t) => (
                   <li key={t.id}>
-                    <Link className="text-link" href={`${base}/teams/${t.id}`}>
+                    <Link className="context-link" href={`${base}/teams/${t.id}`}>
                       {t.name}
                     </Link>
                   </li>
                 ))}
               </ul>
-              <Link className="text-link" href={`${base}/teams`}>
+              <Link className="context-link" href={`${base}/teams`}>
                 {tr("Explore teams")}
               </Link>
             </section>

@@ -126,11 +126,13 @@ export function TournamentShell({
     <div className="public-tournament">
       <div className="event-context">
         <div className="event-identity">
-          <Link href="/tournaments" className="text-link">
+          <Link href="/tournaments" className="context-link">
             {tr("Tournaments")}
           </Link>
           <span aria-hidden="true">/</span>
-          <Link href={base}>{name}</Link>
+          <Link href={base} className="context-link">
+            {name}
+          </Link>
           {season && (
             <span className="badge">
               {tr("Season ")}

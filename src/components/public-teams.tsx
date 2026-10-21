@@ -92,7 +92,7 @@ export function PublicTeams({
                     <div>
                       <h2>
                         <Link
-                          className="text-link"
+                          className="context-link"
                           href={`/tournaments/${slug}/teams/${t.id}`}
                         >
                           {t.name}
@@ -116,7 +116,7 @@ export function PublicTeams({
                       : tr("Roster awaiting publication")}
                   </p>
                   <Link
-                    className="text-link"
+                    className="context-link"
                     href={`/tournaments/${slug}/teams/${t.id}`}
                   >
                     {tr("View team")}

@@ -32,7 +32,7 @@ export default async function Audit({
           <p role="alert" className="notice error-text">
             {error.message}
           </p>
-          <Link className="text-link" href="/admin/audit">
+          <Link className="context-link" href="/admin/audit">
             {tr("Reset audit filters")}
           </Link>
         </>
@@ -93,7 +93,7 @@ export default async function Audit({
               <button className="secondary">{tr("Filter")}</button>
               {(f.edition || moreFilters) && (
                 <Link
-                  className="text-link small"
+                  className="context-link small"
                   href={
                     f.module
                       ? `/admin/audit?module=${f.module}`

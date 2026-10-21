@@ -50,7 +50,7 @@ export default async function Profile({
       }
     >
       <Link
-        className="text-link"
+        className="context-link"
         href={
           query.edition
             ? `/tournaments/${query.edition}/players`
@@ -103,7 +103,7 @@ export default async function Profile({
               <h3>
                 <Link
                   href={`/tournaments/${p.editionSlug}`}
-                  className="text-link"
+                  className="context-link"
                 >
                   {p.editionName}
                 </Link>
@@ -118,7 +118,7 @@ export default async function Profile({
               {p.team ? (
                 <Link
                   href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
-                  className="text-link"
+                  className="context-link"
                 >
                   {p.team.name}
                 </Link>

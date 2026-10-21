@@ -16,7 +16,7 @@ export default async function Team({
   if (!team) notFound();
   return (
     <>
-      <Link className="text-link" href={`/tournaments/${edition}/teams`}>
+      <Link className="context-link" href={`/tournaments/${edition}/teams`}>
         {tr("All teams")}
       </Link>
       <PageHeading eyebrow={tr("PUBLISHED TEAM")} title={team.name}>
