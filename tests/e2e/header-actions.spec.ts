@@ -173,6 +173,21 @@ test.describe("role-aware header actions and compact tournament context", () => 
         await expect(menu).toHaveCount(0);
         await expect(control).toBeFocused();
       }
+      // Enlarged text may wrap the account control onto a second header row.
+      // Its floating menu must stay right-anchored within the viewport there too.
+      await target.setViewportSize({ width: 320, height: 900 });
+      await target.evaluate(() => {
+        document.documentElement.style.fontSize = "20px";
+      });
+      await control.click();
+      await expect(menu).toBeVisible();
+      const enlarged = (await menu.boundingBox())!;
+      expect(enlarged.x).toBeGreaterThanOrEqual(0);
+      expect(enlarged.x + enlarged.width).toBeLessThanOrEqual(320);
+      await target.keyboard.press("Escape");
+      await target.evaluate(() => {
+        document.documentElement.style.fontSize = "";
+      });
       await target.setViewportSize(original);
     }
     const grant = await changeStaffRole(actor, {

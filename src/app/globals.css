@@ -3488,6 +3488,9 @@ html:lang(zh-Hant) .eyebrow {
     padding-block: 0.6rem;
     gap: 0.5rem;
   }
+  .nav-actions {
+    margin-left: auto;
+  }
   .site-preferences {
     order: 5;
     flex: 1 0 100%;
