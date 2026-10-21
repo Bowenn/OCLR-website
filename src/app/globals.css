@@ -3083,6 +3083,17 @@ body:has(.presenter-view) .site-footer,
   .nav-login > span {
     display: none;
   }
+  /* Two staff account actions must fit inside the 320px viewport. */
+  .staff-header .nav-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .staff-header .nav-actions .nav-login {
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
 }
 /* Shared accessible labels used by navigation, match cards and review actions. */
 .sr-only {
