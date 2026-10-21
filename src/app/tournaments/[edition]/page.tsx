@@ -1,9 +1,14 @@
+import Link from "next/link";
 import { registrationAvailability } from "@/lib/registrations";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
-import { formatDate } from "@/lib/editions";
-import { Action, Badge, PageHeading } from "@/components/ui";
+import { formatDate, publicEditionSummary } from "@/lib/editions";
+import { publicCompetition } from "@/lib/public-competition";
+import { publicMappools } from "@/lib/mappools";
+import { publishedTeams } from "@/lib/teams";
+import { Action, Badge } from "@/components/ui";
+import { EventArtwork } from "@/components/event-artwork";
+import { MatchCard, GroupStandings } from "@/components/public-matches";
 export async function generateMetadata({
   params,
 }: {
@@ -20,80 +25,234 @@ export default async function Overview({
   const { edition: slug } = await params;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
-  const state = await registrationAvailability(edition);
+  const [state, [competitionResult, poolsResult, teamsResult]] =
+    await Promise.all([
+      registrationAvailability(edition),
+      Promise.allSettled([
+        publicCompetition(slug),
+        publicMappools(slug),
+        publishedTeams(slug),
+      ]),
+    ]);
+  const competition =
+    competitionResult.status === "fulfilled" ? competitionResult.value : null;
+  const pools = poolsResult.status === "fulfilled" ? poolsResult.value : [];
+  const teams = teamsResult.status === "fulfilled" ? teamsResult.value : [];
+  const fixtures = competition?.fixtures ?? [];
+  const upcoming = fixtures
+    .filter((f) => !f.result && f.status !== "cancelled")
+    .sort((a, b) =>
+      (a.scheduledAt ?? "9999").localeCompare(b.scheduledAt ?? "9999"),
+    )
+    .slice(0, 4);
+  const latest = fixtures
+    .filter((f) => f.result)
+    .sort((a, b) => b.result!.updatedAt.localeCompare(a.result!.updatedAt))
+    .slice(0, 4);
+  const base = `/tournaments/${slug}`;
   return (
     <>
-      <PageHeading eyebrow="TOURNAMENT OVERVIEW" title={edition.name}>
-        {edition.summary}
-      </PageHeading>
       <section
-        className="edition-overview"
-        aria-label="Tournament registration overview"
+        className={`event-hero${edition.branding.keyVisual ? " has-artwork" : ""}`}
+        aria-labelledby="event-title"
       >
-        {edition.branding.keyVisual && (
-          <Image
-            className="edition-key-visual"
-            src={edition.branding.keyVisual}
-            unoptimized
-            alt={`${edition.name} key visual`}
-            width={1672}
-            height={941}
-            sizes="(max-width: 760px) 100vw, 900px"
-          />
-        )}
-        <div className="edition-enrollment">
-          <div className="section-title">
-            <h2>Registration</h2>
-            <Badge>{state}</Badge>
-          </div>
-          <p className="muted small">
-            Individual entry. Captain-led team draft.
+        <div className="event-intro">
+          <p className="eyebrow">
+            OCLR {edition.season && ` / SEASON ${edition.season}`}
           </p>
-          <dl className="detail-list">
-            <div>
-              <dt>Tournament</dt>
-              <dd>{edition.status}</dd>
-            </div>
-            <div>
-              <dt>Opens</dt>
-              <dd>
-                {formatDate(
-                  edition.registration?.opensAt ?? null,
-                  edition.timeZone,
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt>Closes</dt>
-              <dd>
-                {formatDate(
-                  edition.registration?.closesAt ?? null,
-                  edition.timeZone,
-                )}
-              </dd>
-            </div>
-          </dl>
+          <h1 id="event-title">{edition.name}</h1>
+          {publicEditionSummary(edition.summary) && (
+            <p className="muted">{publicEditionSummary(edition.summary)}</p>
+          )}
           <div className="actions">
-            {state === "open" && (
-              <Action href={`/tournaments/${slug}/register`}>
-                Register individually
-              </Action>
-            )}
-            <Action href={`/tournaments/${slug}/rules`} secondary>
-              Read the rules
+            <Action
+              href={`${base}/${state === "open" ? "register" : "schedule"}`}
+            >
+              {state === "open" ? "Register individually" : "View schedule"}
             </Action>
-            <Action href={`/tournaments/${slug}/schedule`} secondary>
-              View schedule
+            <Action href={`${base}/mappools`} secondary>
+              Explore mappools
             </Action>
           </div>
+          <p className="event-hero-caption">
+            osu! Chinese League Rookie <span>· {edition.status}</span>
+          </p>
         </div>
+        {edition.branding.keyVisual && (
+          <EventArtwork src={edition.branding.keyVisual} name={edition.name} />
+        )}
       </section>
-      {edition.eligibility && (
-        <section className="section-space">
-          <h2>Eligibility</h2>
-          <p className="muted">{edition.eligibility}</p>
-        </section>
+      {edition.schedule.length > 0 && (
+        <ol className="event-milestones" aria-label="Tournament milestones">
+          {edition.schedule.map((event, i) => (
+            <li key={i}>
+              <span className="event-step">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <strong>{event.label}</strong>
+                <p className="muted small">
+                  {formatDate(event.at, edition.timeZone)}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
       )}
+      {[competitionResult, poolsResult, teamsResult].some(
+        (r) => r.status === "rejected",
+      ) && (
+        <p className="notice" role="status">
+          Some competition information is temporarily unavailable. Please try
+          again later.
+        </p>
+      )}
+      <div className="event-overview-grid">
+        <div className="event-overview-main">
+          {upcoming.length > 0 && (
+            <section aria-labelledby="upcoming-heading">
+              <div className="section-title">
+                <h2 id="upcoming-heading">Coming up</h2>
+                <Link className="text-link" href={`${base}/schedule`}>
+                  Full schedule
+                </Link>
+              </div>
+              <div className="overview-matches">
+                {upcoming.map((f) => (
+                  <MatchCard key={f.id} fixture={f} slug={slug} />
+                ))}
+              </div>
+            </section>
+          )}
+          {latest.length > 0 && (
+            <section aria-labelledby="latest-heading">
+              <div className="section-title">
+                <h2 id="latest-heading">Latest results</h2>
+                <Link className="text-link" href={`${base}/results`}>
+                  All results
+                </Link>
+              </div>
+              <div className="overview-matches">
+                {latest.map((f) => (
+                  <MatchCard key={f.id} fixture={f} slug={slug} />
+                ))}
+              </div>
+            </section>
+          )}
+          {competition?.groups.length ? (
+            <GroupStandings groups={competition.groups} slug={slug} />
+          ) : null}
+          {pools.length > 0 && (
+            <section className="panel">
+              <div className="section-title">
+                <h2>Released mappools</h2>
+                <Link className="text-link" href={`${base}/mappools`}>
+                  All mappools
+                </Link>
+              </div>
+              <ul className="event-pool-list">
+                {pools.slice(0, 4).map((pool) => (
+                  <li key={pool.id}>
+                    <Link href={`${base}/mappools/${pool.id}`}>
+                      <span className="eyebrow">{pool.roundName}</span>
+                      <strong>{pool.name}</strong>
+                      <span className="muted small">
+                        {pool.entries.length} maps
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {!upcoming.length && !latest.length && !pools.length && (
+            <section className="panel">
+              <h2>The next stage</h2>
+              <p className="muted">
+                Confirmed matches, released mappools and results will appear
+                here as the tournament progresses.
+              </p>
+              <Link className="text-link" href={`${base}/schedule`}>
+                View tournament schedule
+              </Link>
+            </section>
+          )}
+        </div>
+        <aside
+          className="event-overview-aside"
+          aria-label="Tournament information"
+        >
+          <section className="panel">
+            <div className="section-title">
+              <h2>Registration</h2>
+              <Badge>{state}</Badge>
+            </div>
+            <p className="muted small">
+              Individual entry. Captain-led team draft.
+            </p>
+            <dl className="detail-list">
+              <div>
+                <dt>Opens</dt>
+                <dd>
+                  {formatDate(
+                    edition.registration?.opensAt ?? null,
+                    edition.timeZone,
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>Closes</dt>
+                <dd>
+                  {formatDate(
+                    edition.registration?.closesAt ?? null,
+                    edition.timeZone,
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>Time zone</dt>
+                <dd>{edition.timeZone}</dd>
+              </div>
+            </dl>
+            {state === "open" && (
+              <Action href={`${base}/register`}>Register individually</Action>
+            )}
+            {edition.rules && (
+              <p className="spaced">
+                <Link href={`${base}/rules`} className="text-link">
+                  Read the rules
+                </Link>
+              </p>
+            )}
+          </section>
+          {edition.eligibility && (
+            <section className="panel">
+              <h2>Eligibility</h2>
+              <p className="muted preserve-lines">{edition.eligibility}</p>
+            </section>
+          )}
+          {teams.length > 0 && (
+            <section className="panel">
+              <div className="section-title">
+                <h2>Teams</h2>
+                <Badge>{teams.length}</Badge>
+              </div>
+              <ul className="event-team-links">
+                {teams.slice(0, 6).map((t) => (
+                  <li key={t.id}>
+                    <Link className="text-link" href={`${base}/teams/${t.id}`}>
+                      {t.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link className="text-link" href={`${base}/teams`}>
+                Explore teams
+              </Link>
+            </section>
+          )}
+        </aside>
+      </div>
     </>
   );
 }

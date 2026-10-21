@@ -266,3 +266,169 @@ body:has(.public-tournament) .site-footer {
     transition: none;
   }
 }
+
+/* Edition overview: one artwork-led introduction, then useful event information. */
+.event-hero {
+  border: 1px solid #ded5e7;
+  border-radius: 1.875rem;
+  background: #ece5f3;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.event-hero.has-artwork {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+}
+.event-intro {
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  align-self: center;
+}
+.event-intro h1 {
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  max-width: 16ch;
+  margin-bottom: 1rem;
+}
+.event-intro > .muted {
+  font-size: 1rem;
+}
+.event-intro .actions {
+  margin-top: 1.75rem;
+}
+.event-hero-caption {
+  margin: 1.5rem 0 0;
+  color: #6c2e91;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+.event-hero-caption span {
+  color: #6d6278;
+  font-weight: 400;
+}
+.event-artwork {
+  min-width: 0;
+  background: #ded5e7;
+}
+.event-artwork img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 65% center;
+}
+.event-artwork-fallback {
+  display: grid;
+  place-content: center;
+  min-height: 280px;
+  padding: 2rem;
+  color: #6c2e91;
+  text-align: center;
+}
+.event-artwork-fallback span {
+  font-size: 4rem;
+  font-weight: 900;
+}
+.event-milestones {
+  display: flex;
+  gap: 0.65rem;
+  list-style: none;
+  padding: 0 0 0.5rem;
+  margin: 0 0 1.5rem;
+  overflow-x: auto;
+}
+.event-milestones li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 0 190px;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #ded5e7;
+  border-radius: 1.1rem;
+}
+.event-milestones p {
+  margin: 0.25rem 0 0;
+}
+.event-step {
+  border-radius: 50%;
+  background: #ece5f3;
+  color: #6c2e91;
+  padding: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.event-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.3fr) minmax(260px, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+.event-overview-main,
+.event-overview-aside {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+.event-overview-grid .section-title {
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+.event-overview-grid .section-title h2 {
+  margin-bottom: 0;
+}
+.event-overview-aside .detail-list {
+  margin: 1rem 0;
+}
+.event-overview-aside .detail-list > div {
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 0.5rem;
+  padding-block: 0.6rem;
+}
+.overview-matches {
+  display: grid;
+  gap: 0.75rem;
+}
+.event-pool-list,
+.event-team-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.event-pool-list a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-top: 1px solid #ded5e7;
+}
+.event-pool-list .eyebrow {
+  grid-column: 1/-1;
+}
+.event-team-links {
+  margin-bottom: 1rem;
+}
+.event-team-links li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ded5e7;
+}
+@media (max-width: 980px) {
+  .event-overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .event-overview-aside {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .event-hero.has-artwork {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .event-artwork img {
+    height: auto;
+    aspect-ratio: 1672/941;
+    object-fit: contain;
+  }
+  .event-intro h1 {
+    max-width: none;
+  }
+}
