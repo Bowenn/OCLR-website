@@ -257,6 +257,17 @@ test.describe("public presentation follow-ups", () => {
           path: info.outputPath(`privacy-${locale}-${width}.png`),
           fullPage: true,
         });
+        await page.goto("/about");
+        const aboutContact = page.locator(
+          '.about-aside a[href="https://osu.ppy.sh/users/60001"]',
+        );
+        await expect(aboutContact).toHaveText(
+          locale === "en"
+            ? "Contact OCLR Admin on osu!"
+            : locale === "zh-Hans"
+              ? "通过 osu! 联系 OCLR 管理员"
+              : "透過 osu! 聯絡 OCLR 管理員",
+        );
       }
     }
   });

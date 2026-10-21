@@ -71,7 +71,7 @@ export default async function About() {
           {contact ? (
             <p>
               <a href={contact.url} className="text-link">
-                {contact.label}
+                {tr("Contact OCLR Admin on osu!")}
               </a>
             </p>
           ) : (
