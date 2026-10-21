@@ -122,7 +122,7 @@ Only released pools are returned by public pages/APIs, including direct UUID req
 
 ## Public player directory
 
-`/players` and `/api/players` are anonymous reads with search, edition filtering and bounded pagination. Database queries select only published captain identities and members of finalized, published rosters with published team/captain identity. Acceptance alone never publishes a registration. Unpublishing any required identity/roster flag removes the relevant information on the next read; private forms, reasons and staff notes are never queried. `/dashboard` continues to show only the authenticated user's private registrations.
+`/tournaments/[edition]/players` and `/api/tournaments/[edition]/players` list every accepted registration in that published edition, with search and bounded pagination. Username, osu! ID and accepted participation are automatically public, as explained before submission and in Privacy. Application answers, contact fields and staff notes are never queried. Captain/team/roster details retain separate publication checks. Pending/rejected/withdrawn registrations and unpublished editions stay private. Legacy `/players?edition=...` redirects into the edition; `/players` redirects to Tournaments. The legacy directory API requires one edition and cannot return a cross-edition list. `/dashboard` remains private.
 
 ## Automatic staff audits
 
@@ -132,7 +132,7 @@ Draft unavailability explanations, player-visible registration rejection explana
 
 ## osu! player profile snapshots
 
-Published directory and team entries link to `/players/[osuId]`; `?mode=osu|taiko|fruits|mania` selects an explicitly labeled ruleset. Directory reads and Next.js link prefetching never fetch provider profiles. Profile pages and `/api/players/[osuId]` check published participation before looking up metadata and again after provider I/O. A cached profile does not make a private applicant public. Anonymous refresh parameters are rejected.
+Published directory and team entries link to `/players/[osuId]`; `?edition=<slug>` preserves tournament context and `mode=osu|taiko|fruits|mania` selects an explicitly labeled ruleset. Directory reads and Next.js link prefetching never fetch provider profiles. Profile pages and `/api/players/[osuId]` check published participation before looking up metadata and again after provider I/O. A cached profile does not make a private applicant public. Anonymous refresh parameters are rejected.
 
 `getOsuUserProfile(id, mode)` reuses the [official user endpoint](https://osu.ppy.sh/docs/#get-user) through the existing application `public` token. The fixed path includes `key=id` to prevent legacy numeric-username fallback; returned IDs are verified. No new player OAuth scopes or retained provider tokens are required. Only a compact validated public projection is stored in `user_profile_cache`, independently of participation and OAuth identity. Optional unavailable/invalid fields become null; unsafe numeric scores are omitted rather than rounded, while exact score strings retain precision. Provider contact fields and account history are discarded. Successful lookup updates only an existing user's mutable username, preserving all stable references.
 
@@ -168,7 +168,7 @@ Automated validation uses synthetic official-shaped API responses, real PostgreS
 
 ## Public competition center and group standings
 
-Anonymous visitors can browse `/players`, edition Mappools, Schedule, Results, Bracket, participant/team pages and `/tournaments/[edition]/matches/[fixtureId]`. Edition navigation exposes these destinations even before publication, with meaningful empty states. The results list filters stage, round and publication status; scheduled fixtures can exist without scores. Public match details show approved team totals, included beatmaps/mods, a released-mappool link, an explicit public note, MP source and publication time. Private imports, player-level provider scores, review reasons, actor IDs and substitutions are never part of public result DTOs.
+Anonymous visitors can browse edition Players, Mappools, Schedule, Results, Bracket, participant/team pages and `/tournaments/[edition]/matches/[fixtureId]`. Edition navigation exposes these destinations even before publication, with meaningful empty states. The results list filters stage, round and publication status; scheduled fixtures can exist without scores. Public match details show approved team totals, included beatmaps/mods, a released-mappool link, an explicit public note, MP source and publication time. Private imports, player-level provider scores, review reasons, actor IDs and substitutions are never part of public result DTOs.
 
 Public GET `/api/tournaments/[edition]/matches`, `/matches/[fixtureId]` and `/bracket` need no cookies. Their database queries require fixture publication and explicitly approved published revisions; direct private IDs return 404. There is no public result-write endpoint. Dynamic rendering and no-store responses keep publication withdrawal visible immediately; staff mutations also invalidate the edition layout.
 

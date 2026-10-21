@@ -22,9 +22,12 @@ test.describe("concise public tournament surfaces", () => {
     context,
   }, info) => {
     await page.goto("/players");
+    await expect(page).toHaveURL(/\/tournaments$/);
+    await page.goto("/players?edition=test-cup");
+    await expect(page).toHaveURL(/\/tournaments\/test-cup\/players$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Players");
     await expect(page.getByRole("status")).toHaveText(
-      "No players published yet",
+      "No accepted players yet",
     );
     await expect(page.locator(".empty-state, .empty-mark")).toHaveCount(0);
     await expect(
@@ -44,7 +47,7 @@ test.describe("concise public tournament surfaces", () => {
       .getByRole("link", { name: "Clear filters", exact: true })
       .click();
     await expect(page.getByRole("status")).toHaveText(
-      "No players published yet",
+      "No accepted players yet",
     );
     await expect(page.locator("footer")).not.toContainText("Emik");
     const credit = page

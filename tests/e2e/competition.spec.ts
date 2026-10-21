@@ -84,7 +84,7 @@ test.describe("anonymous tournament competition center", () => {
         progressionAcknowledged: true,
       });
       for (const route of [
-        "/players?edition=test-cup",
+        "/tournaments/test-cup/players",
         "/tournaments/test-cup/mappools",
         "/tournaments/test-cup/schedule",
         "/tournaments/test-cup/results",

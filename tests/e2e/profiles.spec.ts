@@ -2,7 +2,11 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { captains, staffRoles, userProfileCache } from "../../src/db/schema";
+import {
+  registrations,
+  staffRoles,
+  userProfileCache,
+} from "../../src/db/schema";
 import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
 import { profileResponse } from "../fixtures/osu-profile";
 import { seedPublicDirectory } from "../fixtures/players";
@@ -50,7 +54,7 @@ test.describe("published osu! profiles", () => {
     expect(JSON.stringify(await response.json())).not.toMatch(
       /PRIVATE_CONTACT|INTERNAL_REASON|account_history|answers|statusReason/,
     );
-    for (const id of [fixture.privateId, fixture.unpublishedCaptainId, 651307])
+    for (const id of [fixture.privateId, 651307])
       expect((await context.request.get(`/api/players/${id}`)).status()).toBe(
         404,
       );
@@ -77,7 +81,7 @@ test.describe("published osu! profiles", () => {
         })
       ).status(),
     ).toBe(405);
-    await page.goto(`/players?q=${base}`);
+    await page.goto(`/tournaments/test-cup/players?q=${base}`);
     await page
       .getByRole("link", { name: "Player profile & statistics" })
       .first()
@@ -115,6 +119,9 @@ test.describe("published osu! profiles", () => {
       fullPage: true,
       animations: "disabled",
     });
+    await expect(
+      page.getByRole("link", { name: "← Tournament players", exact: true }),
+    ).toHaveAttribute("href", "/tournaments/test-cup/players");
     await page.getByLabel("Ruleset", { exact: true }).selectOption("taiko");
     await page.getByRole("button", { name: "View ruleset" }).click();
     await expect(page.getByText("99.5 pp", { exact: true })).toBeVisible();
@@ -185,9 +192,9 @@ test.describe("published osu! profiles", () => {
       await operator.close();
     }
     await db()
-      .update(captains)
-      .set({ published: false })
-      .where(eq(captains.userId, base));
+      .update(registrations)
+      .set({ status: "withdrawn" })
+      .where(eq(registrations.userId, base));
     expect((await context.request.get(`/api/players/${base}`)).status()).toBe(
       404,
     );

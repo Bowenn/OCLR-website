@@ -3,7 +3,7 @@ import { publicCaptains } from "@/lib/captains";
 import { publishedTeams } from "@/lib/teams";
 import { publicDraft } from "@/lib/draft";
 import { EmptyState, PageHeading } from "@/components/ui";
-export const metadata = { title: "Published participants" };
+export const metadata = { title: "Captains & rosters" };
 export default async function Participants({
   params,
 }: {
@@ -17,13 +17,16 @@ export default async function Participants({
   ]);
   return (
     <>
-      <PageHeading eyebrow="THE COMMUNITY" title="Published participants">
+      <PageHeading eyebrow="THE COMMUNITY" title="Captains & rosters">
         Approved captains and finalized team rosters.
       </PageHeading>
       <p className="notice small">
-        Individual applications are private. Acceptance alone does not publish a
-        player’s identity. Public information appears only after organizer
-        approval; see the{" "}
+        Accepted players appear in the{" "}
+        <Link href={`/tournaments/${edition}/players`} className="text-link">
+          Players directory
+        </Link>
+        . Captain appointments and team rosters appear here only when released.
+        Application answers and staff review notes remain private; see the{" "}
         <Link href="/privacy" className="text-link">
           privacy notice
         </Link>{" "}

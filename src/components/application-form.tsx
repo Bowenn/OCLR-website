@@ -109,7 +109,10 @@ export function ApplicationForm({
       )}
       <p className="small muted">
         Applications are reviewed by tournament staff. Submitting is not
-        acceptance or official osu! validation. Read the{" "}
+        acceptance or official osu! validation. If accepted, your osu! username,
+        osu! ID and accepted participation in this tournament appear
+        automatically in its public Players directory. Application answers and
+        staff review notes remain private. Read the{" "}
         <Link href="/privacy" className="text-link">
           privacy notice
         </Link>{" "}

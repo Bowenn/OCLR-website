@@ -176,7 +176,6 @@ test.describe("role-aware header actions and compact tournament context", () => 
     expect(await publicNav.getByRole("link").allTextContents()).toEqual([
       "Home",
       "Tournaments",
-      "Players",
       "News",
       "About",
     ]);
@@ -195,8 +194,14 @@ test.describe("role-aware header actions and compact tournament context", () => 
       .getByRole("link", { name: "Dashboard", exact: true })
       .click();
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(page.getByRole("navigation", { name: "Player navigation" }).getByRole("link")).toHaveText(["Dashboard"]);
-    await expect(page.getByRole("link", { name: "Browse tournaments", exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Player navigation" })
+        .getByRole("link"),
+    ).toHaveText(["Dashboard"]);
+    await expect(
+      page.getByRole("link", { name: "Browse tournaments", exact: true }),
+    ).toBeVisible();
     await expect(
       accounts.getByRole("link", { name: "Dashboard", exact: true }),
     ).toHaveAttribute("aria-current", "page");

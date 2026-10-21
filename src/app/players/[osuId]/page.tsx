@@ -16,8 +16,11 @@ export default async function Profile({
   const { osuId } = await params;
   const query = await searchParams;
   if (
-    Object.keys(query).some((key) => key !== "mode") ||
-    (query.mode !== undefined && typeof query.mode !== "string")
+    Object.keys(query).some((key) => !["mode", "edition"].includes(key)) ||
+    (query.mode !== undefined && typeof query.mode !== "string") ||
+    (query.edition !== undefined &&
+      (typeof query.edition !== "string" ||
+        !/^[a-z0-9-]+$/.test(query.edition)))
   )
     notFound();
   let data;
@@ -25,6 +28,7 @@ export default async function Profile({
     data = await publishedPlayerProfile(
       osuId,
       query.mode as string | undefined,
+      query.edition as string | undefined,
     );
   } catch (e) {
     if (e instanceof HttpError && [400, 404].includes(e.status)) notFound();
@@ -32,8 +36,15 @@ export default async function Profile({
   }
   return (
     <div className="container page">
-      <Link className="text-link" href="/players">
-        ← Published players
+      <Link
+        className="text-link"
+        href={
+          query.edition
+            ? `/tournaments/${query.edition}/players`
+            : "/tournaments"
+        }
+      >
+        {query.edition ? "← Tournament players" : "← Tournaments"}
       </Link>
       <PageHeading
         eyebrow="OCLR PLAYER"
@@ -44,6 +55,9 @@ export default async function Profile({
         Public osu! statistics and published OCLR participation.
       </PageHeading>
       <form method="get" className="filters">
+        {query.edition && (
+          <input type="hidden" name="edition" value={query.edition as string} />
+        )}
         <div className="field">
           <label htmlFor="profile-ruleset">Ruleset</label>
           <select
@@ -80,7 +94,13 @@ export default async function Profile({
                   {p.editionName}
                 </Link>
               </h3>
-              <p>{p.captain ? "Captain" : "Finalized roster player"}</p>
+              <p>
+                {p.captain
+                  ? "Captain"
+                  : p.participation === "finalized_roster"
+                    ? "Finalized roster player"
+                    : "Accepted player"}
+              </p>
               {p.team ? (
                 <Link
                   href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}

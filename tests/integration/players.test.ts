@@ -12,7 +12,7 @@ import {
 } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { captains, teams } from "../../src/db/schema";
+import { captains, registrations, teams } from "../../src/db/schema";
 import { publicPlayers } from "../../src/lib/players";
 import { edition } from "../fixtures/edition";
 import { seedPublicDirectory } from "../fixtures/players";
@@ -37,11 +37,12 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
     await closeDb();
     vi.unstubAllEnvs();
   });
-  it("exposes only published captain identities and finalized published roster members", async () => {
-    const data = await publicPlayers({});
+  it("exposes every accepted player, independently of role/roster release", async () => {
+    const data = await publicPlayers({ edition: "test-cup" });
     expect(data.rows.map((p) => p.osuId).sort()).toEqual([
       fixture.captainId,
       fixture.memberId,
+      fixture.unpublishedCaptainId,
     ]);
     expect(data.rows.find((p) => p.osuId === fixture.captainId)).toMatchObject({
       captain: true,
@@ -72,11 +73,18 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
           ...change,
         })
         .where(eq(teams.id, fixture.teamId));
-      const data = await publicPlayers({});
-      expect(data.rows.map((p) => p.osuId)).toEqual([fixture.captainId]);
-      expect(data.rows[0].participation).toBe("captain");
+      const data = await publicPlayers({ edition: "test-cup" });
+      expect(data.rows).toHaveLength(3);
+      expect(data.rows.find((p) => p.osuId === fixture.memberId)).toMatchObject(
+        { participation: "accepted", captain: false, team: null },
+      );
+      expect(
+        data.rows.find((p) => p.osuId === fixture.captainId)?.participation,
+      ).toBe("captain");
       if ("identityPublished" in change || "archivedAt" in change)
-        expect(data.rows[0].team).toBeNull();
+        expect(
+          data.rows.find((p) => p.osuId === fixture.captainId)?.team,
+        ).toBeNull();
     }
   });
   it("honors withdrawn captain publication and unpublished editions at query time", async () => {
@@ -84,7 +92,9 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
       .update(captains)
       .set({ published: false })
       .where(eq(captains.userId, fixture.captainId));
-    expect((await publicPlayers({})).rows).toEqual([]);
+    const data = await publicPlayers({ edition: "test-cup" });
+    expect(data.rows).toHaveLength(3);
+    expect(data.rows.every((p) => !p.captain && !p.team)).toBe(true);
     await db()
       .update(captains)
       .set({ published: true })
@@ -99,16 +109,59 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
       [],
     );
     expect(
-      (await publicPlayers({})).rows.some(
+      (await publicPlayers({ edition: "test-cup" })).rows.some(
         (p) => p.editionSlug === "private-test-cup",
       ),
     ).toBe(false);
   });
+  it("isolates editions and removes nonaccepted identities immediately without leaking private fields", async () => {
+    await seedEditions(
+      [edition, { ...edition, slug: "second-cup", name: "Second cup" }],
+      false,
+    );
+    await db()
+      .insert(registrations)
+      .values({
+        userId: fixture.privateId,
+        editionSlug: "second-cup",
+        status: "accepted",
+        rulesVersion: null,
+        answers: {},
+      });
+    expect(
+      (
+        await publicPlayers({
+          edition: "test-cup",
+          q: String(fixture.privateId),
+        })
+      ).rows,
+    ).toEqual([]);
+    expect(
+      (await publicPlayers({ edition: "second-cup" })).rows.map((p) => p.osuId),
+    ).toEqual([fixture.privateId]);
+    for (const status of ["pending", "rejected", "withdrawn"] as const) {
+      await db()
+        .update(registrations)
+        .set({ status })
+        .where(eq(registrations.userId, fixture.memberId));
+      expect(
+        (
+          await publicPlayers({
+            edition: "test-cup",
+            q: String(fixture.memberId),
+          })
+        ).rows,
+      ).toEqual([]);
+    }
+  });
   it("supports bounded search/edition/pagination without exposing guessed private identities", async () => {
     expect(
-      (await publicPlayers({ q: String(fixture.memberId) })).rows.map(
-        (p) => p.osuId,
-      ),
+      (
+        await publicPlayers({
+          edition: "test-cup",
+          q: String(fixture.memberId),
+        })
+      ).rows.map((p) => p.osuId),
     ).toEqual([fixture.memberId]);
     expect(
       (
@@ -118,17 +171,32 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
         })
       ).total,
     ).toBe(1);
-    expect((await publicPlayers({ q: String(fixture.privateId) })).total).toBe(
-      0,
-    );
     expect(
-      (await publicPlayers({ q: String(fixture.unpublishedCaptainId) })).total,
+      (
+        await publicPlayers({
+          edition: "test-cup",
+          q: String(fixture.privateId),
+        })
+      ).total,
     ).toBe(0);
-    expect((await publicPlayers({ page: 2 })).rows).toEqual([]);
+    expect(
+      (
+        await publicPlayers({
+          edition: "test-cup",
+          q: String(fixture.unpublishedCaptainId),
+        })
+      ).rows,
+    ).toMatchObject([
+      { captain: false, team: null, participation: "accepted" },
+    ]);
+    expect(
+      (await publicPlayers({ edition: "test-cup", page: 2 })).rows,
+    ).toEqual([]);
     for (const input of [
       { q: "x".repeat(101) },
       { page: 0 },
       { userId: fixture.privateId },
+      {},
     ])
       await expect(publicPlayers(input)).rejects.toMatchObject({ status: 400 });
   });

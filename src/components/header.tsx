@@ -191,7 +191,6 @@ function AccountControl({
 const links = [
   ["/", "Home"],
   ["/tournaments", "Tournaments"],
-  ["/players", "Players"],
   ["/news", "News"],
   ["/about", "About"],
 ] as const;

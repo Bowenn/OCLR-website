@@ -27,9 +27,14 @@ export default function Privacy() {
       </p>
       <h2>What becomes public</h2>
       <p>
-        Participant identities, captains and finalized rosters appear only after
-        explicit publication. Released mappools and approved, published results,
-        scores and multiplayer source links are visible without signing in.
+        Accepted registrations automatically appear in the published
+        tournament’s Players directory with your osu! username, osu! ID and
+        participation status. Pending, rejected and withdrawn applications are
+        not listed. Application answers, contact details and staff review notes
+        stay private. Captain appointments, team identities and finalized
+        rosters require their separate release. Released mappools and approved,
+        published results, scores and multiplayer source links are visible
+        without signing in.
       </p>
       <p>
         Published profiles may include public osu! statistics, cached with an

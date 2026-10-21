@@ -1,7 +1,13 @@
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { captains, memberships, teams, users } from "@/db/schema";
+import {
+  captains,
+  memberships,
+  registrations,
+  teams,
+  users,
+} from "@/db/schema";
 import { getPublicEditions } from "./content";
 import { HttpError } from "./http";
 import { parseOsuProfile } from "./osu-profile-model";
@@ -23,13 +29,17 @@ type PublishedPlayer = {
   editionName: string;
   team: { id: string; name: string } | null;
   captain: boolean;
-  participation: "captain" | "finalized_roster";
+  participation: "accepted" | "captain" | "finalized_roster";
 };
 export async function publicPlayers(input: unknown, exactOsuId?: number) {
   const parsed = filtersSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Choose a valid player search, edition and page.");
   const filters = parsed.data;
+  // A directory always belongs to one edition. Only an individual profile can
+  // enumerate that one player's accepted, public tournament participation.
+  if (!filters.edition && !exactOsuId)
+    throw new HttpError(400, "Choose a tournament to browse its players.");
   if (filters.q.startsWith("https://"))
     filters.q = String(parseOsuProfile(filters.q).osuId);
   const editions = (await getPublicEditions()).filter(
@@ -40,8 +50,23 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
   const slugs = editions.map((e) => e.slug);
   return db().transaction(
     async (tx) => {
-      // Publication is enforced here, before data reaches a page or an API response.
-      // Private registrations, answers, notes and rejection reasons are never queried.
+      // Acceptance releases minimal identity, not private application contents or
+      // unpublished captain/team metadata. Select only the fields intended for release.
+      const accepted = await tx
+        .select({
+          osuId: users.osuId,
+          username: users.username,
+          editionSlug: registrations.editionSlug,
+        })
+        .from(registrations)
+        .innerJoin(users, eq(users.osuId, registrations.userId))
+        .where(
+          and(
+            inArray(registrations.editionSlug, slugs),
+            eq(registrations.status, "accepted"),
+            exactOsuId ? eq(registrations.userId, exactOsuId) : undefined,
+          ),
+        );
       const publishedCaptains = await tx
         .select({
           osuId: users.osuId,
@@ -99,8 +124,20 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
             isNull(teams.archivedAt),
           ),
         );
-      const byIdentity = new Map<string, PublishedPlayer>();
-      for (const p of publishedCaptains)
+      const byIdentity = new Map<string, PublishedPlayer>(
+        accepted.map((p) => [
+          `${p.editionSlug}:${p.osuId}`,
+          {
+            ...p,
+            editionName: editions.find((e) => e.slug === p.editionSlug)!.name,
+            team: null,
+            captain: false,
+            participation: "accepted",
+          },
+        ]),
+      );
+      for (const p of publishedCaptains) {
+        if (!byIdentity.has(`${p.editionSlug}:${p.osuId}`)) continue;
         byIdentity.set(`${p.editionSlug}:${p.osuId}`, {
           osuId: p.osuId,
           username: p.username,
@@ -110,7 +147,9 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
           captain: true,
           participation: "captain",
         });
-      for (const p of roster)
+      }
+      for (const p of roster) {
+        if (!byIdentity.has(`${p.editionSlug}:${p.osuId}`)) continue;
         byIdentity.set(`${p.editionSlug}:${p.osuId}`, {
           osuId: p.osuId,
           username: p.username,
@@ -120,6 +159,7 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
           captain: p.osuId === p.captainId,
           participation: "finalized_roster",
         });
+      }
       const q = filters.q.toLowerCase();
       const matching = [...byIdentity.values()]
         .filter((p) =>
@@ -144,6 +184,6 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
     { isolationLevel: "repeatable read" },
   );
 }
-export async function publicPlayer(osuId: number) {
-  return (await publicPlayers({}, osuId)).rows;
+export async function publicPlayer(osuId: number, edition?: string) {
+  return (await publicPlayers(edition ? { edition } : {}, osuId)).rows;
 }

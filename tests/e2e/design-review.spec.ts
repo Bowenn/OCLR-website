@@ -159,7 +159,7 @@ test.describe("concept-aligned tournament surfaces", () => {
         ["home", "/"],
         ["tournaments", "/tournaments"],
         ["overview", "/tournaments/test-cup"],
-        ["players", "/players"],
+        ["players", "/tournaments/test-cup/players"],
         ["news", "/news"],
         ["about", "/about"],
       ]) {

@@ -25,22 +25,22 @@ test.describe("anonymous published player directory", () => {
     expect(data.rows.map((p: { osuId: number }) => p.osuId).sort()).toEqual([
       base,
       base + 1,
+      base + 3,
     ]);
     expect(JSON.stringify(data)).not.toMatch(
       /PRIVATE_CONTACT|INTERNAL_REASON|answers|statusReason|registrationId/,
     );
     expect(
-      data.rows.every(
-        (p: { participation: string }) =>
-          p.participation === "finalized_roster",
-      ),
-    ).toBe(true);
-    await page.goto(`/players?${query}`);
+      data.rows.find((p: { osuId: number }) => p.osuId === base + 3),
+    ).toMatchObject({ participation: "accepted", captain: false, team: null });
+    await page.goto(
+      `/tournaments/test-cup/players?q=${encodeURIComponent(query.get("q")!)}`,
+    );
     await expect(
       page.getByRole("heading", { name: "Players", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText("2 player entries", { exact: true }),
+      page.getByText("3 player entries", { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("link", {
@@ -52,8 +52,24 @@ test.describe("anonymous published player directory", () => {
       page.getByText("Private Applicant", { exact: false }),
     ).toHaveCount(0);
     await expect(
-      page.getByText("Unpublished Captain", { exact: false }),
-    ).toHaveCount(0);
+      page
+        .getByRole("navigation", { name: "Tournament navigation" })
+        .getByRole("link", { name: "Players", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(page.getByLabel("Tournament", { exact: true })).toHaveCount(0);
+    expect((await context.request.get("/api/players")).status()).toBe(400);
+    expect(
+      (
+        await context.request.get("/api/tournaments/private-test-cup/players")
+      ).status(),
+    ).toBe(200);
+    expect(
+      (
+        await (
+          await context.request.get("/api/tournaments/private-test-cup/players")
+        ).json()
+      ).rows,
+    ).toEqual([]);
     expect(
       (
         await new AxeBuilder({ page })
@@ -89,7 +105,9 @@ test.describe("anonymous published player directory", () => {
         exact: true,
       }),
     ).toBeVisible();
-    await page.goto(`/players?${query}`);
+    await page.goto(
+      `/tournaments/test-cup/players?q=${encodeURIComponent(query.get("q")!)}`,
+    );
     await page.getByLabel("Search players").fill(String(base + 1));
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await expect(
@@ -127,6 +145,10 @@ test.describe("anonymous published player directory", () => {
       .where(eq(captains.userId, base));
     expect(
       (await (await context.request.get(`/api/players?${query}`)).json()).rows,
-    ).toEqual([]);
+    ).toMatchObject([
+      { captain: false, team: null },
+      { captain: false, team: null },
+      { captain: false, team: null },
+    ]);
   });
 });

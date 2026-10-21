@@ -11,7 +11,7 @@ import {
 } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { captains, userProfileCache, users } from "../../src/db/schema";
+import { registrations, userProfileCache, users } from "../../src/db/schema";
 import {
   getOsuUserProfile,
   PROFILE_TTL_MS,
@@ -147,20 +147,16 @@ describe.skipIf(!url)(
       ).toBeNull();
     });
     it("does not read/refresh cached private participants and rechecks publication after slow I/O", async () => {
-      for (const id of [
-        fixture.privateId,
-        fixture.unpublishedCaptainId,
-        651307,
-      ])
+      for (const id of [fixture.privateId, 651307])
         await expect(publishedPlayerProfile(String(id))).rejects.toMatchObject({
           status: 404,
         });
       expect(provider).not.toHaveBeenCalled();
       provider.mockImplementationOnce(async () => {
         await db()
-          .update(captains)
-          .set({ published: false })
-          .where(eq(captains.userId, base));
+          .update(registrations)
+          .set({ status: "withdrawn" })
+          .where(eq(registrations.userId, base));
         return profileResponse;
       });
       await expect(publishedPlayerProfile(String(base))).rejects.toMatchObject({

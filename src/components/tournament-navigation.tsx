@@ -30,9 +30,9 @@ export function TournamentNavigation({
     [`${base}/mappools`, "Mappools"],
     [`${base}/results`, "Results"],
     [`${base}/bracket`, "Bracket"],
-    [`${base}/participants`, "Participants"],
+    [`${base}/participants`, "Captains & rosters"],
     [`${base}/teams`, "Teams"],
-    [`/players?edition=${slug}`, "Players"],
+    [`${base}/players`, "Players"],
     ...(liveDraft ? [[`${base}/draft`, "Live draft"]] : []),
   ];
   return (

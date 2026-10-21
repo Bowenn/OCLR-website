@@ -5,9 +5,13 @@ import { publicPlayer } from "./players";
 import { getOsuUserProfile } from "./osu-profiles";
 import { parseOsuProfile } from "./osu-profile-model";
 import { HttpError } from "./http";
-export async function publishedPlayerProfile(input: string, mode?: string) {
+export async function publishedPlayerProfile(
+  input: string,
+  mode?: string,
+  edition?: string,
+) {
   const identity = parseOsuProfile(input, mode);
-  const participation = await publicPlayer(identity.osuId);
+  const participation = await publicPlayer(identity.osuId, edition);
   if (!participation.length)
     throw new HttpError(404, "Published player not found.");
   let snapshot = null;
@@ -19,7 +23,7 @@ export async function publishedPlayerProfile(input: string, mode?: string) {
     error = { status: e.status, message: e.message };
   }
   // Check again after provider I/O: publication may have been withdrawn meanwhile.
-  const current = await publicPlayer(identity.osuId);
+  const current = await publicPlayer(identity.osuId, edition);
   if (!current.length) throw new HttpError(404, "Published player not found.");
   return { identity, participation: current, snapshot, error };
 }

@@ -44,7 +44,8 @@ export async function seedPublicDirectory(base: number) {
       ids.map((userId) => ({
         userId,
         editionSlug: "test-cup",
-        status: "accepted" as const,
+        status:
+          userId === base + 2 ? ("pending" as const) : ("accepted" as const),
         rulesVersion: "test-v1",
         answers: { private: "SYNTHETIC_PRIVATE_CONTACT" },
         statusReason: "SYNTHETIC_INTERNAL_REASON",

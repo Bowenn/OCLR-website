@@ -27,7 +27,7 @@ export default async function Team({
               </a>
               {" · "}
               <Link
-                href={`/players/${m.osuId}`}
+                href={`/players/${m.osuId}?edition=${edition}`}
                 prefetch={false}
                 className="text-link"
               >
