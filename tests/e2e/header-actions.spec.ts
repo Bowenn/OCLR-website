@@ -157,7 +157,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
       animations: "disabled",
     });
     await page.goto("/admin/tournaments/s11");
-    for (const width of [320, 390, 768, 1024, 1440]) {
+    for (const width of [320, 390, 760, 768, 950, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const staffAction = await accounts
         .getByRole("link", { name: "Staff dashboard", exact: true })
@@ -165,6 +165,9 @@ test.describe("role-aware header actions and compact tournament context", () => 
       const playerAction = await accounts
         .getByRole("link", { name: "Player dashboard", exact: true })
         .boundingBox();
+      expect(staffAction!.x).toBeGreaterThanOrEqual(0);
+      expect(staffAction!.height).toBeGreaterThanOrEqual(44);
+      expect(playerAction!.height).toBeGreaterThanOrEqual(44);
       expect(staffAction!.x + staffAction!.width).toBeLessThanOrEqual(
         playerAction!.x + 1,
       );
@@ -174,6 +177,12 @@ test.describe("role-aware header actions and compact tournament context", () => 
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      if (width === 320)
+        await page.screenshot({
+          path: info.outputPath("staff-header-320.png"),
+          fullPage: true,
+          animations: "disabled",
+        });
     }
     await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 900 });
     const sidebar = page.locator(".sidebar");

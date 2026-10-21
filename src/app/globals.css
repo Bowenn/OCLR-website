@@ -3098,7 +3098,6 @@ body:has(.presenter-view) .site-footer,
   }
   .staff-header .nav-actions .nav-login {
     min-width: 0;
-    padding-inline: 0.5rem;
     white-space: normal;
     text-align: center;
   }
