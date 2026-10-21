@@ -740,11 +740,15 @@ body:has(.public-tournament) .site-footer {
 }
 .map-card-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
 }
 .map-browse-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: clamp(200px, 22vw, 260px) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem;
   min-width: 0;
   border: 1px solid var(--public-border);
   background: var(--public-surface);
@@ -752,17 +756,18 @@ body:has(.public-tournament) .site-footer {
   overflow: clip;
 }
 .map-card-cover {
-  width: 110px;
-  flex-shrink: 0;
+  width: 100%;
+  align-self: center;
   position: relative;
   background: var(--public-tint);
 }
 .map-card-cover .beatmap-cover {
   width: 100%;
-  height: 100%;
-  border-radius: 0;
-  aspect-ratio: auto;
-  min-height: 160px;
+  height: auto;
+  border-radius: 0.65rem;
+  aspect-ratio: 16 / 9;
+  max-height: none;
+  min-height: 0;
   background: var(--public-tint);
 }
 .map-card-cover .beatmap-cover img {
@@ -782,8 +787,7 @@ body:has(.public-tournament) .site-footer {
   font-size: 0.8rem;
 }
 .map-card-copy {
-  padding: 1rem;
-  flex: 1;
+  padding: 0.2rem 0.4rem 0.2rem 0;
   min-width: 0;
 }
 .map-card-copy .eyebrow {
@@ -819,12 +823,36 @@ body:has(.public-tournament) .map-open-button:hover {
   flex-wrap: wrap;
   gap: 0.5rem;
   font-size: 0.75rem;
-  border-top: 1px solid var(--public-border);
-  padding-top: 0.5rem;
-  margin-top: 0.5rem;
+  padding-top: 0;
+  margin-top: 0.35rem;
 }
 .map-mod-rating {
   margin: 0.35rem 0 0;
+}
+@media (min-width: 1100px) {
+  .map-card-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1.5rem;
+  }
+  .map-card-copy > :is(p, h2, h5) {
+    grid-column: 1;
+  }
+  .map-card-copy .map-card-values {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .map-card-copy .map-mod-rating {
+    grid-column: 2;
+    grid-row: 3 / span 2;
+    text-align: right;
+  }
 }
 .map-dialog {
   width: min(620px, calc(100% - 2rem));
@@ -892,18 +920,16 @@ body:has(.public-tournament) .map-open-button:hover {
 body:has(dialog[open].map-dialog) {
   overflow: hidden;
 }
-@media (max-width: 980px) {
-  .map-card-grid {
+@media (max-width: 640px) {
+  .map-browse-card {
     grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+  .map-card-copy {
+    padding: 0 0.25rem 0.25rem;
   }
 }
 @media (max-width: 480px) {
-  .map-card-cover {
-    width: 72px;
-  }
-  .map-card-copy {
-    padding: 0.75rem;
-  }
   .map-dialog {
     max-height: calc(100dvh - 1rem);
     width: calc(100% - 1rem);
