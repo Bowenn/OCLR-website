@@ -1,3 +1,4 @@
+import { selectTimeZone } from "./time-zone";
 import { openTournamentTool } from "./navigation";
 import { captureResponsiveLayout } from "./responsive";
 import { assertTestDatabase } from "../database";
@@ -570,7 +571,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         .getByLabel("Fixture label", { exact: true })
         .fill("Planned final");
       await create.getByText("Match options", { exact: true }).click();
-      await create.getByLabel("Time zone (IANA)", { exact: true }).fill("UTC");
+      await selectTimeZone(create, "UTC");
       await create
         .getByLabel("Scheduled date and time: date", { exact: true })
         .fill("2026-11-02");

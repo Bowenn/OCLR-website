@@ -1,3 +1,4 @@
+import { selectTimeZone } from "./time-zone";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
@@ -218,9 +219,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
         .fill(
           "Synthetic browser-managed configuration, never production content.",
         );
-      await page
-        .getByLabel("IANA time zone", { exact: true })
-        .fill("Asia/Taipei");
+      await selectTimeZone(page, "Asia/Taipei");
       await page
         .getByRole("button", { name: "Save general settings", exact: true })
         .click();

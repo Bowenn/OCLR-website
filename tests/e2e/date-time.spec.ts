@@ -1,3 +1,4 @@
+import { selectTimeZone } from "./time-zone";
 import { test, expect, type Locator } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { db, closeDb } from "../../src/db";
@@ -231,18 +232,16 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       .fill("Synthetic zoned fixture");
     await dialog.getByText("Match options", { exact: true }).click();
     await expect(
-      dialog.getByLabel("Time zone (IANA)", { exact: true }),
-    ).toHaveValue("Asia/Hong_Kong");
+      dialog.getByRole("button", { name: "Time zone", exact: true }),
+    ).toContainText("Asia/Hong_Kong");
     await date("Scheduled date and time", dialog).fill("2026-10-11");
     await expect(
       dialog.getByRole("button", { name: "Create fixture", exact: true }),
     ).toBeDisabled();
     await time("Scheduled date and time", dialog).fill("15:10");
-    await dialog.getByLabel("Time zone (IANA)", { exact: true }).fill("UTC");
+    await selectTimeZone(dialog, "UTC");
     await expect(time("Scheduled date and time", dialog)).toHaveValue("07:10");
-    await dialog
-      .getByLabel("Time zone (IANA)", { exact: true })
-      .fill("Asia/Hong_Kong");
+    await selectTimeZone(dialog, "Asia/Hong_Kong");
     await expect(time("Scheduled date and time", dialog)).toHaveValue("15:10");
     expect(
       (
@@ -308,7 +307,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       .click();
     await expect(time("Scheduled date and time", dialog)).toHaveValue("15:10");
     await dialog.getByText("Match options", { exact: true }).click();
-    await dialog.getByLabel("Time zone (IANA)", { exact: true }).fill("UTC");
+    await selectTimeZone(dialog, "UTC");
     await expect(time("Scheduled date and time", dialog)).toHaveValue("07:10");
     await dialog
       .getByRole("button", { name: "Save fixture amendment", exact: true })
@@ -356,7 +355,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
         .click();
     async function saveZone(zone: string) {
       await tab("General");
-      await page.getByLabel("IANA time zone", { exact: true }).fill(zone);
+      await selectTimeZone(page, zone);
       const response = page.waitForResponse(
         (r) => r.url().endsWith(endpoint) && r.request().method() === "POST",
       );
@@ -379,9 +378,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       ),
     ).toBe(true);
     await tab("General");
-    await page
-      .getByLabel("IANA time zone", { exact: true })
-      .fill("Asia/Hong_Kong");
+    await selectTimeZone(page, "Asia/Hong_Kong");
     await tab("Registration");
     await expect(suffix()).toHaveText("UTC");
     await expect(time()).toHaveValue("15:10");

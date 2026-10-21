@@ -9,6 +9,7 @@ import {
 import type { tournamentForAdmin } from "@/lib/tournaments";
 import { ConfirmMutation } from "./confirm-mutation";
 import { WorkspaceTabs } from "./workspace-tabs";
+import { TimeZonePicker } from "./time-zone-picker";
 import { ZonedDateInput } from "./zoned-date-input";
 type Workspace = Pick<
   Awaited<ReturnType<typeof tournamentForAdmin>>,
@@ -48,22 +49,10 @@ function IdentityFields({
           onChange={(e) => onChange({ ...value, summary: e.target.value })}
         />
       </label>
-      <label className="field">
-        <span>IANA time zone</span>
-        <input
-          required
-          value={value.timeZone}
-          list="edition-time-zones"
-          onChange={(e) => onChange({ ...value, timeZone: e.target.value })}
-        />
-        <datalist id="edition-time-zones">
-          {["UTC", "Asia/Taipei", "Asia/Shanghai", "Asia/Hong_Kong"].map(
-            (zone) => (
-              <option key={zone} value={zone} />
-            ),
-          )}
-        </datalist>
-      </label>
+      <TimeZonePicker
+        value={value.timeZone}
+        onChange={(timeZone) => onChange({ ...value, timeZone })}
+      />
       <details className="form-options">
         <summary>Season & artwork</summary>
         <div className="form-stack">

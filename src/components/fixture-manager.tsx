@@ -13,6 +13,7 @@ import {
 import { formatDate } from "@/lib/editions";
 import type { FixtureWorkspace } from "@/lib/fixtures";
 import { RefereeAssignment } from "./referee-assignment";
+import { TimeZonePicker } from "./time-zone-picker";
 import { ZonedDateInput } from "./zoned-date-input";
 import { ConfirmMutation } from "./confirm-mutation";
 type Fixture = FixtureWorkspace["fixtures"][number];
@@ -209,14 +210,7 @@ function FixtureForm({
                 ))}
             </select>
           </label>
-          <label className="field">
-            <span>Time zone (IANA)</span>
-            <input
-              value={timeZone}
-              maxLength={80}
-              onChange={(e) => setZone(e.target.value)}
-            />
-          </label>
+          <TimeZonePicker value={timeZone} onChange={setZone} />
           <p className="muted small">
             Changing the time zone keeps the scheduled instant and updates the
             displayed local time.

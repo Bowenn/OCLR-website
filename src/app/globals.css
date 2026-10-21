@@ -3544,3 +3544,50 @@ body:has(.presenter-view) .site-footer,
   text-decoration: underline;
   text-underline-offset: 0.22em;
 }
+
+.time-zone-picker {
+  min-width: 0;
+}
+.time-zone-trigger {
+  width: 100%;
+  justify-content: space-between;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.time-zone-trigger > span {
+  flex: 0 0 auto;
+}
+.time-zone-search {
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  background: #101322;
+  border-radius: 0.45rem;
+  min-width: 0;
+}
+.time-zone-options {
+  max-height: min(15rem, 40vh);
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+.time-zone-group {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  padding: 0.35rem 0.5rem;
+}
+.time-zone-options [role="option"] {
+  cursor: pointer;
+  padding: 0.55rem 0.5rem;
+  border-radius: 0.2rem;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  border: 1px solid transparent;
+}
+.time-zone-options [role="option"][data-active],
+.time-zone-options [role="option"]:hover {
+  background: #a65bd41c;
+  border-color: #ba79e4;
+}
+.time-zone-options [aria-selected="true"] {
+  font-weight: 700;
+  color: #e6bcfa;
+}
