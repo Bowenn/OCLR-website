@@ -1667,6 +1667,8 @@
     "m2b6b853c9e59": "in progress",
     "m770957951120": "awaiting verification",
     "me517e3641584": "Published draft board and pick history",
-    "m11eccea42bca": "Your team is awaiting publication."
+    "m11eccea42bca": "Your team is awaiting publication.",
+    "draft_members": "{count, plural, one {# member} other {# members}}",
+    "draft_pick_committed": "Pick committed to {team}."
   }
 }

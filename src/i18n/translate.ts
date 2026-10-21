@@ -16,6 +16,8 @@ export function appTranslator(t: NativeTranslator, locale: string) {
     (message: string, values?: TranslationValues) => {
       // Legacy parameterized validation errors carry authored values, which
       // must remain literal while the surrounding interface is translated.
+      const pick = /^Pick committed to ([\s\S]+)\.$/.exec(message);
+      if (pick) return t("draft_pick_committed", { team: pick[1] });
       const answer = /^Check your answer to “([\s\S]*)”\.$/.exec(message);
       if (answer) return t("application_answer_error", { question: answer[1] });
       const row = /^Row (\d+): ([\s\S]*)$/.exec(message);

@@ -117,6 +117,11 @@ describe("localized interface catalogs", () => {
       );
       expect(tr("navigation_home")).not.toBe(tr("Home"));
       expect(tr("draft_module")).not.toBe(tr("Draft"));
+      expect(tr("draft_members", { count: 2 })).toContain("2");
+      expect(tr("Pick committed to Home · 原文.")).toBe(
+        native("draft_pick_committed", { team: "Home · 原文" }),
+      );
+      expect(tr("Selection cancelled.")).not.toBe("Selection cancelled.");
       expect(tr("Sign in with osu! to continue.")).not.toBe(
         "Sign in with osu! to continue.",
       );

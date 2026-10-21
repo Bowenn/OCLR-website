@@ -139,7 +139,7 @@ export function DraftPick({
       report(
         result.corrected
           ? "This earlier pick was corrected. Follow the current snapshot."
-          : `Pick committed to ${team.name}. Awaiting staff publication.`,
+          : `Pick committed to ${team.name}.`,
       );
     } catch {
       report(
@@ -178,7 +178,7 @@ export function DraftPick({
         <p className="muted small">
           {canStage
             ? tr("Drag a player into {value0}, or choose a player below.", {
-                value0: staff ? "the receiving team" : "your team",
+                value0: tr(staff ? "the receiving team" : "your team"),
               })
             : staff
               ? tr("Current eligible players.")
@@ -275,7 +275,7 @@ export function DraftPick({
           <h2>{staff ? tr("Receiving team") : tr("My team")}</h2>
           <span className="badge">
             {capacity == null
-              ? `${roster.length} ${roster.length === 1 ? "member" : "members"}`
+              ? tr("draft_members", { count: roster.length })
               : `${roster.length} / ${capacity}`}
           </span>
         </div>
@@ -363,14 +363,15 @@ export function DraftPick({
           role="status"
           aria-live="polite"
         >
-          {status ||
-            (player
+          {status
+            ? tr(status)
+            : player
               ? tr("{value0} selected. Confirm the pending pick when ready.", {
                   value0: player.username,
                 })
               : !enabled
-                ? unavailableMessage
-                : "")}
+                ? tr(unavailableMessage)
+                : ""}
         </p>
       </section>
     </section>

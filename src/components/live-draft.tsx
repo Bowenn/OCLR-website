@@ -62,7 +62,7 @@ export function LiveDraft({
       </div>
       {feedback && board && feedback.version === board.version && (
         <p className="notice" role="status">
-          {feedback.message}
+          {tr(feedback.message)}
         </p>
       )}
       {board ? (

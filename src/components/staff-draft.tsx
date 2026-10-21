@@ -168,7 +168,7 @@ export function StaffDraftRoom({
       </p>
       {feedback && feedback.version === session?.publicVersion && (
         <p className="notice" role="status">
-          {feedback.message}
+          {tr(feedback.message)}
         </p>
       )}
       {session && session.state !== "setup" && (
