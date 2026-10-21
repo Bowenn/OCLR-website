@@ -28,11 +28,10 @@ export default async function Admin({
       : null;
     return (
       <>
-        <PageHeading eyebrow="OCLR OPERATIONS" title="Administration overview">
-          {isAdmin
-            ? "Choose a tournament to manage its configuration and competition."
-            : "Open an assigned tournament to work with your authorized tools."}
-        </PageHeading>
+        <PageHeading
+          eyebrow="OCLR OPERATIONS"
+          title="Administration overview"
+        />
         <div className="actions">
           <Action href="/admin/tournaments">
             {isAdmin ? "Manage tournaments" : "Assigned tournaments"}

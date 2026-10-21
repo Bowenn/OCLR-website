@@ -57,7 +57,15 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
             description={
               action === "publish"
                 ? "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick."
-                : "Review the current state before confirming. This action checks the current state and is recorded automatically."
+                : action === "abort"
+                  ? "Stop the draft. Committed picks are retained; no further picks are accepted until recovery."
+                  : action === "undo"
+                    ? "Void the last pick and remove that player from the roster. Later turns may need review."
+                    : action === "finalize"
+                      ? "Finalize the drafted rosters. Normal roster edits will be locked."
+                      : action === "start"
+                        ? "Start the configured captain turns. Only the active captain can pick."
+                        : "Reopen draft setup. Review the existing order and rosters before freezing again."
             }
             url={`/api/admin/tournaments/${slug}/draft`}
             payload={actionPayload(action)}

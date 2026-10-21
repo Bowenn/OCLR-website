@@ -35,7 +35,17 @@ function FixtureForm({
   const [homeTeamId, setHome] = useState(fixture?.homeTeamId ?? "");
   const [awayTeamId, setAway] = useState(fixture?.awayTeamId ?? "");
   const [mappoolId, setPool] = useState(fixture?.mappoolId ?? "");
-  const [position, setPosition] = useState(String(fixture?.position ?? 1));
+  function nextPosition(id: string) {
+    return String(
+      Math.max(
+        0,
+        ...data.fixtures.filter((f) => f.roundId === id).map((f) => f.position),
+      ) + 1,
+    );
+  }
+  const [position, setPosition] = useState(
+    String(fixture?.position ?? nextPosition(roundId)),
+  );
   const [time, setTime] = useState<string | null>(
     fixture?.scheduledAt?.toISOString() ?? null,
   );
@@ -118,10 +128,6 @@ function FixtureForm({
   }
   return (
     <div className="form-stack">
-      <p className="muted">
-        Leave unconfirmed participants as Team TBD. Reporting requires two
-        finalized, published teams.
-      </p>
       <label className="field">
         <span>Fixture label</span>
         <input
@@ -137,6 +143,7 @@ function FixtureForm({
           onChange={(e) => {
             setRound(e.target.value);
             setPool("");
+            if (!fixture) setPosition(nextPosition(e.target.value));
           }}
         >
           {!data.rounds.length && (
@@ -163,41 +170,11 @@ function FixtureForm({
           {teamOptions}
         </select>
       </label>
-      <label className="field">
-        <span>Fixture order within round</span>
-        <input
-          type="number"
-          min={1}
-          max={999}
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-        />
-      </label>
-      <label className="field">
-        <span>Associated mappool</span>
-        <select value={mappoolId} onChange={(e) => setPool(e.target.value)}>
-          <option value="">No pool associated</option>
-          {data.pools
-            .filter((p) => p.roundId === roundId)
-            .map((p) => (
-              <option value={p.id} key={p.id}>
-                {p.name}
-              </option>
-            ))}
-        </select>
-      </label>
-      <label className="field">
-        <span>Time zone (IANA)</span>
-        <input
-          value={timeZone}
-          maxLength={80}
-          onChange={(e) => setZone(e.target.value)}
-        />
-      </label>
-      <p className="muted small">
-        Changing the time zone keeps the scheduled instant and updates the
-        displayed local time.
-      </p>
+      {(!homeTeamId || !awayTeamId) && (
+        <p className="muted small">
+          Reporting needs two finalized, published teams.
+        </p>
+      )}
       <ZonedDateInput
         label="Scheduled date and time"
         value={time}
@@ -206,35 +183,75 @@ function FixtureForm({
         onValidityChange={setTimeValid}
         optional
       />
-      <label className="field">
-        <span>Fixture status</span>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as Fixture["status"])}
-        >
-          <option value="scheduled">Scheduled</option>
-          <option value="in_progress">In progress</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </label>
-      {round?.stage === "knockout" && (
-        <details>
-          <summary>Explicit bracket progression</summary>
-          <p className="muted">
-            Link planned slots to a previous match. Confirm the official teams
-            before reporting results.
+      <details className="form-options">
+        <summary>Match options</summary>
+        <div className="form-stack">
+          <label className="field">
+            <span>Fixture order within round</span>
+            <input
+              type="number"
+              min={1}
+              max={999}
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>Associated mappool</span>
+            <select value={mappoolId} onChange={(e) => setPool(e.target.value)}>
+              <option value="">No pool associated</option>
+              {data.pools
+                .filter((p) => p.roundId === roundId)
+                .map((p) => (
+                  <option value={p.id} key={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Time zone (IANA)</span>
+            <input
+              value={timeZone}
+              maxLength={80}
+              onChange={(e) => setZone(e.target.value)}
+            />
+          </label>
+          <p className="muted small">
+            Changing the time zone keeps the scheduled instant and updates the
+            displayed local time.
           </p>
-          {sourceSelect("home")}
-          {sourceSelect("away")}
-        </details>
-      )}
+
+          <label className="field">
+            <span>Fixture status</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as Fixture["status"])}
+            >
+              <option value="scheduled">Scheduled</option>
+              <option value="in_progress">In progress</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+          {round?.stage === "knockout" && (
+            <details>
+              <summary>Explicit bracket progression</summary>
+              <p className="muted">
+                Link planned slots to a previous match. Confirm the official
+                teams before reporting results.
+              </p>
+              {sourceSelect("home")}
+              {sourceSelect("away")}
+            </details>
+          )}
+        </div>
+      </details>
       <ConfirmMutation
         requireConfirmation={false}
         onSuccess={onSaved}
         disabled={!timeValid}
         label={fixture ? "Save fixture amendment" : "Create fixture"}
         title={fixture ? "Amend fixture?" : "Create fixture?"}
-        description={`${fixture ? "Amend" : "Create"} ${label || "the fixture"}. Times are entered in ${timeZone || "the configured zone"}. Referee assignments and all changes are audited.`}
         url={`/api/admin/tournaments/${slug}/matches`}
         payload={payload}
       />

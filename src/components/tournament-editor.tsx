@@ -175,7 +175,6 @@ export function CreateTournamentForm() {
         <label className="field">
           <span>Permanent slug</span>
           <input
-            required
             onInvalid={(event) => {
               event.currentTarget.closest("details")!.open = true;
             }}
@@ -224,9 +223,9 @@ function Save({
       label={label}
       title={label}
       description={
-        action === "registration"
-          ? "Review registration availability, dates and questions. Enabling registration accepts applications only within this window and the approved prerequisites."
-          : "Save the approved tournament settings."
+        confirmation
+          ? "Completing this tournament pauses registration. Competition records and past applications are preserved."
+          : undefined
       }
       url={`/api/admin/tournaments/${data.edition.slug}`}
       payload={{

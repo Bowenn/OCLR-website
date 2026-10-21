@@ -24,10 +24,7 @@ export default async function StaffPage({
     if (requested && !selected) notFound();
     return (
       <>
-        <PageHeading eyebrow="ACCESS CONTROL" title="Staff assignments">
-          Grant scoped access and publish public staff profiles separately.
-          Changes are recorded automatically.
-        </PageHeading>
+        <PageHeading eyebrow="ACCESS CONTROL" title="Staff assignments" />
         <StaffRoleForm
           key={selected?.slug ?? "all"}
           initialEdition={selected?.slug ?? ""}

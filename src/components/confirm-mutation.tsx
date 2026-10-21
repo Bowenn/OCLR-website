@@ -17,7 +17,7 @@ export function ConfirmMutation({
 }: {
   label: string;
   title: string;
-  description: string;
+  description?: string;
   url: string;
   payload: Record<string, unknown>;
   onSuccess?: () => void;
@@ -84,15 +84,17 @@ export function ConfirmMutation({
         <dialog
           ref={dialog}
           aria-labelledby={`${id}-title`}
-          aria-describedby={`${id}-description`}
+          aria-describedby={description ? `${id}-description` : undefined}
           onCancel={(event) => {
             if (pending) event.preventDefault();
           }}
         >
           <h2 id={`${id}-title`}>{title}</h2>
-          <p id={`${id}-description`} className="muted">
-            {description}
-          </p>
+          {description && (
+            <p id={`${id}-description`} className="muted">
+              {description}
+            </p>
+          )}
           {children}
           {error && (
             <p role="alert" className="notice error-text">

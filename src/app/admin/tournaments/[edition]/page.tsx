@@ -128,17 +128,7 @@ export default async function Tournament({
               </div>
             )}
           </div>
-          <p className="registration-guidance">
-            Applications are accepted during this window when registration is
-            enabled.
-          </p>
         </section>
-        {!data && (
-          <p className="notice small spaced">
-            Use your tournament navigation to open authorized tools.
-            Tournament-wide settings are managed by an Admin.
-          </p>
-        )}
       </>
     );
   });

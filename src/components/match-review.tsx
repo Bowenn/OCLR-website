@@ -29,7 +29,7 @@ function Operation({
       canConfirm={!needsExplanation || Boolean(decisionNote.trim())}
       label={label}
       title={label}
-      description={`Fixture: ${data.context.fixture.label}. ${action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "This operation is recorded automatically with your osu! identity."}`}
+      description={`Fixture: ${data.context.fixture.label}. ${action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "Review the selected result proposal before confirming."}`}
       url={`/api/admin/tournaments/${slug}/matches/${data.context.fixture.id}/results`}
       payload={{
         action,
@@ -100,7 +100,6 @@ function SourceReview({
   return (
     <section className="section-space stack" aria-labelledby="games-heading">
       <div>
-        <p className="eyebrow">REFEREE REVIEW</p>
         <h2 id="games-heading">Review every game</h2>
         <p className="muted">
           Include valid games and explicitly exclude warmups, rematches or
@@ -427,8 +426,7 @@ export function MatchReviewPanel({
       <section className="panel form-stack">
         <h2>Import official multiplayer data</h2>
         <p className="muted">
-          Only osu! match IDs or canonical osu! match URLs are accepted. Imports
-          are private snapshots; they never publish scores automatically.
+          Imports stay private until a result is approved and published.
         </p>
         <label className="field">
           <span>osu! MP link or match ID</span>

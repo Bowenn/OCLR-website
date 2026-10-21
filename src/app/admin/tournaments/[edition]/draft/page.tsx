@@ -13,10 +13,7 @@ export default async function ControlRoom({
     const { edition } = await params;
     return (
       <>
-        <PageHeading eyebrow={edition} title="Draft control room">
-          Operate the authoritative captain-turn draft and approve its public
-          release.
-        </PageHeading>
+        <PageHeading eyebrow={edition} title="Draft control room" />
         <StaffDraftRoom
           slug={edition}
           initial={await staffDraft(actor, edition)}

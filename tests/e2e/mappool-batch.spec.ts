@@ -103,6 +103,7 @@ test.describe("bulk mappool operations", () => {
     const editor = page
       .locator("details")
       .filter({ has: page.getByText("Edit or replace DT1", { exact: true }) });
+    await editor.getByText("Official mod attributes", { exact: true }).click();
     await editor
       .getByLabel("Difficulty calculation mods", { exact: true })
       .selectOption("DT");

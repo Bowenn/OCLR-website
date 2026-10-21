@@ -39,8 +39,7 @@ export async function RegistrationList({
         className={`registration-review${editionSlug ? " edition-registration-review" : ""}`}
       >
         <PageHeading eyebrow="REGISTRATION REVIEW" title="Registrations">
-          Review individual applications. Acceptance does not appoint a captain
-          or assign a team.
+          Acceptance does not appoint a captain or assign a team.
         </PageHeading>
         <div className="section-title">
           <p className="muted small">

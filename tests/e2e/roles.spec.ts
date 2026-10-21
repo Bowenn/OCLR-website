@@ -1,3 +1,4 @@
+import { captureResponsiveLayout } from "./responsive";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { seedSession } from "./session";
@@ -66,6 +67,7 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
         await scoped.close();
       }
       await page.goto("/admin/staff");
+      await captureResponsiveLayout(page, info, "minimal-staff");
       const assignment = page.locator("article").filter({
         has: page.getByRole("heading", {
           name: `Synthetic Player ${operatorId} · ${operatorId}`,
@@ -181,8 +183,22 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
         fullPage: true,
         animations: "disabled",
       });
+      const revoked = page.waitForResponse(
+        (response) =>
+          response.url().endsWith("/api/admin/staff") &&
+          response.request().method() === "POST" &&
+          response.request().postDataJSON()?.action === "revoke",
+      );
       await assignment.getByRole("button", { name: "Revoke role" }).click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
+      expect((await revoked).status()).toBe(200);
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      expect(
+        (
+          await operator.request.get("/api/admin/tournaments/test-cup/mappools")
+        ).status(),
+      ).toBe(403);
+
       await expect(
         assignment.getByRole("button", { name: "Revoke role" }),
       ).toHaveCount(0);

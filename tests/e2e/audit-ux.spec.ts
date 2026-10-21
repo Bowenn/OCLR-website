@@ -170,11 +170,16 @@ test.describe("automatic staff auditing", () => {
     const first = page.locator(`[data-captain-id="${base}"]`),
       second = page.locator(`[data-captain-id="${base + 1}"]`);
     if (isMobile) {
-      await first.scrollIntoViewIfNeeded();
+      await page
+        .getByRole("list", { name: "Captain selection order", exact: true })
+        .scrollIntoViewIfNeeded();
       const handle = (await first
           .locator(".captain-drag-handle")
           .boundingBox())!,
         target = (await second.boundingBox())!;
+      expect(target.y + target.height / 2).toBeLessThan(
+        page.viewportSize()!.height,
+      );
       const touch = await context.newCDPSession(page);
       await touch.send("Input.dispatchTouchEvent", {
         type: "touchStart",

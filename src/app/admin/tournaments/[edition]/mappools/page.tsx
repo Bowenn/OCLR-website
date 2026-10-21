@@ -15,9 +15,7 @@ export default async function MappoolsPage({
     const data = await mappoolWorkspace(actor, edition);
     return (
       <>
-        <PageHeading eyebrow="COMPETITION MAPS" title="Mappool management">
-          Manage maps by stage and round.
-        </PageHeading>
+        <PageHeading eyebrow="COMPETITION MAPS" title="Mappool management" />
         <MappoolEditor slug={edition} data={data} />
       </>
     );

@@ -191,7 +191,7 @@ export function CaptainManager({
           <p className="muted small">
             {setup.locked
               ? "Captain setup is locked. Publication controls remain available below."
-              : "Drag players here to appoint captains. Drag captains to reorder, then save the order. Move buttons also work with a keyboard."}
+              : "Drag or appoint players; drag or use arrow buttons to reorder."}
           </p>
           <div
             className={`captain-drop-zone${dragging !== null ? " is-dragging" : ""}`}
@@ -479,7 +479,7 @@ export function CaptainManager({
             }
             label="Review setup change"
             title="Apply this captain setup change?"
-            description="Review player IDs and publication approval carefully. This change is audited and can affect draft eligibility."
+            description="This can change draft eligibility or release player identities publicly. Review the selected players and approval before confirming."
             url={`/api/admin/tournaments/${slug}/captains`}
             payload={{
               command,

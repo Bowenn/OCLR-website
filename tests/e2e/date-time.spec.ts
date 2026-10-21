@@ -229,6 +229,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
     await dialog
       .getByLabel("Fixture label", { exact: true })
       .fill("Synthetic zoned fixture");
+    await dialog.getByText("Match options", { exact: true }).click();
     await expect(
       dialog.getByLabel("Time zone (IANA)", { exact: true }),
     ).toHaveValue("Asia/Hong_Kong");
@@ -306,6 +307,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       .getByRole("button", { name: "Manage fixture", exact: true })
       .click();
     await expect(time("Scheduled date and time", dialog)).toHaveValue("15:10");
+    await dialog.getByText("Match options", { exact: true }).click();
     await dialog.getByLabel("Time zone (IANA)", { exact: true }).fill("UTC");
     await expect(time("Scheduled date and time", dialog)).toHaveValue("07:10");
     await dialog

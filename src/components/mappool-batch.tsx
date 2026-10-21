@@ -99,9 +99,8 @@ export function MappoolBatch({
         <div className="form-stack">
           <h3>Import multiple beatmaps</h3>
           <p className="muted small">
-            Paste up to 50 beatmap IDs or difficulty URLs in order. New slots
-            append after the highest saved slot; existing maps are never
-            replaced.
+            Paste up to 50 IDs or difficulty URLs. Slots append automatically;
+            existing maps stay unchanged.
           </p>
           <label className="field">
             <span>Import category</span>
@@ -121,10 +120,13 @@ export function MappoolBatch({
               ))}
             </select>
           </label>
-          <p className="muted small">
-            Advanced: explicit slots such as NM1 4184799 or HD1 URL can be mixed
-            with plain rows. Plain rows skip reserved explicit slots.
-          </p>
+          <details>
+            <summary>Import format help</summary>
+            <p className="muted small">
+              Optional: prefix a row with NM1, HD1 or another explicit slot.
+              Plain rows skip reserved slots.
+            </p>
+          </details>
           <label className="field">
             <span>Map rows</span>
             <textarea

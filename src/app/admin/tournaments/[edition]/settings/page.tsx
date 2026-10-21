@@ -17,9 +17,7 @@ export default async function Settings({
         <PageHeading
           eyebrow="TOURNAMENT CONFIGURATION"
           title="Tournament settings"
-        >
-          Each section saves independently.
-        </PageHeading>
+        />
         <TournamentEditor
           data={{
             edition: data.edition,

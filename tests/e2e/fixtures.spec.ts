@@ -124,6 +124,15 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       await page
         .getByRole("combobox", { name: /^Away team/ })
         .selectOption(away.teamId);
+      await expect(
+        page.getByLabel("Associated mappool", { exact: true }),
+      ).toBeHidden();
+      await captureResponsiveLayout(page, info, "minimal-fixture");
+      await page.getByText("Match options", { exact: true }).focus();
+      await page.keyboard.press("Enter");
+      await expect(
+        page.getByLabel("Fixture order within round", { exact: true }),
+      ).toHaveValue("1");
       await page
         .getByRole("combobox", { name: /^Associated mappool/ })
         .selectOption(pool.id);
@@ -182,6 +191,18 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       const fixture = data.fixtures.find(
         (f: { label: string }) => f.label === `Synthetic HTTP Fixture ${base}`,
       );
+      await page
+        .getByRole("button", { name: "Create a fixture", exact: true })
+        .click();
+      const next = page.getByRole("dialog");
+      await next
+        .getByRole("combobox", { name: /^Competition round/ })
+        .selectOption(round.id);
+      await next.getByText("Match options", { exact: true }).click();
+      await expect(
+        next.getByLabel("Fixture order within round", { exact: true }),
+      ).toHaveValue("2");
+      await next.getByRole("button", { name: "Close", exact: true }).click();
       expect(fixture.scheduledAt).toBeNull();
       expect(fixture.publishedAt).toBeNull();
       expect(fixture.result).toBeNull();
@@ -548,6 +569,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       await create
         .getByLabel("Fixture label", { exact: true })
         .fill("Planned final");
+      await create.getByText("Match options", { exact: true }).click();
       await create.getByLabel("Time zone (IANA)", { exact: true }).fill("UTC");
       await create
         .getByLabel("Scheduled date and time: date", { exact: true })

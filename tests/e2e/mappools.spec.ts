@@ -1,3 +1,4 @@
+import { captureResponsiveLayout } from "./responsive";
 import { openTournamentTool } from "./navigation";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -379,6 +380,11 @@ test.describe("published mappools and restricted editing", () => {
     await page
       .getByRole("button", { name: "+ New round", exact: true })
       .click();
+    await expect(page.getByLabel("Round order", { exact: true })).toBeHidden();
+    await page
+      .locator("summary")
+      .filter({ hasText: /^Round order$/ })
+      .click();
     await expect(page.getByLabel("Round order", { exact: true })).toHaveValue(
       "3",
     );
@@ -405,6 +411,9 @@ test.describe("published mappools and restricted editing", () => {
     });
     await page.getByRole("tab", { name: "Bulk import", exact: true }).click();
     await expect(page.getByLabel("Map rows", { exact: true })).toBeVisible();
+    await expect(page.getByText(/Optional: prefix a row/)).toBeHidden();
+    await captureResponsiveLayout(page, info, "minimal-mappool-import");
+
     await expect(
       page.getByRole("combobox", { name: "FM policy", exact: true }),
     ).toHaveCount(0);

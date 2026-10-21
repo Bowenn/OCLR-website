@@ -18,9 +18,7 @@ export default async function Teams({
     const data = await staffTeams(actor, edition);
     return (
       <>
-        <PageHeading eyebrow="PARTICIPANTS" title="Team management">
-          Configure captain teams, review rosters and manage public visibility.
-        </PageHeading>
+        <PageHeading eyebrow="PARTICIPANTS" title="Team management" />
         {data.locked && (
           <p className="notice small" role="status">
             Team configuration is locked for the draft. Names and roster
@@ -40,9 +38,8 @@ export default async function Teams({
           >
             <h2 id="team-setup-heading">No teams yet</h2>
             <p className="muted small">
-              Appoint captains from accepted registrations, then configure their
-              team names and optional roster capacities here. Players join the
-              teams through the live draft.
+              Appoint captains to configure teams. Players join through the
+              draft.
             </p>
             <div className="actions">
               <Link

@@ -42,9 +42,7 @@ export default async function Captains({
         };
     return (
       <>
-        <PageHeading eyebrow="PARTICIPANTS" title="Captains & player pool">
-          Appoint captains and arrange their selection order.
-        </PageHeading>
+        <PageHeading eyebrow="PARTICIPANTS" title="Captains & player pool" />
         <p className="small muted">
           Setup {setup.locked ? "locked" : "unlocked"}
         </p>

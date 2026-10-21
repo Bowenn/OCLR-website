@@ -18,8 +18,8 @@ export function StaffRoleForm({
     <div className="panel form-stack">
       <h2>Grant a role</h2>
       <p className="muted">
-        Verify the numeric osu! ID out of band. The user must have signed in.
-        Roles combine; captain appointments are separate.
+        The user must have signed in. Verify their osu! ID before granting
+        access.
       </p>
       <label className="field">
         <span>Verified osu! user ID</span>

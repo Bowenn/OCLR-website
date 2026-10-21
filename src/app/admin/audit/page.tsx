@@ -43,7 +43,7 @@ export default async function Audit({
     return (
       <div className="audit-workspace">
         <PageHeading eyebrow="ADMINISTRATION" title="Audit log">
-          Operation history within your authorized scope. All times are UTC.
+          All times are UTC.
         </PageHeading>
         <AuditModuleTabs
           value={f.module}

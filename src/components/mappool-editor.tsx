@@ -30,7 +30,7 @@ function Save({
 }: {
   change: Change;
   label: string;
-  description: string;
+  description?: string;
   payload: Record<string, unknown>;
   disabled?: boolean;
   onSuccess?: () => void;
@@ -78,21 +78,23 @@ function RoundForm({
           placeholder="Approved round label"
         />
       </label>
-      <label className="field">
-        <span>Round order</span>
-        <input
-          type="number"
-          min={1}
-          max={999}
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-        />
-      </label>
+      <details className="form-options" open={Boolean(round)}>
+        <summary>Round order</summary>
+        <label className="field">
+          <span>Round order</span>
+          <input
+            type="number"
+            min={1}
+            max={999}
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+          />
+        </label>
+      </details>
       <Save
         change={change}
         onSuccess={onSuccess}
         label={round ? "Save round" : "Create round"}
-        description={`${round ? "Update" : "Create"} ${name || "the round"} in ${stage === "group" ? "Group Stage" : "Knockout Stage"}.`}
         payload={
           round
             ? {
@@ -137,7 +139,6 @@ function CreatePool({
         change={change}
         label="Create draft pool"
         onSuccess={onSuccess}
-        description={`Create the unpublished pool ${name || "(name required)"} in the selected round.`}
         payload={{ action: "pool_create", roundId, name }}
       />
     </div>
@@ -165,18 +166,19 @@ function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
           <option value="force_mod">Force Mod</option>
         </select>
       </label>
-      <label className="field">
-        <span>Approved FM restrictions</span>
-        <textarea
-          value={fmRestrictions}
-          onChange={(e) => setRestrictions(e.target.value)}
-          maxLength={2000}
-        />
-      </label>
+      {(fmMode || fmRestrictions) && (
+        <label className="field">
+          <span>Approved FM restrictions</span>
+          <textarea
+            value={fmRestrictions}
+            onChange={(e) => setRestrictions(e.target.value)}
+            maxLength={2000}
+          />
+        </label>
+      )}
       <Save
         change={change}
         label="Save pool settings"
-        description="Save the selected FM interpretation and the approved restrictions. No mod rules are assumed."
         payload={{
           action: "pool_settings",
           poolId: pool.id,
@@ -194,11 +196,13 @@ function EntryForm({
   pool,
   category,
   entry,
+  entries = [],
 }: {
   change: Change;
   pool: Pool;
   category: string;
   entry?: Entry;
+  entries?: Entry[];
 }) {
   const [difficultyConfiguration, setDifficultyConfiguration] =
     useState<DifficultyConfiguration | null>(
@@ -208,7 +212,19 @@ function EntryForm({
   const id = parseBeatmapId(beatmap);
   const [preview, setPreview] = useState<BeatmapSnapshot | null>(null);
   const [mod, setMod] = useState(entry?.category ?? category);
-  const [position, setPosition] = useState(String(entry?.position ?? 1));
+  function nextPosition(category: string) {
+    return String(
+      Math.max(
+        0,
+        ...entries
+          .filter((e) => e.category === category)
+          .map((e) => e.position),
+      ) + 1,
+    );
+  }
+  const [position, setPosition] = useState(
+    String(entry?.position ?? nextPosition(category)),
+  );
   return (
     <div className="form-stack">
       <label className="field">
@@ -230,31 +246,37 @@ function EntryForm({
           Enter a numeric beatmap ID or an official osu! difficulty URL.
         </p>
       )}
-      <label className="field">
-        <span>Difficulty calculation mods</span>
-        <select
-          aria-label="Difficulty calculation mods"
-          value={difficultyConfiguration ?? ""}
-          onChange={(e) => {
-            setPreview(null);
-            setDifficultyConfiguration(
-              (e.target.value as DifficultyConfiguration) || null,
-            );
-          }}
-        >
-          <option value="">Variable / unconfigured</option>
-          {difficultyConfigurations.map((mods) => (
-            <option key={mods} value={mods}>
-              {mods}
-              {mods.includes("DT")
-                ? " · standard DT speed"
-                : mods === "HT"
-                  ? " · standard HT speed"
-                  : ""}
-            </option>
-          ))}
-        </select>
-      </label>
+      <details
+        className="form-options"
+        open={Boolean(entry?.metadata.attributes)}
+      >
+        <summary>Official mod attributes</summary>
+        <label className="field">
+          <span>Difficulty calculation mods</span>
+          <select
+            aria-label="Difficulty calculation mods"
+            value={difficultyConfiguration ?? ""}
+            onChange={(e) => {
+              setPreview(null);
+              setDifficultyConfiguration(
+                (e.target.value as DifficultyConfiguration) || null,
+              );
+            }}
+          >
+            <option value="">Variable / unconfigured</option>
+            {difficultyConfigurations.map((mods) => (
+              <option key={mods} value={mods}>
+                {mods}
+                {mods.includes("DT")
+                  ? " · standard DT speed"
+                  : mods === "HT"
+                    ? " · standard HT speed"
+                    : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+      </details>
       {id && (
         <BeatmapPreview
           key={`${id}-${difficultyConfiguration}`}
@@ -266,7 +288,13 @@ function EntryForm({
       )}
       <label className="field">
         <span>Mod category</span>
-        <select value={mod} onChange={(e) => setMod(e.target.value)}>
+        <select
+          value={mod}
+          onChange={(e) => {
+            setMod(e.target.value);
+            if (!entry) setPosition(nextPosition(e.target.value));
+          }}
+        >
           {categories.map((c) => (
             <option key={c} value={c}>
               {c} — {categoryNames[c]}
@@ -288,7 +316,6 @@ function EntryForm({
         change={change}
         label={entry ? "Save map slot" : "Add beatmap"}
         disabled={!id || preview?.beatmapId !== id}
-        description={`Save beatmap ${beatmap || "(required)"} in ${slotLabel(mod, Number(position))}. Official metadata is verified again when saving. Provider errors preserve saved records.`}
         payload={{
           action: "entry_save",
           difficultyConfiguration,
@@ -678,7 +705,6 @@ export function MappoolEditor({
                           <Save
                             change={change}
                             label={`Refresh ${slotLabel(entry.category, entry.position)} metadata`}
-                            description="Refresh official metadata. Provider failures retain the saved map information."
                             payload={{
                               action: "entry_refresh",
                               poolId: pool.id,
@@ -715,6 +741,7 @@ export function MappoolEditor({
                       change={change}
                       pool={pool}
                       category={category}
+                      entries={poolEntries}
                     />
                   </details>
                 )}

@@ -81,6 +81,33 @@ test.describe("browser-managed authoritative tournament editions", () => {
     await expect(page.getByLabel("Season identifier (optional)")).toHaveValue(
       "Test season",
     );
+    await page.goto("/admin/tournaments/new");
+    await page.getByLabel("Tournament name", { exact: true }).fill(name);
+    await page.getByText("Customize URL", { exact: true }).click();
+    await page
+      .getByLabel("Permanent slug", { exact: true })
+      .fill("Invalid / URL");
+    await page.getByText("Customize URL", { exact: true }).click();
+    await page
+      .getByRole("button", { name: "Create private draft", exact: true })
+      .click();
+    await expect(
+      page.getByLabel("Permanent slug", { exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/tournaments\/new$/);
+    await page.getByLabel("Permanent slug", { exact: true }).fill(slug);
+    await page
+      .getByLabel("Tournament name", { exact: true })
+      .fill("Renamed draft");
+    await expect(
+      page.getByLabel("Permanent slug", { exact: true }),
+    ).toHaveValue(slug);
+    await page
+      .getByRole("button", { name: "Create private draft", exact: true })
+      .click();
+    await expect(page.locator("main form").getByRole("alert")).toContainText(
+      "already exists",
+    );
     expect(
       (
         await new AxeBuilder({ page })
