@@ -3,6 +3,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar } from "./avatar";
+import { ThemeControl } from "./theme-control";
+import type { Theme } from "@/lib/preferences";
 type Account = { osuId: number; username: string; staff?: boolean };
 function AccountControl({
   user,
@@ -194,7 +196,13 @@ const links = [
   ["/news", "News"],
   ["/about", "About"],
 ] as const;
-export function Header({ user }: { user: Account | null }) {
+export function Header({
+  user,
+  theme,
+}: {
+  user: Account | null;
+  theme: Theme;
+}) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
@@ -235,6 +243,9 @@ export function Header({ user }: { user: Account | null }) {
             </Link>
           ))}
         </nav>
+        <div className="site-preferences">
+          <ThemeControl initialTheme={theme} />
+        </div>
         <div className="nav-actions" role="group" aria-label="Account actions">
           {user ? (
             <AccountControl

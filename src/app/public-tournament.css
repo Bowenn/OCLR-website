@@ -1,15 +1,73 @@
+/* Public appearance is rendered from a non-sensitive preference cookie. */
+body:has(.public-tournament) {
+  --public-background: #f4f1f7;
+  --public-surface: #fff;
+  --public-raised: #f8f4fb;
+  --public-tint: #ece5f3;
+  --public-foreground: #1b1422;
+  --public-muted: #6d6278;
+  --public-secondary-text: #453a50;
+  --public-accent: #6c2e91;
+  --public-accent-strong: #552074;
+  --public-border: #ded5e7;
+  --public-control-border: #cec2da;
+  --public-header: #fdfcfe;
+  --public-success: #17644b;
+  --public-warning: #875505;
+  --public-danger: #a4254a;
+  --public-focus: #a52773;
+  --public-selection: #ebcce6;
+  --public-highlight: #ae2679;
+  --public-connector: #bfa9d0;
+  --public-shadow: #31113b18;
+  --public-soft-shadow: #31113b0a;
+  --public-panel-shadow: #411e5a80;
+  --public-dialog-shadow: #31113b33;
+  --public-backdrop: #1b142266;
+  --public-on-primary: #fff;
+  --public-primary: #6c2e91;
+  --public-primary-hover: #552074;
+}
+html[data-theme="dark"] body:has(.public-tournament) {
+  --public-background: #090c17;
+  --public-surface: #121626;
+  --public-raised: #191d30;
+  --public-tint: #282039;
+  --public-foreground: #f4f3fc;
+  --public-muted: #b8b3ca;
+  --public-accent: #dba5f7;
+  --public-border: #363044;
+  --public-header: #0e1120;
+  --public-success: #72e3bc;
+  --public-warning: #f0cb83;
+  --public-danger: #ff9eaf;
+  --public-focus: #e3a6ef;
+  --public-selection: #563666;
+  --public-highlight: #efa5d6;
+  --public-connector: #9672ae;
+  --public-shadow: #0004;
+  --public-backdrop: #0009;
+  --public-primary: #713299;
+  --public-secondary-text: #d4cce1;
+  --public-accent-strong: #e8c3ff;
+  --public-primary-hover: #8740b2;
+  --public-control-border: #685475;
+  --public-soft-shadow: #0002;
+  --public-panel-shadow: #0009;
+  --public-dialog-shadow: #0009;
+}
 /* MainSheet Light is scoped to public edition routes; private tools keep their theme. */
 body:has(.public-tournament) {
-  --color-background: #f4f1f7;
-  --color-surface: #fff;
-  --color-raised: #f8f4fb;
-  --color-foreground: #1b1422;
-  --color-muted: #6d6278;
-  --color-accent: #6c2e91;
-  --color-border: #ded5e7;
-  --color-success: #17644b;
-  --color-warning: #875505;
-  --color-danger: #a4254a;
+  --color-background: var(--public-background);
+  --color-surface: var(--public-surface);
+  --color-raised: var(--public-raised);
+  --color-foreground: var(--public-foreground);
+  --color-muted: var(--public-muted);
+  --color-accent: var(--public-accent);
+  --color-border: var(--public-border);
+  --color-success: var(--public-success);
+  --color-warning: var(--public-warning);
+  --color-danger: var(--public-danger);
   --button-radius: 999px;
   --radius-panel: 1.375rem;
   color-scheme: light;
@@ -24,15 +82,15 @@ body:has(.public-tournament) {
     sans-serif;
 }
 body:has(.public-tournament) :focus-visible {
-  outline-color: #a52773;
+  outline-color: var(--public-focus);
   outline-offset: 3px;
 }
 body:has(.public-tournament) ::selection {
-  background: #ebcce6;
-  color: #1b1422;
+  background: var(--public-selection);
+  color: var(--public-foreground);
 }
 body:has(.public-tournament) .site-header {
-  background: #fdfcfe;
+  background: var(--public-header);
   backdrop-filter: none;
   border-color: var(--color-border);
 }
@@ -46,42 +104,42 @@ body:has(.public-tournament) .main-nav a {
 }
 body:has(.public-tournament) .main-nav a:hover,
 body:has(.public-tournament) .main-nav a[aria-current] {
-  color: #6c2e91;
-  border-color: #6c2e91;
+  color: var(--public-accent);
+  border-color: var(--public-accent);
 }
 body:has(.public-tournament) :is(button, .button) {
-  color: #fff;
-  background: #6c2e91;
-  border-color: #6c2e91;
+  color: var(--public-on-primary);
+  background: var(--public-primary);
+  border-color: var(--public-accent);
   box-shadow: none;
   min-height: 44px;
 }
 body:has(.public-tournament) :is(button, .button):hover {
   transform: translateY(-1px);
-  background: #552074;
+  background: var(--public-primary-hover);
 }
 body:has(.public-tournament) :is(button, .button).secondary {
-  color: #6c2e91;
-  background: #fff;
-  border-color: #cec2da;
+  color: var(--public-accent);
+  background: var(--public-surface);
+  border-color: var(--public-control-border);
 }
 body:has(.public-tournament) .account-dropdown {
-  background: #fff;
-  border-color: #ded5e7;
-  box-shadow: 0 12px 32px #31113b18;
+  background: var(--public-surface);
+  border-color: var(--public-border);
+  box-shadow: 0 12px 32px var(--public-shadow);
 }
 body:has(.public-tournament) .account-dropdown a {
-  color: #453a50;
+  color: var(--public-secondary-text);
 }
 body:has(.public-tournament) .account-dropdown a:hover,
 body:has(.public-tournament) .account-dropdown a[aria-current] {
-  background: #ece5f3;
-  color: #552074;
+  background: var(--public-tint);
+  color: var(--public-accent-strong);
 }
 body:has(.public-tournament) .site-footer {
-  border-color: #ded5e7;
-  background: #fdfcfe;
-  color: #453a50;
+  border-color: var(--public-border);
+  background: var(--public-header);
+  color: var(--public-secondary-text);
 }
 .public-tournament {
   width: min(1400px, calc(100% - clamp(2rem, 7vw, 6rem)));
@@ -103,13 +161,13 @@ body:has(.public-tournament) .site-footer {
   color: var(--color-muted);
 }
 .event-identity > a:last-of-type {
-  color: #1b1422;
+  color: var(--public-foreground);
   font-weight: 650;
 }
 .public-tournament .badge {
-  color: #6c2e91;
-  border-color: #ded5e7;
-  background: #f8f4fb;
+  color: var(--public-accent);
+  border-color: var(--public-border);
+  background: var(--public-raised);
   border-radius: 999px;
 }
 .public-tournament .tournament-navigation nav {
@@ -118,7 +176,7 @@ body:has(.public-tournament) .site-footer {
   gap: 0.25rem;
   padding: 0.3rem;
   border-radius: 1.5rem;
-  background: #ece5f3;
+  background: var(--public-tint);
   width: fit-content;
   max-width: 100%;
 }
@@ -128,24 +186,24 @@ body:has(.public-tournament) .site-footer {
   min-height: 44px;
   padding: 0.5rem 0.9rem;
   border-radius: 999px;
-  color: #6d6278;
+  color: var(--public-muted);
   font-size: 0.85rem;
   font-weight: 600;
 }
 .public-tournament .tournament-navigation nav a:hover {
-  color: #6c2e91;
-  background: #f8f4fb;
+  color: var(--public-accent);
+  background: var(--public-raised);
 }
 .public-tournament .tournament-navigation nav a[aria-current] {
-  color: #6c2e91;
-  background: #fff;
-  box-shadow: 0 2px 6px #31113b0a;
+  color: var(--public-accent);
+  background: var(--public-surface);
+  box-shadow: 0 2px 6px var(--public-soft-shadow);
 }
 .public-tournament .tournament-navigation nav a[aria-current]::before {
   content: "";
   width: 6px;
   height: 6px;
-  background: #d23f95;
+  background: var(--public-highlight);
   border-radius: 50%;
   margin-right: 0.45rem;
 }
@@ -156,9 +214,9 @@ body:has(.public-tournament) .site-footer {
   min-width: 0;
 }
 .public-tournament .page-heading {
-  background: #ece5f3;
+  background: var(--public-tint);
   padding: clamp(1.25rem, 3vw, 2.5rem);
-  border: 1px solid #ded5e7;
+  border: 1px solid var(--public-border);
   border-radius: 1.875rem;
   margin-bottom: 1.5rem;
 }
@@ -170,59 +228,59 @@ body:has(.public-tournament) .site-footer {
   margin-bottom: 0;
 }
 .public-tournament .eyebrow {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .text-link {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .panel {
-  background: #fff;
-  border-color: #ded5e7;
-  box-shadow: 0 18px 40px -36px #411e5a80;
+  background: var(--public-surface);
+  border-color: var(--public-border);
+  box-shadow: 0 18px 40px -36px var(--public-panel-shadow);
 }
 .public-tournament .empty-state {
-  background: #fff;
-  border-color: #ded5e7;
+  background: var(--public-surface);
+  border-color: var(--public-border);
   padding: 1.5rem;
 }
 .public-tournament .notice {
-  background: #f8f4fb;
-  color: #453a50;
-  border-color: #d23f95;
+  background: var(--public-raised);
+  color: var(--public-secondary-text);
+  border-color: var(--public-highlight);
 }
 .public-tournament .error-text {
-  color: #a4254a;
+  color: var(--public-danger);
 }
 .public-tournament :is(input:not([type="checkbox"]), select, textarea) {
-  color: #241b2d;
-  background: #fff;
-  border-color: #cec2da;
+  color: var(--public-foreground);
+  background: var(--public-surface);
+  border-color: var(--public-control-border);
   min-height: 44px;
   border-radius: 0.75rem;
 }
 .public-tournament :is(.detail-list > div, .schedule-list li, th, td) {
-  border-color: #ded5e7;
+  border-color: var(--public-border);
 }
 .public-tournament :is(.detail-list dt, .small.muted) {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-tournament th {
-  color: #453a50;
-  background: #f8f4fb;
+  color: var(--public-secondary-text);
+  background: var(--public-raised);
 }
 .public-tournament .workspace-tabs {
-  background: #ece5f3;
-  border-color: #ded5e7;
+  background: var(--public-tint);
+  border-color: var(--public-border);
   border-radius: 999px;
 }
 .public-tournament .workspace-tabs button {
-  color: #6d6278;
+  color: var(--public-muted);
   background: transparent;
   border-color: transparent;
 }
 .public-tournament .workspace-tabs button[aria-selected="true"] {
-  color: #fff;
-  background: #6c2e91;
+  color: var(--public-on-primary);
+  background: var(--public-primary);
 }
 .public-tournament :is(h1, h2, h3, h4, p, a, dd) {
   overflow-wrap: anywhere;
@@ -232,8 +290,8 @@ body:has(.public-tournament) .site-footer {
 }
 @media (max-width: 760px) {
   body:has(.public-tournament) .main-nav.open {
-    background: #fff;
-    border-color: #ded5e7;
+    background: var(--public-surface);
+    border-color: var(--public-border);
   }
   .public-tournament {
     padding-top: 1rem;
@@ -269,9 +327,9 @@ body:has(.public-tournament) .site-footer {
 
 /* Edition overview: one artwork-led introduction, then useful event information. */
 .event-hero {
-  border: 1px solid #ded5e7;
+  border: 1px solid var(--public-border);
   border-radius: 1.875rem;
-  background: #ece5f3;
+  background: var(--public-tint);
   overflow: hidden;
   margin-bottom: 1rem;
 }
@@ -296,17 +354,17 @@ body:has(.public-tournament) .site-footer {
 }
 .event-hero-caption {
   margin: 1.5rem 0 0;
-  color: #6c2e91;
+  color: var(--public-accent);
   font-size: 0.8rem;
   font-weight: 650;
 }
 .event-hero-caption span {
-  color: #6d6278;
+  color: var(--public-muted);
   font-weight: 400;
 }
 .event-artwork {
   min-width: 0;
-  background: #ded5e7;
+  background: var(--public-border);
 }
 .event-artwork img {
   display: block;
@@ -320,7 +378,7 @@ body:has(.public-tournament) .site-footer {
   place-content: center;
   min-height: 280px;
   padding: 2rem;
-  color: #6c2e91;
+  color: var(--public-accent);
   text-align: center;
 }
 .event-artwork-fallback span {
@@ -341,8 +399,8 @@ body:has(.public-tournament) .site-footer {
   gap: 0.75rem;
   flex: 1 0 190px;
   padding: 1rem;
-  background: #fff;
-  border: 1px solid #ded5e7;
+  background: var(--public-surface);
+  border: 1px solid var(--public-border);
   border-radius: 1.1rem;
 }
 .event-milestones p {
@@ -350,8 +408,8 @@ body:has(.public-tournament) .site-footer {
 }
 .event-step {
   border-radius: 50%;
-  background: #ece5f3;
-  color: #6c2e91;
+  background: var(--public-tint);
+  color: var(--public-accent);
   padding: 0.4rem;
   font-size: 0.75rem;
   font-weight: 700;
@@ -399,7 +457,7 @@ body:has(.public-tournament) .site-footer {
   grid-template-columns: 1fr auto;
   align-items: center;
   padding: 0.75rem 0;
-  border-top: 1px solid #ded5e7;
+  border-top: 1px solid var(--public-border);
 }
 .event-pool-list .eyebrow {
   grid-column: 1/-1;
@@ -409,7 +467,7 @@ body:has(.public-tournament) .site-footer {
 }
 .event-team-links li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid #ded5e7;
+  border-bottom: 1px solid var(--public-border);
 }
 @media (max-width: 980px) {
   .event-overview-grid {
@@ -440,19 +498,19 @@ body:has(.public-tournament) .site-footer {
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem;
-  border: 1px solid #ded5e7;
+  border: 1px solid var(--public-border);
   border-radius: 1.5rem;
-  background: #fff;
+  background: var(--public-surface);
 }
 .public-tournament .event-pills button {
-  color: #6d6278;
+  color: var(--public-muted);
   border-color: transparent;
   background: transparent;
   padding-inline: 0.85rem;
 }
 .public-tournament .event-pills button[aria-pressed="true"] {
-  color: #fff;
-  background: #6c2e91;
+  color: var(--public-on-primary);
+  background: var(--public-primary);
 }
 .public-match-toolbar {
   display: flex;
@@ -512,8 +570,8 @@ body:has(.public-tournament) .site-footer {
   text-align: right;
 }
 .public-tournament .public-match-card .match-versus strong {
-  color: #fff;
-  background: #6c2e91;
+  color: var(--public-on-primary);
+  background: var(--public-primary);
   border-radius: 0.65rem;
   padding: 0.25rem 0.65rem;
   font-variant-numeric: tabular-nums;
@@ -525,14 +583,14 @@ body:has(.public-tournament) .site-footer {
 }
 .match-public-details > summary {
   cursor: pointer;
-  color: #6c2e91;
+  color: var(--public-accent);
   font-size: 0.8rem;
   padding-block: 0.5rem;
   min-height: 44px;
   align-content: center;
 }
 .match-public-details > div {
-  border-top: 1px solid #ded5e7;
+  border-top: 1px solid var(--public-border);
   padding-top: 0.75rem;
 }
 .match-public-details p {
@@ -541,13 +599,13 @@ body:has(.public-tournament) .site-footer {
 .public-match-list[data-view="compact"] {
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
-  border: 1px solid #ded5e7;
+  border: 1px solid var(--public-border);
   border-radius: 1rem;
   overflow: clip;
 }
 .public-tournament .public-match-list[data-view="compact"] .public-match-card {
   border: 0;
-  border-bottom: 1px solid #ded5e7;
+  border-bottom: 1px solid var(--public-border);
   border-radius: 0;
   box-shadow: none;
   display: grid;
@@ -561,20 +619,20 @@ body:has(.public-tournament) .site-footer {
   grid-column: 1/-1;
 }
 .public-tournament .match-card {
-  background: #fff;
-  border-color: #ded5e7;
+  background: var(--public-surface);
+  border-color: var(--public-border);
 }
 .public-tournament .bracket-connectors path {
-  stroke: #bfa9d0;
+  stroke: var(--public-connector);
 }
 .public-tournament .bracket-tabs button {
-  background: #fff;
-  color: #6c2e91;
-  border-color: #ded5e7;
+  background: var(--public-surface);
+  color: var(--public-accent);
+  border-color: var(--public-border);
 }
 .public-tournament .bracket-tabs button[aria-pressed="true"] {
-  background: #6c2e91;
-  color: #fff;
+  background: var(--public-primary);
+  color: var(--public-on-primary);
 }
 @media (max-width: 760px) {
   .public-match-list {
@@ -596,37 +654,37 @@ body:has(.public-tournament) .site-footer {
 
 /* Released map browsing, with the compact mainsheet retained as an alternate view. */
 .public-tournament .mappool-public-round {
-  background: #fff;
-  border-color: #ded5e7;
+  background: var(--public-surface);
+  border-color: var(--public-border);
   border-radius: 1.375rem;
 }
 .public-tournament .mappool-public-round > summary {
-  color: #1b1422;
-  border-color: #ded5e7;
+  color: var(--public-foreground);
+  border-color: var(--public-border);
 }
 .public-tournament .mappool-release {
-  border-color: #ded5e7;
+  border-color: var(--public-border);
 }
 .public-tournament .mappool-release-heading {
-  background: #f8f4fb;
-  border-color: #ded5e7;
+  background: var(--public-raised);
+  border-color: var(--public-border);
 }
 .public-tournament .mappool-sheet {
-  color: #241b2d;
+  color: var(--public-foreground);
 }
 .public-tournament .mappool-sheet :is(th, td),
 .public-tournament .mappool-sheet tbody th {
-  background: #fff;
-  border-color: #ded5e7;
+  background: var(--public-surface);
+  border-color: var(--public-border);
 }
 .public-tournament .mappool-sheet thead th {
-  background: #f8f4fb;
-  color: #453a50;
+  background: var(--public-raised);
+  color: var(--public-secondary-text);
 }
 .public-tournament
   .mappool-sheet
   :is(.mappool-map-title, .mappool-base-sr, .mappool-slot) {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament
   .mappool-sheet
@@ -636,12 +694,12 @@ body:has(.public-tournament) .site-footer {
     .mappool-parameters,
     .mappool-mobile-details
   ) {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-tournament .mappool-category-links a {
-  background: #f8f4fb;
-  color: #6c2e91;
-  border-color: #ded5e7;
+  background: var(--public-raised);
+  color: var(--public-accent);
+  border-color: var(--public-border);
 }
 .mappool-browse {
   padding: 1rem 0;
@@ -652,15 +710,15 @@ body:has(.public-tournament) .site-footer {
   flex-wrap: wrap;
   align-items: center;
   padding: 0.65rem 1rem;
-  background: #f8f4fb;
-  border: 1px solid #ded5e7;
+  background: var(--public-raised);
+  border: 1px solid var(--public-border);
   border-radius: 1rem;
   margin-bottom: 0.75rem;
   font-size: 0.8rem;
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .pool-summary strong {
-  color: #6c2e91;
+  color: var(--public-accent);
   font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
 }
@@ -696,8 +754,8 @@ body:has(.public-tournament) .site-footer {
 .map-browse-card {
   display: flex;
   min-width: 0;
-  border: 1px solid #ded5e7;
-  background: #fff;
+  border: 1px solid var(--public-border);
+  background: var(--public-surface);
   border-radius: 1.15rem;
   overflow: clip;
 }
@@ -705,7 +763,7 @@ body:has(.public-tournament) .site-footer {
   width: 110px;
   flex-shrink: 0;
   position: relative;
-  background: #ece5f3;
+  background: var(--public-tint);
 }
 .map-card-cover .beatmap-cover {
   width: 100%;
@@ -713,7 +771,7 @@ body:has(.public-tournament) .site-footer {
   border-radius: 0;
   aspect-ratio: auto;
   min-height: 160px;
-  background: #ece5f3;
+  background: var(--public-tint);
 }
 .map-card-cover .beatmap-cover img {
   height: 100%;
@@ -726,8 +784,8 @@ body:has(.public-tournament) .site-footer {
   left: 0.5rem;
   border-radius: 999px;
   padding: 0.2rem 0.6rem;
-  background: #fff;
-  color: #6c2e91;
+  background: var(--public-surface);
+  color: var(--public-accent);
   font-weight: 800;
   font-size: 0.8rem;
 }
@@ -748,7 +806,7 @@ body:has(.public-tournament) .site-footer {
 body:has(.public-tournament) .map-open-button {
   display: block;
   text-align: left;
-  color: #241b2d;
+  color: var(--public-foreground);
   border: 0;
   border-radius: 0.25rem;
   background: none;
@@ -757,7 +815,7 @@ body:has(.public-tournament) .map-open-button {
   min-height: 44px;
 }
 body:has(.public-tournament) .map-open-button:hover {
-  color: #6c2e91;
+  color: var(--public-accent);
   transform: none;
   text-decoration: underline;
 }
@@ -769,7 +827,7 @@ body:has(.public-tournament) .map-open-button:hover {
   flex-wrap: wrap;
   gap: 0.5rem;
   font-size: 0.75rem;
-  border-top: 1px solid #ded5e7;
+  border-top: 1px solid var(--public-border);
   padding-top: 0.5rem;
   margin-top: 0.5rem;
 }
@@ -780,14 +838,14 @@ body:has(.public-tournament) .map-open-button:hover {
   width: min(620px, calc(100% - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 0;
-  border: 1px solid #ded5e7;
+  border: 1px solid var(--public-border);
   border-radius: 1.5rem;
-  color: #241b2d;
-  background: #fff;
-  box-shadow: 0 24px 60px #31113b33;
+  color: var(--public-foreground);
+  background: var(--public-surface);
+  box-shadow: 0 24px 60px var(--public-dialog-shadow);
 }
 .map-dialog::backdrop {
-  background: #1b142266;
+  background: var(--public-backdrop);
 }
 .map-dialog > header {
   display: flex;
@@ -795,7 +853,7 @@ body:has(.public-tournament) .map-open-button:hover {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #ded5e7;
+  border-bottom: 1px solid var(--public-border);
 }
 .map-dialog-body {
   padding: 1.25rem;
@@ -804,7 +862,7 @@ body:has(.public-tournament) .map-open-button:hover {
   width: 100%;
   height: 180px;
   border-radius: 1rem;
-  background: #ece5f3;
+  background: var(--public-tint);
   margin-bottom: 1rem;
 }
 .map-dialog-body > .beatmap-cover img {
@@ -815,18 +873,18 @@ body:has(.public-tournament) .map-open-button:hover {
 .map-detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid #ded5e7;
+  border: 1px solid var(--public-border);
   border-radius: 0.75rem;
   margin: 1.25rem 0;
   overflow: clip;
 }
 .map-detail-grid > div {
   padding: 0.65rem 0.85rem;
-  border-bottom: 1px solid #ded5e7;
+  border-bottom: 1px solid var(--public-border);
 }
 .map-detail-grid dt {
   font-size: 0.75rem;
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .map-detail-grid dd {
   margin: 0.15rem 0 0;
@@ -901,8 +959,8 @@ body:has(dialog[open].map-dialog) {
 .team-monogram {
   display: grid;
   place-content: center;
-  background: #ece5f3;
-  color: #6c2e91;
+  background: var(--public-tint);
+  color: var(--public-accent);
   width: 52px;
   height: 52px;
   flex-shrink: 0;
@@ -921,7 +979,7 @@ body:has(dialog[open].map-dialog) {
   width: 52px;
   height: 52px;
   border-radius: 1rem;
-  background: #ece5f3;
+  background: var(--public-tint);
   flex-shrink: 0;
   overflow: clip;
 }
@@ -951,26 +1009,26 @@ body:has(dialog[open].map-dialog) {
   padding: 0.5rem;
 }
 .public-tournament .directory-details {
-  border-color: #ded5e7;
+  border-color: var(--public-border);
 }
 .public-tournament .directory-details dt {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-tournament .directory-details dd {
-  color: #241b2d;
+  color: var(--public-foreground);
 }
 .public-tournament .player-directory {
   gap: 1rem;
 }
 .public-player-page .profile-statistics {
-  background: #f8f4fb;
-  border-color: #ded5e7;
+  background: var(--public-raised);
+  border-color: var(--public-border);
 }
 .public-player-page .profile-statistics dt {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-player-page .profile-statistics dd {
-  color: #241b2d;
+  color: var(--public-foreground);
 }
 @media (max-width: 1100px) {
   .public-team-workspace.with-standings {
@@ -994,8 +1052,8 @@ body:has(dialog[open].map-dialog) {
 .rules-desktop-contents {
   position: sticky;
   top: 88px;
-  background: #fff;
-  border: 1px solid #ded5e7;
+  background: var(--public-surface);
+  border: 1px solid var(--public-border);
   border-radius: 1rem;
   padding: 1rem;
   max-height: calc(100dvh - 110px);
@@ -1013,28 +1071,28 @@ body:has(dialog[open].map-dialog) {
   font-size: 0.85rem;
   padding: 0.5rem 0.65rem;
   border-radius: 0.65rem;
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .rules-handbook nav a span {
   font-size: 0.7rem;
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .rules-handbook nav a:hover,
 .rules-handbook nav a[aria-current] {
-  color: #6c2e91;
-  background: #ece5f3;
+  color: var(--public-accent);
+  background: var(--public-tint);
 }
 .rules-reading {
   min-width: 0;
 }
 .rules-article {
   padding: clamp(1.25rem, 3vw, 2.5rem);
-  background: #fff;
-  border: 1px solid #ded5e7;
+  background: var(--public-surface);
+  border: 1px solid var(--public-border);
   border-radius: 1.375rem;
 }
 .rules-article section + section {
-  border-top: 1px solid #ded5e7;
+  border-top: 1px solid var(--public-border);
   margin-top: 2rem;
   padding-top: 2rem;
 }
@@ -1045,7 +1103,7 @@ body:has(dialog[open].map-dialog) {
   font-size: 1.35rem;
 }
 .rules-article h2 span {
-  color: #ae2679;
+  color: var(--public-highlight);
   font-variant-numeric: tabular-nums;
 }
 .rules-article p {
@@ -1066,9 +1124,9 @@ body:has(dialog[open].map-dialog) {
   .rules-mobile-contents {
     display: block;
     padding: 0.75rem 1rem;
-    border: 1px solid #ded5e7;
+    border: 1px solid var(--public-border);
     border-radius: 1rem;
-    background: #fff;
+    background: var(--public-surface);
     margin-bottom: 1rem;
   }
   .rules-mobile-contents summary {
@@ -1085,7 +1143,7 @@ body:has(dialog[open].map-dialog) {
 .public-tournament .match-meta > span,
 .public-tournament .match-note,
 .public-tournament .match-loser {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-tournament
   :is(
@@ -1095,35 +1153,35 @@ body:has(dialog[open].map-dialog) {
     .match-alternative,
     .table-scroll
   ) {
-  border-color: #ded5e7;
+  border-color: var(--public-border);
 }
 .public-tournament .match-winner {
-  background: #ece5f3;
-  box-shadow: inset 3px 0 #6c2e91;
-  color: #552074;
+  background: var(--public-tint);
+  box-shadow: inset 3px 0 var(--public-accent);
+  color: var(--public-accent-strong);
 }
 .public-tournament .match-winner strong {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .mappool-category-heading {
-  background: #ece5f3;
-  border-color: #6c2e91;
+  background: var(--public-tint);
+  border-color: var(--public-accent);
 }
 .public-tournament .mappool-category-heading strong {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .mappool-fm-note {
-  background: #f8f4fb;
-  color: #453a50;
+  background: var(--public-raised);
+  color: var(--public-secondary-text);
 }
 .public-tournament .mappool-map-title > span {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-tournament .mappool-public-round > summary {
   padding-inline: 1rem;
 }
 .public-tournament .mappool-public-round > summary::before {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .mappool-release {
   padding: 1rem;
@@ -1134,31 +1192,58 @@ body:has(dialog[open].map-dialog) {
 }
 
 .public-tournament .match-alternative summary {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .mappool-category-heading > span {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 
 body:has(.public-tournament) .site-footer .footer-credit:hover,
 body:has(.public-tournament) .site-footer .footer-credit:focus-visible {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 
 .public-tournament .match-versus strong {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament :is(.connection-state, .draft-picks p, .public-pool) {
-  color: #6d6278;
+  color: var(--public-muted);
 }
 .public-tournament .draft-turn-mark {
-  color: #6c2e91;
+  color: var(--public-accent);
 }
 .public-tournament .roster-panel {
-  background: #fff;
-  border-color: #6c2e91;
+  background: var(--public-surface);
+  border-color: var(--public-accent);
   border-radius: 1.1rem;
 }
 .public-tournament :is(.roster-panel li, .draft-picks li) {
-  border-color: #ded5e7;
+  border-color: var(--public-border);
+}
+
+html[data-theme="dark"] body:has(.public-tournament) {
+  color-scheme: dark;
+}
+.theme-control {
+  display: none;
+}
+@media (max-width: 950px) {
+  body:has(.public-tournament) .main-nav {
+    background: var(--public-header);
+    border-color: var(--public-border);
+  }
+}
+@media (max-width: 760px) {
+  body:has(.public-tournament) .nav-wrap {
+    height: auto;
+    min-height: 68px;
+  }
+}
+body:has(.public-tournament) .theme-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
 }

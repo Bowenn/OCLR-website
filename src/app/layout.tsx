@@ -4,6 +4,8 @@ import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
 import "./globals.css";
 import "./public-tournament.css";
+import { cookies } from "next/headers";
+import { readTheme, themeCookie } from "@/lib/preferences";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {
@@ -29,6 +31,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const theme = readTheme((await cookies()).get(themeCookie)?.value);
   let user: Awaited<ReturnType<typeof currentUser>> = null;
   let authUnavailable = false;
   let staff = false;
@@ -39,12 +42,13 @@ export default async function RootLayout({
     authUnavailable = true;
   }
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
         <Header
+          theme={theme}
           user={
             user ? { osuId: user.osuId, username: user.username, staff } : null
           }
