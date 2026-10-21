@@ -192,7 +192,22 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
         ).status(),
       ).toBe(403);
       const response = await operatorPage.goto("/admin");
-      expect(response?.status()).toBe(404);
+      // Next.js notFound() uses 200 once streaming has begun, otherwise 404.
+      // Check the denial UI and absence of the protected workspace in both cases.
+      expect([200, 404]).toContain(response?.status());
+      await expect(
+        operatorPage.getByRole("heading", {
+          name: "Off the beat.",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(operatorPage.locator(".admin-workspace")).toHaveCount(0);
+      await expect(
+        operatorPage.getByRole("heading", { name: "Administration overview" }),
+      ).toHaveCount(0);
+      expect((await operator.request.get("/api/admin/staff")).status()).toBe(
+        403,
+      );
     } finally {
       await operator.close();
       await guest.close();
