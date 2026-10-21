@@ -1,4 +1,5 @@
 import { assertTestDatabase } from "../database";
+import { captureResponsiveLayout } from "./responsive";
 import { writeFileSync } from "node:fs";
 import { bracketFixture } from "../fixtures/bracket";
 import {
@@ -220,6 +221,7 @@ test.describe("isolated multi-captain rehearsal", () => {
       if (document.activeElement instanceof HTMLElement)
         document.activeElement.blur();
     });
+    await captureResponsiveLayout(a.page, testInfo, "captain-pending-pick");
     await a.page.screenshot({
       path: testInfo.outputPath("captain-pending-pick.png"),
       fullPage: true,

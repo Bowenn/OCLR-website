@@ -12,6 +12,7 @@ import { bracketFixture } from "../fixtures/bracket";
 import { profileResponse } from "../fixtures/osu-profile";
 import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
 import { assertTestDatabase } from "../database";
+import { captureResponsiveLayout } from "./responsive";
 
 test.describe("concept-aligned tournament surfaces", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
@@ -135,6 +136,8 @@ test.describe("concept-aligned tournament surfaces", () => {
           .toBeGreaterThan(0);
       }
       await target.evaluate(() => window.scrollTo(0, 0));
+      if (["home", "overview", "registrations"].includes(name))
+        await captureResponsiveLayout(target, info, name);
       await target.screenshot({
         path: info.outputPath(
           `${process.env.OCLR_DESIGN_CAPTURE ?? "after"}-${name}.png`,

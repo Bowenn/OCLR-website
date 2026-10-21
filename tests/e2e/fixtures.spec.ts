@@ -1,4 +1,5 @@
 import { openTournamentTool } from "./navigation";
+import { captureResponsiveLayout } from "./responsive";
 import { assertTestDatabase } from "../database";
 import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
@@ -335,6 +336,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         ),
       ).toBe(true);
       await page.evaluate(() => window.scrollTo(0, 0));
+      await captureResponsiveLayout(page, info, "fixtures");
       await page.screenshot({
         path: info.outputPath("fixtures.png"),
         fullPage: true,

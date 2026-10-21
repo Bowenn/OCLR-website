@@ -7,6 +7,7 @@ import { categories, slotLabel } from "../../src/lib/mappool-model";
 import { mappoolCommand } from "../../src/lib/mappools";
 import { assertTestDatabase } from "../database";
 import { seedSession } from "./session";
+import { captureResponsiveLayout } from "./responsive";
 
 test.describe("published mappool mainsheet", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
@@ -203,6 +204,7 @@ test.describe("published mappool mainsheet", () => {
       ).violations,
     ).toEqual([]);
     await page.evaluate(() => window.scrollTo(0, 0));
+    await captureResponsiveLayout(page, info, "mappool");
     await page.screenshot({
       path: info.outputPath("published-30-map-mainsheet.png"),
       fullPage: true,
