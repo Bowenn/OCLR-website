@@ -19,7 +19,7 @@ See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` pr
 | `PORT`                               | Optional listening port (Next.js default 3000)                                                                                           |
 | `TEST_DATABASE_URL`                  | Isolated destructive-test database with a separate `test` name segment, e.g. `oclr_test`; never set it on production                     |
 
-Next.js reads `.env.local` for local development. CLI scripts expect exported environment variables or a secret manager injecting them. Do not place real secrets in command history, checked-in compose files or CI logs. A secret manager is preferred in production.
+Next.js reads `.env.local` for local development. Production shell commands expect exported environment variables or a secret manager injecting them. Do not place real secrets in command history, checked-in compose files or CI logs. A secret manager is preferred in production.
 
 ## Tournament configuration cutover
 
@@ -150,27 +150,89 @@ npm --version
 
 The base Node.js 22 packages meet the application's **>=22.13** requirement; update them through your managed repositories. Node.js 24 is the CI reference, but versioned `nodejs24` packages can expose `node-24`/`npm-24` rather than standard names. If choosing that runtime, configure a consistent standard `node`/`npm` PATH for both build and service, and adjust the service executable; do not mix runtimes. Package availability is in the [official Rocky repository](https://download.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/Packages/n/).
 
-Provision an unprivileged service account and a release directory, for example `oclr` and `/opt/oclr/current`. These are examples to create/adapt, not existing accounts. Place the checked-out release there; never run Node as root. The service account needs read access to the build/content and write access to `.next/cache`; the deployment operator needs permission to install/build the release. Keep secrets in a managed environment or restricted `/etc/oclr/runtime.env`, not Git. Configure approved APP_URL/OAuth/privacy/Admin values from `.env.example` and the **runtime** database connection below. For the separate proxy, set OCLR_BIND_HOST to this host's actual private IP and PORT=3000. Do not expose the app port to the Internet.
+Use this topology: **Browser → existing Nginx (HTTPS) → Rocky app (private port 3000) → existing PostgreSQL (TLS)**. The public domain must point to Nginx, not directly to Node. Replace all uppercase/example values below with your actual settings. No production services have been provisioned by this repository.
 
-Take a recoverable database backup. Inject MIGRATION_DATABASE_URL for this setup invocation only (using your secret manager, not a literal shell-history password), then:
+**1. Prepare your existing database.** Follow [the PostgreSQL steps below](#existing-separate-postgresql-deployment-steps). Obtain a runtime URL, a separate migration URL and the trusted CA certificate from its administrator. Do not install PostgreSQL on the app host. Permit database connections only from the app/deployment host's actual private IP.
+
+**2. Create an app account and first release directory.** On the Rocky application host, run these as your sudo-capable operator (fresh-install examples; reuse an existing account/path when appropriate):
 
 ```sh
-npm run production:setup -- --dry-run
-npm run production:setup -- --apply
-npm run production:start -- --dry-run
+sudo useradd --system --create-home --home-dir /var/lib/oclr --shell /bin/bash oclr
+sudo install -d -o oclr -g oclr -m 0750 /opt/oclr/releases
+sudo -u oclr -H git clone https://github.com/PhoenixEmik/OCLR-website.git /opt/oclr/releases/first
+sudo -u oclr -H git -C /opt/oclr/releases/first rev-parse HEAD
+sudo install -d -o root -g oclr -m 0750 /etc/oclr
 ```
 
-These are operator-invoked preparation/start commands, **not completion of #10's automated deployment gate**. Real setup requires explicit `--apply`; the operator must first verify the target and backup. Automatic backup verification, deployment serialization, migration drift detection, managed service switching/health rollback and two consecutive staging upgrades remain future #10 work. Do not treat a successful build or localhost smoke test as a production rollout.
+Use a reviewed commit/release, not an unreviewed moving branch. Node/npm/setup run as `oclr`, never root. Do not run this first-clone command over an existing release directory.
 
-Setup installs locked dependencies including build tools, runs migrations with the migration URL, runs release preflight with the runtime URL, then builds. Failed steps stop the sequence; there is no automated legacy import, account provisioning, publication or rollback. The migration secret is excluded from build/start subprocesses. Start only checks configuration/schema and serves an existing build; restarting never runs migrations.
-
-Adapt [oclr.service](examples/oclr.service), then install it as `/etc/systemd/system/oclr.service`. The example uses `/usr/bin/node`; verify that path and the working directory. Make runtime.env root-owned mode 0600; systemd reads it before switching to the service user. Do not include MIGRATION_DATABASE_URL in that file. After reviewing the adapted unit:
+**3. Write the runtime configuration.** Create `/etc/oclr/runtime.env` with your editor (`sudoedit /etc/oclr/runtime.env`). Use plain `KEY='value'` assignments, one per line, without `export`; quote values containing spaces, `&` or `$`. This must be a trusted administrator-written file: the operator shell sources it and systemd reads the same assignments.
 
 ```sh
+APP_URL='https://oclr.example.com'
+DATABASE_URL='postgresql://oclr_runtime:ENCODED_PASSWORD@DB_HOST:5432/oclr?sslmode=verify-full&sslrootcert=/etc/oclr/db-ca.pem'
+OSU_CLIENT_ID='YOUR_OSU_CLIENT_ID'
+OSU_CLIENT_SECRET='YOUR_OSU_CLIENT_SECRET'
+ADMIN_OSU_IDS='YOUR_VERIFIED_ADMIN_OSU_ID'
+PRIVACY_CONTACT_OSU_ID='YOUR_APPROVED_PUBLIC_CONTACT_OSU_ID'
+PRIVACY_RETENTION_NOTICE='YOUR_APPROVED_RETENTION_AND_DELETION_NOTICE'
+OCLR_BIND_HOST='APP_PRIVATE_IP'
+PORT=3000
+```
+
+Use the real public domain for APP_URL and register **exactly** `https://YOUR_REAL_DOMAIN/auth/osu/callback` in your osu! OAuth application. ADMIN_OSU_IDS contains verified numeric IDs, not usernames. The privacy contact must be an approved global Admin; set the actual retention policy. OCLR_BIND_HOST is the Rocky host's own private IP, not Nginx's IP. Keep migration credentials out of this runtime file. Protect it and install the supplied DB CA:
+
+```sh
+sudo chown root:oclr /etc/oclr/runtime.env
+sudo chmod 0640 /etc/oclr/runtime.env
+sudo install -o root -g oclr -m 0640 /PATH/TO/PROVIDED_DB_CA.pem /etc/oclr/db-ca.pem
+```
+
+Keep `.env.local` and other local environment files out of release directories. The shell script never sources them; Next.js/Drizzle themselves can still load Next.js environment files. Do not paste secrets into Git, chat, command arguments or shell history.
+
+**4. Back up and prepare the release.** Verify a recoverable backup of the intended external database first. Then open an unprivileged operator shell:
+
+```sh
+sudo -u oclr -H bash
+cd /opt/oclr/releases/first
+set -a
+. /etc/oclr/runtime.env
+set +a
+bash scripts/production.sh setup --dry-run
+read -r -s -p 'Migration database URL: ' MIGRATION_DATABASE_URL
+printf '\n'
+export MIGRATION_DATABASE_URL
+bash scripts/production.sh setup --apply
+unset MIGRATION_DATABASE_URL
+exit
+```
+
+The hidden prompt takes the **migration** connection URL, with the same database/verified TLS settings as the runtime URL and its separate migration-role credentials. It is not written into shell history. Check each command succeeds; stop if setup reports an error. Setup installs locked dependencies, runs committed migrations with migration credentials, checks runtime configuration/schema and builds. Only the migration subprocess receives the privileged URL. Dry-run executes nothing and does not validate real credentials or connectivity. The npm aliases invoke the same Bash script.
+
+These are preparation/start commands, **not completion of #10's deployment automation**. Setup requires explicit `--apply` after operator backup/target review. Automatic backup verification, serialization, migration drift detection, managed service switching/health rollback and two staging upgrades remain #10 work. There is no automatic legacy JSON import, account creation, publication or database rollback.
+
+**5. Start under systemd.** For this fresh installation, point `current` at the prepared release and install the supplied unit:
+
+```sh
+sudo ln -s /opt/oclr/releases/first /opt/oclr/current
+sudo install -o root -g root -m 0644 /opt/oclr/current/docs/examples/oclr.service /etc/systemd/system/oclr.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now oclr
 sudo systemctl status oclr
 ```
+
+Adapt [oclr.service](examples/oclr.service) if your account/directories differ. It runs `/bin/bash scripts/production.sh start` and uses `/usr/local/bin:/usr/bin:/bin` to resolve Node/npm. Startup checks configuration/schema and executes Node directly; it never migrates/builds. Runtime credentials are already passed by systemd's EnvironmentFile. If startup fails, inspect `sudo journalctl -u oclr -n 100 --no-pager` privately; do not post unredacted logs.
+
+**6. Configure your existing Nginx.** Follow [the separate-Nginx example below](#existing-separate-nginx-example-configuration). Allow inbound app-port access only from the actual Nginx source IP using your host/cloud firewall. Do not open port 3000 to the Internet. Keep SELinux enforcing.
+
+**7. Verify from Nginx, then the browser.** From the Nginx host, replace both examples before running:
+
+```sh
+curl -I -H 'Host: YOUR_REAL_DOMAIN' http://APP_PRIVATE_IP:3000/
+curl -I https://YOUR_REAL_DOMAIN/
+```
+
+Confirm the upstream is reachable and HTTPS has a valid certificate with no redirect loop. Then sign in through osu!, verify logout, check that ordinary accounts cannot access Admin, and rehearse registration/staff workflows in an isolated staging tournament. Never run destructive test fixtures against production. A browser request alone does not verify OAuth or database writes. This repository has not tested your actual Rocky/external DB/Nginx deployment.
 
 During upgrades, build a separate release directory and switch the service only after setup succeeds; preserve the last verified release. Do not run npm ci/build inside the release currently serving users. Restrict inbound app-port access to the actual Nginx source IP with your host/cloud firewall. Keep SELinux enforcing; do not disable it to solve connectivity failures. This repository has not verified execution on the actual Rocky host.
 
