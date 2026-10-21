@@ -32,7 +32,15 @@ test("public pages meet automated WCAG A/AA checks and expose security headers",
     page.getByRole("link", { name: "Skip to content" }),
   ).toBeFocused();
   if (isMobile) {
-    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    // Continue keyboard navigation from the visible skip link. Clicking through
+    // that focused overlay is not an operable path and can obscure the Menu.
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "OCLR home" })).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(
+      page.getByRole("button", { name: "Menu", exact: true }),
+    ).toBeFocused();
+    await page.keyboard.press("Enter");
     await expect(
       page.getByRole("navigation", { name: "Main navigation" }),
     ).toBeVisible();
