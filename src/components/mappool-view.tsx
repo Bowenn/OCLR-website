@@ -115,7 +115,7 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
           <dl>
             {fields.map((value, i) => (
               <div key={columns[i]}>
-                <dt>{columns[i]}</dt>
+                <dt>{tr(columns[i])}</dt>
                 <dd>{value}</dd>
               </div>
             ))}

@@ -25,10 +25,7 @@ export default async function PoolPage({
         {tr("← All mappools")}
       </Link>
       <PageHeading
-        eyebrow={tr("{value0} STAGE / {value1}", {
-          value0: pool.stage === "group" ? "GROUP" : "KNOCKOUT",
-          value1: pool.roundName,
-        })}
+        eyebrow={`${tr(pool.stage === "group" ? "Group Stage" : "Knockout Stage")} / ${pool.roundName}`}
         title={pool.name}
       >
         {tr("Published · Last updated ")}

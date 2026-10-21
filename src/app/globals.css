@@ -3845,3 +3845,8 @@ html:lang(zh-Hant) .eyebrow {
     gap: 0.2rem 0.65rem;
   }
 }
+
+/* News categories are localized labels, not uppercase machine identifiers. */
+.news-kind {
+  text-transform: none;
+}

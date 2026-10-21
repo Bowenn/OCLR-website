@@ -1,6 +1,7 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { publicNewsKind } from "@/lib/public-news-model";
 import { publicNewsItem } from "@/lib/public-news";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
@@ -34,8 +35,9 @@ export default async function Announcement({
         {tr("← All announcements")}
       </Link>
       <div className="spaced">
+        <p className="eyebrow news-kind">{publicNewsKind(item, tr)}</p>
         <PageHeading
-          eyebrow={`${item.future ? "Scheduled for " : ""}${tr(formatDate(item.at, item.timeZone, tr.locale))}`}
+          eyebrow={`${item.future ? tr("Scheduled for ") : ""}${tr(formatDate(item.at, item.timeZone, tr.locale))}`}
           title={item.title}
         >
           {item.summary}

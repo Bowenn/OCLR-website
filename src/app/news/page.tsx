@@ -1,5 +1,6 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
+import { publicNewsKind } from "@/lib/public-news-model";
 import { publicNews } from "@/lib/public-news";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
@@ -21,9 +22,7 @@ export default async function News() {
           {announcements.map((a) => (
             <article key={a.slug}>
               <div>
-                <p className="eyebrow">
-                  {a.future ? tr("SCHEDULED") : a.kind.toUpperCase()}
-                </p>
+                <p className="eyebrow news-kind">{publicNewsKind(a, tr)}</p>
                 <p className="muted small">
                   {a.future ? tr("Scheduled for ") : ""}
                   {tr(formatDate(a.at, a.timeZone, tr.locale))}

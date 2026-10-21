@@ -55,7 +55,7 @@ export function PublicTeams({
                   aria-pressed={group === value}
                   onClick={() => setGroup(value)}
                 >
-                  {label}
+                  {value ? label : tr("All teams")}
                 </button>
               ),
             )}

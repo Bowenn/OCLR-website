@@ -20,6 +20,22 @@ export type PublicNewsItem = {
   source: { label: string; url: string } | null;
   sections: { heading: string; body: string }[];
 };
+/** Display labels are interface copy; never expose internal event identifiers. */
+export function publicNewsKind(
+  item: Pick<PublicNewsItem, "kind" | "future">,
+  tr: AppTranslator = english,
+) {
+  if (item.future) return tr("Scheduled");
+  const labels: Record<PublicNewsItem["kind"], string> = {
+    announcement: tr("Announcement"),
+    schedule: tr("Schedule"),
+    registration: tr("Registration"),
+    mappool: tr("Mappool"),
+    fixture: tr("Fixture"),
+    result: tr("Result"),
+  };
+  return labels[item.kind];
+}
 export type NewsEdition = { edition: Edition; locked: boolean };
 export type OfficialNewsEvent = {
   editionSlug: string;

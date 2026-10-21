@@ -127,3 +127,71 @@ describe("read-only deterministic public News", () => {
     );
   });
 });
+
+describe("localized News categories", () => {
+  it("uses explicit display labels for every kind instead of raw enums", async () => {
+    const { publicNewsKind } = await import("../../src/lib/public-news-model");
+    const { createTranslator } = await import("next-intl");
+    const { appTranslator } = await import("../../src/i18n/translate");
+    for (const [locale, expected] of [
+      [
+        "en",
+        [
+          "Announcement",
+          "Schedule",
+          "Registration",
+          "Mappool",
+          "Fixture",
+          "Result",
+          "Scheduled",
+        ],
+      ],
+      ["zh-Hans", ["公告", "赛程", "报名", "图池", "对局", "赛果", "预告"]],
+      ["zh-Hant", ["公告", "賽程", "報名", "圖池", "對局", "賽果", "預告"]],
+    ] as const) {
+      const catalog = await import(`../../messages/${locale}.json`);
+      const t = createTranslator({ locale, messages: catalog.default.ui });
+      const tr = appTranslator(t, locale);
+      const kinds = [
+        "announcement",
+        "schedule",
+        "registration",
+        "mappool",
+        "fixture",
+        "result",
+      ] as const;
+      expect(
+        kinds.map((kind) => publicNewsKind({ kind, future: false }, tr)),
+      ).toEqual(expected.slice(0, 6));
+      expect(publicNewsKind({ kind: "registration", future: true }, tr)).toBe(
+        expected[6],
+      );
+      const source =
+        "{name} for {round} is published. View the released beatmaps and slot configuration.";
+      if (locale !== "en") {
+        const english = (await import("../../messages/en.json")).default.ui;
+        for (const [key, source] of Object.entries(english))
+          if (/\bmappools?\b/i.test(source))
+            expect(catalog.default.ui[key], source).toContain(
+              locale === "zh-Hans" ? "图池" : "圖池",
+            );
+      }
+      const summary = tr(source, { name: "test", round: "1" });
+      expect(summary).toContain("test");
+      expect(summary).toContain("1");
+      if (locale !== "en") {
+        expect(summary).toContain(
+          locale === "zh-Hans"
+            ? "轮次「1」的图池「test」已发布"
+            : "輪次「1」的圖池「test」已發布",
+        );
+        expect(tr("Mappooler")).toBe(
+          locale === "zh-Hans" ? "选图员" : "選圖員",
+        );
+        expect(tr("Player pool")).toBe(
+          locale === "zh-Hans" ? "选手池" : "選手池",
+        );
+      }
+    }
+  });
+});
