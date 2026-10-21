@@ -22,18 +22,18 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
       ? ["abort"]
       : []),
     ...(state === "aborted" ? ["recover"] : []),
-    ...(state !== "setup" ? ["publish"] : []),
+    ...(state !== "setup" && !data.session?.publicSnapshot ? ["publish"] : []),
   ];
   const labels: Record<string, string> = {
     ready: "Freeze draft setup",
-    start: "Start draft",
+    start: "Start & release draft",
     pause: "Pause draft",
     resume: "Resume draft",
     undo: "Void last pick",
     finalize: "Finalize rosters",
     abort: "Abort draft",
     recover: "Reopen setup",
-    publish: "Publish current state",
+    publish: "Release draft board",
   };
   function actionPayload(action: string) {
     return {
@@ -64,7 +64,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
                     : action === "finalize"
                       ? "Finalize the drafted rosters. Normal roster edits will be locked."
                       : action === "start"
-                        ? "Start the configured captain turns. Only the active captain can pick."
+                        ? "Release this approved draft and start the captain turns. Confirmed picks and turn changes will appear live. Only the active captain can pick."
                         : "Reopen draft setup. Review the existing order and rosters before freezing again."
             }
             url={`/api/admin/tournaments/${slug}/draft`}
@@ -136,9 +136,7 @@ export function StaffDraftRoom({
       }
     : null;
   const canPick = Boolean(
-    connected &&
-    session?.state === "live" &&
-    session.version === session.publishedRevision,
+    connected && session?.state === "live" && Boolean(session.publicSnapshot),
   );
   return (
     <>
@@ -152,14 +150,6 @@ export function StaffDraftRoom({
           {feedback.message}
         </p>
       )}
-      {session &&
-        session.state !== "setup" &&
-        session.version !== session.publishedRevision && (
-          <p className="notice">
-            Committed changes await publication. The spectator board still shows
-            the last approved snapshot.
-          </p>
-        )}
       {session && session.state !== "setup" && (
         <>
           {currentTeam && session && (
@@ -181,7 +171,7 @@ export function StaffDraftRoom({
               unavailableMessage={
                 !connected
                   ? "Reconnecting. Wait for the authoritative snapshot."
-                  : "Picking is unavailable until the live turn is published."
+                  : "Picking is available during a released live turn."
               }
               pool={data.availablePool}
               staff

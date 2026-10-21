@@ -22,7 +22,7 @@ export function TeamManager({
       <h2>Configure captain teams</h2>
       <p className="muted small">
         Use approved team names. Roster capacity includes the captain; leave it
-        blank when not confirmed. Changes unpublish edited team identities.
+        blank when not confirmed. Public identities update on Save.
       </p>
       {values.map((c, index) => (
         <fieldset key={c.userId}>

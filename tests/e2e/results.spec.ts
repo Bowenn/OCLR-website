@@ -161,7 +161,7 @@ test.describe("private referee review and Admin publication", () => {
         page.getByText("Pending approval · Not published"),
       ).toBeVisible();
       await expect(
-        page.getByRole("button", { name: "Approve proposed result" }),
+        page.getByRole("button", { name: "Approve & publish result" }),
       ).toHaveCount(0);
       let review = await (await context.request.get(endpoint)).json();
       const command = {
@@ -185,20 +185,13 @@ test.describe("private referee review and Admin publication", () => {
       await context.addCookies([adminCookie]);
       await page.reload();
       await page
-        .getByRole("button", { name: "Approve proposed result", exact: true })
-        .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
-      await expect(
-        page.getByText("Current proposal: 2 : 1 · Approved", { exact: true }),
-      ).toBeVisible();
-      await page
         .getByLabel(
           "I reviewed the effect on dependent fixtures and public standings or brackets",
           { exact: true },
         )
         .check();
       await page
-        .getByRole("button", { name: "Publish approved result", exact: true })
+        .getByRole("button", { name: "Approve & publish result", exact: true })
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(

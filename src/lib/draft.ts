@@ -135,6 +135,25 @@ function board(data: Data): DraftBoard {
     pool: data.edition?.poolPublished ? availablePool(data) : null,
   };
 }
+function snapshotUpdate(data: Data) {
+  const session = data.session!;
+  const snapshot = board(data);
+  const captainSnapshot: CaptainBoard = {
+    ...snapshot,
+    capacities: Object.fromEntries(
+      data.teams.map(({ team }) => [team.id, team.capacity]),
+    ),
+    engineRevision: session.version,
+    turnSequence: session.turnSequence,
+    eligiblePool: availablePool(data),
+  };
+  return {
+    publicSnapshot: snapshot,
+    captainSnapshot,
+    publicVersion: snapshot.version,
+    publishedRevision: session.version,
+  };
+}
 async function acceptedPlayers(tx: Reader, slug: string) {
   return tx
     .select()
@@ -188,7 +207,10 @@ export async function publicDraft(slug: string) {
   return db().transaction(
     async (tx) => {
       const [row] = await tx
-        .select({ snapshot: draftSessions.publicSnapshot })
+        .select({
+          snapshot: draftSessions.publicSnapshot,
+          captain: draftSessions.captainSnapshot,
+        })
         .from(draftSessions)
         .where(eq(draftSessions.editionSlug, slug));
       if (!row?.snapshot) return null;
@@ -220,9 +242,12 @@ export async function publicDraft(slug: string) {
         .select({ poolPublished: editionState.poolPublished })
         .from(editionState)
         .where(eq(editionState.slug, slug));
-      return visibility?.poolPublished
-        ? row.snapshot
-        : { ...row.snapshot, pool: null };
+      return {
+        ...row.snapshot,
+        pool: visibility?.poolPublished
+          ? (row.captain?.eligiblePool ?? row.snapshot.pool)
+          : null,
+      };
     },
     { isolationLevel: "repeatable read" },
   );
@@ -319,24 +344,11 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       if (session.state === "setup")
         throw new HttpError(409, "Freeze and review setup before publication.");
       const data = await draftData(tx, slug);
-      const snapshot = board(data);
-      const captainSnapshot: CaptainBoard = {
-        ...snapshot,
-        capacities: Object.fromEntries(
-          data.teams.map(({ team }) => [team.id, team.capacity]),
-        ),
-        engineRevision: session.version,
-        turnSequence: session.turnSequence,
-        eligiblePool: availablePool(data),
-      };
+      const publication = snapshotUpdate(data);
+      const snapshot = publication.publicSnapshot;
       await tx
         .update(draftSessions)
-        .set({
-          publicSnapshot: snapshot,
-          captainSnapshot,
-          publicVersion: snapshot.version,
-          publishedRevision: session.version,
-        })
+        .set(publication)
         .where(eq(draftSessions.id, session.id));
       await tx.insert(editionEvents).values({
         editionSlug: slug,
@@ -577,6 +589,35 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       .update(draftSessions)
       .set(update)
       .where(eq(draftSessions.id, session.id));
+    if (
+      command.action !== "recover" &&
+      (session.publicSnapshot || command.action === "start")
+    ) {
+      const data = await draftData(tx, slug);
+      const identitiesPublic = data.teams.every(
+        (t) => t.team.identityPublished && t.captainPublished,
+      );
+      // Privacy withdrawal must not prevent an operator from pausing/aborting safely.
+      const publication = identitiesPublic
+        ? snapshotUpdate(data)
+        : {
+            publicSnapshot: null,
+            captainSnapshot: null,
+            publicVersion: session.publicVersion + 1,
+            publishedRevision: -1,
+          };
+      if (!identitiesPublic && ["start", "resume"].includes(command.action))
+        throw new HttpError(
+          409,
+          "Release the approved captain and team identities before starting or resuming the public draft.",
+        );
+      await tx
+        .update(draftSessions)
+        .set(publication)
+        .where(eq(draftSessions.id, session.id));
+      update.publicVersion = publication.publicVersion;
+      update.publishedRevision = publication.publishedRevision;
+    }
     await tx.insert(editionEvents).values({
       editionSlug: slug,
       actorId: actor.osuId,
@@ -690,12 +731,12 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       session.state !== "live" ||
       session.version !== value.expectedVersion ||
       session.turnIndex !== value.turnIndex ||
-      session.publishedRevision !== session.version ||
+      !session.publicSnapshot ||
       !team
     )
       throw new HttpError(
         409,
-        "Draft state changed or is awaiting publication. Refresh the authoritative snapshot.",
+        "Draft state changed or has not been released. Refresh the authoritative snapshot.",
       );
     if (!staff && team?.captainId !== actor.osuId)
       throw new HttpError(403, "It is another captain’s turn.");
@@ -754,6 +795,11 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
         state: nextTurn === session.turnSequence.length ? "completed" : "live",
       })
       .where(eq(draftSessions.id, session.id));
+    const publication = snapshotUpdate(await draftData(tx, slug));
+    await tx
+      .update(draftSessions)
+      .set(publication)
+      .where(eq(draftSessions.id, session.id));
     await tx.insert(editionEvents).values({
       editionSlug: slug,
       actorId: actor.osuId,
@@ -767,7 +813,11 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
         teamId: team.id,
         playerId: value.candidateId,
         before: { turnIndex: session.turnIndex, version: session.version },
-        after: { turnIndex: nextTurn, version: nextVersion },
+        after: {
+          turnIndex: nextTurn,
+          version: nextVersion,
+          publicVersion: publication.publicVersion,
+        },
       },
     });
     return {

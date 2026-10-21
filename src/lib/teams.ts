@@ -134,7 +134,6 @@ export async function updateTeams(actor: User, slug: string, input: unknown) {
             .set({
               name: value.name,
               capacity: value.capacity,
-              identityPublished: false,
             })
             .where(eq(teams.id, existing.id));
           teamId = existing.id;

@@ -806,8 +806,6 @@ export async function fixtureCommand(
         });
         return;
       }
-      if (before?.publishedAt)
-        throw new HttpError(409, "Unpublish this fixture before amending it.");
       const official = await officialTeams(tx, slug);
       if (
         (c.homeTeamId !== null && c.homeTeamId === c.awayTeamId) ||
@@ -878,7 +876,44 @@ export async function fixtureCommand(
       )
         throw new HttpError(
           409,
-          "Withdraw the active result and unpublish the fixture before amending teams, round, pool or progression. Saved review history is preserved.",
+          "Withdraw the active proposal before amending teams, round, pool or progression. Use result review for score corrections.",
+        );
+      if (
+        before &&
+        (before.homeTeamId !== c.homeTeamId ||
+          before.awayTeamId !== c.awayTeamId ||
+          before.roundId !== c.roundId ||
+          before.mappoolId !== c.mappoolId ||
+          before.homeSourceId !== c.homeSourceId ||
+          before.homeSourceOutcome !== c.homeSourceOutcome ||
+          before.awaySourceId !== c.awaySourceId ||
+          before.awaySourceOutcome !== c.awaySourceOutcome)
+      ) {
+        const approved = await tx
+          .select({ revision: resultRevisions.revision })
+          .from(resultRevisions)
+          .where(
+            and(
+              eq(resultRevisions.fixtureId, before.id),
+              isNotNull(resultRevisions.approvedAt),
+            ),
+          )
+          .limit(1);
+        if (approved.length)
+          throw new HttpError(
+            409,
+            "Approved result history protects this fixture's participants, round, pool and progression. Create a replacement fixture; use result review for score corrections.",
+          );
+      }
+      if (
+        before &&
+        c.status === "cancelled" &&
+        result &&
+        (result.state !== "draft" || result.publishedRevision !== null)
+      )
+        throw new HttpError(
+          409,
+          "Withdraw the active result through result review before cancelling this fixture.",
         );
       const values = {
         label: c.label,

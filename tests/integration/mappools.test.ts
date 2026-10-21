@@ -446,15 +446,19 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
     const [published] = await publicMappools(edition.slug, pool.id);
     expect(published.fmMode).toBe("force_mod");
     expect(published.fmRestrictions).toBe("Synthetic test policy only");
-    await expect(
-      mappoolCommand(mapper, edition.slug, {
-        ...confirm,
-        action: "entry_remove",
-        poolId: pool.id,
-        expectedVersion: data.pools[0].version,
-        entryId: nm[0].id,
-      }),
-    ).rejects.toMatchObject({ status: 409 });
+    data = await mappoolCommand(mapper, edition.slug, {
+      ...confirm,
+      action: "entry_remove",
+      poolId: pool.id,
+      expectedVersion: data.pools[0].version,
+      entryId: nm[0].id,
+    });
+    expect(
+      (await publicMappools(edition.slug, pool.id))[0].entries.some(
+        (e) => e.id === nm[0].id,
+      ),
+    ).toBe(false);
+    expect(data.pools[0].publishedAt).not.toBeNull();
     data = await mappoolCommand(mapper, edition.slug, {
       ...confirm,
       action: "pool_publish",

@@ -73,6 +73,14 @@ const commandSchema = z.discriminatedUnion("action", [
   z
     .object({
       ...common,
+      action: z.literal("approve_publish"),
+      revision: z.number().int().positive(),
+      progressionAcknowledged: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      ...common,
       action: z.literal("reject"),
       decisionNote: z.string().trim().min(1).max(1000),
       revision: z.number().int().positive(),
@@ -511,8 +519,15 @@ export async function resultCommand(
         ? "publish_results"
         : "approve_results";
   await assertCapability(actor, capability, slug);
+  if (c.action === "approve_publish")
+    await assertCapability(actor, "publish_results", slug);
   const hash = commandHash(c);
-  const publicChanged = ["publish", "unpublish", "void"].includes(c.action);
+  const publicChanged = [
+    "approve_publish",
+    "publish",
+    "unpublish",
+    "void",
+  ].includes(c.action);
   try {
     await db().transaction(async (tx) => {
       await tx
@@ -527,6 +542,8 @@ export async function resultCommand(
         .for("update");
       const context = await fixtureForReview(actor, slug, fixtureId, tx);
       await assertCapability(actor, capability, slug, tx);
+      if (c.action === "approve_publish")
+        await assertCapability(actor, "publish_results", slug, tx);
       if (await replay(tx, actor, fixtureId, c.requestKey, hash)) return;
       const state = context.result;
       if (
@@ -581,11 +598,15 @@ export async function resultCommand(
           })
           .where(eq(matchResults.fixtureId, fixtureId));
         detail = { revision, importId: record.id, series: proposal.series };
-      } else if (c.action === "approve" || c.action === "publish") {
+      } else if (
+        c.action === "approve" ||
+        c.action === "publish" ||
+        c.action === "approve_publish"
+      ) {
         if (
           context.fixture.status === "cancelled" ||
           c.revision !== state.currentRevision ||
-          state.state !== (c.action === "approve" ? "submitted" : "approved")
+          state.state !== (c.action === "publish" ? "approved" : "submitted")
         )
           throw new HttpError(
             409,
@@ -658,7 +679,7 @@ export async function resultCommand(
             409,
             "The reviewed proposal no longer matches the verified source.",
           );
-        if (c.action === "approve") {
+        if (c.action !== "publish") {
           const [oldPublished] = state.publishedRevision
             ? await tx
                 .select()
@@ -723,10 +744,11 @@ export async function resultCommand(
               });
             }
           }
-        } else {
+        }
+        if (c.action !== "approve") {
           if (
-            !revision.approvedAt ||
-            !revision.approvedBy ||
+            (c.action === "publish" &&
+              (!revision.approvedAt || !revision.approvedBy)) ||
             !context.fixture.publishedAt
           )
             throw new HttpError(

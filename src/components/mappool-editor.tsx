@@ -390,7 +390,7 @@ export function MappoolEditor({
     .filter((e) => e.category === category)
     .sort((a, b) => a.position - b.position);
   const change = { url: `/api/admin/tournaments/${slug}/mappools` };
-  const editable = Boolean(pool && !pool.publishedAt && !pool.lockedAt);
+  const editable = Boolean(pool && !pool.lockedAt);
   const activeTask = editable ? task : "maps";
   function resetContext() {
     setTask("maps");
@@ -576,21 +576,23 @@ export function MappoolEditor({
               </h2>
             </div>
             <div className="actions">
-              <Save
-                change={change}
-                label={pool.publishedAt ? "Unpublish pool" : "Publish pool"}
-                description={
-                  pool.publishedAt
-                    ? "Hide this pool from public queries. History is retained."
-                    : "Release this pool and its current maps publicly. Confirm that FM details and every map are approved."
-                }
-                payload={{
-                  action: "pool_publish",
-                  poolId: pool.id,
-                  expectedVersion: pool.version,
-                  published: !pool.publishedAt,
-                }}
-              />
+              {!pool.lockedAt && (
+                <Save
+                  change={change}
+                  label={pool.publishedAt ? "Unpublish pool" : "Publish pool"}
+                  description={
+                    pool.publishedAt
+                      ? "Hide this pool from public queries. History is retained."
+                      : "Release this pool and its current maps publicly. Confirm that FM details and every map are approved."
+                  }
+                  payload={{
+                    action: "pool_publish",
+                    poolId: pool.id,
+                    expectedVersion: pool.version,
+                    published: !pool.publishedAt,
+                  }}
+                />
+              )}
               {pool.publishedAt && (
                 <Link
                   className="text-link small"
@@ -608,10 +610,7 @@ export function MappoolEditor({
             </p>
           ) : (
             pool.publishedAt && (
-              <p className="muted small">
-                Published pools are read-only. Unpublish this pool before
-                editing.
-              </p>
+              <p className="muted small">Public changes appear on Save.</p>
             )
           )}
           {!editable && (

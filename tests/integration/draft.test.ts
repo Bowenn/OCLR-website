@@ -330,17 +330,15 @@ describe.skipIf(!url)(
       ).rejects.toMatchObject({ status: 409 });
       expect(await db().select().from(draftPicks)).toHaveLength(2);
     });
-    it("does not expose committed unpublished picks or internal actor/audit data through public/captain snapshots", async () => {
+    it("atomically publishes live picks without exposing private pool or operator details", async () => {
       const original = await publicDraft(edition.slug);
       await pickPlayer(fixture.staff, edition.slug, await input());
-      expect(
-        (await ownTeam(fixture.a.osuId, edition.slug))?.members,
-      ).toHaveLength(1);
-      expect(await publicDraft(edition.slug)).toEqual(original);
-      expect((await captainDraft(fixture.b, edition.slug))?.picks).toHaveLength(
-        0,
+      expect((await publicDraft(edition.slug))?.version).toBeGreaterThan(
+        original!.version,
       );
-      await command("publish");
+      expect((await captainDraft(fixture.b, edition.slug))?.picks).toHaveLength(
+        1,
+      );
       const publicData = await publicDraft(edition.slug);
       expect(publicData?.picks).toHaveLength(1);
       expect(
@@ -403,9 +401,9 @@ describe.skipIf(!url)(
       await command("resume");
       await expect(
         pickPlayer(fixture.staff, edition.slug, await input()),
-      ).rejects.toMatchObject({ status: 409 });
+      ).resolves.toMatchObject({ corrected: false });
     });
-    it("undo is explicit, preserves history and blocks new picks until correction/resume is published", async () => {
+    it("undo is explicit and publishes the correction atomically before resumed picks", async () => {
       const value = await input();
       await pickPlayer(fixture.a, edition.slug, value);
       await command("publish");
@@ -417,11 +415,7 @@ describe.skipIf(!url)(
       expect(
         state.members.filter((m) => m.membership.origin === "draft"),
       ).toHaveLength(0);
-      expect((await publicDraft(edition.slug))?.picks).toHaveLength(1);
-      expect(
-        (await ownTeam(fixture.a.osuId, edition.slug))?.members,
-      ).toHaveLength(2);
-      await command("publish");
+      expect((await publicDraft(edition.slug))?.picks).toHaveLength(0);
       expect((await publicDraft(edition.slug))?.picks).toHaveLength(0);
       expect(
         (await ownTeam(fixture.a.osuId, edition.slug))?.members,

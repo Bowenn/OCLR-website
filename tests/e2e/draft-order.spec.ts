@@ -125,7 +125,10 @@ test.describe("reviewed draft order setup", () => {
         .click();
       await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
-        page.getByRole("button", { name: "Start draft", exact: true }),
+        page.getByRole("button", {
+          name: "Start & release draft",
+          exact: true,
+        }),
       ).toBeVisible();
       await expect(selector).toHaveCount(0);
       saved = await (await context.request.get(url)).json();

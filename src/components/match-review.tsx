@@ -29,7 +29,7 @@ function Operation({
       canConfirm={!needsExplanation || Boolean(decisionNote.trim())}
       label={label}
       title={label}
-      description={`Fixture: ${data.context.fixture.label}. ${action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "Review the selected result proposal before confirming."}`}
+      description={`Fixture: ${data.context.fixture.label}. ${action === "approve_publish" || action === "publish" || action === "void" ? "This changes public results and dependent standings or bracket slots. Review every dependent fixture before confirming." : "Review the selected result proposal before confirming."}`}
       url={`/api/admin/tournaments/${slug}/matches/${data.context.fixture.id}/results`}
       payload={{
         action,
@@ -585,14 +585,19 @@ export function MatchReviewPanel({
             <div className="actions">
               {state?.state === "submitted" && (
                 <>
-                  <Operation
-                    label="Approve proposed result"
-                    action="approve"
-                    data={data}
-                    slug={slug}
-                    extra={{ revision: state.currentRevision }}
-                    onError={setNotice}
-                  />
+                  {progression && (
+                    <Operation
+                      label="Approve & publish result"
+                      action="approve_publish"
+                      data={data}
+                      slug={slug}
+                      extra={{
+                        revision: state.currentRevision,
+                        progressionAcknowledged: true,
+                      }}
+                      onError={setNotice}
+                    />
+                  )}
                   <Operation
                     label="Reject proposed result"
                     action="reject"

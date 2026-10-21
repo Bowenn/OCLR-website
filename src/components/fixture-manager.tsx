@@ -924,7 +924,7 @@ export function FixtureManager({
               <div className="form-stack">
                 <p className="small muted">
                   {editing.publishedAt
-                    ? "Unpublish before editing fixture details."
+                    ? "Saved changes update this public fixture immediately."
                     : "Changes are private until publication."}
                 </p>
                 <ConfirmMutation
@@ -954,7 +954,7 @@ export function FixtureManager({
                 />
               </div>
             )}
-            {editing && (editing === "new" || !editing.publishedAt) && (
+            {editing && (
               <FixtureForm
                 key={
                   editing === "new" ? "new" : `${editing.id}-${editing.version}`

@@ -114,9 +114,9 @@ test.describe("published OBS browser-source rehearsal", () => {
     await page.waitForResponse(
       (res) => res.url().endsWith(endpoint) && res.status() === 200,
     );
-    await expect(selection).not.toContainText(fixture.players[0].username);
+    await expect(selection).toContainText(fixture.players[0].username);
     const withheld = await (await context.request.get(overlay)).text();
-    expect(withheld).not.toContain(fixture.players[0].username);
+    expect(withheld).toContain(fixture.players[0].username);
     expect(withheld).not.toContain(fixture.staff.username);
     expect(withheld).not.toContain(fixture.players[7].username);
     await command("publish");

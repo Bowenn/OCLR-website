@@ -282,10 +282,10 @@ export async function previewMappoolBatch(
   const c = parsed.data,
     pool = data.pools.find((p) => p.id === c.poolId);
   if (!pool) throw new HttpError(404, "Mappool not found.");
-  if (pool.version !== c.expectedVersion || pool.publishedAt || pool.lockedAt)
+  if (pool.version !== c.expectedVersion || pool.lockedAt)
     throw new HttpError(
       409,
-      "Refresh the pool. Published or locked pools cannot be edited.",
+      "Refresh the pool. Stale or completed-fixture pools cannot be edited.",
     );
   let rows;
   try {
@@ -401,10 +401,10 @@ export async function mappoolCommand(
       .from(mappools)
       .where(and(eq(mappools.id, c.poolId), eq(mappools.editionSlug, slug)));
     if (!pool) throw new HttpError(404, "Mappool not found.");
-    if (pool.version !== c.expectedVersion || pool.publishedAt || pool.lockedAt)
+    if (pool.version !== c.expectedVersion || pool.lockedAt)
       throw new HttpError(
         409,
-        "Refresh the pool. Published or locked pools cannot be edited.",
+        "Refresh the pool. Stale or completed-fixture pools cannot be edited.",
       );
     let ids: number[];
     let refreshEntries: (typeof mappoolEntries.$inferSelect)[] = [];
@@ -469,10 +469,10 @@ export async function mappoolCommand(
       .from(mappools)
       .where(and(eq(mappools.id, c.poolId), eq(mappools.editionSlug, slug)));
     if (!pool) throw new HttpError(404, "Mappool not found.");
-    if (pool.version !== c.expectedVersion || pool.publishedAt || pool.lockedAt)
+    if (pool.version !== c.expectedVersion || pool.lockedAt)
       throw new HttpError(
         409,
-        "Refresh the pool. Published or completed-fixture pools cannot be edited.",
+        "Refresh the pool. Stale or completed-fixture pools cannot be edited.",
       );
     const [entry] = c.entryId
       ? await db()
@@ -575,7 +575,7 @@ export async function mappoolCommand(
             .where(
               and(
                 eq(mappools.roundId, before.id),
-                sql`(${mappools.publishedAt} IS NOT NULL OR ${mappools.lockedAt} IS NOT NULL)`,
+                isNotNull(mappools.lockedAt),
               ),
             )
             .limit(1);
@@ -596,7 +596,7 @@ export async function mappoolCommand(
           if (used.length || completed.length)
             throw new HttpError(
               409,
-              "Published or completed-fixture round labels are protected. Unpublish editable pools first.",
+              "Completed-fixture round labels are protected; create a new round for later matches.",
             );
           [round] = await tx
             .update(tournamentRounds)
@@ -655,10 +655,10 @@ export async function mappoolCommand(
           409,
           "This pool changed. Refresh before confirming.",
         );
-      if (c.action !== "pool_publish" && (pool.publishedAt || pool.lockedAt))
+      if (pool.lockedAt)
         throw new HttpError(
           409,
-          "Unpublish before editing. A pool used by a completed fixture is immutable; create a new pool instead.",
+          "A pool used by an approved fixture is immutable; create a new pool instead.",
         );
       const entries = await tx
         .select()
@@ -847,6 +847,11 @@ export async function mappoolCommand(
         .from(mappoolEntries)
         .where(eq(mappoolEntries.poolId, pool.id))
         .orderBy(mappoolEntries.category, mappoolEntries.position);
+      if (afterPool.publishedAt && !afterEntries.length)
+        throw new HttpError(
+          409,
+          "A public pool must retain at least one verified map. Unpublish it before removing every map.",
+        );
       await tx.insert(mappoolEvents).values({
         editionSlug: slug,
         poolId: pool.id,

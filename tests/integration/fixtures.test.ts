@@ -397,7 +397,7 @@ describe.skipIf(!url)(
       ).toEqual([]);
       expect(updated.assignmentRevision).toBe(1);
     });
-    it("requires explicit publication/amendments and preserves UTC instants and timezone labels", async () => {
+    it("keeps safe edits public and preserves UTC instants and timezone labels", async () => {
       const [f] = (
         await fixtureCommand(admin, "test-cup", {
           ...body(),
@@ -413,14 +413,17 @@ describe.skipIf(!url)(
         published: true,
       });
       expect(published.fixtures[0].publishedAt).not.toBeNull();
-      await expect(
-        fixtureCommand(admin, "test-cup", {
-          ...body(true),
-          action: "edit",
-          fixtureId: f.id,
-          expectedVersion: 1,
-        }),
-      ).rejects.toMatchObject({ status: 409 });
+      const edited = await fixtureCommand(admin, "test-cup", {
+        ...body(true),
+        action: "edit",
+        fixtureId: f.id,
+        expectedVersion: 1,
+        label: "Updated public fixture",
+      });
+      expect(edited.fixtures[0].publishedAt).toEqual(
+        published.fixtures[0].publishedAt,
+      );
+      expect(edited.fixtures[0].label).toBe("Updated public fixture");
       expect(await db().select().from(matchResults)).toEqual([]);
     });
     it("stores approved rule configuration without inventing defaults and rejects source cycles", async () => {

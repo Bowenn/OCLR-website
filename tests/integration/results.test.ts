@@ -619,6 +619,72 @@ describe.skipIf(!url)(
         .where(eq(fixtures.id, child.id));
       expect(await publicBracket("test-cup")).toBeNull();
     });
+    it("approves and publishes a reviewed proposal atomically with explicit dependency review", async () => {
+      let view = (
+        await resultCommand(
+          referee,
+          "test-cup",
+          fixtureId,
+          submission(await imported()),
+        )
+      ).review;
+      const payload = () => ({
+        ...base(view),
+        action: "approve_publish",
+        revision: 1,
+        progressionAcknowledged: true,
+      });
+      const auditCount = (await db().select().from(resultAuditEvents)).length;
+      await expect(
+        resultCommand(referee, "test-cup", fixtureId, payload()),
+      ).rejects.toMatchObject({ status: 403 });
+      await expect(
+        resultCommand(admin, "test-cup", fixtureId, payload()),
+      ).rejects.toMatchObject({ status: 409 });
+      expect(
+        (await matchReview(admin, "test-cup", fixtureId)).current?.approvedAt,
+      ).toBeNull();
+      expect((await db().select().from(resultAuditEvents)).length).toBe(
+        auditCount,
+      );
+      await fixtureCommand(admin, "test-cup", {
+        ...confirm,
+        action: "publish",
+        fixtureId,
+        expectedVersion: view.context.fixture.version,
+        published: true,
+      });
+      view = await matchReview(admin, "test-cup", fixtureId);
+      const commands = [payload(), payload()];
+      const attempts = await Promise.allSettled(
+        commands.map((c) => resultCommand(admin, "test-cup", fixtureId, c)),
+      );
+      expect(attempts.filter((a) => a.status === "fulfilled")).toHaveLength(1);
+      expect(attempts.filter((a) => a.status === "rejected")).toHaveLength(1);
+      const winning =
+        commands[attempts.findIndex((a) => a.status === "fulfilled")];
+      await expect(
+        resultCommand(admin, "test-cup", fixtureId, winning),
+      ).resolves.toMatchObject({ publicChanged: true });
+      const saved = await matchReview(admin, "test-cup", fixtureId);
+      expect(saved.context.result).toMatchObject({
+        state: "approved",
+        publishedRevision: 1,
+      });
+      expect(saved.current?.approvedBy).toBe(admin.osuId);
+      expect(
+        (await publicFixture("test-cup", fixtureId))?.result,
+      ).toMatchObject({ homeWins: 2, awayWins: 1 });
+      expect(
+        (await db().select().from(resultAuditEvents)).filter(
+          (e) => e.action === "result_approve_publish",
+        ),
+      ).toHaveLength(1);
+      expect(
+        (await db().select().from(mappools).where(eq(mappools.id, poolId)))[0]
+          .lockedAt,
+      ).not.toBeNull();
+    });
     it("persists source evidence, requires referee review/Admin approval, and publishes only an approved revision", async () => {
       let view = await imported();
       expect(view.context.result).toMatchObject({

@@ -67,19 +67,7 @@ test.describe("isolated multi-captain rehearsal", () => {
     );
     return { context, page };
   }
-  async function publish(page: Page) {
-    await page
-      .getByRole("button", { name: "Publish current state", exact: true })
-      .click();
-    await page
-      .getByRole("dialog")
-      .getByRole("button", { name: "Confirm", exact: true })
-      .click();
-    await expect(
-      page.getByText("Committed changes await publication.", { exact: false }),
-    ).toHaveCount(0);
-  }
-  test("captain-direct and staff-on-behalf picks converge only after publication and survive reconnect", async ({
+  test("captain-direct and staff-on-behalf picks publish atomically and survive reconnect", async ({
     browser,
     isMobile,
   }, testInfo) => {
@@ -233,27 +221,11 @@ test.describe("isolated multi-captain rehearsal", () => {
 
     await expect(a.page.getByText(/Pick committed to/).first()).toBeVisible();
     await expect(
-      staff.page.getByText("Committed changes await publication.", {
-        exact: false,
+      staff.page.getByRole("button", {
+        name: "Publish current state",
+        exact: true,
       }),
-    ).toBeVisible();
-    expect(
-      (
-        await (
-          await spectator.context.request.get(`/api/tournaments/${slug}/draft`)
-        ).json()
-      ).picks,
-    ).toHaveLength(0);
-    await expect(
-      b.page.getByRole("button", { name: "Confirm Pick", exact: true }),
-    ).toBeDisabled();
-    await expect(
-      a.page
-        .getByRole("list", { name: "My team roster", exact: true })
-        .locator("li"),
-    ).toHaveCount(1);
-    await expect(choose).toBeVisible(); // A confirmed but unpublished pick is not an optimistic roster edit.
-    await publish(staff.page);
+    ).toHaveCount(0);
     await expect(
       a.page
         .getByRole("list", { name: "My team roster", exact: true })
@@ -280,13 +252,6 @@ test.describe("isolated multi-captain rehearsal", () => {
       })
       .click();
 
-    await expect(
-      staff.page.getByText("Committed changes await publication.", {
-        exact: false,
-      }),
-    ).toBeVisible();
-    await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(1);
-    await publish(staff.page);
     await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(2);
     await expect(
       spectator.page.locator(".draft-picks > li").last(),
@@ -315,7 +280,6 @@ test.describe("isolated multi-captain rehearsal", () => {
     await expect(
       staff.page.getByText("Rosters finalized", { exact: true }),
     ).toBeVisible();
-    await publish(staff.page);
     await expect(
       spectator.page.getByText("Rosters finalized", { exact: true }),
     ).toBeVisible();
@@ -541,7 +505,6 @@ test.describe("isolated multi-captain rehearsal", () => {
       .locator("dialog[open]")
       .getByRole("button", { name: "Cancel", exact: true });
     if (await cancel.count()) await cancel.click();
-    await publish(staff.page);
     await expect(
       staff.page.getByRole("button", {
         name: `Select for Captain ${fixture.b.username}`,
