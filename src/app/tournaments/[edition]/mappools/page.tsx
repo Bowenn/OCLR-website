@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { publicMappools } from "@/lib/mappools";
 import { EmptyState, PageHeading } from "@/components/ui";
-import { MappoolView } from "@/components/mappool-view";
+import { MappoolBrowser } from "@/components/mappool-browser";
 import { MappoolStages } from "@/components/mappool-stages";
 export const metadata = { title: "Published mappools" };
 export default async function MappoolsPage({
@@ -70,7 +70,11 @@ export default async function MappoolsPage({
                           (UTC)
                         </p>
                       </header>
-                      <MappoolView pool={pool} headingLevel={5} />
+                      <MappoolBrowser
+                        slug={edition}
+                        pool={pool}
+                        headingLevel={5}
+                      />
                     </article>
                   ))}
                 </details>

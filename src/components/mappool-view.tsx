@@ -75,7 +75,7 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
     </dl>,
   ];
   return (
-    <tr>
+    <tr id={`map-${e.id}`}>
       <th scope="row">
         <span className="mappool-slot">
           {slotLabel(e.category, e.position)}

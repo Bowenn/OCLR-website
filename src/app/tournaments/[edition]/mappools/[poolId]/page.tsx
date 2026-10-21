@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { publicMappools } from "@/lib/mappools";
 import { PageHeading } from "@/components/ui";
-import { MappoolView } from "@/components/mappool-view";
+import { MappoolBrowser } from "@/components/mappool-browser";
 export const metadata = { title: "Mappool" };
 export default async function PoolPage({
   params,
@@ -23,7 +23,7 @@ export default async function PoolPage({
       >
         Published · Last updated {pool.updatedAt.toISOString()}
       </PageHeading>
-      <MappoolView pool={pool} />
+      <MappoolBrowser slug={edition} pool={pool} />
     </>
   );
 }
