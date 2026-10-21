@@ -139,18 +139,7 @@ p {
   font-weight: 900;
   letter-spacing: -0.06em;
 }
-.brand-divider {
-  height: 22px;
-  border-left: 1px solid var(--color-border);
-  margin: 0 0.3rem;
-}
-.brand-note {
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
-  color: var(--color-muted);
-  max-width: 110px;
-  line-height: 1.5;
-}
+
 .main-nav {
   display: flex;
   gap: 1.8rem;
@@ -266,30 +255,18 @@ button:hover {
   border-top: 1px solid #242739;
   width: min(1240px, calc(100% - 6rem));
   margin: auto;
-  padding: 3rem 0;
+  padding: 1.25rem 0;
   display: flex;
   justify-content: space-between;
-  align-items: start;
-  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
   font-size: 0.78rem;
 }
 .site-footer p {
-  margin: 0.4rem 0;
+  margin: 0;
 }
-.site-footer nav {
-  display: flex;
-  gap: 1.5rem;
-  padding-top: 0.6rem;
-}
-.site-footer a:hover {
-  color: #dfa6fb;
-}
-.footer-note {
-  color: #777b96;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  padding-top: 0.8rem;
-}
+
 .skip-link {
   position: fixed;
   top: -100px;
@@ -321,11 +298,6 @@ button:hover {
   border-radius: 0.25rem;
 }
 @media (max-width: 1050px) {
-  .brand-note,
-  .brand-divider,
-  .footer-note {
-    display: none;
-  }
   .nav-wrap {
     gap: 1rem;
     padding-inline: 2rem;
@@ -372,7 +344,7 @@ button:hover {
   position: absolute;
   inset: 0;
   z-index: -3;
-  background-position: center 52%;
+  background-position: center 18%;
   background-size: cover;
   animation: art-in 1.2s ease-out both;
 }
@@ -391,7 +363,12 @@ button:hover {
     linear-gradient(0deg, #090c17, transparent 26%);
 }
 .hero-content {
-  padding-block: clamp(1.5rem, 5vw, 3.5rem);
+  min-height: clamp(19rem, 26vw, 23rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-block: clamp(1.5rem, 4vw, 2.75rem);
   animation: rise-in 0.7s ease-out both;
 }
 .hero .actions {
@@ -404,42 +381,22 @@ button:hover {
   margin-bottom: 1.1rem;
   color: #ecc2f9;
 }
-.hero-kicker > span {
-  width: 6px;
-  height: 6px;
-  background: #d47dee;
-  border-radius: 50%;
-  box-shadow: 0 0 14px #e992fa;
-}
+
 .hero h1 {
-  font-size: clamp(5rem, 8vw, 7rem);
+  font-size: clamp(2.75rem, 5.5vw, 4.75rem);
+  max-width: 16ch;
+  overflow-wrap: anywhere;
   line-height: 0.92;
   letter-spacing: -0.075em;
   font-weight: 900;
   margin-bottom: 1.25rem;
 }
-.hero h1 > span {
-  display: block;
-  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
-  letter-spacing: 0.2em;
-  line-height: 1.6;
-  font-weight: 400;
-  margin-top: 1.25rem;
-  text-transform: uppercase;
-  color: #d0bed9;
-}
-.hero-tagline {
-  font-size: clamp(1.25rem, 2vw, 1.5rem);
-  line-height: 1.35;
-  letter-spacing: -0.025em;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
+
 .hero-copy {
   font-size: 0.87rem;
   color: #b1b5ce;
   max-width: 30rem;
-  margin-bottom: 1.8rem;
+  margin-bottom: 1rem;
 }
 .section-title {
   display: flex;
@@ -553,6 +510,9 @@ button:hover {
   }
 }
 @media (max-width: 760px) {
+  .hero-content {
+    min-height: 0;
+  }
   .hero-art {
     position: relative;
     inset: auto;
@@ -571,12 +531,9 @@ button:hover {
     background: linear-gradient(0deg, #090c17, transparent 65%);
   }
   .hero h1 {
-    font-size: 4.75rem;
+    font-size: clamp(2.4rem, 10vw, 4rem);
   }
-  .hero h1 > span {
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
-  }
+
   .hero-copy {
     max-width: 300px;
   }

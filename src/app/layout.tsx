@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { isStaff } from "@/lib/auth/staff";
 import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
@@ -59,21 +58,11 @@ export default async function RootLayout({
         )}
         <main id="main">{children}</main>
         <footer className="site-footer">
-          <div>
-            <Link className="brand" href="/">
-              OCLR
-            </Link>
-            <p>osu! Chinese League Rookie</p>
-            <p className="muted">
-              A community tournament. Not affiliated with or endorsed by osu!.
-            </p>
-          </div>
-          <nav aria-label="Footer">
-            <Link href="/tournaments">Tournaments</Link>
-            <Link href="/about">About OCLR</Link>
-            <Link href="/privacy">Privacy</Link>
-          </nav>
-          <span className="footer-note">PLAY. CONNECT. GROW.</span>
+          <p>
+            © {new Date().getUTCFullYear()} Emik · OCLR — osu! Chinese League
+            Rookie
+          </p>
+          <p className="muted">Not affiliated with or endorsed by osu!.</p>
         </footer>
       </body>
     </html>

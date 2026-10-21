@@ -3,7 +3,7 @@ import { Action, Badge } from "@/components/ui";
 import { publicNewsContext } from "@/lib/public-news";
 import { nextConfirmedMilestone } from "@/lib/public-milestones";
 import { registrationAvailability } from "@/lib/registrations";
-import { formatDate } from "@/lib/editions";
+import { formatDate, publicEditionSummary } from "@/lib/editions";
 export const dynamic = "force-dynamic";
 export default async function Home() {
   const now = new Date();
@@ -15,6 +15,7 @@ export default async function Home() {
   const availability = featured
     ? await registrationAvailability(featured)
     : null;
+  const summary = featured ? publicEditionSummary(featured.summary) : null;
   const news = items.slice(0, 3);
   const milestone = nextConfirmedMilestone(editions, now);
   return (
@@ -29,31 +30,38 @@ export default async function Home() {
         />
         <div className="hero-shade" aria-hidden="true" />
         <div className="container hero-content">
-          <p className="eyebrow hero-kicker">
-            <span />
-            {featured?.name ?? "THE ROOKIE STAGE"}
-          </p>
-          <h1 id="hero-title">
-            OCLR<span>osu! Chinese League Rookie</span>
-          </h1>
-          <p className="hero-tagline">Individual players. One team stage.</p>
-          <p className="hero-copy">
-            {featured
-              ? featured.summary
-              : "The next edition has not been announced yet."}
-          </p>
-          {featured && <Badge>Registration: {availability}</Badge>}
+          <p className="eyebrow hero-kicker">osu! Chinese League Rookie</p>
+          <h1 id="hero-title">{featured?.name ?? "OCLR"}</h1>
+          {summary && <p className="hero-copy">{summary}</p>}
+          {!featured && (
+            <p className="hero-copy">
+              The next edition has not been announced yet.
+            </p>
+          )}
+          {featured && availability !== "open" && (
+            <Badge>
+              {availability === "upcoming"
+                ? `Registration opens ${formatDate(featured.registration?.opensAt ?? null, featured.timeZone)}`
+                : availability === "paused"
+                  ? "Registration paused"
+                  : availability === "closed"
+                    ? "Registration closed"
+                    : availability === "unavailable"
+                      ? "Registration temporarily unavailable"
+                      : "Registration not announced"}
+            </Badge>
+          )}
           <div className="actions">
             {availability === "open" && (
               <Action href={`/tournaments/${featured!.slug}/register`}>
-                Register individually →
+                Register →
               </Action>
             )}
             <Action
               href={featured ? `/tournaments/${featured.slug}` : "/tournaments"}
               secondary={availability === "open"}
             >
-              View tournament ↗
+              {featured ? "View tournament ↗" : "Browse tournaments ↗"}
             </Action>
           </div>
         </div>

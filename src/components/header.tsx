@@ -176,8 +176,6 @@ export function Header({ user }: { user: Account | null }) {
       <div className="nav-wrap">
         <Link href="/" className="brand" aria-label="OCLR home">
           OCLR
-          <span className="brand-divider" />
-          <span className="brand-note">osu! Chinese League Rookie</span>
         </Link>
         <button
           className="menu-toggle secondary"

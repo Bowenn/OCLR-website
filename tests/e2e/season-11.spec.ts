@@ -5,7 +5,7 @@ test("S11 artwork preserves its mobile composition while tournament information 
   isMobile,
 }, info) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+  await expect(page.locator(".hero-kicker")).toHaveText(
     "osu! Chinese League Rookie",
   );
   await expect(page.locator(".hero-kicker")).not.toContainText("SEASON 11");

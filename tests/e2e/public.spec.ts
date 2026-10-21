@@ -19,14 +19,20 @@ test("shared navigation works at desktop and mobile widths", async ({
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBeTruthy();
-  await page.getByRole("link", { name: "Privacy", exact: true }).click();
+  await expect(page.locator("footer a, footer button, footer nav")).toHaveCount(
+    0,
+  );
+  await page
+    .getByRole("link", { name: "Login with osu!", exact: true })
+    .click();
+  await page.getByRole("link", { name: "privacy notice", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 test("landing page has honest CTAs and readable original artwork", async ({
   page,
 }, testInfo) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+  await expect(page.locator(".hero-kicker")).toHaveText(
     "osu! Chinese League Rookie",
   );
   await expect(
@@ -39,7 +45,7 @@ test("landing page has honest CTAs and readable original artwork", async ({
     page.getByRole("heading", { name: "Next milestone", exact: true }),
   ).toBeVisible();
   if (process.env.TEST_DATABASE_URL) {
-    const name = (await page.locator(".hero-kicker").textContent())?.trim();
+    const name = (await page.locator("#hero-title").textContent())?.trim();
     const published = await (await page.request.get("/api/tournaments")).json();
     expect(
       published.some((edition: { name: string }) => edition.name === name),
@@ -55,7 +61,7 @@ test("landing page has honest CTAs and readable original artwork", async ({
     animations: "disabled",
   });
   await page
-    .getByRole("link", { name: "View tournament", exact: false })
+    .getByRole("link", { name: /View tournament|Browse tournaments/ })
     .first()
     .click();
   await expect(page).toHaveURL(/\/tournaments(?:\/[a-z0-9-]+)?$/);
@@ -88,7 +94,7 @@ test("news is approved content only and about uses the official identity", async
     expect((await page.goto("/news/private-announcement"))?.status()).toBe(404);
   } else
     await expect(
-      page.getByRole("heading", { name: "No announcements yet" }),
+      page.getByText("No announcements yet", { exact: true }),
     ).toBeVisible();
 });
 

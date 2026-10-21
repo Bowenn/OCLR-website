@@ -6,9 +6,31 @@ import {
   formatDate,
   registrationBlockers,
   suggestEditionSlug,
+  publicEditionSummary,
 } from "../../src/lib/editions";
 import { edition } from "../fixtures/edition";
 describe("edition configuration", () => {
+  it("omits only known bootstrap copy without hiding approved custom summaries", () => {
+    expect(
+      publicEditionSummary(
+        "osu! Chinese League Rookie — Season 11. Tournament information is awaiting organizer approval.",
+      ),
+    ).toBeNull();
+    expect(
+      publicEditionSummary(
+        "  Tournament information is awaiting organizer approval.  ",
+      ),
+    ).toBeNull();
+    expect(publicEditionSummary("Approved local event details.")).toBe(
+      "Approved local event details.",
+    );
+    expect(
+      publicEditionSummary(
+        "Eligibility is awaiting organizer approval; registration is open.",
+      ),
+    ).not.toBeNull();
+    expect(publicEditionSummary("")).toBeNull();
+  });
   it("suggests a valid editable slug without inventing tournament content", () => {
     expect(suggestEditionSlug("OCLR Season 12")).toBe("oclr-season-12");
     expect(suggestEditionSlug("  Édition / 12! ")).toBe("edition-12");

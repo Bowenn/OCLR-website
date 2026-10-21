@@ -1,4 +1,4 @@
-import { EmptyState, PageHeading } from "@/components/ui";
+import { PageHeading } from "@/components/ui";
 import { EditionCard } from "@/components/edition-card";
 import { getPublicEditions } from "@/lib/content";
 export const dynamic = "force-dynamic";
@@ -7,9 +7,7 @@ export default async function Tournaments() {
   const editions = await getPublicEditions();
   return (
     <div className="container page">
-      <PageHeading eyebrow="THE OCLR STAGE" title="Tournament editions">
-        Your starting point for rules, dates and individual registration.
-      </PageHeading>
+      <PageHeading title="Tournaments" />
       {editions.length ? (
         <div className="stack">
           {editions.map((edition) => (
@@ -17,10 +15,7 @@ export default async function Tournaments() {
           ))}
         </div>
       ) : (
-        <EmptyState title="The next stage is on its way.">
-          No tournament edition has been announced yet. Rules, dates and
-          registration information will appear here when confirmed.
-        </EmptyState>
+        <p className="muted">No tournaments announced yet.</p>
       )}
     </div>
   );

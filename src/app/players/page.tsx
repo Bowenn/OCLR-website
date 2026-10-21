@@ -2,10 +2,10 @@ import Link from "next/link";
 import { publicPlayers } from "@/lib/players";
 import { getPublicEditions } from "@/lib/content";
 import { HttpError } from "@/lib/http";
-import { Action, EmptyState, PageHeading } from "@/components/ui";
+import { Action, PageHeading } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 export const metadata = {
-  title: "Published players",
+  title: "Players",
   description:
     "Browse OCLR's published captains, participants and finalized team rosters.",
 };
@@ -32,28 +32,21 @@ export default async function Players({
   const query = new URLSearchParams({ q: filters.q, edition: filters.edition });
   return (
     <div className="container page directory-page">
-      <PageHeading eyebrow="INDIVIDUAL PLAYERS. ONE COMMUNITY." title="Players">
-        Meet the published captains and players representing OCLR. Browse the
-        directory without signing in.
-      </PageHeading>
-      <p className="muted small">
-        Applications stay private. Only published captains and finalized team
-        rosters appear here.
-      </p>
+      <PageHeading title="Players" />
       <form action="/players" method="get" className="filters">
         <label className="field">
-          <span>Search published player or osu! ID</span>
+          <span>Search players</span>
           <input
             name="q"
             defaultValue={filters.q}
             maxLength={100}
-            placeholder="Username or stable osu! ID"
+            placeholder="Username or osu! ID"
           />
         </label>
         <label className="field">
-          <span>Tournament edition</span>
+          <span>Tournament</span>
           <select name="edition" defaultValue={filters.edition}>
-            <option value="">All published editions</option>
+            <option value="">All tournaments</option>
             {(await getPublicEditions()).map((e) => (
               <option key={e.slug} value={e.slug}>
                 {e.name}
@@ -63,9 +56,11 @@ export default async function Players({
         </label>
         <button type="submit">Search</button>
       </form>
-      <p className="muted small" role="status">
-        {total} matching public player {total === 1 ? "entry" : "entries"}
-      </p>
+      {total > 0 && (
+        <p className="muted small" role="status">
+          {total} player {total === 1 ? "entry" : "entries"}
+        </p>
+      )}
       {rows.length ? (
         <ul className="player-directory">
           {rows.map((p) => (
@@ -139,16 +134,18 @@ export default async function Players({
           ))}
         </ul>
       ) : (
-        <EmptyState
-          title={
-            filters.q || filters.edition
-              ? "No matching published players"
-              : "No players published yet"
-          }
-        >
-          Approved captains and finalized rosters will appear after organizers
-          release them. Try another filter or browse the tournament pages.
-        </EmptyState>
+        <div className="directory-empty" role="status">
+          <p className="muted">
+            {filters.q || filters.edition
+              ? "No matching players"
+              : "No players published yet"}
+          </p>
+          {(filters.q || filters.edition) && (
+            <Link className="text-link" href="/players">
+              Clear filters
+            </Link>
+          )}
+        </div>
       )}
       <nav className="actions spaced" aria-label="Player directory pages">
         {filters.page > 1 && (

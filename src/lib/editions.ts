@@ -100,6 +100,17 @@ export const editionSchema = z
     path: ["summary"],
     message: "Add a public summary before publishing.",
   });
+/** Omit only the known bootstrap copy; never rewrite stored/approved content. */
+export function publicEditionSummary(summary: string) {
+  const normalized = summary.trim().replace(/\s+/g, " ");
+  return !normalized ||
+    [
+      "Tournament information is awaiting organizer approval.",
+      "osu! Chinese League Rookie — Season 11. Tournament information is awaiting organizer approval.",
+    ].includes(normalized)
+    ? null
+    : summary.trim();
+}
 export function suggestEditionSlug(name: string) {
   const slug = name
     .normalize("NFKD")

@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { publicNews } from "@/lib/public-news";
 import { formatDate } from "@/lib/editions";
-import { EmptyState, PageHeading } from "@/components/ui";
+import { PageHeading } from "@/components/ui";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "News & announcements" };
 export default async function News() {
   const announcements = await publicNews();
   return (
     <div className="container page">
-      <PageHeading eyebrow="FROM THE OCLR STAGE" title="News & announcements">
-        Confirmed updates from osu! Chinese League Rookie.
-      </PageHeading>
+      <PageHeading title="News & announcements" />
       {announcements.length ? (
         <div className="news-list">
           {announcements.map((a) => (
@@ -36,10 +34,7 @@ export default async function News() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No announcements yet">
-          Official updates will appear here when approved. Tournament
-          information is published as it is confirmed.
-        </EmptyState>
+        <p className="muted">No announcements yet.</p>
       )}
     </div>
   );

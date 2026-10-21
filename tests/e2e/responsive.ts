@@ -10,7 +10,7 @@ export async function captureResponsiveLayout(
   const original = page.viewportSize()!;
   const measurements = [];
   try {
-    for (const width of [320, 390, 760, 1024, 1440]) {
+    for (const width of [320, 390, 760, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const measured = await page.evaluate(async () => {
         await new Promise(requestAnimationFrame);

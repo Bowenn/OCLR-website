@@ -40,7 +40,7 @@ test.describe("anonymous published player directory", () => {
       page.getByRole("heading", { name: "Players", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText("2 matching public player entries", { exact: true }),
+      page.getByText("2 player entries", { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("link", {
@@ -90,19 +90,15 @@ test.describe("anonymous published player directory", () => {
       }),
     ).toBeVisible();
     await page.goto(`/players?${query}`);
-    await page
-      .getByLabel("Search published player or osu! ID")
-      .fill(String(base + 1));
+    await page.getByLabel("Search players").fill(String(base + 1));
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await expect(
-      page.getByText("1 matching public player entry", { exact: true }),
+      page.getByText("1 player entry", { exact: true }),
     ).toBeVisible();
-    await page
-      .getByLabel("Search published player or osu! ID")
-      .fill(String(fixture.privateId));
+    await page.getByLabel("Search players").fill(String(fixture.privateId));
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await expect(
-      page.getByRole("heading", { name: "No matching published players" }),
+      page.getByText("No matching players", { exact: true }),
     ).toBeVisible();
     for (const url of ["/api/registrations", "/api/admin/registrations"])
       expect((await context.request.get(url)).status()).toBe(401);

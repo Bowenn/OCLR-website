@@ -53,7 +53,7 @@ test.describe("derived public content", () => {
         page.getByRole("heading", { name: "Sign in before applying" }),
       ).toBeVisible();
       await page.goto("/");
-      await expect(page.locator(".hero-kicker")).toHaveText(published.name);
+      await expect(page.locator("#hero-title")).toHaveText(published.name);
       await expect(page.locator(".home-news li")).toHaveCount(3);
       await expect(page.locator('.hero .actions a[href="/about"]')).toHaveCount(
         0,
