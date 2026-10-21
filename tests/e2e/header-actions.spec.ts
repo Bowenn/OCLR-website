@@ -68,18 +68,17 @@ test.describe("role-aware header actions and compact tournament context", () => 
     await context.addCookies([playerCookie]);
     await page.reload();
     await expect(
-      accounts.getByRole("link", { name: "Player dashboard", exact: true }),
+      accounts.getByRole("link", { name: "Dashboard", exact: true }),
     ).toBeVisible();
-    await expect(
-      accounts.getByRole("link", { name: "Staff dashboard", exact: true }),
-    ).toHaveCount(0);
+    await expect(accounts.getByRole("button")).toHaveCount(0);
+    await expect(accounts.locator(".avatar")).toHaveCount(1);
     expect((await context.request.get("/api/admin/staff")).status()).toBe(403);
     await accounts
-      .getByRole("link", { name: "Player dashboard", exact: true })
+      .getByRole("link", { name: "Dashboard", exact: true })
       .click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(
-      accounts.getByRole("link", { name: "Player dashboard", exact: true }),
+      accounts.getByRole("link", { name: "Dashboard", exact: true }),
     ).toHaveAttribute("aria-current", "page");
     const staff = await browser.newContext({
       baseURL: "http://127.0.0.1:3100",
@@ -87,22 +86,73 @@ test.describe("role-aware header actions and compact tournament context", () => 
     });
     await staff.addCookies([staffCookie]);
     try {
+      await staff.route("https://a.ppy.sh/**", (route) => route.abort());
       const operator = await staff.newPage();
       await operator.goto("/");
       const operatorActions = operator.getByRole("group", {
         name: "Account actions",
         exact: true,
       });
-      await operatorActions
-        .getByRole("link", { name: "Staff dashboard", exact: true })
-        .click();
+      const dashboard = operatorActions.getByRole("button", {
+        name: "Dashboard",
+        exact: true,
+      });
+      const menu = operatorActions.getByRole("menu", {
+        name: "Dashboards",
+        exact: true,
+      });
+      await expect(dashboard).toHaveAttribute("aria-expanded", "false");
+      await expect(operatorActions.locator(".avatar span")).toHaveText("Sy");
+      await dashboard.focus();
+      await dashboard.press("ArrowDown");
+      await expect(menu.getByRole("menuitem")).toHaveText([
+        "Player dashboard",
+        "Staff dashboard",
+      ]);
+      await expect(menu.getByRole("menuitem").first()).toBeFocused();
+      await operator.keyboard.press("End");
+      await expect(menu.getByRole("menuitem").last()).toBeFocused();
+      await operator.keyboard.press("ArrowDown");
+      await expect(menu.getByRole("menuitem").first()).toBeFocused();
+      await operator.keyboard.press("Escape");
+      await expect(dashboard).toBeFocused();
+      await expect(menu).toHaveCount(0);
+      await dashboard.press("ArrowUp");
+      await expect(menu.getByRole("menuitem").last()).toBeFocused();
+      await operator.keyboard.press("Tab");
+      await expect(menu).toHaveCount(0);
+      if (isMobile) {
+        await operator
+          .getByRole("button", { name: "Menu", exact: true })
+          .click();
+        await dashboard.click();
+        await expect(
+          operator.getByRole("navigation", {
+            name: "Main navigation",
+            exact: true,
+          }),
+        ).toBeHidden();
+        await expect(menu).toBeVisible();
+        await operator.keyboard.press("Escape");
+      }
+      await dashboard.click();
+      await operator.getByRole("heading", { level: 1 }).click();
+      await expect(menu).toHaveCount(0);
+      await dashboard.click();
+      await menu
+        .getByRole("menuitem", { name: "Staff dashboard", exact: true })
+        .press(" ");
       await expect(operator).toHaveURL(/\/admin$/);
+      await expect(menu).toHaveCount(0);
+      await dashboard.click();
       await expect(
-        operatorActions.getByRole("link", {
-          name: "Staff dashboard",
-          exact: true,
-        }),
+        menu.getByRole("menuitem", { name: "Staff dashboard", exact: true }),
       ).toHaveAttribute("aria-current", "page");
+      await menu
+        .getByRole("menuitem", { name: "Player dashboard", exact: true })
+        .press("Enter");
+      await expect(operator).toHaveURL(/\/dashboard$/);
+      await expect(menu).toHaveCount(0);
       await expect(
         operator
           .getByRole("navigation", { name: "Main navigation", exact: true })
@@ -114,12 +164,10 @@ test.describe("role-aware header actions and compact tournament context", () => 
         confirmed: true,
       });
       await operator.goto("/");
+      await expect(operatorActions.getByRole("button")).toHaveCount(0);
       await expect(
-        operatorActions.getByRole("link", {
-          name: "Staff dashboard",
-          exact: true,
-        }),
-      ).toHaveCount(0);
+        operatorActions.getByRole("link", { name: "Dashboard", exact: true }),
+      ).toBeVisible();
       expect(
         (
           await staff.request.get("/api/admin/tournaments/test-cup/mappools")
@@ -132,57 +180,52 @@ test.describe("role-aware header actions and compact tournament context", () => 
     await context.clearCookies();
     await context.addCookies([adminCookie]);
     await page.goto("/admin");
-    const overviewActions = page.locator(".nav-actions .button, main .button");
-    const appearance = await overviewActions.evaluateAll((nodes) =>
-      nodes.map((node) => {
-        const style = getComputedStyle(node);
-        return {
-          height: node.getBoundingClientRect().height,
-          font: style.fontSize,
-          weight: style.fontWeight,
-          line: style.lineHeight,
-          padding: style.padding,
-          radius: style.borderRadius,
-        };
-      }),
+    const appearance = await page.locator("main .button").evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        height: node.getBoundingClientRect().height,
+        font: getComputedStyle(node).fontSize,
+      })),
     );
     expect(appearance.length).toBeGreaterThan(3);
     expect(new Set(appearance.map((style) => JSON.stringify(style))).size).toBe(
       1,
     );
     expect(appearance[0].height).toBe(44);
-    await page.screenshot({
-      path: info.outputPath("consistent-overview-buttons.png"),
-      fullPage: true,
-      animations: "disabled",
-    });
     await page.goto("/admin/tournaments/s11");
     for (const width of [320, 390, 760, 768, 950, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      const staffAction = await accounts
-        .getByRole("link", { name: "Staff dashboard", exact: true })
-        .boundingBox();
-      const playerAction = await accounts
-        .getByRole("link", { name: "Player dashboard", exact: true })
-        .boundingBox();
-      expect(staffAction!.x).toBeGreaterThanOrEqual(0);
-      expect(staffAction!.height).toBeGreaterThanOrEqual(44);
-      expect(playerAction!.height).toBeGreaterThanOrEqual(44);
-      expect(staffAction!.x + staffAction!.width).toBeLessThanOrEqual(
-        playerAction!.x + 1,
-      );
-      expect(playerAction!.x + playerAction!.width).toBeLessThanOrEqual(width);
+      const control = accounts.getByRole("button", {
+        name: "Dashboard",
+        exact: true,
+      });
+      const bounds = (await control.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.height).toBeGreaterThanOrEqual(44);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      await expect(accounts.locator(".account-control")).toHaveCount(1);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      await control.click();
+      await expect(accounts.getByRole("menuitem")).toHaveCount(2);
       if (width === 320)
+        expect(
+          (
+            await new AxeBuilder({ page })
+              .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+              .analyze()
+          ).violations,
+        ).toEqual([]);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      if ([320, 1440].includes(width))
         await page.screenshot({
-          path: info.outputPath("staff-header-320.png"),
+          path: info.outputPath(`account-menu-${width}.png`),
           fullPage: true,
           animations: "disabled",
         });
+      await page.keyboard.press("Escape");
     }
     await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 900 });
     const sidebar = page.locator(".sidebar");

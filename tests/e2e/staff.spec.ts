@@ -55,7 +55,7 @@ test.describe("staff registration review", () => {
       await expect(
         page
           .getByRole("group", { name: "Account actions" })
-          .getByRole("link", { name: "Staff dashboard", exact: true }),
+          .getByRole("button", { name: "Dashboard", exact: true }),
       ).toBeVisible();
     if (!isMobile) {
       const original = page.viewportSize()!;

@@ -44,7 +44,11 @@ export default async function RootLayout({
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Header user={user ? { username: user.username, staff } : null} />
+        <Header
+          user={
+            user ? { osuId: user.osuId, username: user.username, staff } : null
+          }
+        />
         {authUnavailable && (
           <div className="container">
             <p className="notice" role="status">

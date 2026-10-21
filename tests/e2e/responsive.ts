@@ -39,17 +39,19 @@ export async function captureResponsiveLayout(
           main: bounds("main"),
           context: bounds(".admin-context"),
           sidebar: bounds(".sidebar"),
-          actions: [...document.querySelectorAll(".nav-actions a")].map(
-            (el) => {
-              const rect = el.getBoundingClientRect();
-              return {
-                label: el.textContent,
-                left: rect.left,
-                right: rect.right,
-                height: rect.height,
-              };
-            },
-          ),
+          actions: [
+            ...document.querySelectorAll(
+              ".nav-actions > a, .nav-actions > .account-menu > button",
+            ),
+          ].map((el) => {
+            const rect = el.getBoundingClientRect();
+            return {
+              label: el.textContent,
+              left: rect.left,
+              right: rect.right,
+              height: rect.height,
+            };
+          }),
         };
       });
       expect(
