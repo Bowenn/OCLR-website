@@ -26,7 +26,7 @@ export const editionSchema = z
       .default({ logo: null, background: null, keyVisual: null }),
     published: z.boolean(),
     status: z.enum(["upcoming", "live", "completed"]),
-    summary: z.string().trim().min(1).max(2000),
+    summary: z.string().trim().max(2000),
     timeZone: z
       .string()
       .trim()
@@ -95,7 +95,21 @@ export const editionSchema = z
       )
       .max(64),
   })
-  .strict();
+  .strict()
+  .refine((edition) => !edition.published || Boolean(edition.summary), {
+    path: ["summary"],
+    message: "Add a public summary before publishing.",
+  });
+export function suggestEditionSlug(name: string) {
+  const slug = name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .slice(0, 80)
+    .replace(/^-|-$/g, "");
+  return slug === "new" ? "new-tournament" : slug;
+}
 export type Edition = z.output<typeof editionSchema>;
 export type EditionConfiguration = Omit<z.output<typeof editionSchema>, "slug">;
 export const editionsSchema = z

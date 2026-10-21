@@ -135,6 +135,9 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       withdrawUntil: null,
     });
     await page.reload();
+    await page
+      .getByText("Withdrawal & application questions", { exact: true })
+      .click();
     await expect(time("Withdrawal deadline")).toHaveValue("");
     await time("Registration opens").focus();
     await page.keyboard.press("Tab");

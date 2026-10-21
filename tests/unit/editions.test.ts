@@ -5,9 +5,27 @@ import {
   enrollmentState,
   formatDate,
   registrationBlockers,
+  suggestEditionSlug,
 } from "../../src/lib/editions";
 import { edition } from "../fixtures/edition";
 describe("edition configuration", () => {
+  it("suggests a valid editable slug without inventing tournament content", () => {
+    expect(suggestEditionSlug("OCLR Season 12")).toBe("oclr-season-12");
+    expect(suggestEditionSlug("  Édition / 12! ")).toBe("edition-12");
+    expect(suggestEditionSlug("New")).toBe("new-tournament");
+    expect(suggestEditionSlug("中文")).toBe("");
+    expect(suggestEditionSlug("a".repeat(100))).toHaveLength(80);
+    expect(suggestEditionSlug("a ".repeat(60))).not.toMatch(/-$/);
+  });
+  it("allows blank private copy but requires an approved summary to publish", () => {
+    expect(
+      editionSchema.safeParse({ ...edition, published: false, summary: "" })
+        .success,
+    ).toBe(true);
+    expect(editionSchema.safeParse({ ...edition, summary: " " }).success).toBe(
+      false,
+    );
+  });
   it("validates real content while preventing duplicate editions, invalid dates and timezones", () => {
     expect(editionSchema.safeParse(edition).success).toBe(true);
     expect(editionsSchema.safeParse([edition, edition]).success).toBe(false);

@@ -4,10 +4,91 @@ import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { editionState, staffRoles } from "../../src/db/schema";
 import { seedSession } from "./session";
+import { captureResponsiveLayout } from "./responsive";
 test.describe("browser-managed authoritative tournament editions", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.setTimeout(90000);
   test.afterAll(async () => closeDb());
+  test("quick-creates from a name with optional settings and safe publication", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    const adminId = isMobile ? 70001 : 60001;
+    const name = `Synthetic quick ${isMobile ? "mobile" : "desktop"}`;
+    const slug = name.toLowerCase().replaceAll(" ", "-");
+    await context.addCookies([await seedSession(adminId)]);
+    await db().delete(editionState).where(eq(editionState.slug, slug));
+    await page.goto("/admin/tournaments/new");
+    await page.getByLabel("Tournament name", { exact: true }).fill(name);
+    await expect(
+      page.getByText(`/tournaments/${slug} · Permanent after creation.`, {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Permanent slug", { exact: true }),
+    ).toBeHidden();
+    await expect(page.locator("main input:visible")).toHaveCount(1);
+    await captureResponsiveLayout(page, info, "minimal-create");
+    await page
+      .getByRole("button", { name: "Create private draft", exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/admin/tournaments/${slug}$`));
+    const endpoint = `/api/admin/tournaments/${slug}`;
+    const original = await (await context.request.get(endpoint)).json();
+    expect(original.edition).toMatchObject({
+      slug,
+      name,
+      summary: "",
+      season: null,
+      published: false,
+      registration: null,
+      rules: null,
+      schedule: [],
+      timeZone: "UTC",
+    });
+    await page.goto(`/admin/tournaments/${slug}/settings`);
+    await expect(page.getByLabel("Season identifier (optional)")).toBeHidden();
+    await expect(page.getByLabel("Square logo", { exact: true })).toBeHidden();
+    await captureResponsiveLayout(page, info, "minimal-general");
+    await page.getByRole("tab", { name: "Publication", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Publish tournament", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Confirm", exact: true }).click();
+    await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+      "Add a public summary",
+    );
+    const failed = await (await context.request.get(endpoint)).json();
+    expect(failed.revision).toBe(original.revision);
+    expect(failed.edition.published).toBe(false);
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await page.getByRole("tab", { name: "General", exact: true }).click();
+    await page.getByText("Season & artwork", { exact: true }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByLabel("Season identifier (optional)")).toBeVisible();
+    expect((await (await context.request.get(endpoint)).json()).revision).toBe(
+      0,
+    );
+    await page.getByLabel("Season identifier (optional)").fill("Test season");
+    await page
+      .getByRole("button", { name: "Save general settings", exact: true })
+      .click();
+    await expect(page.getByRole("status")).toContainText("saved");
+    await page.reload();
+    await page.getByText("Season & artwork", { exact: true }).click();
+    await expect(page.getByLabel("Season identifier (optional)")).toHaveValue(
+      "Test season",
+    );
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+  });
   test("creates, configures and publishes without files, preserving saved acknowledgments and staff boundaries", async ({
     page,
     context,
@@ -59,18 +140,10 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Tournament name", { exact: true })
         .fill("Synthetic managed edition");
-      await page.getByLabel("Season identifier (optional)").fill("12");
-      await page
-        .getByLabel("Summary", { exact: true })
-        .fill(
-          "Synthetic browser-managed configuration, never production content.",
-        );
-      await page
-        .getByLabel("IANA time zone", { exact: true })
-        .fill("Asia/Taipei");
+      await page.getByText("Customize URL", { exact: true }).click();
       await page.getByLabel("Permanent slug", { exact: true }).fill(slug);
       await page
-        .getByRole("button", { name: "Create tournament", exact: true })
+        .getByRole("button", { name: "Create private draft", exact: true })
         .click();
       await expect(page).toHaveURL(new RegExp(`/admin/tournaments/${slug}$`));
       await expect(
@@ -113,6 +186,14 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Tournament name", { exact: true })
         .fill("Synthetic approved edition");
+      await page
+        .getByLabel("Summary", { exact: true })
+        .fill(
+          "Synthetic browser-managed configuration, never production content.",
+        );
+      await page
+        .getByLabel("IANA time zone", { exact: true })
+        .fill("Asia/Taipei");
       await page
         .getByRole("button", { name: "Save general settings", exact: true })
         .click();
@@ -191,6 +272,9 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Registration closes: time (HH:mm)", { exact: true })
         .fill("20:00");
+      await page
+        .getByText("Withdrawal & application questions", { exact: true })
+        .click();
       await page
         .getByLabel("Withdrawal deadline: date", { exact: true })
         .fill("2099-01-01");

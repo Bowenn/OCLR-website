@@ -10,8 +10,7 @@ export default async function NewTournament() {
     return (
       <>
         <PageHeading eyebrow="TOURNAMENT MANAGEMENT" title="Create tournament">
-          Start privately with approved identity information. Rules and
-          registration are configured separately.
+          Start with a name. Add details when you’re ready.
         </PageHeading>
         <CreateTournamentForm />
       </>

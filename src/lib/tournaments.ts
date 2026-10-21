@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { editionState } from "@/db/schema";
 import { editionSchema } from "./editions";
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
+import { suggestEditionSlug } from "./editions";
 import {
   editionEvents,
   editionRevisions,
@@ -81,8 +83,12 @@ const version = {
 };
 const createSchema = z
   .object({
-    slug: shape.slug.refine((s) => s !== "new", "This slug is reserved"),
     ...identity,
+    slug: shape.slug
+      .refine((s) => s !== "new", "This slug is reserved")
+      .optional(),
+    summary: shape.summary.default(""),
+    timeZone: shape.timeZone.default("UTC"),
     confirmed: z.literal(true),
   })
   .strict();
@@ -242,7 +248,10 @@ export async function createTournament(actor: User, input: unknown) {
   const parsed = createSchema.safeParse(input);
   invalid(parsed);
   if (!parsed.success) throw new HttpError(400, "Invalid tournament.");
-  const { slug, confirmed: _confirmed, ...fields } = parsed.data;
+  const { slug: requestedSlug, confirmed: _confirmed, ...fields } = parsed.data;
+  const slug =
+    requestedSlug ??
+    (suggestEditionSlug(fields.name) || `oclr-${randomUUID().slice(0, 8)}`);
   void _confirmed;
   const e = editionSchema.parse({
     slug,
@@ -364,7 +373,11 @@ export async function tournamentCommand(
             ? { ...e.registration, enabled: false }
             : e.registration,
       };
-    next = editionSchema.parse(next);
+    const validated = editionSchema.safeParse(next);
+    invalid(validated);
+    if (!validated.success)
+      throw new HttpError(400, "Check the tournament settings.");
+    next = validated.data;
     const { slug: _slug, ...configuration } = next;
     void _slug;
     if (JSON.stringify(next) === JSON.stringify(e)) return;

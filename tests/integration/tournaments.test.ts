@@ -159,6 +159,59 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     ).rejects.toMatchObject({ status: 400 });
     expect(await db().select().from(registrations)).toEqual([]);
   });
+  it("quick-creates a private draft from a name and rejects incomplete publication atomically", async () => {
+    const minimal = await createTournament(admin, {
+      name: "New season",
+      confirmed: true,
+    });
+    expect(minimal.edition).toMatchObject({
+      slug: "new-season",
+      summary: "",
+      season: null,
+      timeZone: "UTC",
+      published: false,
+      registration: null,
+      rules: null,
+      eligibility: null,
+      schedule: [],
+      branding: { logo: null, background: null, keyVisual: null },
+    });
+    await expect(
+      createTournament(admin, { name: "New season", confirmed: true }),
+    ).rejects.toMatchObject({ status: 409 });
+    const events = await db()
+      .select()
+      .from(editionEvents)
+      .where(eq(editionEvents.editionSlug, "new-season"));
+    await expect(
+      tournamentCommand(admin, "new-season", {
+        action: "publication",
+        published: true,
+        expectedRevision: 0,
+        confirmed: true,
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    expect((await readTournament("new-season"))?.revision).toBe(0);
+    expect(
+      await db()
+        .select()
+        .from(editionEvents)
+        .where(eq(editionEvents.editionSlug, "new-season")),
+    ).toEqual(events);
+    expect(await getPublicEdition("new-season")).toBeUndefined();
+    const unicode = await createTournament(admin, {
+      name: "中文",
+      confirmed: true,
+    });
+    expect(unicode.edition.slug).toMatch(/^oclr-[a-f0-9]{8}$/);
+    await expect(
+      createTournament(admin, {
+        name: "Reserved",
+        slug: "new",
+        confirmed: true,
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
   it("enforces Admin scopes, current roles and a single winning configuration revision", async () => {
     await create();
     for (const actor of [mapper, referee, player]) {

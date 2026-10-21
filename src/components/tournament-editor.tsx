@@ -1,7 +1,11 @@
 "use client";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { registrationBlockers, type Edition } from "@/lib/editions";
+import {
+  registrationBlockers,
+  suggestEditionSlug,
+  type Edition,
+} from "@/lib/editions";
 import type { tournamentForAdmin } from "@/lib/tournaments";
 import { ConfirmMutation } from "./confirm-mutation";
 import { WorkspaceTabs } from "./workspace-tabs";
@@ -17,7 +21,9 @@ type Identity = Pick<
 function IdentityFields({
   value,
   onChange,
+  published,
 }: {
+  published: boolean;
   value: Identity;
   onChange: (value: Identity) => void;
 }) {
@@ -33,19 +39,10 @@ function IdentityFields({
         />
       </label>
       <label className="field">
-        <span>Season identifier (optional)</span>
-        <input
-          maxLength={40}
-          value={value.season ?? ""}
-          onChange={(e) =>
-            onChange({ ...value, season: e.target.value || null })
-          }
-        />
-      </label>
-      <label className="field">
         <span>Summary</span>
         <textarea
-          required
+          required={published}
+          placeholder="Add approved public copy before publishing."
           maxLength={2000}
           value={value.summary}
           onChange={(e) => onChange({ ...value, summary: e.target.value })}
@@ -67,54 +64,64 @@ function IdentityFields({
           )}
         </datalist>
       </label>
-      <fieldset className="form-stack">
-        <legend>Approved artwork</legend>
-        {(["logo", "background", "keyVisual"] as const).map((key, i) => (
-          <label className="field" key={key}>
-            <span>
-              {["Square logo", "Website background", "Key visual"][i]}
-            </span>
-            <select
-              value={value.branding[key] ?? ""}
+      <details className="form-options">
+        <summary>Season & artwork</summary>
+        <div className="form-stack">
+          <label className="field">
+            <span>Season identifier (optional)</span>
+            <input
+              maxLength={40}
+              value={value.season ?? ""}
               onChange={(e) =>
-                onChange({
-                  ...value,
-                  branding: {
-                    ...value.branding,
-                    [key]: e.target.value || null,
-                  },
-                })
+                onChange({ ...value, season: e.target.value || null })
               }
-            >
-              <option value="">No edition artwork</option>
-              <option
-                value={
-                  [
-                    "/oclr-s11-square-logo.webp",
-                    "/oclr-s11-website-background.webp",
-                    "/oclr-s11-key-visual.webp",
-                  ][i]
-                }
-              >
-                OCLR Season 11 — {["logo", "background", "key visual"][i]}
-              </option>
-            </select>
+            />
           </label>
-        ))}
-      </fieldset>
+          <fieldset className="form-stack">
+            <legend>Approved artwork</legend>
+            {(["logo", "background", "keyVisual"] as const).map((key, i) => (
+              <label className="field" key={key}>
+                <span>
+                  {["Square logo", "Website background", "Key visual"][i]}
+                </span>
+                <select
+                  value={value.branding[key] ?? ""}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      branding: {
+                        ...value.branding,
+                        [key]: e.target.value || null,
+                      },
+                    })
+                  }
+                >
+                  <option value="">No edition artwork</option>
+                  <option
+                    value={
+                      [
+                        "/oclr-s11-square-logo.webp",
+                        "/oclr-s11-website-background.webp",
+                        "/oclr-s11-key-visual.webp",
+                      ][i]
+                    }
+                  >
+                    OCLR Season 11 — {["logo", "background", "key visual"][i]}
+                  </option>
+                </select>
+              </label>
+            ))}
+          </fieldset>
+        </div>
+      </details>
     </>
   );
 }
 export function CreateTournamentForm() {
   const router = useRouter();
   const [slug, setSlug] = useState("");
-  const [value, setValue] = useState<Identity>({
-    name: "",
-    season: null,
-    summary: "",
-    timeZone: "UTC",
-    branding: { logo: null, background: null, keyVisual: null },
-  });
+  const [name, setName] = useState("");
+  const [customSlug, setCustomSlug] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function create(event: FormEvent) {
@@ -125,7 +132,7 @@ export function CreateTournamentForm() {
       const result = await fetch("/api/admin/tournaments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...value, slug, confirmed: true }),
+        body: JSON.stringify({ name, slug, confirmed: true }),
       });
       const data = await result.json();
       if (!result.ok) {
@@ -144,33 +151,52 @@ export function CreateTournamentForm() {
   }
   return (
     <form className="panel form-stack" onSubmit={create}>
-      <IdentityFields value={value} onChange={setValue} />
       <label className="field">
-        <span>Permanent slug</span>
+        <span>Tournament name</span>
         <input
           required
-          pattern="[a-z0-9]+(-[a-z0-9]+)*"
-          maxLength={80}
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          aria-describedby="slug-help"
+          maxLength={100}
+          value={name}
+          onChange={(event) => {
+            setName(event.target.value);
+            if (!customSlug)
+              setSlug(
+                suggestEditionSlug(event.target.value) ||
+                  `oclr-${crypto.randomUUID().slice(0, 8)}`,
+              );
+          }}
         />
       </label>
-      <p id="slug-help" className="muted small">
-        Lowercase letters, numbers and hyphens. The tournament URL cannot be
-        renamed after creation.
+      <p className="muted small" id="slug-help">
+        /tournaments/{slug || "…"} · Permanent after creation.
       </p>
-      <p className="notice">
-        New tournaments are private. Registration, rules and dates remain
-        unconfigured.
-      </p>
+      <details>
+        <summary>Customize URL</summary>
+        <label className="field">
+          <span>Permanent slug</span>
+          <input
+            required
+            onInvalid={(event) => {
+              event.currentTarget.closest("details")!.open = true;
+            }}
+            pattern="[a-z0-9]+(-[a-z0-9]+)*"
+            maxLength={80}
+            value={slug}
+            onChange={(e) => {
+              setCustomSlug(true);
+              setSlug(e.target.value);
+            }}
+            aria-describedby="slug-help"
+          />
+        </label>
+      </details>
       {error && (
         <p role="alert" className="notice error-text">
           {error}
         </p>
       )}
       <button disabled={pending}>
-        {pending ? "Creating…" : "Create tournament"}
+        {pending ? "Creating…" : "Create private draft"}
       </button>
     </form>
   );
@@ -228,7 +254,11 @@ function General({ data, saved }: EditorProps) {
       <p className="muted small tournament-slug">
         Permanent slug: <strong>{data.edition.slug}</strong>
       </p>
-      <IdentityFields value={value} onChange={setValue} />
+      <IdentityFields
+        value={value}
+        onChange={setValue}
+        published={data.edition.published}
+      />
       <label className="field">
         <span>Tournament status</span>
         <select
@@ -266,8 +296,8 @@ function Rules({ data, saved }: EditorProps) {
     <section className="panel form-stack">
       <h2>Rules & eligibility</h2>
       <p className="muted small">
-        Rules and eligibility are optional. Changed rules use a new version;
-        existing applications keep their original acknowledgment and snapshot.
+        Optional. Use a new version when rules change; past acknowledgments are
+        preserved.
       </p>
       {
         <label className="check-field">
@@ -449,14 +479,6 @@ function Registration({ data, saved }: EditorProps) {
             onChange={setCloses}
             onValidityChange={setClosesValid}
           />
-          <ZonedDateInput
-            label="Withdrawal deadline"
-            value={withdrawUntil}
-            timeZone={e.timeZone}
-            onChange={setWithdraw}
-            onValidityChange={setWithdrawValid}
-            optional
-          />
           {blockers.length > 0 && (
             <aside className="registration-blockers">
               <strong>Before enabling registration</strong>
@@ -476,109 +498,129 @@ function Registration({ data, saved }: EditorProps) {
             />
             <span>Enable registration during this window</span>
           </label>
-          <h3>Application questions</h3>
-          <p className="muted small">
-            Collect only necessary information. Existing applications retain
-            their original questions and answers when you edit this form.
-          </p>
-          {questions.map((q, i) => (
-            <fieldset className="form-stack" key={q.id}>
-              <legend>Question {i + 1}</legend>
-              <label className="field">
-                <span>Question {i + 1} label</span>
-                <input
-                  maxLength={200}
-                  value={q.label}
-                  onChange={(e) =>
-                    setQuestions(
-                      questions.map((v, j) =>
-                        j === i ? { ...v, label: e.target.value } : v,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <label className="check-field">
-                <input
-                  type="checkbox"
-                  checked={q.required}
-                  onChange={(e) =>
-                    setQuestions(
-                      questions.map((v, j) =>
-                        j === i ? { ...v, required: e.target.checked } : v,
-                      ),
-                    )
-                  }
-                />
-                <span>Question {i + 1} is required</span>
-              </label>
-              <label className="field">
-                <span>Question {i + 1} maximum length</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={2000}
-                  value={q.maxLength}
-                  onChange={(e) =>
-                    setQuestions(
-                      questions.map((v, j) =>
-                        j === i
-                          ? { ...v, maxLength: Number(e.target.value) }
-                          : v,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <div className="actions">
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!i}
-                  onClick={() =>
-                    setQuestions(
-                      questions.map((v, j) =>
-                        j === i - 1
-                          ? questions[i]
-                          : j === i
-                            ? questions[i - 1]
-                            : v,
-                      ),
-                    )
-                  }
-                >
-                  Move question {i + 1} up
-                </button>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() =>
-                    setQuestions(questions.filter((_, j) => j !== i))
-                  }
-                >
-                  Remove question {i + 1}
-                </button>
-              </div>
-            </fieldset>
-          ))}
-          <button
-            type="button"
-            className="secondary"
-            disabled={questions.length >= 16}
-            onClick={() =>
-              setQuestions([
-                ...questions,
-                {
-                  id: `question_${crypto.randomUUID().slice(0, 8)}`,
-                  label: "",
-                  required: false,
-                  maxLength: 500,
-                },
-              ])
-            }
+          <details
+            className="form-options"
+            open={Boolean(
+              e.registration?.withdrawUntil || e.registration?.questions.length,
+            )}
           >
-            Add question
-          </button>
+            <summary>
+              Withdrawal & application questions
+              {questions.length > 0 ? ` (${questions.length})` : ""}
+            </summary>
+            <div className="form-stack">
+              <ZonedDateInput
+                label="Withdrawal deadline"
+                value={withdrawUntil}
+                timeZone={e.timeZone}
+                onChange={setWithdraw}
+                onValidityChange={setWithdrawValid}
+                optional
+              />
+              <p className="muted small">
+                Collect only necessary information. Saved applications retain
+                their original answers.
+              </p>
+              {questions.map((q, i) => (
+                <fieldset className="form-stack" key={q.id}>
+                  <legend>Question {i + 1}</legend>
+                  <label className="field">
+                    <span>Question {i + 1} label</span>
+                    <input
+                      maxLength={200}
+                      value={q.label}
+                      onChange={(e) =>
+                        setQuestions(
+                          questions.map((v, j) =>
+                            j === i ? { ...v, label: e.target.value } : v,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                  <label className="check-field">
+                    <input
+                      type="checkbox"
+                      checked={q.required}
+                      onChange={(e) =>
+                        setQuestions(
+                          questions.map((v, j) =>
+                            j === i ? { ...v, required: e.target.checked } : v,
+                          ),
+                        )
+                      }
+                    />
+                    <span>Question {i + 1} is required</span>
+                  </label>
+                  <label className="field">
+                    <span>Question {i + 1} maximum length</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={2000}
+                      value={q.maxLength}
+                      onChange={(e) =>
+                        setQuestions(
+                          questions.map((v, j) =>
+                            j === i
+                              ? { ...v, maxLength: Number(e.target.value) }
+                              : v,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                  <div className="actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      disabled={!i}
+                      onClick={() =>
+                        setQuestions(
+                          questions.map((v, j) =>
+                            j === i - 1
+                              ? questions[i]
+                              : j === i
+                                ? questions[i - 1]
+                                : v,
+                          ),
+                        )
+                      }
+                    >
+                      Move question {i + 1} up
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() =>
+                        setQuestions(questions.filter((_, j) => j !== i))
+                      }
+                    >
+                      Remove question {i + 1}
+                    </button>
+                  </div>
+                </fieldset>
+              ))}
+              <button
+                type="button"
+                className="secondary"
+                disabled={questions.length >= 16}
+                onClick={() =>
+                  setQuestions([
+                    ...questions,
+                    {
+                      id: `question_${crypto.randomUUID().slice(0, 8)}`,
+                      label: "",
+                      required: false,
+                      maxLength: 500,
+                    },
+                  ])
+                }
+              >
+                Add question
+              </button>
+            </div>
+          </details>
         </>
       )}
       <Save
@@ -611,10 +653,7 @@ function Schedule({ data, saved }: EditorProps) {
   return (
     <section className="panel form-stack">
       <h2>Tournament milestones</h2>
-      <p className="muted small">
-        Milestones are separate from match fixtures. Leave unconfirmed dates
-        blank for TBA.
-      </p>
+      <p className="muted small">Leave unconfirmed dates blank for TBA.</p>
       {schedule.map((s, i) => (
         <fieldset key={s.id} className="form-stack">
           <legend>Milestone {i + 1}</legend>
