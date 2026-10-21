@@ -42,7 +42,6 @@ export default async function Dashboard({
           <Link href="/dashboard" aria-current="page">
             Dashboard
           </Link>
-          <Link href="/tournaments">Tournaments</Link>
         </nav>
         <form className="spaced" action="/auth/logout" method="post">
           <button className="secondary">Sign out</button>
