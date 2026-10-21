@@ -335,7 +335,8 @@ export function MappoolOrder({
               <BeatmapDetails
                 beatmapId={entry.beatmapId}
                 metadata={entry.metadata}
-                label={label}
+                label={editable ? undefined : label}
+                category={category}
               />
               {editable && (
                 <fieldset

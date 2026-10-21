@@ -1,4 +1,4 @@
-import type { BeatmapMetadata } from "@/lib/mappool-model";
+import type { BeatmapMetadata, MappoolCategory } from "@/lib/mappool-model";
 import {
   formatBeatmapDuration,
   formatBeatmapNumber,
@@ -8,44 +8,50 @@ export function BeatmapDetails({
   beatmapId,
   metadata: m,
   label,
+  category,
   fetchedAt,
 }: {
   beatmapId: number;
   metadata: BeatmapMetadata;
   label?: string;
+  category?: MappoolCategory;
   fetchedAt?: string;
 }) {
   return (
     <div className="beatmap-row">
       <BeatmapCover key={m.setId} setId={m.setId} />
-      <div>
+      <div className="beatmap-copy">
         {label && <span className="badge">{label}</span>}
         <h3>
           <a
             className="text-link"
             href={`https://osu.ppy.sh/beatmaps/${beatmapId}`}
           >
-            {m.artist} — {m.title} ↗
+            <span className="beatmap-artist">{m.artist} — </span>
+            {m.title} ↗
           </a>
         </h3>
         <p className="muted small">
           {m.difficulty} · mapped by {m.mapper}
         </p>
-        <p className="small">
-          {formatBeatmapNumber(m.stars, 2)} ★ base ·{" "}
-          {formatBeatmapNumber(m.bpm)} BPM · {formatBeatmapDuration(m.duration)}
+        <p className="small beatmap-stats">
+          <span>
+            <strong>{formatBeatmapNumber(m.stars, 2)}</strong> ★ base
+          </span>{" "}
+          <span>{formatBeatmapNumber(m.bpm)} BPM</span>{" "}
+          <span>{formatBeatmapDuration(m.duration)}</span>
         </p>
         {(m.ar !== undefined ||
           m.od !== undefined ||
           m.cs !== undefined ||
           m.hp !== undefined) && (
-          <p className="small muted">
+          <p className="small muted beatmap-parameters">
             Base AR {formatBeatmapNumber(m.ar)} · OD {formatBeatmapNumber(m.od)}{" "}
             · CS {formatBeatmapNumber(m.cs)} · HP {formatBeatmapNumber(m.hp)}
           </p>
         )}
         {m.attributes ? (
-          <div className="small">
+          <div className="small beatmap-adjusted">
             <p>
               {m.attributes.configuration} ·{" "}
               {formatBeatmapNumber(m.attributes.stars, 2)} ★ official adjusted ·{" "}
@@ -69,9 +75,14 @@ export function BeatmapDetails({
             )}
           </div>
         ) : (
-          label && (
-            <p className="muted small">
-              Mod-adjusted difficulty: variable / unconfigured.
+          category &&
+          category !== "NM" && (
+            <p className="muted small beatmap-adjusted">
+              Mod-adjusted difficulty:{" "}
+              {category === "FM" || category === "TB"
+                ? "Variable"
+                : "Not calculated"}
+              .
             </p>
           )
         )}

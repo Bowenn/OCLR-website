@@ -1949,16 +1949,21 @@ body:has(.presenter-view) .site-footer,
   height: 100%;
   object-fit: cover;
 }
-.mappool-entry-controls {
+.mappool-workbench .mappool-entry-controls {
   display: grid;
-  gap: 0.75rem;
-  padding-block: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 0.85rem;
+  border: 1px solid #303449;
+  border-radius: 0.65rem;
+  background: #101422;
+  min-width: 0;
+  gap: 0.65rem;
 }
-.mappool-order {
+.mappool-workbench .mappool-order {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  gap: 0.75rem;
 }
 .mappool-order-toolbar {
   padding-block: 0.75rem;
@@ -1969,11 +1974,13 @@ body:has(.presenter-view) .site-footer,
 .mappool-order-toolbar .actions + p {
   margin-top: 0.5rem;
 }
-.mappool-order-controls {
+.mappool-workbench .mappool-order-controls {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.55rem;
 }
 .mappool-order-controls button {
   min-width: var(--button-height);
@@ -2850,9 +2857,9 @@ body:has(.presenter-view) .site-footer,
   margin-bottom: 0.75rem;
 }
 .mappool-workbench .beatmap-row {
-  grid-template-columns: 80px minmax(0, 1fr);
   align-items: start;
   gap: 0.75rem;
+  grid-template-columns: 96px minmax(0, 1fr);
 }
 .mappool-workbench .beatmap-cover {
   aspect-ratio: 1.5;
@@ -2868,9 +2875,9 @@ body:has(.presenter-view) .site-footer,
   overflow-wrap: anywhere;
 }
 .mappool-workbench button[aria-pressed="true"] {
-  background: #a45bd521;
-  border-color: #9f62c15c;
-  color: #edc1ff;
+  background: #a45bd526;
+  border-color: #ad7acb;
+  color: #f0d7ff;
 }
 .mappool-pools {
   border-top: 1px solid var(--color-border);
@@ -2881,8 +2888,8 @@ body:has(.presenter-view) .site-footer,
   gap: 0.75rem;
   text-align: left;
 }
-.mappool-pool-heading {
-  padding-block: 1.25rem;
+.mappool-workbench .mappool-pool-heading {
+  padding-block: 1rem 0.75rem;
 }
 .mappool-pool-heading h2,
 .mappool-setup h2,
@@ -3672,4 +3679,99 @@ body:has(.presenter-view) .site-footer,
 .time-zone-options [aria-selected="true"] {
   font-weight: 700;
   color: #e6bcfa;
+}
+
+/* Dense Admin pool navigation and slot cards; public mainsheets stay independent. */
+.mappool-workbench .mappool-context {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+.mappool-workbench .mappool-round-bar {
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.4rem;
+}
+.mappool-workbench .mappool-rounds button,
+.mappool-workbench .mappool-pools button {
+  border-color: #303449;
+  background: #0d1120;
+}
+.mappool-workbench .mappool-mods {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  background: var(--color-surface);
+}
+.mappool-workbench .mappool-mods button {
+  flex: 1 0 auto;
+}
+.mappool-workbench .mappool-mods button[data-empty] {
+  border-style: dashed;
+  border-color: #35394d;
+}
+
+.mappool-workbench .mappool-policy {
+  margin: 0.4rem 0 0;
+}
+
+.mappool-workbench .mappool-order-controls strong {
+  color: #ebc5ff;
+  margin-right: auto;
+}
+
+.mappool-workbench .beatmap-copy {
+  min-width: 0;
+}
+.mappool-workbench .beatmap-row h3 {
+  margin: 0 0 0.25rem;
+  line-height: 1.35;
+}
+.mappool-workbench .beatmap-copy p {
+  margin: 0.25rem 0;
+}
+.mappool-workbench .beatmap-artist {
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+.mappool-workbench .beatmap-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+}
+.mappool-workbench .beatmap-stats > span {
+  white-space: nowrap;
+}
+.mappool-workbench .beatmap-adjusted {
+  border-left: 2px solid #a57abe;
+  padding-left: 0.6rem;
+}
+.mappool-workbench .beatmap-parameters {
+  font-variant-numeric: tabular-nums;
+}
+.mappool-workbench .mappool-entry-actions {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.mappool-workbench .mappool-entry-actions > .actions {
+  margin-top: 0.5rem;
+}
+@media (max-width: 600px) {
+  .mappool-workbench .mappool-context {
+    padding: 0.75rem;
+  }
+  .mappool-workbench .beatmap-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 0.6rem;
+  }
+  .mappool-workbench .mappool-entry-controls {
+    padding: 0.65rem;
+  }
+  .mappool-workbench .mappool-order-controls {
+    gap: 0.3rem;
+  }
+  .mappool-workbench .beatmap-stats {
+    gap: 0.2rem 0.65rem;
+  }
 }

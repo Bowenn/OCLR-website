@@ -574,6 +574,14 @@ export function MappoolEditor({
                   {pool.publishedAt ? "Published" : "Draft"}
                 </span>
               </h2>
+              <p className="mappool-policy small muted">
+                {pool.fmMode === "free_mod"
+                  ? "Free Mod"
+                  : pool.fmMode === "force_mod"
+                    ? "Force Mod"
+                    : "FM disabled"}
+                {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
+              </p>
             </div>
             <div className="actions">
               {!pool.lockedAt && (
@@ -612,16 +620,6 @@ export function MappoolEditor({
             pool.publishedAt && (
               <p className="muted small">Public changes appear on Save.</p>
             )
-          )}
-          {!editable && (
-            <p className="muted small">
-              {pool.fmMode === "free_mod"
-                ? "Free Mod"
-                : pool.fmMode === "force_mod"
-                  ? "Force Mod"
-                  : "FM disabled"}
-              {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
-            </p>
           )}
           <WorkspaceTabs
             id={`${id}-task`}
@@ -662,6 +660,9 @@ export function MappoolEditor({
                       key={c}
                       className="secondary"
                       aria-pressed={category === c}
+                      data-empty={
+                        poolEntries.every((e) => e.category !== c) || undefined
+                      }
                       onClick={() => setCategory(c)}
                     >
                       {c} (
