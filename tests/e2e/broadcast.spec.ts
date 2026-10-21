@@ -119,7 +119,6 @@ test.describe("published OBS browser-source rehearsal", () => {
     expect(withheld).toContain(fixture.players[0].username);
     expect(withheld).not.toContain(fixture.staff.username);
     expect(withheld).not.toContain(fixture.players[7].username);
-    await command("publish");
     await expect(
       selection.getByRole("heading", {
         name: fixture.players[0].username,
@@ -146,8 +145,7 @@ test.describe("published OBS browser-source rehearsal", () => {
     await pick(staff, fixture.players[1].osuId);
     await context.setOffline(false);
     await expect(page.getByRole("status")).toContainText("Connected");
-    await expect(selection).not.toContainText(fixture.players[1].username);
-    await command("publish");
+    await expect(selection).toContainText(fixture.players[1].username);
     await expect(
       selection.getByRole("heading", {
         name: fixture.players[1].username,
@@ -163,12 +161,9 @@ test.describe("published OBS browser-source rehearsal", () => {
     await expect(current).toContainText(fixture.a.username); // Explicit repeating order, A → B → A → B.
 
     await command("pause");
-    await command("publish");
     await expect(page.locator("[data-state]")).toHaveText("Paused");
     await command("undo");
     await page.waitForResponse((res) => res.url().endsWith(endpoint));
-    await expect(selection).toContainText(fixture.players[1].username);
-    await command("publish");
     await expect(
       selection.getByRole("heading", {
         name: fixture.players[0].username,
@@ -177,9 +172,7 @@ test.describe("published OBS browser-source rehearsal", () => {
     ).toBeVisible();
     expect(await selection.evaluate((el) => el.getAnimations().length)).toBe(0); // Correction does not re-reveal an old pick.
     await command("resume");
-    await command("publish");
     await pick(staff, fixture.players[1].osuId);
-    await command("publish");
     await expect(
       selection.getByRole("heading", {
         name: fixture.players[1].username,
@@ -188,7 +181,6 @@ test.describe("published OBS browser-source rehearsal", () => {
     ).toBeVisible();
     await page.emulateMedia({ reducedMotion: "reduce" });
     await pick(captain, fixture.players[2].osuId);
-    await command("publish");
     await expect(
       selection.getByRole("heading", {
         name: fixture.players[2].username,
@@ -197,10 +189,8 @@ test.describe("published OBS browser-source rehearsal", () => {
     ).toBeVisible();
     expect(await selection.evaluate((el) => el.getAnimations().length)).toBe(0);
     await pick(staff, fixture.players[3].osuId);
-    await command("publish");
     await expect(page.locator("[data-state]")).toHaveText("Draft completed");
     await command("finalize");
-    await command("publish");
     await expect(page.locator("[data-state]")).toHaveText("Rosters finalized");
     await expect(current).toContainText("Teams assembled.");
     await expect(

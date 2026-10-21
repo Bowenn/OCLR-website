@@ -167,7 +167,7 @@ test.describe("published mappools and restricted editing", () => {
         preview.getByRole("link", { name: /Synthetic Browser Song/ }),
       ).toBeVisible();
       await expect(preview).toContainText("4.50 ★ base");
-      await expect(preview).toContainText("180 BPM · 2:03");
+      await expect(preview).toContainText("180 BPM 2:03");
       await expect(preview).toContainText("Official osu! API");
       await expect(preview).toContainText("Set 42");
       const fetchedAt = await preview.locator("time").getAttribute("datetime");
@@ -476,10 +476,13 @@ test.describe("published mappools and restricted editing", () => {
         .getByRole("region", { name: "Selected mappool", exact: true })
         .getByText("Published", { exact: true }),
     ).toBeVisible();
-    await expect(maps).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByRole("tab", { name: "Pool settings", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
     await expect(
       page.getByRole("tab", { name: /Bulk import|Batch edit|Pool settings/ }),
-    ).toHaveCount(0);
+    ).toHaveCount(3);
+    await maps.click();
     await expect(
       page.getByRole("heading", { name: /Synthetic Browser Song/ }),
     ).toBeVisible();

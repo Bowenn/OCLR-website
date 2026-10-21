@@ -7,7 +7,6 @@ import {
   test,
   type Browser,
   type BrowserContext,
-  type Page,
 } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { sql } from "drizzle-orm";
@@ -500,7 +499,7 @@ test.describe("isolated multi-captain rehearsal", () => {
       staff.page.getByText("Committed changes await publication.", {
         exact: false,
       }),
-    ).toBeVisible();
+    ).toHaveCount(0);
     const cancel = staff.page
       .locator("dialog[open]")
       .getByRole("button", { name: "Cancel", exact: true });

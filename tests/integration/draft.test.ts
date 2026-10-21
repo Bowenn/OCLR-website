@@ -479,8 +479,7 @@ describe.skipIf(!url)(
         edition.slug,
         await input(fixture.players[1].osuId),
       );
-      await expect(command("finalize")).rejects.toMatchObject({ status: 409 });
-      await command("publish");
+      // Confirmed turns already publish the complete authoritative board.
       await command("finalize");
       expect(
         (await db().select().from(teams)).every(

@@ -798,9 +798,13 @@ describe.skipIf(!url)("edition mappool integrity and publication", () => {
         .filter((e) => e.category === "HD")
         .map((e) => e.beatmapId),
     ).toEqual([5, 99]);
-    await expect(
-      mappoolCommand(mapper, edition.slug, { ...payload, expectedVersion: 3 }),
-    ).rejects.toMatchObject({ status: 409 });
+    await mappoolCommand(mapper, edition.slug, {
+      ...payload,
+      expectedVersion: 3,
+    });
+    expect(
+      (await publicMappools(edition.slug, pool.id))[0].publishedAt,
+    ).not.toBeNull();
   });
   it("rolls back an occupied insertion when its audit fails and rejects locked/cross-edition reorder", async () => {
     const pool = await create();

@@ -10,7 +10,7 @@ import { seedResultReview } from "../fixtures/results";
 test.describe("private referee review and Admin publication", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(async () => closeDb());
-  test("reviewed synthetic games require separate approval and publish, with persistent audit", async ({
+  test("reviewed synthetic games require Admin approve-and-publish, with persistent audit", async ({
     page,
     context,
     browser,
@@ -236,11 +236,7 @@ test.describe("private referee review and Admin publication", () => {
           ).json()
         ).rows.map((e: { action: string }) => e.action),
       ).toEqual(
-        expect.arrayContaining([
-          "result_submit",
-          "result_approve",
-          "result_publish",
-        ]),
+        expect.arrayContaining(["result_submit", "result_approve_publish"]),
       );
       expect(
         (

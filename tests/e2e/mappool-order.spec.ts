@@ -405,8 +405,9 @@ test.describe("quick paste and mappool ordering", () => {
       });
       expect(published.status()).toBe(200);
       await page.reload();
-      await expect(page.locator(".mappool-drag-handle")).toHaveCount(0);
-      await expect(save).toHaveCount(0);
+      await expect(page.locator(".mappool-drag-handle")).toHaveCount(5);
+      await expect(save).toBeVisible();
+      await expect(save).toBeDisabled();
       const publicData = await (
         await guest.request.get(`/api/tournaments/test-cup/mappools/${pool.id}`)
       ).json();

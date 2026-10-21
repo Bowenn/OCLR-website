@@ -346,24 +346,17 @@ describe.skipIf(!url)(
         .select()
         .from(mappools)
         .where(eq(mappools.id, poolId));
-      await mappoolCommand(mapper, "test-cup", {
-        ...confirm,
-        action: "pool_publish",
-        poolId,
-        expectedVersion: pool.version,
-        published: true,
-      });
-      expect((await publicFixture("test-cup", fixtureId))?.pool).toEqual({
-        id: poolId,
-        name: pool.name,
-      });
-      await mappoolCommand(mapper, "test-cup", {
-        ...confirm,
-        action: "pool_publish",
-        poolId,
-        expectedVersion: pool.version + 1,
-        published: false,
-      });
+      for (const published of [true, false]) {
+        await expect(
+          mappoolCommand(mapper, "test-cup", {
+            ...confirm,
+            action: "pool_publish",
+            poolId,
+            expectedVersion: pool.version,
+            published,
+          }),
+        ).rejects.toMatchObject({ status: 409 });
+      }
       expect((await publicFixture("test-cup", fixtureId))?.pool).toBeNull();
       expect(publicData.fixtures[0].result).toMatchObject({
         homeWins: 2,
@@ -466,7 +459,7 @@ describe.skipIf(!url)(
         "Knockout Stage · configured fixture progression",
       );
       const third = await seedPublicDirectory(293001);
-      const child = (
+      let child = (
         await fixtureCommand(admin, "test-cup", {
           ...fixtureBody,
           label: "Synthetic Future Fixture",
@@ -553,7 +546,8 @@ describe.skipIf(!url)(
       expect(publicChild.home.team?.id).toBe(root.context.fixture.awayTeamId);
       expect(publicChild.result).toBeNull();
       expect(publicChild.scheduledAt).toBeNull();
-      // Withdrawing the conflicting child preserves history and permits an explicit fixture correction.
+      // Withdrawal preserves immutable approved history. A structural correction
+      // requires a replacement fixture, rather than rewriting that history.
       const savedChild = await matchReview(admin, "test-cup", child.id);
       await resultCommand(admin, "test-cup", child.id, {
         ...base(savedChild),
@@ -568,29 +562,42 @@ describe.skipIf(!url)(
         expectedVersion: savedChild.context.fixture.version,
         published: false,
       });
-      await fixtureCommand(admin, "test-cup", {
-        ...Object.fromEntries(
-          Object.entries(fixtureBody).filter(([key]) => key !== "refereeIds"),
-        ),
-        action: "edit",
-        fixtureId: child.id,
-        expectedVersion: savedChild.context.fixture.version + 1,
-        label: "Synthetic Future Fixture",
-        position: 2,
-        homeTeamId: root.context.fixture.awayTeamId,
-        awayTeamId: third.teamId,
-        homeSourceId: fixtureId,
-        homeSourceOutcome: "winner",
-      });
+      await expect(
+        fixtureCommand(admin, "test-cup", {
+          ...Object.fromEntries(
+            Object.entries(fixtureBody).filter(([key]) => key !== "refereeIds"),
+          ),
+          action: "edit",
+          fixtureId: child.id,
+          expectedVersion: savedChild.context.fixture.version + 1,
+          label: "Synthetic Future Fixture",
+          position: 2,
+          homeTeamId: root.context.fixture.awayTeamId,
+          awayTeamId: third.teamId,
+          homeSourceId: fixtureId,
+          homeSourceOutcome: "winner",
+        }),
+      ).rejects.toMatchObject({ status: 409 });
       expect(
         (await matchReview(admin, "test-cup", child.id)).revisions[0].proposal
           ?.teamIds[0],
       ).toBe(root.context.fixture.homeTeamId);
+      child = (
+        await fixtureCommand(admin, "test-cup", {
+          ...fixtureBody,
+          label: "Synthetic Replacement Fixture",
+          position: 3,
+          homeTeamId: root.context.fixture.awayTeamId,
+          awayTeamId: third.teamId,
+          homeSourceId: fixtureId,
+          homeSourceOutcome: "winner",
+        })
+      ).fixtures.find((f) => f.label === "Synthetic Replacement Fixture")!;
       await fixtureCommand(admin, "test-cup", {
         ...confirm,
         action: "publish",
         fixtureId: child.id,
-        expectedVersion: savedChild.context.fixture.version + 2,
+        expectedVersion: child.version,
         published: true,
       });
 
