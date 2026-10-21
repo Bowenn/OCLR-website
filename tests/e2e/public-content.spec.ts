@@ -6,6 +6,7 @@ import { editionState } from "../../src/db/schema";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 import { assertTestDatabase } from "../database";
+import { captureResponsiveLayout } from "./responsive";
 import { projectPublicNews } from "../../src/lib/public-news-model";
 test.describe("derived public content", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
@@ -54,9 +55,20 @@ test.describe("derived public content", () => {
       await page.goto("/");
       await expect(page.locator(".hero-kicker")).toHaveText(published.name);
       await expect(page.locator(".home-news li")).toHaveCount(3);
+      await expect(page.locator('.hero .actions a[href="/about"]')).toHaveCount(
+        0,
+      );
+      const headline = page.locator(".home-news .news-headline").first();
+      await expect(headline).toHaveCSS("text-decoration-line", "none");
+      await headline.focus();
+      await expect(headline).toHaveCSS("text-decoration-line", "underline");
+      await headline.blur();
+      await captureResponsiveLayout(page, info, "news-headlines-home");
+
       await expect(page.getByText("PRIVATE_EDITION_NEWS")).toHaveCount(0);
       await expect(page.locator(".hero-kicker")).not.toContainText("11");
       await page.goto("/news");
+      await captureResponsiveLayout(page, info, "news-headlines-list");
       await page
         .getByRole("link", {
           name: "Scheduled: Captain draft — Synthetic Season 12",

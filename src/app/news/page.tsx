@@ -26,8 +26,8 @@ export default async function News() {
               </div>
               <div>
                 <h2>
-                  <Link className="text-link" href={`/news/${a.slug}`}>
-                    {a.title} <span aria-hidden="true">↗</span>
+                  <Link className="news-headline" href={`/news/${a.slug}`}>
+                    {a.title} <span aria-hidden="true">→</span>
                   </Link>
                 </h2>
                 <p className="muted">{a.summary}</p>

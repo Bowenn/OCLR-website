@@ -55,9 +55,6 @@ export default async function Home() {
             >
               View tournament ↗
             </Action>
-            <Link className="text-link" href="/about">
-              About OCLR
-            </Link>
           </div>
         </div>
       </section>
@@ -78,8 +75,9 @@ export default async function Home() {
                     {formatDate(item.at, item.timeZone)}
                   </p>
                   <h3>
-                    <Link className="text-link" href={`/news/${item.slug}`}>
-                      {item.title} ↗
+                    <Link className="news-headline" href={`/news/${item.slug}`}>
+                      {item.title}
+                      <span aria-hidden="true">→</span>
                     </Link>
                   </h3>
                   <p className="muted small">{item.summary}</p>

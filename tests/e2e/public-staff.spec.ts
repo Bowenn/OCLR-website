@@ -82,13 +82,11 @@ test.describe("approved public About roster", () => {
       ).toBeVisible();
       const operator = await admin.newPage();
       await operator.goto("/admin/staff");
-      const row = operator
-        .locator("article")
-        .filter({
-          has: operator.getByText("mappooler · test-cup · Active", {
-            exact: true,
-          }),
-        });
+      const row = operator.locator("article").filter({
+        has: operator.getByText("mappooler · test-cup · Active", {
+          exact: true,
+        }),
+      });
       await row
         .getByRole("button", { name: "Show on About", exact: true })
         .click();
@@ -110,9 +108,12 @@ test.describe("approved public About roster", () => {
       await expect(
         page.locator(".public-staff-list .staff-role-name"),
       ).toHaveText("mappooler");
+      await expect(page.locator(".public-staff-list")).toContainText(
+        "Synthetic test edition",
+      );
       await expect(
-        page.getByRole("link", { name: "Synthetic test edition", exact: true }),
-      ).toHaveAttribute("href", "/tournaments/test-cup");
+        page.locator('.public-staff-list a[href^="/tournaments/"]'),
+      ).toHaveCount(0);
       await expect(
         page.getByText(`Synthetic Player ${adminId}`, { exact: false }),
       ).toHaveCount(0);

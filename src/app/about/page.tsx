@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Action, PageHeading } from "@/components/ui";
+import { PageHeading } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { publicStaff } from "@/lib/public-staff";
 import { privacyContact } from "@/lib/auth/config";
@@ -14,8 +14,9 @@ export default async function About() {
         eyebrow="THE ROOKIE STAGE"
         title="osu! Chinese League Rookie"
       >
-        An osu! community tournament: players enter individually, captains draft
-        their teams, and finalized rosters compete together.
+        Founded in 2018, OCLR is part of the OCL tournament series, whose
+        history dates back to 2014. Players register individually and compete in
+        captain-drafted teams.
       </PageHeading>
       <div className="about-layout">
         <section aria-labelledby="staff-heading">
@@ -40,17 +41,7 @@ export default async function About() {
                           key={`${grant.role}-${grant.edition?.slug ?? "global"}`}
                         >
                           <span className="staff-role-name">{grant.role}</span>{" "}
-                          ·{" "}
-                          {grant.edition ? (
-                            <Link
-                              className="text-link"
-                              href={`/tournaments/${grant.edition.slug}`}
-                            >
-                              {grant.edition.name}
-                            </Link>
-                          ) : (
-                            "All editions"
-                          )}
+                          · {grant.edition?.name ?? "All editions"}
                         </li>
                       ))}
                     </ul>
@@ -64,14 +55,6 @@ export default async function About() {
               profiles have not been announced.
             </p>
           )}
-          <div className="actions spaced">
-            <Action href="/tournaments" secondary>
-              Explore tournaments →
-            </Action>
-            <Action href="/news" secondary>
-              Latest news
-            </Action>
-          </div>
         </section>
         <aside className="about-aside">
           <h2>Contact</h2>

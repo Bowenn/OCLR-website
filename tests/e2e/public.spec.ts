@@ -67,6 +67,13 @@ test("news is approved content only and about uses the official identity", async
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "osu! Chinese League Rookie",
   );
+  await expect(page.locator(".page-heading")).toContainText("Founded in 2018");
+  await expect(page.locator(".page-heading")).toContainText(
+    "OCL tournament series, whose history dates back to 2014",
+  );
+  await expect(
+    page.getByRole("link", { name: /Explore tournaments|Latest news/ }),
+  ).toHaveCount(0);
   await page.goto("/news");
   if (process.env.TEST_DATABASE_URL) {
     await page
