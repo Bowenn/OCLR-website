@@ -52,8 +52,8 @@ test.describe("appearance and language preferences", () => {
     expect(initial?.headers()["content-language"]).toBe("zh-Hans");
     await expect(page.locator("html")).toHaveAttribute("lang", "zh-Hans");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await expect(page.locator(".language-control select")).toHaveValue(
-      "zh-Hans",
+    await expect(page.locator(".language-control > button")).toHaveText(
+      "简体中文",
     );
     await expect(
       page.getByRole("heading", {
@@ -69,7 +69,8 @@ test.describe("appearance and language preferences", () => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     for (const locale of ["zh-Hans", "zh-Hant", "en"]) {
-      await page.locator(".language-control select").selectOption(locale);
+      await page.locator(".language-control > button").click();
+      await page.locator(`.language-control [data-locale="${locale}"]`).click();
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
       if (locale !== "en")
         expect(
@@ -185,7 +186,8 @@ test.describe("appearance and language preferences", () => {
       ["zh-Hant", "管理概覽", "選手控制檯"],
       ["en", "Administration overview", "Player dashboard"],
     ]) {
-      await page.locator(".language-control select").selectOption(locale);
+      await page.locator(".language-control > button").click();
+      await page.locator(`.language-control [data-locale="${locale}"]`).click();
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
       for (const [path, title] of [
         ["/admin", adminTitle],

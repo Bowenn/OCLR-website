@@ -1,0 +1,77 @@
+.root {
+  position: relative;
+}
+.trigger {
+  min-height: 44px;
+  padding: 0.5rem 0.65rem;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transform: none;
+}
+.trigger:hover {
+  transform: none;
+}
+.trigger svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 120ms ease-out;
+}
+.trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: max-content;
+  min-width: 9rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.25rem;
+  border: 1px solid var(--public-border, #685175);
+  border-radius: 0.75rem;
+  background: var(--public-surface, #151827);
+  box-shadow: 0 12px 28px #0005;
+  color: var(--public-secondary-text, #d3d4e2);
+}
+.root .menu button[role] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transform: none;
+}
+.root .menu button[role]:hover,
+.root .menu button[role]:focus-visible {
+  background: var(--public-tint, #ffffff0c);
+  color: var(--public-accent-strong, #fff);
+  transform: none;
+}
+.root .menu button[role]:focus-visible {
+  outline-offset: -3px;
+}
+.root .menu button[role][aria-checked="true"] {
+  background: var(--public-tint, #a65bd42e);
+  color: var(--public-accent-strong, #f4e7ff);
+}
+.root .menu button[role] svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trigger svg {
+    transition: none;
+  }
+}
