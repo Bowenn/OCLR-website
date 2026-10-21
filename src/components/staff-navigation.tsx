@@ -50,14 +50,12 @@ export function StaffNavigation({
                 value={selected.slug}
                 onChange={(event) => {
                   setOpenPath(null);
-                  router.push(
-                    event.target.value
-                      ? `/admin/tournaments/${event.target.value}`
-                      : "/admin/tournaments",
+                  const next = editions.find(
+                    (edition) => edition.slug === event.target.value,
                   );
+                  if (next) router.push(`/admin/tournaments/${next.slug}`);
                 }}
               >
-                <option value="">All tournaments</option>
                 {editions.map((e) => (
                   <option key={e.slug} value={e.slug}>
                     {e.name}
@@ -70,6 +68,13 @@ export function StaffNavigation({
             ) : selected.status === "live" ? (
               <span className="badge">Live</span>
             ) : null}
+            <Link
+              href="/admin/tournaments"
+              className="button secondary admin-return"
+              onClick={() => setOpenPath(null)}
+            >
+              ← All tournaments
+            </Link>
           </div>
         ) : (
           <h2>OCLR operations</h2>
@@ -110,15 +115,7 @@ export function StaffNavigation({
               </div>
             ))}
           </nav>
-          <div className="admin-exits">
-            {selected && (
-              <Link href="/admin" onClick={() => setOpenPath(null)}>
-                ← Administration overview
-              </Link>
-            )}
-            <Link href="/">← Back to website</Link>
-            <p className="muted small">Signed in as {username}</p>
-          </div>
+          <p className="admin-identity muted small">Signed in as {username}</p>
         </div>
       </aside>
       <div className="workspace-main">

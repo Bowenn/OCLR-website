@@ -1,8 +1,9 @@
+import { captureResponsiveLayout } from "./responsive";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { seedSession } from "./session";
 import { db, closeDb } from "../../src/db";
-import { staffRoles } from "../../src/db/schema";
+import { editionState, staffRoles } from "../../src/db/schema";
 import { sql } from "drizzle-orm";
 test.describe("tournament-centered administration", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
@@ -62,6 +63,27 @@ test.describe("tournament-centered administration", () => {
       })
       .click();
     await expect(page.getByLabel("Selected tournament")).toHaveValue("s11");
+    const selector = page.getByLabel("Selected tournament");
+    await expect(selector.locator('option[value=""]')).toHaveCount(0);
+    await expect(page.locator('.sidebar a[href="/"]')).toHaveCount(0);
+    const back = page.getByRole("link", {
+      name: "← All tournaments",
+      exact: true,
+    });
+    await expect(back).toHaveCount(1);
+    await expect(back).toHaveClass(/button secondary/);
+    await expect(back).toHaveAttribute("href", "/admin/tournaments");
+    await captureResponsiveLayout(page, info, "tournament-return");
+    await back.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/admin\/tournaments$/);
+    await expect(
+      page.getByRole("link", { name: "← All tournaments", exact: true }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("link", { name: /^Open tournament OCLR Season 11/ })
+      .click();
+
     await expect(
       page.getByRole("navigation", { name: "Breadcrumb" }),
     ).toContainText("OCLR Season 11");
@@ -176,6 +198,42 @@ test.describe("tournament-centered administration", () => {
             grantedBy: adminId,
           },
         ]);
+      const unassignedId = ordinaryId + 1;
+      const unassigned = await browser.newContext({
+        baseURL: "http://127.0.0.1:3100",
+      });
+      try {
+        await unassigned.addCookies([await seedSession(unassignedId)]);
+        await db()
+          .insert(editionState)
+          .values({ slug: "no-configured-workspace" })
+          .onConflictDoNothing();
+        await db().insert(staffRoles).values({
+          userId: unassignedId,
+          role: "referee",
+          editionSlug: "no-configured-workspace",
+          grantedBy: adminId,
+        });
+        const noWorkspace = await unassigned.newPage();
+        await noWorkspace.goto("/admin/tournaments");
+        await expect(noWorkspace.getByLabel("Selected tournament")).toHaveCount(
+          0,
+        );
+        await expect(
+          noWorkspace.getByRole("link", {
+            name: "← All tournaments",
+            exact: true,
+          }),
+        ).toHaveCount(0);
+        await expect(
+          noWorkspace.getByRole("heading", {
+            name: "No matching tournaments",
+            exact: true,
+          }),
+        ).toBeVisible();
+      } finally {
+        await unassigned.close();
+      }
       for (const [session, allowed, denied] of [
         [mapper, "Mappools", "matches"],
         [referee, "Fixtures & results", "mappools"],
@@ -191,7 +249,16 @@ test.describe("tournament-centered administration", () => {
         await operator.goto("/admin/tournaments/test-cup");
         await expect(
           operator.getByLabel("Selected tournament").locator("option"),
-        ).toHaveCount(2);
+        ).toHaveCount(1);
+        await expect(
+          operator.getByLabel("Selected tournament").locator("option"),
+        ).toHaveText("Synthetic test edition");
+        await expect(
+          operator.getByRole("link", {
+            name: "← All tournaments",
+            exact: true,
+          }),
+        ).toBeVisible();
         await menu(operator);
         const nav = operator.getByRole("navigation", {
           name: "Tournament navigation",

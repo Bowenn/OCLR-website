@@ -231,6 +231,16 @@ test.describe("role-aware header actions and compact tournament context", () => 
     await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 900 });
     const sidebar = page.locator(".sidebar");
     await expect(sidebar.getByLabel("Selected tournament")).toHaveValue("s11");
+    await expect(sidebar.locator('option[value=""]')).toHaveCount(0);
+    await expect(
+      sidebar.getByRole("link", { name: "← All tournaments", exact: true }),
+    ).toHaveClass(/button secondary/);
+    await expect(
+      sidebar.getByRole("link", {
+        name: /Back to website|Administration overview/,
+      }),
+    ).toHaveCount(0);
+
     await expect(sidebar.locator(".admin-context .sr-only")).toHaveCSS(
       "clip-path",
       "inset(50%)",

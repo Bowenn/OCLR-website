@@ -413,6 +413,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+    await expect(page).toHaveTitle(/Tournament settings/);
     expect(
       (
         await new AxeBuilder({ page })

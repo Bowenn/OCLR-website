@@ -2490,14 +2490,21 @@ body:has(.presenter-view) .site-footer,
   display: none;
 }
 .admin-context {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
   margin: 0.75rem 0 1rem;
+}
+.admin-context .field,
+.admin-return {
+  width: 100%;
 }
 .admin-context select {
   width: 100%;
   min-width: 0;
 }
 .admin-context .badge {
-  margin-top: 0.5rem;
+  margin-top: 0;
 }
 .admin-workspace .admin-nav-group a {
   padding-block: 0.5rem;
@@ -2514,11 +2521,9 @@ body:has(.presenter-view) .site-footer,
 .admin-nav-group a[aria-current="page"] {
   background: #8e53c02b;
 }
-.admin-exits {
+.admin-identity {
   border-top: 1px solid #262a3d;
   padding-top: 1rem;
-  display: grid;
-  gap: 1rem;
   font-size: 0.8rem;
 }
 .admin-menu-toggle {
