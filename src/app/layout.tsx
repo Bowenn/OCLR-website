@@ -3,6 +3,7 @@ import { isStaff } from "@/lib/auth/staff";
 import { currentUser } from "@/lib/auth/user";
 import { Header } from "@/components/header";
 import "./globals.css";
+import "./public-tournament.css";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {

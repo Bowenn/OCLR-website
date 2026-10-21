@@ -1,0 +1,268 @@
+/* MainSheet Light is scoped to public edition routes; private tools keep their theme. */
+body:has(.public-tournament) {
+  --color-background: #f4f1f7;
+  --color-surface: #fff;
+  --color-raised: #f8f4fb;
+  --color-foreground: #1b1422;
+  --color-muted: #6d6278;
+  --color-accent: #6c2e91;
+  --color-border: #ded5e7;
+  --color-success: #17644b;
+  --color-warning: #875505;
+  --color-danger: #a4254a;
+  --button-radius: 999px;
+  --radius-panel: 1.375rem;
+  color-scheme: light;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Microsoft JhengHei",
+    sans-serif;
+}
+body:has(.public-tournament) :focus-visible {
+  outline-color: #a52773;
+  outline-offset: 3px;
+}
+body:has(.public-tournament) ::selection {
+  background: #ebcce6;
+  color: #1b1422;
+}
+body:has(.public-tournament) .site-header {
+  background: #fdfcfe;
+  backdrop-filter: none;
+  border-color: var(--color-border);
+}
+body:has(.public-tournament) .nav-wrap {
+  max-width: 1440px;
+  padding-inline: clamp(1rem, 3.5vw, 3rem);
+  height: 68px;
+}
+body:has(.public-tournament) .main-nav a {
+  color: var(--color-muted);
+}
+body:has(.public-tournament) .main-nav a:hover,
+body:has(.public-tournament) .main-nav a[aria-current] {
+  color: #6c2e91;
+  border-color: #6c2e91;
+}
+body:has(.public-tournament) :is(button, .button) {
+  color: #fff;
+  background: #6c2e91;
+  border-color: #6c2e91;
+  box-shadow: none;
+  min-height: 44px;
+}
+body:has(.public-tournament) :is(button, .button):hover {
+  transform: translateY(-1px);
+  background: #552074;
+}
+body:has(.public-tournament) :is(button, .button).secondary {
+  color: #6c2e91;
+  background: #fff;
+  border-color: #cec2da;
+}
+body:has(.public-tournament) .account-dropdown {
+  background: #fff;
+  border-color: #ded5e7;
+  box-shadow: 0 12px 32px #31113b18;
+}
+body:has(.public-tournament) .account-dropdown a {
+  color: #453a50;
+}
+body:has(.public-tournament) .account-dropdown a:hover,
+body:has(.public-tournament) .account-dropdown a[aria-current] {
+  background: #ece5f3;
+  color: #552074;
+}
+body:has(.public-tournament) .site-footer {
+  border-color: #ded5e7;
+  background: #fdfcfe;
+  color: #453a50;
+}
+.public-tournament {
+  width: min(1400px, calc(100% - clamp(2rem, 7vw, 6rem)));
+  margin-inline: auto;
+  min-height: 65vh;
+  padding: 1.5rem 0 4rem;
+}
+.event-context {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+.event-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+.event-identity > a:last-of-type {
+  color: #1b1422;
+  font-weight: 650;
+}
+.public-tournament .badge {
+  color: #6c2e91;
+  border-color: #ded5e7;
+  background: #f8f4fb;
+  border-radius: 999px;
+}
+.public-tournament .tournament-navigation nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border-radius: 1.5rem;
+  background: #ece5f3;
+  width: fit-content;
+  max-width: 100%;
+}
+.public-tournament .tournament-navigation nav a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  color: #6d6278;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.public-tournament .tournament-navigation nav a:hover {
+  color: #6c2e91;
+  background: #f8f4fb;
+}
+.public-tournament .tournament-navigation nav a[aria-current] {
+  color: #6c2e91;
+  background: #fff;
+  box-shadow: 0 2px 6px #31113b0a;
+}
+.public-tournament .tournament-navigation nav a[aria-current]::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #d23f95;
+  border-radius: 50%;
+  margin-right: 0.45rem;
+}
+.tournament-menu {
+  display: none;
+}
+.event-content {
+  min-width: 0;
+}
+.public-tournament .page-heading {
+  background: #ece5f3;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  border: 1px solid #ded5e7;
+  border-radius: 1.875rem;
+  margin-bottom: 1.5rem;
+}
+.public-tournament .page-heading h1 {
+  margin-bottom: 0.75rem;
+  font-size: clamp(1.85rem, 3.3vw, 3rem);
+}
+.public-tournament .page-heading p:last-child {
+  margin-bottom: 0;
+}
+.public-tournament .eyebrow {
+  color: #6c2e91;
+}
+.public-tournament .text-link {
+  color: #6c2e91;
+}
+.public-tournament .panel {
+  background: #fff;
+  border-color: #ded5e7;
+  box-shadow: 0 18px 40px -36px #411e5a80;
+}
+.public-tournament .empty-state {
+  background: #fff;
+  border-color: #ded5e7;
+  padding: 1.5rem;
+}
+.public-tournament .notice {
+  background: #f8f4fb;
+  color: #453a50;
+  border-color: #d23f95;
+}
+.public-tournament .error-text {
+  color: #a4254a;
+}
+.public-tournament :is(input:not([type="checkbox"]), select, textarea) {
+  color: #241b2d;
+  background: #fff;
+  border-color: #cec2da;
+  min-height: 44px;
+  border-radius: 0.75rem;
+}
+.public-tournament :is(.detail-list > div, .schedule-list li, th, td) {
+  border-color: #ded5e7;
+}
+.public-tournament :is(.detail-list dt, .small.muted) {
+  color: #6d6278;
+}
+.public-tournament th {
+  color: #453a50;
+  background: #f8f4fb;
+}
+.public-tournament .workspace-tabs {
+  background: #ece5f3;
+  border-color: #ded5e7;
+  border-radius: 999px;
+}
+.public-tournament .workspace-tabs button {
+  color: #6d6278;
+  background: transparent;
+  border-color: transparent;
+}
+.public-tournament .workspace-tabs button[aria-selected="true"] {
+  color: #fff;
+  background: #6c2e91;
+}
+.public-tournament :is(h1, h2, h3, h4, p, a, dd) {
+  overflow-wrap: anywhere;
+}
+.public-tournament [id] {
+  scroll-margin-top: 90px;
+}
+@media (max-width: 760px) {
+  body:has(.public-tournament) .main-nav.open {
+    background: #fff;
+    border-color: #ded5e7;
+  }
+  .public-tournament {
+    padding-top: 1rem;
+  }
+  .tournament-menu {
+    display: inline-flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .public-tournament .tournament-navigation nav {
+    display: none;
+    width: 100%;
+    margin-top: 0.75rem;
+    border-radius: 1rem;
+  }
+  .public-tournament .tournament-navigation[data-open] nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .public-tournament .tournament-navigation nav a {
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body:has(.public-tournament) *,
+  body:has(.public-tournament) *::before,
+  body:has(.public-tournament) *::after {
+    scroll-behavior: auto;
+    animation: none;
+    transition: none;
+  }
+}

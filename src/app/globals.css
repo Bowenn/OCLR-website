@@ -2278,38 +2278,6 @@ body:has(.presenter-view) .site-footer,
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.tournament-workspace > .sidebar h2 {
-  font-size: 1rem;
-  margin: 1rem 0;
-}
-.tournament-workspace .sidebar nav a[aria-current="page"] {
-  background: #8e53c02b;
-  color: #efc6ff;
-}
-@media (max-width: 760px) {
-  .tournament-workspace {
-    gap: 1.5rem;
-  }
-  .tournament-workspace > .sidebar {
-    min-width: 0;
-    padding-bottom: 0.5rem;
-  }
-  .tournament-workspace > .sidebar h2 {
-    margin-block: 0.65rem;
-  }
-  .tournament-workspace .sidebar nav {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-block: 0.3rem 0.6rem;
-  }
-  .tournament-workspace .sidebar nav a {
-    flex-shrink: 0;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-  }
-}
-
 /* Keep dashboard actions, dates and checks on one aligned working surface. */
 .tournament-dashboard-heading {
   display: grid;

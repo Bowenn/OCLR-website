@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { TournamentNavigation } from "@/components/tournament-navigation";
+import { TournamentShell } from "@/components/tournament-navigation";
 import { notFound } from "next/navigation";
 import { publicDraft } from "@/lib/draft";
 import { getPublicEdition } from "@/lib/content";
@@ -18,23 +17,19 @@ export default async function EditionLayout({
   const draft = draftResult.status === "fulfilled" ? draftResult.value : null;
   const liveUnavailable = draftResult.status === "rejected";
   return (
-    <div className="container page workspace tournament-workspace">
-      <aside className="sidebar">
-        <Link href="/tournaments" className="eyebrow">
-          ← TOURNAMENTS
-        </Link>
-        <h2>{edition.name}</h2>
-        <TournamentNavigation slug={slug} liveDraft={Boolean(draft)} />
-      </aside>
-      <div className="workspace-main">
-        {liveUnavailable && (
-          <p className="notice" role="status">
-            Live tournament information is temporarily unavailable. Confirmed
-            rules and dates remain accessible.
-          </p>
-        )}
-        {children}
-      </div>
-    </div>
+    <TournamentShell
+      slug={slug}
+      name={edition.name}
+      season={edition.season ?? null}
+      liveDraft={Boolean(draft)}
+    >
+      {liveUnavailable && (
+        <p className="notice" role="status">
+          Live tournament information is temporarily unavailable. Confirmed
+          rules and dates remain accessible.
+        </p>
+      )}
+      {children}
+    </TournamentShell>
   );
 }
