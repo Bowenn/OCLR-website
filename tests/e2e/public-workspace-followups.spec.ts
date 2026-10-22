@@ -362,8 +362,7 @@ test.describe("public and operational follow-ups", () => {
     const section = page.locator(".bws-review");
     await expect(
       section.getByRole("button", { name: "Load BWS profile" }),
-    ).toBeDisabled();
-    await section.getByRole("combobox").selectOption("osu");
+    ).toBeEnabled();
     await section.getByRole("button", { name: "Load BWS profile" }).click();
     await expect(section.locator(".bws-summary")).toContainText(
       "pending staff review",
@@ -375,14 +374,14 @@ test.describe("public and operational follow-ups", () => {
     await section
       .locator(".badge-review-list select")
       .nth(1)
-      .selectOption("taiko");
+      .selectOption("other");
     await section
       .locator(".badge-review-list select")
       .nth(2)
       .selectOption("other");
-    await section
-      .getByLabel("Badge classification evidence")
-      .fill("PRIVATE_BWS_REVIEW_EVIDENCE Synthetic documented award sources");
+    await expect(
+      section.getByLabel("Badge classification evidence"),
+    ).toHaveCount(0);
     await section.getByRole("button", { name: "Save badge review" }).click();
     await expect(section.locator(".bws-value")).toHaveText(
       new Intl.NumberFormat("en", { maximumFractionDigits: 0 }).format(
@@ -402,7 +401,6 @@ test.describe("public and operational follow-ups", () => {
       await page.goto(
         `/admin/tournaments/test-cup/registrations/${registration.id}`,
       );
-      await section.getByRole("combobox").selectOption("osu");
       await section.locator(".actions button").click();
       await expect(section.locator(".bws-value")).toBeVisible();
       await page.setViewportSize({ width: isMobile ? 320 : 1440, height: 900 });

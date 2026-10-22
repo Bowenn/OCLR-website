@@ -24,7 +24,10 @@ export async function publishedPlayerProfile(
     error = { status: e.status, message: e.message };
   }
   // Check again after provider I/O: publication may have been withdrawn meanwhile.
-  const bws = snapshot && mode ? await profileBws(snapshot, edition) : null;
+  const bws =
+    snapshot && identity.mode === "osu"
+      ? await profileBws(snapshot, edition)
+      : null;
   const current = await publicPlayer(identity.osuId, edition);
   if (!current.length) throw new HttpError(404, "Published player not found.");
   return { identity, participation: current, snapshot, error, bws };

@@ -81,13 +81,15 @@ describe.skipIf(!url)("scoped BWS review and public projection", () => {
       mode: "osu",
       fingerprint: view.fingerprint,
       expectedVersion: view.version,
-      classifications: ["osu", "taiko", "other"],
-      evidence: "Synthetic mode-specific prize evidence; PRIVATE_BWS_EVIDENCE",
+      classifications: ["osu", "other", "other"],
       confirmed: true,
     };
   }
   it("starts pending and uses only cached mode-matching reviewed badges in public and staff views", async () => {
     const pending = await staffBws(actor, edition.slug, id, "osu");
+    expect(
+      (await staffBws(actor, edition.slug, id, undefined)).summary,
+    ).toEqual(pending.summary);
     expect(pending.summary).toMatchObject({
       status: "pending",
       value: null,
@@ -109,16 +111,19 @@ describe.skipIf(!url)("scoped BWS review and public projection", () => {
       /PRIVATE_BWS_EVIDENCE|reviewedBy|classifications|fingerprint/,
     );
     expect(provider).toHaveBeenCalledTimes(1);
-    expect((await profileBws(reviewed.snapshot, "other-test-cup")).status).toBe(
-      "pending",
-    );
+    expect(
+      (await publishedPlayerProfile(String(player), "taiko", edition.slug)).bws,
+    ).toBeNull();
+    expect(
+      (await profileBws(reviewed.snapshot, "other-test-cup"))?.status,
+    ).toBe("pending");
     expect((await db().select().from(registrations))[0].status).toBe(
       "accepted",
     );
   });
-  it("requires explicit ruleset, correct scope and current Admin grants", async () => {
+  it("accepts default osu and rejects other modes with correct scope and current Admin grants", async () => {
     await expect(
-      staffBws(actor, edition.slug, id, undefined),
+      staffBws(actor, edition.slug, id, "taiko"),
     ).rejects.toMatchObject({ status: 400 });
     await expect(
       staffBws(actor, "other-test-cup", id, "osu"),
@@ -192,7 +197,7 @@ describe.skipIf(!url)("scoped BWS review and public projection", () => {
       statistics: { global_rank: 10000 },
     });
     const fresh = await getOsuUserProfile(player, "osu");
-    expect((await profileBws(fresh, edition.slug)).value).toBeNull();
+    expect((await profileBws(fresh, edition.slug))?.value).toBeNull();
     await expect(
       reviewBws(actor, edition.slug, id, { ...input, expectedVersion: 1 }),
     ).rejects.toMatchObject({ status: 409 });

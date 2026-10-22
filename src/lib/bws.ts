@@ -13,7 +13,7 @@ import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { badgeClassifications, summarizeBws } from "./bws-model";
 import { getOsuUserProfile } from "./osu-profiles";
-import { profileMode, type ProfileSnapshot } from "./osu-profile-model";
+import { type ProfileSnapshot } from "./osu-profile-model";
 import { HttpError } from "./http";
 const choices = z.array(z.enum(badgeClassifications)).max(100);
 export function badgeFingerprint(snapshot: ProfileSnapshot) {
@@ -37,6 +37,7 @@ const key = (slug: string, userId: number, mode: string) =>
   );
 /** Only aggregate calculation inputs leave this service in public responses. */
 export async function profileBws(snapshot: ProfileSnapshot, edition?: string) {
+  if (snapshot.profile.ruleset !== "osu") return null;
   const [review] = edition
     ? await db()
         .select()
@@ -77,7 +78,7 @@ export async function staffBws(
   mode: unknown,
 ) {
   const registration = await applicant(actor, slug, id);
-  const parsed = profileMode.safeParse(mode);
+  const parsed = z.literal("osu").safeParse(mode ?? "osu");
   if (!parsed.success) throw new HttpError(400, "Select a ruleset for BWS.");
   const snapshot = await getOsuUserProfile(registration.userId, parsed.data);
   await applicant(actor, slug, id);
@@ -92,18 +93,19 @@ export async function staffBws(
     version: review?.version ?? 0,
     classifications:
       review?.fingerprint === fingerprint
-        ? review.classifications
+        ? review.classifications.map((c) =>
+            c === "osu" || c === "unknown" ? c : "other",
+          )
         : (snapshot.profile.badges ?? []).map(() => "unknown" as const),
-    summary: await profileBws(snapshot, slug),
+    summary: (await profileBws(snapshot, slug))!,
   };
 }
 const command = z
   .object({
-    mode: profileMode,
+    mode: z.literal("osu"),
     fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
     expectedVersion: z.number().int().nonnegative(),
-    classifications: choices,
-    evidence: z.string().trim().min(1).max(2000),
+    classifications: z.array(z.enum(["unknown", "other", "osu"])).max(100),
     confirmed: z.literal(true),
   })
   .strict();
@@ -116,10 +118,7 @@ export async function reviewBws(
   const registration = await applicant(actor, slug, id);
   const parsed = command.safeParse(input);
   if (!parsed.success)
-    throw new HttpError(
-      400,
-      "Review each badge and provide classification evidence.",
-    );
+    throw new HttpError(400, "Review each badge before saving.");
   const c = parsed.data;
   const snapshot = await getOsuUserProfile(registration.userId, c.mode);
   const badges = snapshot.profile.badges;
@@ -206,7 +205,6 @@ export async function reviewBws(
         },
         before: before ?? null,
         after,
-        evidence: c.evidence,
         badges,
       },
     });

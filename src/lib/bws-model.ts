@@ -45,7 +45,7 @@ export function summarizeBws(
       : badges &&
           classifications?.length === badges.length &&
           !classifications.includes("unknown")
-        ? classifications.filter((c) => c === p.ruleset).length
+        ? classifications.filter((c) => c === "osu").length
         : null;
   const value = calculateBws(p.statistics.globalRank, count);
   return {

@@ -1,23 +1,19 @@
 "use client";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
-import { profileModes, modeNames } from "@/lib/osu-profile-model";
-import {
-  badgeClassifications,
-  type BadgeClassification,
-} from "@/lib/bws-model";
+import { modeNames } from "@/lib/osu-profile-model";
+import { type BadgeClassification } from "@/lib/bws-model";
 import type { staffBws } from "@/lib/bws";
 import { BwsSummary } from "./bws-summary";
 export function BwsReview({ slug, id }: { slug: string; id: string }) {
   const tr = useAppTranslations();
-  const [mode, setMode] = useState("");
+  const mode = "osu";
   const [data, setData] = useState<Awaited<ReturnType<typeof staffBws>> | null>(
     null,
   );
   const [classifications, setClassifications] = useState<BadgeClassification[]>(
     [],
   );
-  const [evidence, setEvidence] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   async function request(save = false) {
@@ -35,7 +31,6 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
                 fingerprint: data!.fingerprint,
                 expectedVersion: data!.version,
                 classifications,
-                evidence,
                 confirmed: true,
               }),
             }
@@ -48,7 +43,6 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
       }
       setData(result);
       setClassifications(result.classifications);
-      setEvidence("");
     } catch {
       setError("The action could not be completed.");
     } finally {
@@ -58,36 +52,12 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
   return (
     <section className="panel form-stack bws-review">
       <h2>{tr("Badge-weighted seeding")}</h2>
-      <p className="small muted">
-        {tr(
-          "Select the competition ruleset explicitly. No tournament mode is inferred.",
-        )}
-      </p>
+      <p className="small muted">{"osu!standard"}</p>
       <div className="actions">
-        <label className="field">
-          <span>{tr("Ruleset")}</span>
-          <select
-            value={mode}
-            disabled={pending}
-            onChange={(e) => {
-              setMode(e.target.value);
-              setData(null);
-              setEvidence("");
-              setError("");
-            }}
-          >
-            <option value="">{tr("Select a ruleset for BWS.")}</option>
-            {profileModes.map((m) => (
-              <option key={m} value={m}>
-                {modeNames[m]}
-              </option>
-            ))}
-          </select>
-        </label>
         <button
           type="button"
           className="secondary"
-          disabled={!mode || pending}
+          disabled={pending}
           onClick={() => request()}
         >
           {tr("Load BWS profile")}
@@ -137,12 +107,12 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
                           )
                         }
                       >
-                        {badgeClassifications.map((c) => (
+                        {(["unknown", "other", "osu"] as const).map((c) => (
                           <option key={c} value={c}>
                             {c === "unknown"
                               ? tr("Pending review")
                               : c === "other"
-                                ? tr("Not a tournament prize")
+                                ? tr("Not eligible")
                                 : tr("Tournament prize — {mode}", {
                                     mode: modeNames[c],
                                   })}
@@ -153,22 +123,10 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
                   </li>
                 ))}
               </ol>
-              <label className="field">
-                <span>{tr("Badge classification evidence")}</span>
-                <textarea
-                  maxLength={2000}
-                  value={evidence}
-                  disabled={pending}
-                  onChange={(e) => setEvidence(e.target.value)}
-                />
-              </label>
               <button
                 type="button"
                 disabled={
-                  pending ||
-                  !evidence.trim() ||
-                  data.snapshot.stale ||
-                  !!data.snapshot.notice
+                  pending || data.snapshot.stale || !!data.snapshot.notice
                 }
                 onClick={() => request(true)}
               >
