@@ -21,6 +21,9 @@ test.describe("role-aware header actions and compact tournament context", () => 
     browser,
     isMobile,
   }, info) => {
+    // Three account contexts, viewport sweeps and axe scans can exhaust 30s
+    // on CI while capturing the final screenshot. Keep action limits intact.
+    test.setTimeout(60000);
     assertTestDatabase(process.env.TEST_DATABASE_URL);
     process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
