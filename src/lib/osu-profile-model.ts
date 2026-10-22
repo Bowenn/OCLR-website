@@ -49,6 +49,32 @@ const optionalNumber = number.nullish().catch(null);
 const optionalInteger = integer.nullish().catch(null);
 const text = z.string().trim().min(1).max(200).nullish().catch(null);
 const date = z.iso.datetime({ offset: true }).nullish().catch(null);
+const badge = z.object({
+  description: z.string().trim().min(1).max(500),
+  awarded_at: z.iso.datetime({ offset: true }),
+  url: z.string().max(2048).optional(),
+});
+function publicBadgeLink(value: string | undefined) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
+function profileBadges(value: unknown) {
+  if (!Array.isArray(value) || value.length > 100) return null;
+  const badges = z.array(badge).safeParse(value);
+  if (!badges.success) return null;
+  return badges.data.map((b) => ({
+    description: b.description,
+    awardedAt: b.awarded_at,
+    url: publicBadgeLink(b.url),
+  }));
+}
 // JSON numbers beyond MAX_SAFE_INTEGER have already lost precision. Omit those;
 // retain exact digit strings when the provider supplies them as strings.
 const score = z
@@ -123,6 +149,7 @@ const responseSchema = z.object({
   is_bot: z.boolean().nullish().catch(null),
   is_restricted: z.boolean().nullish().catch(null),
   statistics: stats,
+  badges: z.unknown(),
 });
 function imageUrl(value: string | null | undefined, host: string) {
   if (!value) return null;
@@ -177,6 +204,8 @@ export function normalizeOsuProfile(
     ruleset: mode,
     fetchedAt,
     source: "osu! API v2" as const,
+    // Missing/partial inventories are unknown, never a fabricated zero count.
+    badges: profileBadges(p.badges),
     statistics: {
       globalRank: s?.global_rank ?? null,
       countryRank: s?.country_rank ?? null,

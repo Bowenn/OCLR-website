@@ -228,6 +228,44 @@ export const editionEvents = pgTable(
   (table) => [index("edition_events_edition_idx").on(table.editionSlug)],
 );
 
+// Classification is edition/ruleset-specific; the source inventory fingerprint
+// invalidates it when upstream badges change. Private evidence stays in audit.
+export const badgeReviews = pgTable(
+  "badge_reviews",
+  {
+    editionSlug: text("edition_slug").notNull(),
+    userId: bigint("user_id", { mode: "number" }).notNull(),
+    mode: text("mode")
+      .$type<import("@/lib/osu-profile-model").ProfileMode>()
+      .notNull(),
+    fingerprint: text("fingerprint").notNull(),
+    classifications: jsonb("classifications")
+      .$type<import("@/lib/bws-model").BadgeClassification[]>()
+      .notNull(),
+    version: integer("version").notNull().default(1),
+    reviewedBy: bigint("reviewed_by", { mode: "number" }).notNull(),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.editionSlug, t.userId, t.mode] }),
+    foreignKey({
+      columns: [t.editionSlug, t.userId],
+      foreignColumns: [registrations.editionSlug, registrations.userId],
+    }),
+    check(
+      "badge_review_mode",
+      sql`${t.mode} IN ('osu', 'taiko', 'fruits', 'mania')`,
+    ),
+    check("badge_review_version", sql`${t.version} > 0`),
+    check(
+      "badge_review_inventory",
+      sql`jsonb_typeof(${t.classifications}) = 'array' AND jsonb_array_length(${t.classifications}) <= 100`,
+    ),
+  ],
+);
+
 export const teams = pgTable(
   "teams",
   {

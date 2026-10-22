@@ -6,6 +6,7 @@ import { applicationDetails } from "@/lib/staff";
 import { getEdition } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
+import { BwsReview } from "@/components/bws-review";
 import { ReviewForm } from "@/components/review-form";
 export default async function Application({
   params,
@@ -69,6 +70,7 @@ export default async function Application({
             )}
           </dl>
         </section>
+        <BwsReview slug={slug} id={r.id} />
         {r.status === "pending" && (
           <ReviewForm id={r.id} updatedAt={r.updatedAt.toISOString()} />
         )}

@@ -1,3 +1,4 @@
+import { profileBws } from "./bws";
 import { z } from "zod";
 import type { User } from "./auth/sessions";
 import { capabilityScope } from "./auth/staff";
@@ -23,9 +24,10 @@ export async function publishedPlayerProfile(
     error = { status: e.status, message: e.message };
   }
   // Check again after provider I/O: publication may have been withdrawn meanwhile.
+  const bws = snapshot && mode ? await profileBws(snapshot, edition) : null;
   const current = await publicPlayer(identity.osuId, edition);
   if (!current.length) throw new HttpError(404, "Published player not found.");
-  return { identity, participation: current, snapshot, error };
+  return { identity, participation: current, snapshot, error, bws };
 }
 const lookup = z
   .object({

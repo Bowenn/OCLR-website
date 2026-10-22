@@ -3952,3 +3952,41 @@ html:lang(zh-Hant) .eyebrow {
 body:has([data-broadcast]) .site-shell {
   min-height: 0;
 }
+
+.bws-summary {
+  border-block: 1px solid var(--color-border);
+  padding-block: 1rem;
+  margin-block: 1rem;
+}
+.bws-summary h3 {
+  font-size: 1rem;
+}
+.bws-summary p:last-child {
+  margin-bottom: 0;
+}
+.bws-value {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+.badge-review-list {
+  list-style: none;
+  padding: 0;
+}
+.badge-review-list li {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-block: 1rem;
+}
+.badge-review-list p {
+  margin-block: 0.35rem;
+}
+.bws-review .actions {
+  align-items: end;
+}
+@media (max-width: 600px) {
+  .badge-review-list li {
+    grid-template-columns: 1fr;
+  }
+}

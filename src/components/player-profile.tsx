@@ -1,4 +1,6 @@
 import { useAppTranslations } from "@/i18n/shared";
+import { BwsSummary } from "./bws-summary";
+import type { BwsSummary as BwsData } from "@/lib/bws-model";
 import Image from "next/image";
 import { Avatar } from "./avatar";
 import { modeNames, type ProfileSnapshot } from "@/lib/osu-profile-model";
@@ -10,7 +12,13 @@ const number = (v: number | null, decimals = 0) =>
       }).format(v);
 const score = (v: string | null) =>
   v === null ? "Unavailable" : BigInt(v).toLocaleString("en-GB");
-export function PlayerProfile({ snapshot }: { snapshot: ProfileSnapshot }) {
+export function PlayerProfile({
+  snapshot,
+  bws,
+}: {
+  snapshot: ProfileSnapshot;
+  bws?: BwsData | null;
+}) {
   const tr = useAppTranslations();
 
   const p = snapshot.profile;
@@ -55,6 +63,7 @@ export function PlayerProfile({ snapshot }: { snapshot: ProfileSnapshot }) {
           </a>
         </div>
       </div>
+      {bws && <BwsSummary value={bws} />}
       <dl className="profile-statistics">
         {[
           [

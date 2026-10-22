@@ -134,6 +134,13 @@
       "when": 1792640728379,
       "tag": "0018_manual_registration_source",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792649650804,
+      "tag": "0019_badge_reviews",
+      "breakpoints": true
     }
   ]
 }

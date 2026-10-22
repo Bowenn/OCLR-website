@@ -87,8 +87,15 @@ export default async function Profile({
         </div>
         <button>{tr("View ruleset")}</button>
       </form>
+      {!query.mode && (
+        <p className="muted small">
+          {tr(
+            "Select a ruleset to view its BWS estimate. No tournament mode is inferred.",
+          )}
+        </p>
+      )}
       {data.snapshot ? (
-        <PlayerProfile snapshot={data.snapshot} />
+        <PlayerProfile snapshot={data.snapshot} bws={data.bws} />
       ) : (
         <p className="notice" role="status">
           {data.error?.message}{" "}
