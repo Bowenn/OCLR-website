@@ -8,7 +8,7 @@ import {
   detectDraftOrder,
   generateTurnSequence,
   maxDraftTurns,
-  turnSequenceProblem,
+  turnSequenceStructureProblem,
   type DraftOrderMode,
 } from "@/lib/draft-order";
 import { ConfirmMutation } from "./confirm-mutation";
@@ -55,7 +55,7 @@ export function DraftOrderEditor({
   const problem = !mode
     ? "Choose a pick order."
     : generationError ||
-      turnSequenceProblem(
+      turnSequenceStructureProblem(
         sequence,
         data.teams.map(({ team }) => ({
           id: team.id,
@@ -63,7 +63,6 @@ export function DraftOrderEditor({
           members: data.members.filter((m) => m.membership.teamId === team.id)
             .length,
         })),
-        data.setupPoolSize ?? 0,
       );
   const sameSaved = JSON.stringify(sequence) === JSON.stringify(saved);
   const version = data.session?.version ?? 0;
@@ -223,20 +222,20 @@ export function DraftOrderEditor({
           {problem}
         </p>
       )}
-      {!data.edition?.lockedAt && (
+      {sequence.length > (data.setupPoolSize ?? 0) && (
         <p className="notice small">
           {tr(
-            "Lock the reviewed captain/team setup before saving the draft order.",
+            "Planned turns exceed the current pool. You can save and start; each pick requires an available player.",
           )}
         </p>
       )}
       <div className="actions">
         <ConfirmMutation
           requireConfirmation={false}
-          label={tr("Save turn sequence")}
-          title={tr("Save turn sequence")}
+          label={tr("Save draft configuration")}
+          title={tr("Save draft configuration")}
           description={tr("Save the reviewed explicit sequence.")}
-          disabled={Boolean(problem) || !data.edition?.lockedAt}
+          disabled={Boolean(problem) || sameSaved}
           url={url}
           payload={{
             expectedVersion: version,
@@ -248,28 +247,22 @@ export function DraftOrderEditor({
             },
           }}
         />
-        {data.session && (
-          <ConfirmMutation
-            label={tr("Freeze draft setup")}
-            title={tr("Freeze draft setup?")}
-            description={tr(
-              "Freeze the saved order and eligible player pool. Further configuration requires supervised recovery.",
-            )}
-            disabled={!sameSaved || Boolean(problem) || !data.edition?.lockedAt}
-            url={url}
-            payload={{
-              expectedVersion: version,
-              confirmed: true,
-              command: { action: "ready" },
-            }}
-          />
-        )}
+        <ConfirmMutation
+          requireConfirmation={false}
+          label={tr("Start draft")}
+          title={tr("Start draft")}
+          description={tr(
+            "Start the saved turn order. Public release remains separate.",
+          )}
+          disabled={!data.session || !sameSaved || Boolean(problem)}
+          url={url}
+          payload={{
+            expectedVersion: version,
+            confirmed: true,
+            command: { action: "start" },
+          }}
+        />
       </div>
-      {!sameSaved && data.session && (
-        <p className="muted small">
-          {tr("Save these changes before freezing.")}
-        </p>
-      )}
     </div>
   );
 }

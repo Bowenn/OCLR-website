@@ -44,7 +44,7 @@ export function detectDraftOrder(
 export function turnSequenceProblem(
   sequence: string[],
   teams: { id: string; capacity: number | null; members: number }[],
-  poolSize: number,
+  poolSize?: number,
 ): string | null {
   if (!teams.length) return "Configure captain teams first.";
   if (!sequence.length) return "Add at least one pick to the sequence.";
@@ -52,7 +52,7 @@ export function turnSequenceProblem(
     return `Use at most ${maxDraftTurns} picks.`;
   if (sequence.some((id) => !teams.some((t) => t.id === id)))
     return "Every turn must reference a current edition team.";
-  if (sequence.length > poolSize)
+  if (poolSize !== undefined && sequence.length > poolSize)
     return "The configured turns exceed the eligible pool.";
   if (
     teams.some(
@@ -63,4 +63,15 @@ export function turnSequenceProblem(
   )
     return "The turn sequence exceeds an approved team capacity (including the captain).";
   return null;
+}
+
+/** Save/start validate references, not nominal readiness; picks enforce actual capacity. */
+export function turnSequenceStructureProblem(
+  sequence: string[],
+  teams: { id: string }[],
+) {
+  return turnSequenceProblem(
+    sequence,
+    teams.map((t) => ({ ...t, capacity: null, members: 0 })),
+  );
 }

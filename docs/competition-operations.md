@@ -64,5 +64,11 @@ Submitting creates a numbered immutable revision containing source, roster, pool
 
 Automated validation uses synthetic official-shaped API responses, real PostgreSQL transactions and isolated desktop/mobile browser sessions. Browser tests seed stored synthetic snapshots directly into the test database; there is no production mock provider or authentication bypass. The organizer's real match and a hosted deployment still require live credentials and supervised verification.
 
+### Saving and starting a private draft (#101)
+Save draft configuration, then choose Start draft. No separate Lock, Ready, Freeze or public release is required. Starting snapshots the currently accepted, available unassigned candidates and internally locks captain/team structure. Unset capacity and candidate shortages are warnings; each actual pick still checks eligibility, current team, capacity if configured, concurrency and uniqueness. With two turns and one player, that player can be picked once; the remaining turn waits for candidates. Pause for review, undo the last pick, or explicitly abort/reopen setup; abort voids draft picks and removes their roster assignments, preserving audit history. No automatic completion or invented picks occur.
+
+Captain access uses an authenticated private snapshot. Public draft release remains an explicit separate action requiring released captain/team identities. Starting or selecting privately never grants anonymous access. Once released, committed picks and transitions refresh the public snapshot atomically as before.
 
 Captain publication controls are visible and load their saved values independently. Publishing the eligible draft pool does not control accepted-player directory visibility. Optional setup locking remains available for organizers who want it, but the Start action handles necessary structural protection internally.
+
+The organizer approved the corrected Chinese abort warning on 2026-10-22: abort voids the current draft's picks and removes corresponding active roster assignments while preserving historical picks/audit records. This documents the existing abort behavior; it does not introduce silent roster deletion or change the separate pause action.

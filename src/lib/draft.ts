@@ -23,7 +23,7 @@ import type {
   DraftIdentity,
   DraftTeam,
 } from "./draft-types";
-import { turnSequenceProblem } from "./draft-order";
+import { turnSequenceStructureProblem } from "./draft-order";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 async function draftData(tx: Reader, slug: string) {
   const [session] = await tx
@@ -87,11 +87,6 @@ function availablePool(data: Data) {
 }
 function board(data: Data): DraftBoard {
   const session = data.session!;
-  if (data.teams.some((t) => !t.team.identityPublished || !t.captainPublished))
-    throw new HttpError(
-      409,
-      "Approve and publish all captain/team identities before publishing the draft.",
-    );
   const teamMap = new Map<string, DraftTeam>(
     data.teams.map(({ team, captainName }) => [
       team.id,
@@ -135,9 +130,15 @@ function board(data: Data): DraftBoard {
     pool: data.edition?.poolPublished ? availablePool(data) : null,
   };
 }
-function snapshotUpdate(data: Data) {
+function snapshotUpdate(
+  data: Data,
+  release = Boolean(data.session?.publicSnapshot),
+) {
   const session = data.session!;
   const snapshot = board(data);
+  const published =
+    release &&
+    data.teams.every((t) => t.team.identityPublished && t.captainPublished);
   const captainSnapshot: CaptainBoard = {
     ...snapshot,
     capacities: Object.fromEntries(
@@ -148,10 +149,10 @@ function snapshotUpdate(data: Data) {
     eligiblePool: availablePool(data),
   };
   return {
-    publicSnapshot: snapshot,
+    publicSnapshot: published ? snapshot : null,
     captainSnapshot,
     publicVersion: snapshot.version,
-    publishedRevision: session.version,
+    publishedRevision: published ? session.version : -1,
   };
 }
 async function acceptedPlayers(tx: Reader, slug: string) {
@@ -256,8 +257,6 @@ export async function captainDraft(
   actor: User,
   slug: string,
 ): Promise<CaptainBoard | null> {
-  if (!(await getPublicEdition(slug)))
-    throw new HttpError(404, "Edition not found.");
   const [appointment] = await db()
     .select()
     .from(captains)
@@ -266,7 +265,6 @@ export async function captainDraft(
     );
   if (!appointment)
     throw new HttpError(403, "Captain access for this edition is required.");
-  if (!(await publicDraft(slug))) return null;
   const [session] = await db()
     .select({ snapshot: draftSessions.captainSnapshot })
     .from(draftSessions)
@@ -314,6 +312,7 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       .from(editionState)
       .where(eq(editionState.slug, slug))
       .for("update");
+    await assertCapability(actor, "manage_draft", slug, tx);
     if (!edition)
       throw new HttpError(409, "Configure captains and teams first.");
     if (command.action === "configure")
@@ -344,8 +343,15 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       if (session.state === "setup")
         throw new HttpError(409, "Freeze and review setup before publication.");
       const data = await draftData(tx, slug);
-      const publication = snapshotUpdate(data);
-      const snapshot = publication.publicSnapshot;
+      if (
+        data.teams.some((t) => !t.team.identityPublished || !t.captainPublished)
+      )
+        throw new HttpError(
+          409,
+          "Approve and publish all captain/team identities before publishing the draft.",
+        );
+      const publication = snapshotUpdate(data, true);
+      const snapshot = publication.publicSnapshot!;
       await tx
         .update(draftSessions)
         .set(publication)
@@ -374,71 +380,40 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       version: session.version + 1,
     };
     if (command.action === "configure") {
-      if (session.state !== "setup" || !edition.lockedAt)
-        throw new HttpError(
-          409,
-          "Lock reviewed captain/team setup before configuring the draft.",
-        );
+      if (session.state !== "setup")
+        throw new HttpError(409, "Only draft setup can be configured.");
       if (command.expectedSetupVersion !== edition.setupVersion)
         throw new HttpError(
           409,
           "Captain/team setup changed. Refresh before saving the order.",
         );
       const data = await draftData(tx, slug);
-      const problem = turnSequenceProblem(
+      const problem = turnSequenceStructureProblem(
         command.turnSequence,
         sequenceTeams(data),
-        unassignedPlayers(await acceptedPlayers(tx, slug), data).length,
       );
       if (problem) throw new HttpError(409, problem);
       update.turnSequence = command.turnSequence;
-    } else if (command.action === "ready") {
-      if (session.state !== "setup" || !edition.lockedAt)
-        throw new HttpError(409, "Draft setup is not ready to freeze.");
+    } else if (command.action === "ready" || command.action === "start") {
+      if (!["setup", "ready"].includes(session.state))
+        throw new HttpError(409, "Only a saved draft setup can start.");
       const data = await draftData(tx, slug);
-      const accepted = await acceptedPlayers(tx, slug);
-      const appointed = await tx
-        .select()
-        .from(captains)
-        .where(eq(captains.editionSlug, slug));
-      if (
-        !appointed.length ||
-        data.teams.length !== appointed.length ||
-        data.teams.some(
-          (t) =>
-            !accepted.some((p) => p.userId === t.team.captainId) ||
-            !data.members.some(
-              (m) =>
-                m.membership.teamId === t.team.id &&
-                m.membership.userId === t.team.captainId,
-            ),
-        ) ||
-        data.members.length !== data.teams.length ||
-        data.members.some((m) => m.membership.origin !== "captain")
-      )
-        throw new HttpError(
-          409,
-          "Verify accepted captains and clean team membership before freezing.",
-        );
-      const pool = accepted
-        .filter(
-          (p) =>
-            !appointed.some((c) => c.userId === p.userId) &&
-            !data.members.some((m) => m.membership.userId === p.userId),
-        )
-        .map((p) => p.userId);
-      const problem = turnSequenceProblem(
+      const problem = turnSequenceStructureProblem(
         session.turnSequence,
         sequenceTeams(data),
-        pool.length,
       );
       if (problem) throw new HttpError(409, problem);
-      update.state = "ready";
-      update.pool = pool;
-    } else if (command.action === "start") {
-      if (session.state !== "ready")
-        throw new HttpError(409, "Only a ready draft can start.");
-      update.state = session.turnSequence.length ? "live" : "completed";
+      update.pool = unassignedPlayers(
+        await acceptedPlayers(tx, slug),
+        data,
+      ).map((p) => p.userId);
+      update.state = command.action === "start" ? "live" : "ready";
+      // Protect roster primitives automatically; this is not public approval.
+      if (!edition.lockedAt)
+        await tx
+          .update(editionState)
+          .set({ lockedAt: new Date(), setupVersion: edition.setupVersion + 1 })
+          .where(eq(editionState.slug, slug));
     } else if (command.action === "pause") {
       if (session.state !== "live")
         throw new HttpError(409, "Only a live draft can pause.");
@@ -591,26 +566,9 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       .where(eq(draftSessions.id, session.id));
     if (
       command.action !== "recover" &&
-      (session.publicSnapshot || command.action === "start")
+      (session.captainSnapshot || ["start", "ready"].includes(command.action))
     ) {
-      const data = await draftData(tx, slug);
-      const identitiesPublic = data.teams.every(
-        (t) => t.team.identityPublished && t.captainPublished,
-      );
-      // Privacy withdrawal must not prevent an operator from pausing/aborting safely.
-      const publication = identitiesPublic
-        ? snapshotUpdate(data)
-        : {
-            publicSnapshot: null,
-            captainSnapshot: null,
-            publicVersion: session.publicVersion + 1,
-            publishedRevision: -1,
-          };
-      if (!identitiesPublic && ["start", "resume"].includes(command.action))
-        throw new HttpError(
-          409,
-          "Release the approved captain and team identities before starting or resuming the public draft.",
-        );
+      const publication = snapshotUpdate(await draftData(tx, slug));
       await tx
         .update(draftSessions)
         .set(publication)
@@ -731,7 +689,6 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       session.state !== "live" ||
       session.version !== value.expectedVersion ||
       session.turnIndex !== value.turnIndex ||
-      !session.publicSnapshot ||
       !team
     )
       throw new HttpError(
@@ -755,6 +712,9 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       .from(memberships)
       .where(and(eq(memberships.teamId, team.id), isNull(memberships.leftAt)));
     if (
+      !(await acceptedPlayers(tx, slug)).some(
+        (p) => p.userId === value.candidateId,
+      ) ||
       !session.pool.includes(value.candidateId) ||
       assigned ||
       (team.capacity !== null && roster.length >= team.capacity)

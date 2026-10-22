@@ -141,7 +141,7 @@ describe.skipIf(!url)(
         ).rejects.toMatchObject({ status: 409 });
       },
     );
-    it("rejects stale setup/draft revisions, invalid teams, insufficient players and capacity violations without successful audit events", async () => {
+    it("rejects stale setup/draft revisions and invalid teams without successful audit events", async () => {
       const state = await reopenSetup();
       const sequence = state.teams.map((t) => t.team.id);
       const request = {
@@ -167,24 +167,10 @@ describe.skipIf(!url)(
           ...request,
           command: { ...request.command, turnSequence: [randomUUID()] },
         },
-        {
-          ...request,
-          command: {
-            ...request.command,
-            turnSequence: Array(9).fill(sequence[0]),
-          },
-        },
       ])
         await expect(
           draftCommand(fixture.staff, edition.slug, value),
         ).rejects.toMatchObject({ status: 409 });
-      await db()
-        .update(teams)
-        .set({ capacity: 1 })
-        .where(eq(teams.id, sequence[0]));
-      await expect(
-        draftCommand(fixture.staff, edition.slug, request),
-      ).rejects.toMatchObject({ status: 409 });
       expect((await db().select().from(editionEvents)).length).toBe(count);
       expect(
         (await staffDraft(fixture.staff, edition.slug)).session?.version,

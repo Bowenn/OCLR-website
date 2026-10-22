@@ -49,13 +49,19 @@ test.describe("reviewed draft order setup", () => {
       await selector.selectOption(mode);
       await page.getByLabel("Pick rounds", { exact: true }).fill("5");
       await expect(
-        page.getByText("The configured turns exceed the eligible pool.", {
-          exact: true,
-        }),
+        page.getByText(
+          "Planned turns exceed the current pool. You can save and start; each pick requires an available player.",
+          {
+            exact: true,
+          },
+        ),
       ).toBeVisible();
       await expect(
-        page.getByRole("button", { name: "Save turn sequence", exact: true }),
-      ).toBeDisabled();
+        page.getByRole("button", {
+          name: "Save draft configuration",
+          exact: true,
+        }),
+      ).toBeEnabled();
       await page.getByLabel("Pick rounds", { exact: true }).fill("3");
       const preview = page.getByRole("region", {
         name: "Full turn sequence preview",
@@ -65,13 +71,13 @@ test.describe("reviewed draft order setup", () => {
         6,
       );
       await expect(
-        page.getByRole("button", { name: "Freeze draft setup", exact: true }),
+        page.getByRole("button", { name: "Start draft", exact: true }),
       ).toBeDisabled();
       await page
-        .getByRole("button", { name: "Save turn sequence", exact: true })
+        .getByRole("button", { name: "Save draft configuration", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "Freeze draft setup", exact: true }),
+        page.getByRole("button", { name: "Start draft", exact: true }),
       ).toBeEnabled();
       let saved = await (await context.request.get(url)).json();
       expect(saved.session.turnSequence).toEqual(
@@ -84,10 +90,10 @@ test.describe("reviewed draft order setup", () => {
         .getByRole("combobox", { name: "Turn 1", exact: true })
         .selectOption(ids[1]);
       await page
-        .getByRole("button", { name: "Save turn sequence", exact: true })
+        .getByRole("button", { name: "Save draft configuration", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "Freeze draft setup", exact: true }),
+        page.getByRole("button", { name: "Start draft", exact: true }),
       ).toBeEnabled();
       await page.reload();
       await expect(selector).toHaveValue("custom");
@@ -97,10 +103,10 @@ test.describe("reviewed draft order setup", () => {
       await selector.selectOption(mode);
       await page.getByLabel("Pick rounds", { exact: true }).fill("3");
       await page
-        .getByRole("button", { name: "Save turn sequence", exact: true })
+        .getByRole("button", { name: "Save draft configuration", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "Freeze draft setup", exact: true }),
+        page.getByRole("button", { name: "Start draft", exact: true }),
       ).toBeEnabled();
       expect(
         (
@@ -121,12 +127,11 @@ test.describe("reviewed draft order setup", () => {
         animations: "disabled",
       });
       await page
-        .getByRole("button", { name: "Freeze draft setup", exact: true })
+        .getByRole("button", { name: "Start draft", exact: true })
         .click();
-      await page.getByRole("button", { name: "Confirm", exact: true }).click();
       await expect(
         page.getByRole("button", {
-          name: "Start & release draft",
+          name: "Pause draft",
           exact: true,
         }),
       ).toBeVisible();

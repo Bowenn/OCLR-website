@@ -16,7 +16,9 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
   const state = data.session?.state ?? "setup";
   const version = data.session?.version ?? 0;
   const allowed = [
-    ...(state === "ready" ? ["start"] : []),
+    ...(state === "ready" && data.session?.turnSequence.length
+      ? ["start"]
+      : []),
     ...(state === "live" ? ["pause"] : []),
     ...(state === "paused"
       ? ["resume", ...(data.session?.turnIndex ? ["undo"] : [])]
@@ -31,7 +33,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
   ];
   const labels: Record<string, string> = {
     ready: "Freeze draft setup",
-    start: "Start & release draft",
+    start: "Start draft",
     pause: "Pause draft",
     resume: "Resume draft",
     undo: "Void last pick",
@@ -56,7 +58,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
         {allowed.map((action) => (
           <ConfirmMutation
             key={action}
-            requireConfirmation={!["pause", "resume"].includes(action)}
+            requireConfirmation={!["start", "pause", "resume"].includes(action)}
             label={labels[action]}
             title={`${tr(labels[action])}?`}
             description={
@@ -66,7 +68,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
                   )
                 : action === "abort"
                   ? tr(
-                      "Stop the draft. Committed picks are retained; no further picks are accepted until recovery.",
+                      "Abort this draft and void its picks. Draft roster assignments are removed; audit history is retained.",
                     )
                   : action === "undo"
                     ? tr(
@@ -78,7 +80,7 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
                         )
                       : action === "start"
                         ? tr(
-                            "Release this approved draft and start the captain turns. Confirmed picks and turn changes will appear live. Only the active captain can pick.",
+                            "Start the saved turn order. Public release remains separate.",
                           )
                         : tr(
                             "Reopen draft setup. Review the existing order and rosters before freezing again.",
@@ -156,9 +158,7 @@ export function StaffDraftRoom({
         pool: null,
       }
     : null;
-  const canPick = Boolean(
-    connected && session?.state === "live" && Boolean(session.publicSnapshot),
-  );
+  const canPick = Boolean(connected && session?.state === "live");
   return (
     <>
       <p role="status" className="connection-state small">
@@ -169,6 +169,13 @@ export function StaffDraftRoom({
       {feedback && feedback.version === session?.publicVersion && (
         <p className="notice" role="status">
           {tr(feedback.message)}
+        </p>
+      )}
+      {session?.state === "live" && !data.availablePool.length && (
+        <p className="notice" role="status">
+          {tr(
+            "No eligible players remain. Pause the draft to review or abort and reconfigure.",
+          )}
         </p>
       )}
       {session && session.state !== "setup" && (
@@ -192,7 +199,7 @@ export function StaffDraftRoom({
               unavailableMessage={
                 !connected
                   ? "Reconnecting. Wait for the authoritative snapshot."
-                  : "Picking is available during a released live turn."
+                  : "Picking is available during a live turn."
               }
               pool={data.availablePool}
               staff

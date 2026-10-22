@@ -1812,6 +1812,14 @@
     "m1a51f062fcfb": "Unable to verify",
     "mfb624ab883e4": "Staff override",
     "m33b5ac928ddf": "No automatic PP or rank restriction.",
-    "mc4317599bac4": "Eligibility limits have changed since this verification. The saved decision is unchanged."
+    "mc4317599bac4": "Eligibility limits have changed since this verification. The saved decision is unchanged.",
+    "m7e99a2f39d6c": "Planned turns exceed the current pool. You can save and start; each pick requires an available player.",
+    "m8a9c9e8c03e2": "Save draft configuration",
+    "m65d2800dd4b8": "Start the saved turn order. Public release remains separate.",
+    "mbdca95196285": "No eligible players remain. Pause the draft to review or abort and reconfigure.",
+    "m9f0e25ef02df": "Only draft setup can be configured.",
+    "mae00238863ba": "Only a saved draft setup can start.",
+    "m7aedaeceb5d8": "Start draft",
+    "m3f51277fe919": "Abort this draft and void its picks. Draft roster assignments are removed; audit history is retained."
   }
 }
