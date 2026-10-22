@@ -19,7 +19,7 @@ import { TimeZonePicker } from "./time-zone-picker";
 import { ZonedDateInput } from "./zoned-date-input";
 type Workspace = Pick<
   Awaited<ReturnType<typeof tournamentForAdmin>>,
-  "edition" | "revision" | "applications" | "frozen" | "readiness"
+  "edition" | "revision" | "applications" | "registrationPaused" | "readiness"
 >;
 type Identity = Pick<
   Edition,
@@ -565,6 +565,33 @@ function Registration({ data, saved }: EditorProps) {
   return (
     <section className="panel form-stack">
       <h2>{tr("Registration settings")}</h2>
+      {data.registrationPaused && (
+        <div className="section-title">
+          <p className="muted small">
+            {tr("Registration remains paused by tournament operations.")}
+          </p>
+          <ConfirmMutation
+            requireConfirmation={false}
+            label={tr("Resume registration")}
+            title={tr("Resume registration")}
+            disabled={blockers.length > 0 || !e.registration}
+            url={`/api/admin/tournaments/${e.slug}`}
+            payload={{
+              action: "enrollment",
+              paused: false,
+              expectedRevision: data.revision,
+              confirmed: true,
+            }}
+            onSuccess={() =>
+              saved(
+                tr(
+                  "Registration pause removed. Enablement and time window still apply.",
+                ),
+              )
+            }
+          />
+        </div>
+      )}
       <p className="muted small">
         {tr(
           "Enable ahead of time; applications are accepted only within this window.",
@@ -978,14 +1005,6 @@ export function TournamentEditor({ data }: { data: Workspace }) {
             {tr(message)}
           </p>
         )}
-        {data.frozen &&
-          ["rules", "registration", "schedule"].includes(section) && (
-            <p className="notice">
-              {tr(
-                "These settings are frozen after setup locks or drafting begins. Existing registrations and competition history are retained.",
-              )}
-            </p>
-          )}
         <div hidden={section !== "general"}>
           <General
             key={JSON.stringify({
@@ -999,31 +1018,25 @@ export function TournamentEditor({ data }: { data: Workspace }) {
             {...props}
           />
         </div>
-        {!data.frozen && (
-          <div hidden={section !== "registration"}>
-            <Registration
-              key={JSON.stringify(data.edition.registration)}
-              {...props}
-            />
-          </div>
-        )}
-        {!data.frozen && (
-          <div hidden={section !== "rules"}>
-            <Rules
-              key={JSON.stringify([
-                data.edition.rules,
-                data.edition.eligibility,
-                data.edition.automaticEligibility,
-              ])}
-              {...props}
-            />
-          </div>
-        )}
-        {!data.frozen && (
-          <div hidden={section !== "schedule"}>
-            <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
-          </div>
-        )}
+        <div hidden={section !== "registration"}>
+          <Registration
+            key={JSON.stringify(data.edition.registration)}
+            {...props}
+          />
+        </div>
+        <div hidden={section !== "rules"}>
+          <Rules
+            key={JSON.stringify([
+              data.edition.rules,
+              data.edition.eligibility,
+              data.edition.automaticEligibility,
+            ])}
+            {...props}
+          />
+        </div>
+        <div hidden={section !== "schedule"}>
+          <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
+        </div>
         <div hidden={section !== "publication"}>
           <Publication key={String(data.edition.published)} {...props} />
         </div>

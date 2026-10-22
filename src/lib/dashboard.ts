@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { editionState, editionRevisions, registrations } from "@/db/schema";
 import { getPublicEditions } from "./content";
@@ -8,7 +8,8 @@ export async function playerApplications(userId: number) {
   const rows = await db()
     .select({
       registration: registrations,
-      lockedAt: editionState.lockedAt,
+      registrationPausedAt: editionState.registrationPausedAt,
+      assigned: sql<boolean>`EXISTS(SELECT 1 FROM memberships m WHERE m.edition_slug=${registrations.editionSlug} AND m.user_id=${registrations.userId} AND m.left_at IS NULL)`,
       acknowledgedConfiguration: editionRevisions.configuration,
     })
     .from(registrations)
@@ -24,24 +25,33 @@ export async function playerApplications(userId: number) {
     .orderBy(registrations.createdAt);
   const editions = await getPublicEditions();
   return Promise.all(
-    rows.map(async ({ registration, lockedAt, acknowledgedConfiguration }) => {
-      const edition = editions.find((e) => e.slug === registration.editionSlug);
-      const appointment = await captainAppointment(
-        userId,
-        registration.editionSlug,
-      );
-      return {
-        captainAssigned: Boolean(appointment),
+    rows.map(
+      async ({
         registration,
+        registrationPausedAt,
+        assigned,
         acknowledgedConfiguration,
-        edition,
-        withdrawable: canWithdraw(
-          edition,
+      }) => {
+        const edition = editions.find(
+          (e) => e.slug === registration.editionSlug,
+        );
+        const appointment = await captainAppointment(
+          userId,
+          registration.editionSlug,
+        );
+        return {
+          captainAssigned: Boolean(appointment),
           registration,
-          Boolean(lockedAt) || Boolean(appointment),
-        ),
-      };
-    }),
+          acknowledgedConfiguration,
+          edition,
+          withdrawable: canWithdraw(
+            edition,
+            registration,
+            Boolean(registrationPausedAt) || Boolean(appointment) || assigned,
+          ),
+        };
+      },
+    ),
   );
 }
 export const statusCopy = {

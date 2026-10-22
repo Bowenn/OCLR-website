@@ -1,4 +1,4 @@
-import { and, eq, sql, isNull } from "drizzle-orm";
+import { and, eq, sql, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -9,10 +9,13 @@ import {
   users,
   teams,
   memberships,
+  fixtures,
 } from "@/db/schema";
 import { getEdition, getPublicEdition } from "./content";
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
+import { draftSetupProtection } from "./draft-setup";
+import { refreshDraftSnapshot } from "./draft";
 import { HttpError } from "./http";
 const id = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const commands = z.discriminatedUnion("action", [
@@ -96,9 +99,11 @@ export async function captainSetup(actor: User, slug: string) {
         .select()
         .from(teams)
         .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
+      const protection = await draftSetupProtection(tx, slug);
       return {
         version: state?.setupVersion ?? 0,
-        locked: Boolean(state?.lockedAt),
+        locked: protection.captainsLocked,
+        availabilityLocked: protection.locked,
         poolPublished: state?.poolPublished ?? false,
         captains: appointed.map((c) => ({
           ...c,
@@ -148,10 +153,17 @@ export async function updateCaptains(
       .for("update");
     if (state.setupVersion !== expectedVersion)
       throw new HttpError(409, "Setup changed. Refresh before continuing.");
-    if (state.lockedAt && command.action !== "publish")
+    await assertCapability(actor, "manage_captains", slug, tx);
+    const protection = await draftSetupProtection(tx, slug);
+    if (
+      command.action !== "publish" &&
+      (command.action === "availability"
+        ? protection.locked
+        : protection.captainsLocked)
+    )
       throw new HttpError(
         409,
-        "Draft setup is locked. Changes require supervised draft recovery.",
+        "Captain assignments are protected. Unlock setup before picks, or use the explicit draft reset.",
       );
     const before = await tx
       .select()
@@ -174,6 +186,24 @@ export async function updateCaptains(
           ),
         );
       if (assigned) {
+        const [fixture] = await tx
+          .select({ id: fixtures.id })
+          .from(fixtures)
+          .where(
+            and(
+              eq(fixtures.editionSlug, slug),
+              or(
+                eq(fixtures.homeTeamId, assigned.id),
+                eq(fixtures.awayTeamId, assigned.id),
+              ),
+            ),
+          )
+          .limit(1);
+        if (fixture)
+          throw new HttpError(
+            409,
+            "This captain's team is referenced by fixtures. Resolve the fixtures before replacing the captain.",
+          );
         const members = await tx
           .select()
           .from(memberships)
@@ -290,6 +320,22 @@ export async function updateCaptains(
             and(eq(captains.editionSlug, slug), eq(captains.userId, userId)),
           );
     } else if (command.action === "availability") {
+      const [assigned] = await tx
+        .select({ id: memberships.id })
+        .from(memberships)
+        .where(
+          and(
+            eq(memberships.editionSlug, slug),
+            eq(memberships.userId, command.userId),
+            isNull(memberships.leftAt),
+          ),
+        )
+        .limit(1);
+      if (assigned)
+        throw new HttpError(
+          409,
+          "An assigned player's draft eligibility cannot be changed. Use supervised pick correction first.",
+        );
       if (before.some((c) => c.userId === command.userId))
         throw new HttpError(
           409,
@@ -346,7 +392,10 @@ export async function updateCaptains(
         );
       await tx
         .update(editionState)
-        .set({ lockedAt: new Date() })
+        .set({
+          lockedAt: new Date(),
+          registrationPausedAt: state.registrationPausedAt ?? new Date(),
+        })
         .where(eq(editionState.slug, slug));
     } else if (command.action === "publish") {
       await tx
@@ -368,11 +417,13 @@ export async function updateCaptains(
       .from(captains)
       .where(eq(captains.editionSlug, slug))
       .orderBy(captains.position);
+    const draftRevision = await refreshDraftSnapshot(tx, slug);
     await tx.insert(editionEvents).values({
       editionSlug: slug,
       actorId: actor.osuId,
       kind: `captain_${command.action}`,
       detail: {
+        draftRevision,
         entity: { type: "captain_setup", id: slug },
         before,
         after,

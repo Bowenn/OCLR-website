@@ -364,7 +364,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     expect(await getPublicEdition("s12")).toBeUndefined();
     expect(current.edition.registration?.enabled).toBe(false);
   });
-  it("rejects invalid dates, time zones, forged audit data and locked competition configuration", async () => {
+  it("rejects invalid input while allowing versioned settings edits after setup lock", async () => {
     await expect(
       createTournament(admin, {
         ...fields,
@@ -393,17 +393,16 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       .update(editionState)
       .set({ lockedAt: new Date(), setupVersion: 9 })
       .where(eq(editionState.slug, "s12"));
-    await expect(
-      change(0, "schedule", {
-        schedule: [{ label: "Synthetic milestone", at: null }],
-      }),
-    ).rejects.toMatchObject({ status: 409 });
-    await change(0, "general", {
+    const scheduled = await change(0, "schedule", {
+      schedule: [{ label: "Synthetic milestone", at: null }],
+    });
+    expect(scheduled.edition.schedule[0].label).toBe("Synthetic milestone");
+    await change(scheduled.revision, "general", {
       ...fields,
       name: "Completed synthetic edition",
       status: "completed",
     });
-    expect(await auditEvents()).toHaveLength(2);
+    expect(await auditEvents()).toHaveLength(3);
     expect(
       (
         await db()

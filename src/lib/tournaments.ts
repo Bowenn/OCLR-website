@@ -4,6 +4,7 @@ import { editionState } from "@/db/schema";
 import { editionSchema } from "./editions";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import { suggestEditionSlug } from "./editions";
 import {
   editionEvents,
@@ -30,7 +31,7 @@ export function storedEdition(row: typeof editionState.$inferSelect) {
     revision: row.configurationVersion,
     createdAt: row.createdAt,
     updatedAt: row.configurationUpdatedAt,
-    locked: Boolean(row.lockedAt),
+    registrationPaused: Boolean(row.registrationPausedAt),
   };
 }
 export async function readTournament(
@@ -93,6 +94,13 @@ const createSchema = z
   })
   .strict();
 const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...version,
+      action: z.literal("enrollment"),
+      paused: z.boolean(),
+    })
+    .strict(),
   z
     .object({
       ...version,
@@ -188,7 +196,7 @@ export async function tournamentList(actor: User) {
         published: row.edition.published,
         registrationState: !row.edition.registration
           ? "not_configured"
-          : row.locked || row.edition.status === "completed"
+          : row.registrationPaused || row.edition.status === "completed"
             ? "closed"
             : row.edition.registration.enabled === false
               ? "paused"
@@ -207,7 +215,7 @@ export async function tournamentList(actor: User) {
       })),
   };
 }
-export async function configurationFrozen(
+export async function competitionStructureProtected(
   slug: string,
   locked: boolean,
   reader: Reader,
@@ -235,12 +243,10 @@ export async function tournamentForAdmin(actor: User, slug: string) {
     .select({ count: sql<number>`count(*)::int` })
     .from(registrations)
     .where(eq(registrations.editionSlug, slug));
-  const frozen = await configurationFrozen(slug, row.locked, db());
   return {
     ...row,
-    frozen,
     applications: applications.count,
-    readiness: tournamentReadiness(row.edition, frozen),
+    readiness: tournamentReadiness(row.edition, row.registrationPaused),
     links: tournamentLinks(await staffAccess(actor), slug),
   };
 }
@@ -315,14 +321,24 @@ export async function tournamentCommand(
         409,
         "Tournament settings changed. Refresh before saving your changes.",
       );
-    const frozen = await configurationFrozen(slug, current.locked, tx);
-    if (frozen && ["rules", "registration", "schedule"].includes(c.action))
-      throw new HttpError(
-        409,
-        "Rules, registration and milestones are frozen after setup locks or drafting begins. Competition fixtures retain their separate workflow.",
-      );
+    // Draft locks protect roster/pick structure, not versioned tournament content.
+    // Existing applications keep their original revision and acknowledgments.
     const e = current.edition;
     let next: Edition = e;
+    let registrationPausedAt = state.registrationPausedAt;
+    if (c.action === "enrollment") {
+      if (!c.paused) {
+        const blockers = registrationBlockers(e, privacyReady());
+        if (blockers.length || !e.registration)
+          throw new HttpError(
+            409,
+            blockers.join(" ") || "Configure registration dates first.",
+          );
+      }
+      registrationPausedAt = c.paused
+        ? (state.registrationPausedAt ?? new Date())
+        : null;
+    }
     const revisions = await tx
       .select()
       .from(editionRevisions)
@@ -347,7 +363,7 @@ export async function tournamentCommand(
         revisions.some(
           (r) =>
             r.configuration.rules?.version === c.rules?.version &&
-            JSON.stringify(r.configuration.rules) !== JSON.stringify(c.rules),
+            !isDeepStrictEqual(r.configuration.rules, c.rules),
         )
       ) {
         throw new HttpError(
@@ -386,7 +402,11 @@ export async function tournamentCommand(
     next = validated.data;
     const { slug: _slug, ...configuration } = next;
     void _slug;
-    if (JSON.stringify(next) === JSON.stringify(e)) return;
+    if (
+      isDeepStrictEqual(next, e) &&
+      Boolean(registrationPausedAt) === Boolean(state.registrationPausedAt)
+    )
+      return;
     const revision = current.revision + 1;
     await tx
       .insert(editionRevisions)
@@ -397,6 +417,7 @@ export async function tournamentCommand(
         configuration,
         configurationVersion: revision,
         configurationUpdatedAt: new Date(),
+        registrationPausedAt,
       })
       .where(eq(editionState.slug, slug));
     await tx.insert(editionEvents).values({
@@ -408,8 +429,13 @@ export async function tournamentCommand(
         before: {
           configuration: state.configuration,
           revision: current.revision,
+          registrationPaused: Boolean(state.registrationPausedAt),
         },
-        after: { configuration, revision },
+        after: {
+          configuration,
+          revision,
+          registrationPaused: Boolean(registrationPausedAt),
+        },
       },
     });
   });

@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -11,6 +11,7 @@ import {
   registrations,
   teams,
   users,
+  fixtures,
 } from "@/db/schema";
 import { assertCapability, hasCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
@@ -155,6 +156,29 @@ function snapshotUpdate(
     publishedRevision: published ? session.version : -1,
   };
 }
+/** Caller holds the edition row lock. Keep approved identity corrections and
+ * operational snapshots consistent without adding a parallel publication path. */
+export async function refreshDraftSnapshot(
+  tx: Pick<ReturnType<typeof db>, "select" | "update">,
+  slug: string,
+) {
+  const data = await draftData(tx, slug);
+  if (!data.session?.captainSnapshot) return;
+  await tx
+    .update(draftSessions)
+    .set({ version: data.session.version + 1 })
+    .where(eq(draftSessions.id, data.session.id));
+  const current = await draftData(tx, slug);
+  await tx
+    .update(draftSessions)
+    .set(snapshotUpdate(current))
+    .where(eq(draftSessions.id, current.session!.id));
+  return {
+    fromVersion: data.session.version,
+    toVersion: current.session!.version,
+    publicVersion: current.session!.publicVersion + 1,
+  };
+}
 async function acceptedPlayers(tx: Reader, slug: string) {
   return tx
     .select()
@@ -192,6 +216,12 @@ export async function staffDraft(actor: User, slug: string) {
       const data = await draftData(tx, slug);
       return {
         ...data,
+        canConfigure: await hasCapability(
+          actor,
+          "configure_tournament",
+          slug,
+          tx,
+        ),
         availablePool: availablePool(data),
         setupPoolSize:
           !data.session || data.session.state === "setup"
@@ -283,6 +313,14 @@ const commandSchema = z
           turnSequence: z.array(z.uuid()).max(4096),
         })
         .strict(),
+      ...(["unlock", "reset"] as const).map((action) =>
+        z
+          .object({
+            action: z.literal(action),
+            expectedSetupVersion: z.number().int().nonnegative(),
+          })
+          .strict(),
+      ),
       ...(
         [
           "ready",
@@ -315,7 +353,7 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
     await assertCapability(actor, "manage_draft", slug, tx);
     if (!edition)
       throw new HttpError(409, "Configure captains and teams first.");
-    if (command.action === "configure")
+    if (["configure", "unlock"].includes(command.action))
       await tx
         .insert(draftSessions)
         .values({ editionSlug: slug })
@@ -330,7 +368,12 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         409,
         "Draft revision changed. Refresh the current snapshot.",
       );
+    if (["unlock", "reset"].includes(command.action))
+      await assertCapability(actor, "configure_tournament", slug, tx);
     const before = {
+      setupVersion: edition.setupVersion,
+      lockedAt: edition.lockedAt,
+      registrationPausedAt: edition.registrationPausedAt,
       state: session.state,
       version: session.version,
       turnIndex: session.turnIndex,
@@ -379,8 +422,103 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
     const update: Partial<typeof draftSessions.$inferInsert> = {
       version: session.version + 1,
     };
-    if (command.action === "configure") {
-      if (session.state !== "setup")
+    if (command.action === "unlock" || command.action === "reset") {
+      if (command.expectedSetupVersion !== edition.setupVersion)
+        throw new HttpError(
+          409,
+          "Captain/team setup changed. Refresh before saving the order.",
+        );
+      const data = await draftData(tx, slug);
+      const [competition] = await tx
+        .select({ id: fixtures.id })
+        .from(fixtures)
+        .where(
+          and(
+            eq(fixtures.editionSlug, slug),
+            sql`(${fixtures.status} = 'in_progress' OR EXISTS(SELECT 1 FROM match_results r WHERE r.fixture_id = ${fixtures.id}) OR EXISTS(SELECT 1 FROM match_imports i WHERE i.fixture_id = ${fixtures.id}))`,
+          ),
+        )
+        .limit(1);
+      if (
+        session.state === "finalized" ||
+        data.teams.some((t) => t.team.finalizedAt) ||
+        competition
+      )
+        throw new HttpError(
+          409,
+          "Finalized rosters or match evidence protect this draft. Use supervised competition recovery.",
+        );
+      const active = data.picks.filter((p) => !p.voidedAt);
+      if (command.action === "reset") {
+        if (session.state === "live")
+          throw new HttpError(
+            409,
+            "Pause the draft before resetting rehearsal picks.",
+          );
+        const drafted = data.members.filter(
+          (m) => m.membership.origin === "draft",
+        );
+        if (
+          drafted.length !== active.length ||
+          active.some(
+            (p) =>
+              !drafted.some(
+                (m) =>
+                  m.membership.userId === p.playerId &&
+                  m.membership.teamId === p.teamId,
+              ),
+          )
+        )
+          throw new HttpError(
+            409,
+            "Roster integrity requires operator recovery.",
+          );
+        if (active.length) {
+          const now = new Date();
+          await tx
+            .update(draftPicks)
+            .set({ voidedAt: now })
+            .where(
+              and(
+                eq(draftPicks.sessionId, session.id),
+                isNull(draftPicks.voidedAt),
+              ),
+            );
+          await tx
+            .update(memberships)
+            .set({ leftAt: now })
+            .where(
+              and(
+                eq(memberships.editionSlug, slug),
+                eq(memberships.origin, "draft"),
+                isNull(memberships.leftAt),
+                inArray(
+                  memberships.userId,
+                  active.map((p) => p.playerId),
+                ),
+              ),
+            );
+        }
+        update.state = "setup";
+        update.turnIndex = 0;
+        update.pool = [];
+      } else update.state = active.length ? "paused" : "setup";
+      if (update.state === "setup") {
+        update.turnIndex = 0;
+        update.publicSnapshot = null;
+        update.captainSnapshot = null;
+        update.publicVersion = session.publicVersion + 1;
+        update.publishedRevision = -1;
+      }
+      await tx
+        .update(editionState)
+        .set({ lockedAt: null, setupVersion: edition.setupVersion + 1 })
+        .where(eq(editionState.slug, slug));
+    } else if (command.action === "configure") {
+      if (
+        session.state !== "setup" &&
+        !(session.state === "paused" && !edition.lockedAt)
+      )
         throw new HttpError(409, "Only draft setup can be configured.");
       if (command.expectedSetupVersion !== edition.setupVersion)
         throw new HttpError(
@@ -393,6 +531,15 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         sequenceTeams(data),
       );
       if (problem) throw new HttpError(409, problem);
+      if (
+        data.picks.some(
+          (p) => !p.voidedAt && command.turnSequence[p.turnIndex] !== p.teamId,
+        )
+      )
+        throw new HttpError(
+          409,
+          "Confirmed turns cannot be reassigned or removed. Edit future turns, or explicitly reset the draft.",
+        );
       update.turnSequence = command.turnSequence;
     } else if (command.action === "ready" || command.action === "start") {
       if (!["setup", "ready"].includes(session.state))
@@ -409,11 +556,14 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       ).map((p) => p.userId);
       update.state = command.action === "start" ? "live" : "ready";
       // Protect roster primitives automatically; this is not public approval.
-      if (!edition.lockedAt)
-        await tx
-          .update(editionState)
-          .set({ lockedAt: new Date(), setupVersion: edition.setupVersion + 1 })
-          .where(eq(editionState.slug, slug));
+      await tx
+        .update(editionState)
+        .set({
+          lockedAt: edition.lockedAt ?? new Date(),
+          registrationPausedAt: edition.registrationPausedAt ?? new Date(),
+          setupVersion: edition.setupVersion + (edition.lockedAt ? 0 : 1),
+        })
+        .where(eq(editionState.slug, slug));
     } else if (command.action === "pause") {
       if (session.state !== "live")
         throw new HttpError(409, "Only a live draft can pause.");
@@ -421,7 +571,35 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
     } else if (command.action === "resume") {
       if (session.state !== "paused")
         throw new HttpError(409, "Only a paused draft can resume.");
-      update.state = "live";
+      const data = await draftData(tx, slug);
+      const problem = turnSequenceStructureProblem(
+        session.turnSequence,
+        sequenceTeams(data),
+      );
+      if (problem) throw new HttpError(409, problem);
+      const active = data.picks.filter((p) => !p.voidedAt);
+      if (
+        active.length !== session.turnIndex ||
+        active.some(
+          (p, i) => p.turnIndex !== i || p.teamId !== session.turnSequence[i],
+        )
+      )
+        throw new HttpError(409, "Draft/roster invariants are not satisfied.");
+      update.pool = [
+        ...new Set([
+          ...active.map((p) => p.playerId),
+          ...unassignedPlayers(await acceptedPlayers(tx, slug), data).map(
+            (p) => p.userId,
+          ),
+        ]),
+      ];
+      update.state =
+        session.turnIndex >= session.turnSequence.length ? "completed" : "live";
+      if (!edition.lockedAt)
+        await tx
+          .update(editionState)
+          .set({ lockedAt: new Date(), setupVersion: edition.setupVersion + 1 })
+          .where(eq(editionState.slug, slug));
     } else if (command.action === "undo") {
       if (!["paused", "completed"].includes(session.state))
         throw new HttpError(
@@ -512,7 +690,6 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         );
       update.state = "setup";
       update.pool = [];
-      update.turnSequence = [];
       update.turnIndex = 0;
       update.publicSnapshot = null;
       update.captainSnapshot = null;
@@ -565,7 +742,10 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       .set(update)
       .where(eq(draftSessions.id, session.id));
     if (
-      command.action !== "recover" &&
+      !(
+        ["recover", "reset"].includes(command.action) ||
+        (command.action === "unlock" && update.state === "setup")
+      ) &&
       (session.captainSnapshot || ["start", "ready"].includes(command.action))
     ) {
       const publication = snapshotUpdate(await draftData(tx, slug));
@@ -584,6 +764,12 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
         entity: { type: "draft_session", id: session.id },
         before,
         after: { ...before, ...update },
+        setupAfter: (
+          await tx
+            .select()
+            .from(editionState)
+            .where(eq(editionState.slug, slug))
+        )[0],
         command,
       },
     });

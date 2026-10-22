@@ -558,7 +558,10 @@ export function CaptainManager({
           disabled={
             pending ||
             changed ||
-            (setup.locked && action !== "publish") ||
+            ((action === "availability"
+              ? setup.availabilityLocked
+              : setup.locked) &&
+              action !== "publish") ||
             (action === "replace" && (!userId || !previousUserId)) ||
             (action === "availability" &&
               (!userId || (!available && !unavailableExplanation.trim())))

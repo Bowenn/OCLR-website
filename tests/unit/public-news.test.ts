@@ -14,7 +14,7 @@ const record: NewsEdition = {
       { label: "Final", at: null },
     ],
   },
-  locked: false,
+  registrationPaused: false,
 };
 describe("read-only deterministic public News", () => {
   it("deduplicates stable event URLs across reads and schedule reordering, keeping manual news", () => {
@@ -79,7 +79,7 @@ describe("read-only deterministic public News", () => {
     const open = title();
     expect(open.title).toContain("Registration is open");
     for (const r of [
-      { ...record, locked: true },
+      { ...record, registrationPaused: true },
       {
         ...record,
         edition: { ...record.edition, status: "completed" as const },

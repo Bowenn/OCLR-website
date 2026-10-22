@@ -28,7 +28,7 @@ try {
   if (!ids.length && !globalAdmins.rows.length)
     throw new Error("Provision a verified global Admin before release.");
   await db().execute(
-    sql`SELECT configuration, configuration_version FROM edition_state LIMIT 0`,
+    sql`SELECT configuration, configuration_version, registration_paused_at FROM edition_state LIMIT 0`,
   );
   const missing = await db().execute(
     sql`SELECT slug FROM edition_state WHERE configuration IS NULL LIMIT 1`,

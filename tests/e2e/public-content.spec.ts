@@ -112,7 +112,12 @@ test.describe("derived public content", () => {
       );
       await expect(page.getByText(/plan, not confirmation/)).toBeVisible();
       const privateSlug = projectPublicNews(
-        [{ edition: { ...privateEdition, published: true }, locked: false }],
+        [
+          {
+            edition: { ...privateEdition, published: true },
+            registrationPaused: false,
+          },
+        ],
         [],
         [],
         true,

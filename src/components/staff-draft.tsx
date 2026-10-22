@@ -9,42 +9,55 @@ import { usePoll } from "./use-poll";
 import { DraftPick } from "./draft-pick";
 import { ConfirmMutation } from "./confirm-mutation";
 import { DraftOrderEditor } from "./draft-order-editor";
-import { DraftBoardView } from "./draft-board";
+import { DraftBoardView, draftLabels } from "./draft-board";
 function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
   const tr = useAppTranslations();
 
   const state = data.session?.state ?? "setup";
   const version = data.session?.version ?? 0;
+  const editing = !data.edition?.lockedAt;
   const allowed = [
+    ...(data.canConfigure && data.edition?.lockedAt && state !== "finalized"
+      ? ["unlock"]
+      : []),
+    ...(data.canConfigure &&
+    data.session &&
+    !["live", "finalized"].includes(state)
+      ? ["reset"]
+      : []),
     ...(state === "ready" && data.session?.turnSequence.length
       ? ["start"]
       : []),
     ...(state === "live" ? ["pause"] : []),
     ...(state === "paused"
-      ? ["resume", ...(data.session?.turnIndex ? ["undo"] : [])]
+      ? [
+          ...(!editing ? ["resume"] : []),
+          ...(data.session?.turnIndex ? ["undo"] : []),
+        ]
       : []),
     ...(state === "completed" ? ["finalize", "undo"] : []),
-    ...(["setup", "ready", "paused", "completed"].includes(state) &&
-    data.session
-      ? ["abort"]
-      : []),
     ...(state === "aborted" ? ["recover"] : []),
     ...(state !== "setup" && !data.session?.publicSnapshot ? ["publish"] : []),
   ];
   const labels: Record<string, string> = {
-    ready: "Freeze draft setup",
+    unlock: state === "live" ? tr("Pause and edit") : tr("Unlock draft setup"),
+    reset: tr("Reset draft"),
     start: "Start draft",
     pause: "Pause draft",
     resume: "Resume draft",
     undo: "Void last pick",
     finalize: "Finalize rosters",
-    abort: "Abort draft",
     recover: "Reopen setup",
     publish: "Release draft board",
   };
   function actionPayload(action: string) {
     return {
-      command: { action },
+      command: {
+        action,
+        ...(["unlock", "reset"].includes(action)
+          ? { expectedSetupVersion: data.edition?.setupVersion ?? 0 }
+          : {}),
+      },
       expectedVersion: version,
       confirmed: true,
     };
@@ -53,12 +66,25 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
     <section className="panel form-stack">
       <h2>{tr("Staff controls")}</h2>
 
-      {state === "setup" && <DraftOrderEditor slug={slug} data={data} />}
+      <p className="muted small" role="status">
+        {editing
+          ? tr(
+              "Draft setup is editable. Registration availability is unchanged.",
+            )
+          : tr(
+              "Draft structure is locked. Tournament settings remain editable.",
+            )}
+      </p>
+      {(state === "setup" || (state === "paused" && editing)) && (
+        <DraftOrderEditor slug={slug} data={data} />
+      )}
       <div className="actions">
         {allowed.map((action) => (
           <ConfirmMutation
             key={action}
-            requireConfirmation={!["start", "pause", "resume"].includes(action)}
+            requireConfirmation={
+              !["start", "pause", "resume", "unlock"].includes(action)
+            }
             label={labels[action]}
             title={`${tr(labels[action])}?`}
             description={
@@ -66,9 +92,9 @@ function Controls({ slug, data }: { slug: string; data: StaffDraft }) {
                 ? tr(
                     "Release the current approved captain/team state and committed picks. Remaining pool is shown only when separately approved. This does not create a pick.",
                   )
-                : action === "abort"
+                : action === "reset"
                   ? tr(
-                      "Abort this draft and void its picks. Draft roster assignments are removed; audit history is retained.",
+                      "Reset this draft and return to setup. Picks are voided and draft roster assignments removed; saved order and audit history are retained. Registration stays unchanged.",
                     )
                   : action === "undo"
                     ? tr(
@@ -199,7 +225,7 @@ export function StaffDraftRoom({
               unavailableMessage={
                 !connected
                   ? "Reconnecting. Wait for the authoritative snapshot."
-                  : "Picking is available during a live turn."
+                  : draftLabels[session.state]
               }
               pool={data.availablePool}
               staff

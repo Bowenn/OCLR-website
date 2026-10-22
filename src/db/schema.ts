@@ -96,6 +96,9 @@ export const editionState = pgTable("edition_state", {
     .notNull()
     .defaultNow(),
   lockedAt: timestamp("locked_at", { withTimezone: true }),
+  registrationPausedAt: timestamp("registration_paused_at", {
+    withTimezone: true,
+  }),
   setupVersion: integer("setup_version").notNull().default(0),
   poolPublished: boolean("pool_published").notNull().default(false),
 });
@@ -132,7 +135,9 @@ export const registrations = pgTable(
       .default("player"),
     rulesVersion: text("rules_version"),
     eligibilityAcknowledged: boolean("eligibility_acknowledged"),
-    eligibilityVerification: jsonb("eligibility_verification").$type<import("@/lib/eligibility-model").EligibilityVerification>(),
+    eligibilityVerification: jsonb("eligibility_verification").$type<
+      import("@/lib/eligibility-model").EligibilityVerification
+    >(),
     configurationVersion: integer("configuration_version"),
     answers: jsonb("answers").$type<Record<string, string>>().notNull(),
     statusReason: text("status_reason"),

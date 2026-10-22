@@ -296,7 +296,7 @@ test.describe("automatic staff auditing", () => {
       .click();
     await expect(
       page.getByRole("button", { name: "Start draft" }),
-    ).toBeVisible();
+    ).toBeEnabled();
     const events = await db().select().from(editionEvents);
     expect(events).toHaveLength(8);
     for (const event of events) {

@@ -16,7 +16,10 @@ export async function seedSession(id: number) {
   await db()
     .insert(editionState)
     .values({ slug: "test-cup" })
-    .onConflictDoUpdate({ target: editionState.slug, set: { lockedAt: null } });
+    .onConflictDoUpdate({
+      target: editionState.slug,
+      set: { lockedAt: null, registrationPausedAt: null },
+    });
   const session = await createSession(id);
   return {
     name: "oclr_session",
