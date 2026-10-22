@@ -1820,6 +1820,8 @@
     "m9f0e25ef02df": "Only draft setup can be configured.",
     "mae00238863ba": "Only a saved draft setup can start.",
     "m7aedaeceb5d8": "Start draft",
-    "m3f51277fe919": "Abort this draft and void its picks. Draft roster assignments are removed; audit history is retained."
+    "m3f51277fe919": "Abort this draft and void its picks. Draft roster assignments are removed; audit history is retained.",
+    "m3c93cf98a658": "Previous teams",
+    "m54c2aabdf7da": "Next teams"
   }
 }

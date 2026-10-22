@@ -1,6 +1,17 @@
 export type DraftState =
   "setup" | "ready" | "live" | "paused" | "completed" | "finalized" | "aborted";
-export type DraftIdentity = { osuId: number; username: string };
+export type DraftIdentity = {
+  osuId: number;
+  username: string;
+  // Optional read-time overlay projection. Older persisted snapshots remain valid.
+  profile?: {
+    avatarUrl: string | null;
+    pp: number | null;
+    globalRank: number | null;
+    status: "loading" | "fresh" | "unavailable";
+    fetchedAt: string | null;
+  };
+};
 export type DraftTeam = { id: string; name: string; captain: DraftIdentity };
 export type DraftBoard = {
   sessionId: string;
