@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isPublicPage,
+  isBroadcastPage,
   publicTournamentSection,
 } from "../../src/lib/public-navigation";
 describe("public edition navigation", () => {
@@ -23,7 +24,7 @@ describe("public edition navigation", () => {
   });
 });
 
-describe("public appearance boundary", () => {
+describe("public route context", () => {
   it.each([
     "/",
     "/news",
@@ -33,7 +34,9 @@ describe("public appearance boundary", () => {
     "/players/123",
     "/tournaments/s11/rules",
     "/tournaments/s11/draft",
-  ])("themes public page %s", (path) => expect(isPublicPage(path)).toBe(true));
+  ])("identifies public page %s", (path) =>
+    expect(isPublicPage(path)).toBe(true),
+  );
   it.each([
     "/admin",
     "/admin/tournaments/s11",
@@ -42,9 +45,30 @@ describe("public appearance boundary", () => {
     "/tournaments/s11/team",
     "/tournaments/s11/draft/captain",
     "/tournaments/s11/draft/overlay",
-  ])("isolates operational page %s", (path) =>
+  ])("identifies private page %s", (path) =>
     expect(isPublicPage(path)).toBe(false),
   );
   it("isolates presenter mode without changing the normal spectator board", () =>
     expect(isPublicPage("/tournaments/s11/draft", true)).toBe(false));
+});
+
+describe("broadcast appearance boundary", () => {
+  it.each([
+    "/",
+    "/dashboard",
+    "/admin",
+    "/login",
+    "/tournaments/s11/team",
+    "/tournaments/s11/draft/captain",
+    "/tournaments/s11/draft",
+  ])("shares site appearance for %s", (path) => {
+    expect(isBroadcastPage(path)).toBe(false);
+  });
+  it("isolates only explicit broadcast destinations", () => {
+    expect(isBroadcastPage("/tournaments/s11/draft/overlay")).toBe(true);
+    expect(isBroadcastPage("/tournaments/s11/draft", true)).toBe(true);
+    expect(isBroadcastPage("/tournaments/s11/draft/captain", true)).toBe(false);
+    expect(isBroadcastPage("/tournaments/s11/draft/overlay-other")).toBe(false);
+    expect(isBroadcastPage("/admin", true)).toBe(false);
+  });
 });

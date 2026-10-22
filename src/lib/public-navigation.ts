@@ -14,7 +14,7 @@ export function publicTournamentSection(path: string, base: string) {
   return suffix;
 }
 
-/** A single public appearance boundary; operational tools keep their dark UI. */
+/** Public route context is independent of the shared visual theme. */
 export function isPublicPage(path: string, presenter = false) {
   if (/^\/(admin|dashboard|login|auth|api)(?:\/|$)/.test(path)) return false;
   if (
@@ -24,4 +24,12 @@ export function isPublicPage(path: string, presenter = false) {
   )
     return false;
   return !(presenter && /^\/tournaments\/[^/]+\/draft$/.test(path));
+}
+
+/** Broadcast output deliberately keeps its own transparent/dark presentation. */
+export function isBroadcastPage(path: string, presenter = false) {
+  return (
+    /^\/tournaments\/[^/]+\/draft\/overlay(?:\/|$)/.test(path) ||
+    (presenter && /^\/tournaments\/[^/]+\/draft$/.test(path))
+  );
 }

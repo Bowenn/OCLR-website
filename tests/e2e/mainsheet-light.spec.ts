@@ -292,7 +292,7 @@ test.describe("MainSheet Light public experience", () => {
       await expect(account).toBeFocused();
       await adminPage.goto("/admin");
       await expect(adminPage.locator(".public-tournament")).toHaveCount(0);
-      await expect(adminPage.locator("body")).not.toHaveCSS(
+      await expect(adminPage.locator(".themed-site")).toHaveCSS(
         "background-color",
         "rgb(244, 241, 247)",
       );

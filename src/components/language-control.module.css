@@ -29,11 +29,11 @@
   min-width: 9rem;
   max-width: calc(100vw - 2rem);
   padding: 0.25rem;
-  border: 1px solid var(--public-border, #685175);
+  border: 1px solid var(--site-border, #685175);
   border-radius: 0.75rem;
-  background: var(--public-surface, #151827);
+  background: var(--site-surface, #151827);
   box-shadow: 0 12px 28px #0005;
-  color: var(--public-secondary-text, #d3d4e2);
+  color: var(--site-secondary-text, #d3d4e2);
 }
 .root .menu button[role] {
   display: flex;
@@ -54,16 +54,16 @@
 }
 .root .menu button[role]:hover,
 .root .menu button[role]:focus-visible {
-  background: var(--public-tint, #ffffff0c);
-  color: var(--public-accent-strong, #fff);
+  background: var(--site-tint, #ffffff0c);
+  color: var(--site-accent-strong, #fff);
   transform: none;
 }
 .root .menu button[role]:focus-visible {
   outline-offset: -3px;
 }
 .root .menu button[role][aria-checked="true"] {
-  background: var(--public-tint, #a65bd42e);
-  color: var(--public-accent-strong, #f4e7ff);
+  background: var(--site-tint, #a65bd42e);
+  color: var(--site-accent-strong, #f4e7ff);
 }
 .root .menu button[role] svg {
   width: 16px;

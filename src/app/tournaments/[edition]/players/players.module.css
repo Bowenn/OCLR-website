@@ -10,9 +10,9 @@
 .card {
   min-width: 0;
   padding: 1rem;
-  border: 1px solid var(--public-border);
+  border: 1px solid var(--site-border);
   border-radius: 1rem;
-  background: var(--public-surface);
+  background: var(--site-surface);
   overflow-wrap: anywhere;
 }
 .card :global(.public-player-identity) {

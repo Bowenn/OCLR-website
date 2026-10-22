@@ -204,10 +204,10 @@ test.describe("public and operational follow-ups", () => {
     await context.addCookies([cookie]);
     await page.goto("/admin");
     await expect(page.locator(".private-site")).toBeVisible();
-    await expect(page.locator(".theme-control")).toBeHidden();
-    await expect(page.locator("body")).toHaveCSS(
-      "background-color",
-      "rgb(9, 12, 23)",
+    await expect(page.locator(".theme-control")).toBeVisible();
+    await expect(page.locator(".themed-site")).toHaveCSS(
+      "color-scheme",
+      (await page.locator("html").getAttribute("data-theme"))!,
     );
   });
   test("redirects Participants to one captain entry in Players and keeps team rosters publication-safe", async ({

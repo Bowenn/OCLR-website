@@ -197,10 +197,10 @@ test.describe("appearance and language preferences", () => {
         await expect(
           page.getByRole("heading", { name: title, exact: true }),
         ).toBeVisible();
-        await expect(page.locator(".theme-control")).toBeHidden();
-        await expect(page.locator("body")).toHaveCSS(
-          "background-color",
-          "rgb(9, 12, 23)",
+        await expect(page.locator(".theme-control")).toBeVisible();
+        await expect(page.locator(".themed-site")).toHaveCSS(
+          "color-scheme",
+          (await page.locator("html").getAttribute("data-theme"))!,
         );
         expect(
           await page.evaluate(
