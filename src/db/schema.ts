@@ -846,3 +846,53 @@ export const resultGameClaims = pgTable(
     }),
   ],
 );
+
+// Award releases are reviewed snapshots of the existing approved result pipeline.
+export const awardSettings = pgTable(
+  "award_settings",
+  {
+    editionSlug: text("edition_slug")
+      .primaryKey()
+      .references(() => editionState.slug),
+    version: integer("version").notNull().default(0),
+    weeks: jsonb("weeks")
+      .$type<import("@/lib/award-model").AwardWeek[]>()
+      .notNull()
+      .default([]),
+    tiers: jsonb("tiers")
+      .$type<import("@/lib/award-model").AwardTier[]>()
+      .notNull()
+      .default([]),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [check("award_settings_version", sql`${t.version} >= 0`)],
+);
+export const weeklyAwardReleases = pgTable(
+  "weekly_award_releases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    week: integer("week").notNull(),
+    revision: integer("revision").notNull(),
+    fingerprint: text("fingerprint").notNull(),
+    report: jsonb("report")
+      .$type<import("@/lib/awards").AwardReport>()
+      .notNull(),
+    publishedBy: bigint("published_by", { mode: "number" }).notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    active: boolean("active").notNull().default(true),
+  },
+  (t) => [
+    unique("weekly_award_revision").on(t.editionSlug, t.week, t.revision),
+    uniqueIndex("weekly_award_active")
+      .on(t.editionSlug, t.week)
+      .where(sql`${t.active}`),
+    check("weekly_award_positive", sql`${t.week} > 0 AND ${t.revision} > 0`),
+  ],
+);

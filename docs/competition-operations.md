@@ -81,3 +81,30 @@ Draft setup and enrollment now have separate persisted protection. Lock/Start pa
 In Live draft, **Pause and edit** stops picks atomically and opens correction controls. With no committed picks, Unlock returns to Setup and retains the saved sequence, so captains, team capacities and order can be edited without abort/recreate. With picks, the session remains Paused: team branding/capacity (never below its current membership), unassigned-player availability and future turns can change. Confirmed turns cannot change team or disappear; captain reassignment and assigned-player availability require an explicit supervised correction/reset. Team identity corrections refresh the existing approved draft projection in the same transaction, while private drafts stay private. Save the future order before Resume; Start/Resume still use the existing versioned, role-checked, unique/idempotent pick command and per-pick capacity checks.
 
 **Reset draft** is a separate confirmed operation after pausing. It voids the current session's picks and closes their active draft memberships, retains saved order/captains/teams, historical pick/audit records and registration state, clears the current public/private draft snapshots, and returns to Setup. Start again and explicitly Release the board when approved. It does not delete applications, teams, fixtures or results. Finalized rosters or existing match evidence block structural unlock/reset; use the organizer-reviewed competition correction/recovery process. A team referenced by fixtures cannot be archived through captain replacement. Do not edit database locks manually.
+
+## Weekly player awards
+
+Admins configure explicit, non-overlapping weeks and edition-specific player Tiers
+at **Competition → Weekly awards**. No calendar or Tier is inferred. The entire
+fixture belongs to the week containing its scheduled instant, displayed in the
+edition time zone. Week ranges include the start and exclude the end.
+
+Organizer-approved policy `relative-game-mean-v1`: each included, approved scored
+game contributes one appearance per attributed player. For that game, divide the
+player's effective score by the highest eligible player effective score. Apply the
+approved result's failed-score policy. Round ratios half up to nine decimal places,
+then round their weekly mean half up to nine decimal places. Higher is better;
+percentage output has seven decimals. Missing/unverified scores and all-zero games
+require review rather than fabricated values. Excluded games do not count.
+
+MVP requires at least six appearances; MIP requires five in **both adjacent weeks**
+and positive absolute improvement, from Week 2; Best Rookie requires five and an
+explicit Tier of T4, T5 or below. Awards are independent. Equal metrics remain tied;
+no hidden tiebreak is applied. Unknown Tier is not Rookie eligibility.
+
+Only approved, published result revisions feed the calculation. A newer unapproved
+import or correction does not replace the published revision. Admin reviews and
+publishes an immutable calculation snapshot with source IDs/revisions. Source,
+fixture-time, Tier or participant-publication changes mark affected releases stale;
+the public page withholds winners pending deliberate review and republication.
+Previous releases remain in the database. No scheduler or second score store is used.

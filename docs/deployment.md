@@ -467,3 +467,9 @@ Removal uses the existing Withdrawn status, retains the registration/answers/con
 ### Registration reapplication history (#116)
 
 Apply `0024_registration_attempt_history` through the existing verified-backup migration workflow before activating the new application. Existing registrations/events remain attempt 1 with unchanged contents; earlier withdrawn attempts are archived only when the player explicitly reapplies. Preflight verifies the new columns/table. Keep archive rows and configuration revisions on rollback; do not delete/reinsert participants or down-migrate consent history. Older compatible builds can still see the current row but do not implement reapplication.
+
+Migration `0025_weekly_awards.sql` adds edition-scoped award settings and immutable,
+versioned releases. It does not create weeks, assign Tiers or publish awards. Apply
+with the normal backup/migration procedure. An older application can leave these
+additive tables in place; never drop award or registration-attempt history as an
+automatic rollback. Review compatibility before switching releases.

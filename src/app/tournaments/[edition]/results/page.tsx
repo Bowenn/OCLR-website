@@ -2,6 +2,7 @@ import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
 import { publicCompetition } from "@/lib/public-competition";
+import Link from "next/link";
 import { PageHeading } from "@/components/ui";
 import { PublicMatches, GroupStandings } from "@/components/public-matches";
 export async function generateMetadata() {
@@ -23,6 +24,11 @@ export default async function Results({
   return (
     <>
       <PageHeading title={tr("Results")} />
+      <p>
+        <Link href={`/tournaments/${slug}/results/awards`}>
+          {tr("Weekly awards")} →
+        </Link>
+      </p>
       <PublicMatches
         fixtures={data?.fixtures ?? []}
         slug={slug}

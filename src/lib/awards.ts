@@ -1,0 +1,471 @@
+import { createHash } from "node:crypto";
+import { and, desc, eq, inArray, isNotNull } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/db";
+import {
+  awardSettings,
+  weeklyAwardReleases,
+  editionState,
+  editionEvents,
+  fixtures,
+  matchResults,
+  resultRevisions,
+  matchImports,
+  matchGames,
+  resultGameClaims,
+  registrations,
+  users,
+} from "@/db/schema";
+import { assertCapability } from "./auth/staff";
+import type { User } from "./auth/sessions";
+import { HttpError } from "./http";
+import { readTournament } from "./tournaments";
+import { matchGameSchema, reviewedResultSchema } from "./match-model";
+import {
+  AWARD_POLICY,
+  awardConfigurationSchema,
+  weeklyStandings,
+  type AwardGame,
+  type AwardWeek,
+  type AwardStanding,
+} from "./award-model";
+type Reader = Pick<ReturnType<typeof db>, "select">;
+export type AwardReport = AwardWeek &
+  AwardStanding & {
+    policy: string;
+    timeZone: string;
+    fingerprint: string;
+    identities: { userId: number; username: string; public: boolean }[];
+  };
+async function calculation(slug: string, reader: Reader) {
+  const tournament = await readTournament(slug, reader);
+  if (!tournament) throw new HttpError(404, "Tournament not found.");
+  const [stored] = await reader
+    .select()
+    .from(awardSettings)
+    .where(eq(awardSettings.editionSlug, slug));
+  const configuration = awardConfigurationSchema.parse({
+    weeks: stored?.weeks ?? [],
+    tiers: stored?.tiers ?? [],
+  });
+  const participants = await reader
+    .select({
+      userId: registrations.userId,
+      username: users.username,
+      status: registrations.status,
+    })
+    .from(registrations)
+    .innerJoin(users, eq(users.osuId, registrations.userId))
+    .where(eq(registrations.editionSlug, slug));
+  // Follow the published revision pointer, even while a newer correction awaits review.
+  const sources = await reader
+    .select({
+      fixture: fixtures,
+      revision: resultRevisions,
+      fingerprint: matchImports.fingerprint,
+    })
+    .from(fixtures)
+    .innerJoin(matchResults, eq(matchResults.fixtureId, fixtures.id))
+    .innerJoin(
+      resultRevisions,
+      and(
+        eq(resultRevisions.fixtureId, fixtures.id),
+        eq(resultRevisions.revision, matchResults.publishedRevision),
+      ),
+    )
+    .innerJoin(
+      matchImports,
+      and(
+        eq(matchImports.id, resultRevisions.importId),
+        eq(matchImports.fixtureId, fixtures.id),
+      ),
+    )
+    .where(
+      and(
+        eq(fixtures.editionSlug, slug),
+        isNotNull(fixtures.publishedAt),
+        isNotNull(resultRevisions.approvedAt),
+        isNotNull(resultRevisions.approvedBy),
+      ),
+    );
+  const importIds = sources.map((s) => s.revision.importId);
+  const normalized = importIds.length
+    ? await reader
+        .select()
+        .from(matchGames)
+        .where(inArray(matchGames.importId, importIds))
+    : [];
+  const claims = await reader
+    .select()
+    .from(resultGameClaims)
+    .where(eq(resultGameClaims.editionSlug, slug));
+  const games: AwardGame[] = [];
+  for (const source of sources.sort((a, b) =>
+    a.fixture.id.localeCompare(b.fixture.id),
+  )) {
+    if (source.fixture.status === "cancelled") continue;
+    const proposal = reviewedResultSchema.safeParse(source.revision.proposal);
+    const common = {
+      fixtureId: source.fixture.id,
+      at: source.fixture.scheduledAt?.toISOString() ?? null,
+      revision: source.revision.revision,
+      fingerprint: source.fingerprint,
+    };
+    if (!proposal.success) {
+      games.push({
+        ...common,
+        gameId: -games.length - 1,
+        scores: [],
+        problem: "Unsupported approved result; review required.",
+      });
+      continue;
+    }
+    for (const reviewed of proposal.data.games) {
+      const row = normalized.find(
+        (g) =>
+          g.importId === source.revision.importId &&
+          g.externalGameId === reviewed.gameId,
+      );
+      const parsed = matchGameSchema.safeParse(row?.data);
+      let problem: string | undefined;
+      const scores: AwardGame["scores"] = [];
+      if (
+        !parsed.success ||
+        proposal.data.sourceFingerprint !== source.fingerprint ||
+        !claims.some(
+          (c) =>
+            c.externalGameId === reviewed.gameId &&
+            c.fixtureId === source.fixture.id,
+        ) ||
+        !source.fixture.homeTeamId ||
+        !source.fixture.awayTeamId ||
+        !proposal.data.teamIds.includes(source.fixture.homeTeamId) ||
+        !proposal.data.teamIds.includes(source.fixture.awayTeamId)
+      ) {
+        problem = "Approved game source or team attribution needs review.";
+      } else {
+        const game = parsed.data;
+        if (
+          !game.endTime ||
+          game.problems.length ||
+          game.mode !== proposal.data.rulesSnapshot.mode ||
+          game.scoringType !== proposal.data.rulesSnapshot.scoringType
+        )
+          problem = "Unsupported or incomplete scored game.";
+        for (const score of game.scores) {
+          const id = score.osuId;
+          const attribution = reviewed.attribution?.filter(
+            (a) =>
+              a.osuId === id &&
+              a.evidence &&
+              a.teamId &&
+              proposal.data.teamIds.includes(a.teamId),
+          );
+          const rosterTeams = proposal.data.rosterSnapshot.filter((r) =>
+            r.osuIds.includes(id ?? -1),
+          );
+          const substitution =
+            proposal.data.rulesSnapshot.allowSubstitutions &&
+            proposal.data.decisions
+              .find((d) => d.gameId === game.id)
+              ?.substitutions.filter(
+                (s) =>
+                  s.osuId === id && proposal.data.teamIds.includes(s.teamId),
+              );
+          const known = attribution
+            ? attribution.length === 1
+            : rosterTeams.length === 1 ||
+              (substitution && substitution.length === 1);
+          if (!id || score.total === null || score.problems.length || !known) {
+            problem = "Player score or approved attribution needs review.";
+            continue;
+          }
+          scores.push({
+            userId: id,
+            total:
+              score.passed === false &&
+              proposal.data.rulesSnapshot.failedScorePolicy === "zero"
+                ? 0
+                : score.total,
+          });
+        }
+      }
+      games.push({
+        ...common,
+        gameId: reviewed.gameId,
+        scores: scores.sort((a, b) => a.userId - b.userId),
+        ...(problem ? { problem } : {}),
+      });
+    }
+  }
+  const reports = weeklyStandings(
+    configuration.weeks,
+    configuration.tiers,
+    games,
+  ).map((standing): AwardReport => {
+    const identities = standing.candidates.map((c) => {
+      const participant = participants.find((p) => p.userId === c.userId);
+      return {
+        userId: c.userId,
+        username: participant?.username ?? String(c.userId),
+        public: participant?.status === "accepted",
+      };
+    });
+    const report = {
+      ...standing,
+      policy: AWARD_POLICY,
+      timeZone: tournament.edition.timeZone,
+      identities,
+    };
+    return {
+      ...report,
+      fingerprint: createHash("sha256")
+        .update(JSON.stringify(report))
+        .digest("hex"),
+    };
+  });
+  const releases = await reader
+    .select()
+    .from(weeklyAwardReleases)
+    .where(
+      and(
+        eq(weeklyAwardReleases.editionSlug, slug),
+        eq(weeklyAwardReleases.active, true),
+      ),
+    );
+  return {
+    edition: {
+      slug,
+      name: tournament.edition.name,
+      timeZone: tournament.edition.timeZone,
+    },
+    version: stored?.version ?? 0,
+    ...configuration,
+    participants,
+    reports,
+    releases,
+  };
+}
+export async function awardWorkspace(actor: User, slug: string) {
+  await assertCapability(actor, "approve_results", slug);
+  return db().transaction((tx) => calculation(slug, tx), {
+    isolationLevel: "repeatable read",
+    accessMode: "read only",
+  });
+}
+const common = {
+  expectedVersion: z.number().int().nonnegative(),
+  confirmed: z.literal(true),
+};
+const command = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...common,
+      action: z.literal("configure"),
+      ...awardConfigurationSchema.shape,
+    })
+    .strict(),
+  z
+    .object({
+      ...common,
+      action: z.literal("publish"),
+      week: z.number().int().positive(),
+      fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .strict(),
+  z
+    .object({
+      ...common,
+      action: z.literal("unpublish"),
+      week: z.number().int().positive(),
+      releaseId: z.uuid(),
+    })
+    .strict(),
+]);
+export async function awardCommand(actor: User, slug: string, input: unknown) {
+  const parsed = command.safeParse(input);
+  if (!parsed.success)
+    throw new HttpError(400, "Invalid award configuration or command.");
+  const c = parsed.data;
+  await assertCapability(
+    actor,
+    c.action === "configure" ? "configure_tournament" : "publish_results",
+    slug,
+  );
+  await db().transaction(async (tx) => {
+    await tx
+      .select({ slug: editionState.slug })
+      .from(editionState)
+      .where(eq(editionState.slug, slug))
+      .for("update");
+    await assertCapability(
+      actor,
+      c.action === "configure" ? "configure_tournament" : "publish_results",
+      slug,
+      tx,
+    );
+    const current = await calculation(slug, tx);
+    if (current.version !== c.expectedVersion)
+      throw new HttpError(
+        409,
+        "Award configuration changed. Refresh before saving.",
+      );
+    let before: unknown, after: unknown;
+    if (c.action === "configure") {
+      const config = awardConfigurationSchema.safeParse({
+        weeks: c.weeks,
+        tiers: c.tiers,
+      });
+      if (
+        !config.success ||
+        c.tiers.some(
+          (tier) => !current.participants.some((p) => p.userId === tier.userId),
+        )
+      )
+        throw new HttpError(
+          400,
+          "Configure consecutive, non-overlapping weeks and Tiers for this tournament's players.",
+        );
+      before = {
+        weeks: current.weeks,
+        tiers: current.tiers,
+        version: current.version,
+      };
+      after = { ...config.data, version: current.version + 1 };
+      await tx
+        .insert(awardSettings)
+        .values({
+          editionSlug: slug,
+          ...config.data,
+          version: current.version + 1,
+        })
+        .onConflictDoUpdate({
+          target: awardSettings.editionSlug,
+          set: {
+            ...config.data,
+            version: current.version + 1,
+            updatedAt: new Date(),
+          },
+        });
+    } else {
+      const active = current.releases.find((r) => r.week === c.week);
+      if (c.action === "unpublish") {
+        if (!active || active.id !== c.releaseId)
+          throw new HttpError(
+            409,
+            "Award publication changed. Refresh before saving.",
+          );
+        await tx
+          .update(weeklyAwardReleases)
+          .set({ active: false })
+          .where(eq(weeklyAwardReleases.id, active.id));
+        before = { id: active.id, revision: active.revision };
+        after = { active: false };
+      } else {
+        const report = current.reports.find((r) => r.number === c.week);
+        if (!report || report.fingerprint !== c.fingerprint)
+          throw new HttpError(
+            409,
+            "Award source data changed. Review the refreshed calculation.",
+          );
+        const winners = new Set([
+          ...report.mvp,
+          ...report.mip,
+          ...report.rookie,
+        ]);
+        if (
+          report.issues.length ||
+          [...winners].some(
+            (id) => !report.identities.some((p) => p.userId === id && p.public),
+          )
+        )
+          throw new HttpError(
+            409,
+            "Resolve unverified games and unpublished winner identities before publishing awards.",
+          );
+        if (active?.fingerprint === report.fingerprint) return;
+        if (active)
+          await tx
+            .update(weeklyAwardReleases)
+            .set({ active: false })
+            .where(eq(weeklyAwardReleases.id, active.id));
+        const [latest] = await tx
+          .select({ revision: weeklyAwardReleases.revision })
+          .from(weeklyAwardReleases)
+          .where(
+            and(
+              eq(weeklyAwardReleases.editionSlug, slug),
+              eq(weeklyAwardReleases.week, c.week),
+            ),
+          )
+          .orderBy(desc(weeklyAwardReleases.revision))
+          .limit(1);
+        const [release] = await tx
+          .insert(weeklyAwardReleases)
+          .values({
+            editionSlug: slug,
+            week: c.week,
+            revision: (latest?.revision ?? 0) + 1,
+            fingerprint: report.fingerprint,
+            report,
+            publishedBy: actor.osuId,
+          })
+          .returning();
+        before = active ? { id: active.id, revision: active.revision } : null;
+        after = {
+          id: release.id,
+          revision: release.revision,
+          fingerprint: release.fingerprint,
+        };
+      }
+    }
+    await tx.insert(editionEvents).values({
+      editionSlug: slug,
+      actorId: actor.osuId,
+      kind: `awards_${c.action}`,
+      detail: { entity: { type: "weekly_awards", id: slug }, before, after },
+    });
+  });
+  return awardWorkspace(actor, slug);
+}
+export async function publicAwards(slug: string) {
+  if (!process.env.DATABASE_URL) return null;
+  return db().transaction(
+    async (tx) => {
+      if (!(await readTournament(slug, tx, true))) return null;
+      const data = await calculation(slug, tx);
+      return data.releases
+        .sort((a, b) => a.week - b.week)
+        .map((release) => {
+          const stale =
+            release.fingerprint !==
+            data.reports.find((r) => r.number === release.week)?.fingerprint;
+          const report = release.report;
+          return {
+            week: release.week,
+            revision: release.revision,
+            publishedAt: release.publishedAt.toISOString(),
+            stale,
+            startsAt: report.startsAt,
+            endsAt: report.endsAt,
+            timeZone: report.timeZone,
+            policy: report.policy,
+            candidates: stale
+              ? []
+              : report.candidates.flatMap((c) => {
+                  const identity = report.identities.find(
+                    (p) => p.userId === c.userId && p.public,
+                  );
+                  return identity
+                    ? [{ ...c, username: identity.username }]
+                    : [];
+                }),
+            mvp: stale ? [] : report.mvp,
+            mip: stale ? [] : report.mip,
+            rookie: stale ? [] : report.rookie,
+          };
+        });
+    },
+    { isolationLevel: "repeatable read", accessMode: "read only" },
+  );
+}

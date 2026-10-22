@@ -75,6 +75,9 @@ try {
     sql`SELECT 1 FROM fixtures, fixture_referees, match_imports, match_games, match_results, result_revisions, result_audit_events, result_game_claims LIMIT 0`,
   );
   await db().execute(sql`SELECT assignment_revision FROM fixtures LIMIT 0`);
+  await db().execute(
+    sql`SELECT 1 FROM award_settings, weekly_award_releases LIMIT 0`,
+  );
   await db().execute(sql`SELECT avatar_key FROM teams LIMIT 0`);
   const plannedColumns = await db().execute(
     sql`SELECT count(*)::integer AS count FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'fixtures' AND column_name IN ('home_team_id', 'away_team_id') AND is_nullable = 'YES'`,

@@ -176,6 +176,13 @@
       "when": 1792691343677,
       "tag": "0024_registration_attempt_history",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792692297873,
+      "tag": "0025_weekly_awards",
+      "breakpoints": true
     }
   ]
 }

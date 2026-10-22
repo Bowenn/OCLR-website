@@ -68,6 +68,11 @@ export const tournamentNavigation: readonly {
     label: "Competition",
     items: [
       {
+        path: "awards",
+        label: "Weekly awards",
+        capabilities: ["approve_results"],
+      },
+      {
         path: "mappools",
         label: "Mappools",
         capabilities: ["manage_mappools"],
