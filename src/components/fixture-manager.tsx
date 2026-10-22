@@ -197,8 +197,8 @@ function FixtureForm({
         onValidityChange={setTimeValid}
         optional
       />
-      <details className="form-options">
-        <summary>{tr("Match options")}</summary>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Match options")}</legend>
         <div className="form-stack">
           <label className="field">
             <span>{tr("Fixture order within round")}</span>
@@ -242,8 +242,8 @@ function FixtureForm({
             </select>
           </label>
           {round?.stage === "knockout" && (
-            <details>
-              <summary>{tr("Explicit bracket progression")}</summary>
+            <fieldset className="settings-card form-stack">
+              <legend>{tr("Explicit bracket progression")}</legend>
               <p className="muted">
                 {tr(
                   "Link planned slots to a previous match. Confirm the official teams before reporting results.",
@@ -251,10 +251,10 @@ function FixtureForm({
               </p>
               {sourceSelect("home")}
               {sourceSelect("away")}
-            </details>
+            </fieldset>
           )}
         </div>
-      </details>
+      </fieldset>
       <ConfirmMutation
         requireConfirmation={false}
         onSuccess={onSaved}
@@ -612,8 +612,8 @@ function StageGroups({
   const [groups, setGroups] = useState(stage.groupConfiguration?.groups ?? []);
   const [published, setPublished] = useState(Boolean(stage.groupsPublishedAt));
   return (
-    <details className="form-stack">
-      <summary>{tr("Approved Group Stage assignments")}</summary>
+    <section className="settings-card form-stack">
+      <h3>{tr("Approved Group Stage assignments")}</h3>
       <p className="muted">
         {tr(
           "Configure the actual groups and team membership. Unpublished assignments never appear in standings. Each team may belong to one group in this stage.",
@@ -727,7 +727,7 @@ function StageGroups({
           confirmed: true,
         }}
       />
-    </details>
+    </section>
   );
 }
 export function FixtureManager({
@@ -743,7 +743,11 @@ export function FixtureManager({
     query = useSearchParams();
   const requested = query.get("view");
   const view =
-    requested === "groups" || requested === "bracket" ? requested : "schedule";
+    requested === "groups" ||
+    requested === "bracket" ||
+    (requested === "configuration" && data.canManage)
+      ? requested
+      : "schedule";
   const [roundId, setRound] = useState("");
   const [editing, setEditing] = useState<Fixture | "new" | null>(null);
   const editor = useRef<HTMLDialogElement>(null),
@@ -848,6 +852,9 @@ export function FixtureManager({
             { value: "schedule", label: "Schedule" },
             { value: "groups", label: "Groups" },
             { value: "bracket", label: "Bracket" },
+            ...(data.canManage
+              ? [{ value: "configuration", label: "Competition configuration" }]
+              : []),
           ]}
           onChange={(value) => {
             const next = new URLSearchParams(query.toString());
@@ -923,11 +930,12 @@ export function FixtureManager({
           ) : (
             <p className="muted">{tr("No knockout fixtures yet.")}</p>
           ))}
-      </div>
-      {data.canManage && (
-        <>
-          <details className="fixture-configuration">
-            <summary>{tr("Competition configuration")}</summary>
+        {data.canManage && (
+          <section
+            hidden={view !== "configuration"}
+            className="fixture-configuration settings-card form-stack"
+          >
+            <h2>{tr("Competition configuration")}</h2>
             <div className="form-stack">
               {!data.rounds.length && (
                 <p className="muted">
@@ -947,20 +955,24 @@ export function FixtureManager({
                   />
                 ))}
               {data.rounds.map((r) => (
-                <details key={r.round.id}>
-                  <summary>
+                <section className="settings-card form-stack" key={r.round.id}>
+                  <h3>
                     {r.round.name}
                     {tr(": approved competition rules")}
-                  </summary>
+                  </h3>
                   <RoundRules
                     key={`${r.round.id}-${r.round.version}`}
                     slug={slug}
                     entry={r}
                   />
-                </details>
+                </section>
               ))}
             </div>
-          </details>
+          </section>
+        )}
+      </div>
+      {data.canManage && (
+        <>
           <dialog
             className="fixture-editor-dialog"
             ref={editor}

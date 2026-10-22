@@ -2,7 +2,8 @@
 
 import { useAppTranslations } from "@/i18n/shared";
 
-import { useId, useRef, useState, type FormEvent } from "react";
+import Image from "next/image";
+import { useId, useRef, useState, type ReactNode, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   registrationBlockers,
@@ -26,89 +27,113 @@ function IdentityFields({
   value,
   onChange,
   published,
+  children,
 }: {
   published: boolean;
   value: Identity;
   onChange: (value: Identity) => void;
+  children: ReactNode;
 }) {
   const tr = useAppTranslations();
-
+  const assets = [
+    {
+      key: "logo",
+      label: tr("Square logo"),
+      path: "/oclr-s11-square-logo.webp",
+    },
+    {
+      key: "background",
+      label: tr("Website background"),
+      path: "/oclr-s11-website-background.webp",
+    },
+    {
+      key: "keyVisual",
+      label: tr("Key visual"),
+      path: "/oclr-s11-key-visual.webp",
+    },
+  ] as const;
   return (
     <>
-      <label className="field">
-        <span>{tr("Tournament name")}</span>
-        <input
-          required
-          maxLength={100}
-          value={value.name}
-          onChange={(e) => onChange({ ...value, name: e.target.value })}
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Tournament identity")}</legend>
+        <label className="field">
+          <span>{tr("Tournament name")}</span>
+          <input
+            required
+            maxLength={100}
+            value={value.name}
+            onChange={(e) => onChange({ ...value, name: e.target.value })}
+          />
+        </label>
+        <label className="field">
+          <span>{tr("Summary")}</span>
+          <textarea
+            required={published}
+            placeholder={tr("Add approved public copy before publishing.")}
+            maxLength={2000}
+            value={value.summary}
+            onChange={(e) => onChange({ ...value, summary: e.target.value })}
+          />
+        </label>
+        <TimeZonePicker
+          value={value.timeZone}
+          onChange={(timeZone) => onChange({ ...value, timeZone })}
         />
-      </label>
-      <label className="field">
-        <span>{tr("Summary")}</span>
-        <textarea
-          required={published}
-          placeholder={tr("Add approved public copy before publishing.")}
-          maxLength={2000}
-          value={value.summary}
-          onChange={(e) => onChange({ ...value, summary: e.target.value })}
-        />
-      </label>
-      <TimeZonePicker
-        value={value.timeZone}
-        onChange={(timeZone) => onChange({ ...value, timeZone })}
-      />
-      <details className="form-options">
-        <summary>{tr("Season & artwork")}</summary>
-        <div className="form-stack">
-          <label className="field">
-            <span>{tr("Season identifier (optional)")}</span>
-            <input
-              maxLength={40}
-              value={value.season ?? ""}
-              onChange={(e) =>
-                onChange({ ...value, season: e.target.value || null })
-              }
-            />
-          </label>
-          <fieldset className="form-stack">
-            <legend>{tr("Approved artwork")}</legend>
-            {(["logo", "background", "keyVisual"] as const).map((key, i) => (
-              <label className="field" key={key}>
-                <span>
-                  {["Square logo", "Website background", "Key visual"][i]}
-                </span>
+        {children}
+      </fieldset>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Season")}</legend>
+        <label className="field">
+          <span>{tr("Season identifier (optional)")}</span>
+          <input
+            maxLength={40}
+            value={value.season ?? ""}
+            onChange={(e) =>
+              onChange({ ...value, season: e.target.value || null })
+            }
+          />
+        </label>
+      </fieldset>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Artwork & branding")}</legend>
+        <div className="settings-artwork-grid">
+          {assets.map((asset) => (
+            <div key={asset.key}>
+              <label className="field">
+                <span>{asset.label}</span>
                 <select
-                  value={value.branding[key] ?? ""}
+                  value={value.branding[asset.key] ?? ""}
                   onChange={(e) =>
                     onChange({
                       ...value,
                       branding: {
                         ...value.branding,
-                        [key]: e.target.value || null,
+                        [asset.key]: e.target.value || null,
                       },
                     })
                   }
                 >
                   <option value="">{tr("No edition artwork")}</option>
-                  <option
-                    value={
-                      [
-                        "/oclr-s11-square-logo.webp",
-                        "/oclr-s11-website-background.webp",
-                        "/oclr-s11-key-visual.webp",
-                      ][i]
-                    }
-                  >
+                  <option value={asset.path}>
                     {tr("OCLR Season 11 — ")}
-                    {["logo", "background", "key visual"][i]}
+                    {asset.label}
                   </option>
                 </select>
               </label>
-            ))}
-          </fieldset>
+              {value.branding[asset.key] && (
+                <Image
+                  className="settings-artwork-preview"
+                  src={value.branding[asset.key]!}
+                  alt={asset.label}
+                  width={240}
+                  height={135}
+                  unoptimized
+                />
+              )}
+            </div>
+          ))}
         </div>
-      </details>
+      </fieldset>
     </>
   );
 }
@@ -167,25 +192,32 @@ export function CreateTournamentForm() {
       <p className="muted small" id="slug-help">
         /tournaments/{slug || "…"} {tr(" · Permanent after creation.")}
       </p>
-      <details>
-        <summary>{tr("Customize URL")}</summary>
-        <label className="field">
-          <span>{tr("Permanent slug")}</span>
-          <input
-            onInvalid={(event) => {
-              event.currentTarget.closest("details")!.open = true;
-            }}
-            pattern="[a-z0-9]+(-[a-z0-9]+)*"
-            maxLength={80}
-            value={slug}
-            onChange={(e) => {
-              setCustomSlug(true);
-              setSlug(e.target.value);
-            }}
-            aria-describedby="slug-help"
-          />
-        </label>
-      </details>
+      {!customSlug && (
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => setCustomSlug(true)}
+        >
+          {tr("Edit URL")}
+        </button>
+      )}
+      {customSlug && (
+        <div>
+          <label className="field">
+            <span>{tr("Permanent slug")}</span>
+            <input
+              pattern="[a-z0-9]+(-[a-z0-9]+)*"
+              maxLength={80}
+              value={slug}
+              onChange={(e) => {
+                setCustomSlug(true);
+                setSlug(e.target.value);
+              }}
+              aria-describedby="slug-help"
+            />
+          </label>
+        </div>
+      )}
       {error && (
         <p role="alert" className="notice error-text">
           {tr(error)}
@@ -214,29 +246,36 @@ function Save({
   disabled?: boolean;
 }) {
   const tr = useAppTranslations();
+  const [original] = useState(() => JSON.stringify(fields));
+  const dirty = original !== JSON.stringify(fields);
 
   return (
-    <ConfirmMutation
-      requireConfirmation={confirmation}
-      disabled={disabled}
-      label={label}
-      title={label}
-      description={
-        confirmation
-          ? tr(
-              "Completing this tournament pauses registration. Competition records and past applications are preserved.",
-            )
-          : undefined
-      }
-      url={`/api/admin/tournaments/${data.edition.slug}`}
-      payload={{
-        action,
-        expectedRevision: data.revision,
-        confirmed: true,
-        ...fields,
-      }}
-      onSuccess={() => saved(`${label.replace(/^Save /, "")} saved.`)}
-    />
+    <div className="settings-save">
+      <p className="small muted" aria-live="polite">
+        {dirty ? tr("Unsaved changes") : tr("Saved settings")}
+      </p>
+      <ConfirmMutation
+        requireConfirmation={confirmation}
+        disabled={disabled}
+        label={label}
+        title={label}
+        description={
+          confirmation
+            ? tr(
+                "Completing this tournament pauses registration. Competition records and past applications are preserved.",
+              )
+            : undefined
+        }
+        url={`/api/admin/tournaments/${data.edition.slug}`}
+        payload={{
+          action,
+          expectedRevision: data.revision,
+          confirmed: true,
+          ...fields,
+        }}
+        onSuccess={() => saved(`${label.replace(/^Save /, "")} saved.`)}
+      />
+    </div>
   );
 }
 function General({ data, saved }: EditorProps) {
@@ -261,18 +300,19 @@ function General({ data, saved }: EditorProps) {
         value={value}
         onChange={setValue}
         published={data.edition.published}
-      />
-      <label className="field">
-        <span>{tr("Tournament status")}</span>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as Edition["status"])}
-        >
-          <option value="upcoming">{tr("Upcoming")}</option>
-          <option value="live">{tr("Live")}</option>
-          <option value="completed">{tr("Completed")}</option>
-        </select>
-      </label>
+      >
+        <label className="field">
+          <span>{tr("Tournament status")}</span>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as Edition["status"])}
+          >
+            <option value="upcoming">{tr("Upcoming")}</option>
+            <option value="live">{tr("Live")}</option>
+            <option value="completed">{tr("Completed")}</option>
+          </select>
+        </label>
+      </IdentityFields>
       <Save
         data={data}
         saved={saved}
@@ -317,8 +357,8 @@ function Rules({ data, saved }: EditorProps) {
       }
       {configured && (
         <>
-          <details open={!data.edition.rules}>
-            <summary>{tr("Rules release")}</summary>
+          <fieldset className="settings-card form-stack">
+            <legend>{tr("Rules release")}</legend>
             <p className="small muted">
               {tr(
                 "This is the published identifier players acknowledge. Use a new identifier when rules change; past acknowledgments remain attached to the original release.",
@@ -332,7 +372,7 @@ function Rules({ data, saved }: EditorProps) {
                 onChange={(e) => setVersion(e.target.value)}
               />
             </label>
-          </details>
+          </fieldset>
           {sections.map((s, i) => (
             <fieldset className="form-stack" key={i}>
               <legend>
@@ -420,15 +460,18 @@ function Rules({ data, saved }: EditorProps) {
           </button>
         </>
       )}
-      <label className="field">
-        <span>{tr("Eligibility disclosure")}</span>
-        <textarea
-          rows={5}
-          maxLength={4000}
-          value={eligibility}
-          onChange={(e) => setEligibility(e.target.value)}
-        />
-      </label>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Eligibility")}</legend>
+        <label className="field">
+          <span>{tr("Eligibility disclosure")}</span>
+          <textarea
+            rows={5}
+            maxLength={4000}
+            value={eligibility}
+            onChange={(e) => setEligibility(e.target.value)}
+          />
+        </label>
+      </fieldset>
       <Save
         data={data}
         saved={saved}
@@ -476,59 +519,58 @@ function Registration({ data, saved }: EditorProps) {
           "Enable ahead of time; applications are accepted only within this window.",
         )}
       </p>
-      <label className="check-field">
-        <input
-          type="checkbox"
-          checked={configured}
-          onChange={(e) => setConfigured(e.target.checked)}
-        />
-        <span>{tr("Configure registration window")}</span>
-      </label>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Registration window & enablement")}</legend>
+        <label className="check-field">
+          <input
+            type="checkbox"
+            checked={configured}
+            onChange={(e) => setConfigured(e.target.checked)}
+          />
+          <span>{tr("Configure registration window")}</span>
+        </label>
+        {configured && (
+          <>
+            <ZonedDateInput
+              label={tr("Registration opens")}
+              value={opensAt}
+              timeZone={e.timeZone}
+              onChange={setOpens}
+              onValidityChange={setOpensValid}
+            />
+            <ZonedDateInput
+              label={tr("Registration closes")}
+              value={closesAt}
+              timeZone={e.timeZone}
+              onChange={setCloses}
+              onValidityChange={setClosesValid}
+            />
+            {blockers.length > 0 && (
+              <aside className="registration-blockers">
+                <strong>{tr("Before enabling registration")}</strong>
+                <ul>
+                  {blockers.map((message) => (
+                    <li key={message}>{tr(message)}</li>
+                  ))}
+                </ul>
+              </aside>
+            )}
+            <label className="check-field">
+              <input
+                type="checkbox"
+                checked={enabled}
+                disabled={!enabled && blockers.length > 0}
+                onChange={(e) => setEnabled(e.target.checked)}
+              />
+              <span>{tr("Enable registration during this window")}</span>
+            </label>
+          </>
+        )}
+      </fieldset>
       {configured && (
         <>
-          <ZonedDateInput
-            label={tr("Registration opens")}
-            value={opensAt}
-            timeZone={e.timeZone}
-            onChange={setOpens}
-            onValidityChange={setOpensValid}
-          />
-          <ZonedDateInput
-            label={tr("Registration closes")}
-            value={closesAt}
-            timeZone={e.timeZone}
-            onChange={setCloses}
-            onValidityChange={setClosesValid}
-          />
-          {blockers.length > 0 && (
-            <aside className="registration-blockers">
-              <strong>{tr("Before enabling registration")}</strong>
-              <ul>
-                {blockers.map((message) => (
-                  <li key={message}>{tr(message)}</li>
-                ))}
-              </ul>
-            </aside>
-          )}
-          <label className="check-field">
-            <input
-              type="checkbox"
-              checked={enabled}
-              disabled={!enabled && blockers.length > 0}
-              onChange={(e) => setEnabled(e.target.checked)}
-            />
-            <span>{tr("Enable registration during this window")}</span>
-          </label>
-          <details
-            className="form-options"
-            open={Boolean(
-              e.registration?.withdrawUntil || e.registration?.questions.length,
-            )}
-          >
-            <summary>
-              {tr("Withdrawal & application questions")}
-              {questions.length > 0 ? ` (${questions.length})` : ""}
-            </summary>
+          <fieldset className="settings-card form-stack">
+            <legend>{tr("Withdrawal deadline")}</legend>
             <div className="form-stack">
               <ZonedDateInput
                 label={tr("Withdrawal deadline")}
@@ -538,6 +580,16 @@ function Registration({ data, saved }: EditorProps) {
                 onValidityChange={setWithdrawValid}
                 optional
               />
+            </div>
+          </fieldset>
+          <fieldset className="settings-card form-stack">
+            <legend>{tr("Application questions")}</legend>
+            <p className="muted small">
+              {tr("{count, plural, one {# question} other {# questions}}", {
+                count: questions.length,
+              })}
+            </p>
+            <div className="form-stack">
               <p className="muted small">
                 {tr(
                   "Collect only necessary information. Saved applications retain their original answers.",
@@ -656,7 +708,7 @@ function Registration({ data, saved }: EditorProps) {
                 {tr("Add question")}
               </button>
             </div>
-          </details>
+          </fieldset>
         </>
       )}
       <Save
@@ -885,7 +937,7 @@ export function TournamentEditor({ data }: { data: Workspace }) {
               )}
             </p>
           )}
-        {section === "general" && (
+        <div hidden={section !== "general"}>
           <General
             key={JSON.stringify({
               name: data.edition.name,
@@ -897,25 +949,34 @@ export function TournamentEditor({ data }: { data: Workspace }) {
             })}
             {...props}
           />
+        </div>
+        {!data.frozen && (
+          <div hidden={section !== "registration"}>
+            <Registration
+              key={JSON.stringify(data.edition.registration)}
+              {...props}
+            />
+          </div>
         )}
-        {!data.frozen && section === "registration" && (
-          <Registration
-            key={JSON.stringify(data.edition.registration)}
-            {...props}
-          />
+        {!data.frozen && (
+          <div hidden={section !== "rules"}>
+            <Rules
+              key={JSON.stringify([
+                data.edition.rules,
+                data.edition.eligibility,
+              ])}
+              {...props}
+            />
+          </div>
         )}
-        {!data.frozen && section === "rules" && (
-          <Rules
-            key={JSON.stringify([data.edition.rules, data.edition.eligibility])}
-            {...props}
-          />
+        {!data.frozen && (
+          <div hidden={section !== "schedule"}>
+            <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
+          </div>
         )}
-        {!data.frozen && section === "schedule" && (
-          <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
-        )}
-        {section === "publication" && (
+        <div hidden={section !== "publication"}>
           <Publication key={String(data.edition.published)} {...props} />
-        )}
+        </div>
       </div>
     </div>
   );
