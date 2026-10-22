@@ -50,8 +50,13 @@ function MapDetails({
   const title = useId();
   useEffect(() => {
     const node = dialog.current!;
+    const trigger = document.activeElement;
     node.showModal();
-    return () => node.close();
+    return () => {
+      node.close();
+      if (trigger instanceof HTMLElement && trigger.isConnected)
+        trigger.focus();
+    };
   }, []);
   const m = entry.metadata;
   return (
@@ -59,7 +64,10 @@ function MapDetails({
       ref={dialog}
       className="map-dialog"
       aria-labelledby={title}
-      onClose={onClose}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
     >
       <header>
         <span className="eyebrow">
@@ -68,7 +76,7 @@ function MapDetails({
         <button
           className="secondary"
           type="button"
-          onClick={() => dialog.current?.close()}
+          onClick={onClose}
           aria-label={tr("Close map details")}
         >
           {tr("Close")}
@@ -132,7 +140,7 @@ function MapDetails({
           <Link
             className="button secondary"
             href={`/tournaments/${slug}/mappools/${pool.id}#map-${entry.id}`}
-            onClick={() => dialog.current?.close()}
+            onClick={onClose}
           >
             {tr("Map permalink")}
           </Link>
