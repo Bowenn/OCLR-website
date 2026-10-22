@@ -19,7 +19,11 @@ import {
 } from "./competition-model";
 import { reviewedResultSchema } from "./match-model";
 import { calculateStandings } from "./standings";
-export type PublicTeam = { id: string; name: string };
+export type PublicTeam = {
+  id: string;
+  name: string;
+  avatarKey?: string | null;
+};
 export type PublicSlot = {
   team: PublicTeam | null;
   label: string;
@@ -90,7 +94,7 @@ export async function publicCompetition(slug: string) {
         .where(eq(fixtures.editionSlug, slug))
         .limit(1);
       const identities = await tx
-        .select({ id: teams.id, name: teams.name })
+        .select({ id: teams.id, name: teams.name, avatarKey: teams.avatarKey })
         .from(teams)
         .innerJoin(
           captains,

@@ -287,7 +287,7 @@ describe.skipIf(!base)(
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));

@@ -34,6 +34,7 @@ export async function publicBracket(slug: string) {
           status: f.result ? "completed" : "pending",
           slots: [f.home, f.away].map((s) => ({
             teamId: s.team?.id ?? null,
+            avatarKey: s.team?.avatarKey ?? null,
             label: s.label,
             sourceMatchId: s.sourceId,
             kind: s.outcome ?? (s.team ? "team" : "tba"),

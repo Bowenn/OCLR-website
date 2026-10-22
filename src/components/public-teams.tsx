@@ -1,5 +1,6 @@
 "use client";
 
+import { TeamAvatar } from "./team-avatar";
 import { useAppTranslations } from "@/i18n/shared";
 
 import Link from "next/link";
@@ -85,9 +86,7 @@ export function PublicTeams({
               return (
                 <article className="panel public-team-card" key={t.id}>
                   <div className="public-team-heading">
-                    <span className="team-monogram" aria-hidden="true">
-                      {t.name.trim().slice(0, 2).toLocaleUpperCase()}
-                    </span>
+                    <TeamAvatar team={t} />
                     <div>
                       <h2>
                         <Link

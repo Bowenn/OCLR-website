@@ -1778,6 +1778,21 @@
     "m54dc6725bc66": "This releases the selected captain identities and draft pool. Accepted players remain in the Players directory.",
     "mb2a1f7de2626": "Replace captain",
     "m6067714a6045": "Update draft availability",
-    "md214a8837d2a": "Lock draft setup"
+    "md214a8837d2a": "Lock draft setup",
+    "mced8519d92a6": "Edit team",
+    "m0952fcc6feaa": "Team name",
+    "m84b0b4588b75": "Pending team image",
+    "maa6471dee912": "Team avatar",
+    "mcf6f24d23114": "JPEG, PNG or WebP · up to 5 MB · saved as a square image",
+    "m5ae2a862d687": "Remove avatar",
+    "m09d566724321": "Save team",
+    "m921a2cd9838a": "Configure a durable team media directory outside application releases.",
+    "m63bf24db834b": "Choose a JPEG, PNG or WebP image up to 5 MB.",
+    "m7f65ec142852": "Choose a valid static JPEG, PNG or WebP image with dimensions up to 4096 × 4096.",
+    "m213e4c7a43e8": "Team image not found.",
+    "m551b4edbc04e": "Upload a valid team image before saving.",
+    "m9c732225df98": "Roster capacity is locked. Only team name and avatar can be corrected.",
+    "m1688dc349d6f": "Capacity cannot be smaller than the current roster.",
+    "mafb909962bde": "Roster capacity is locked for the draft. Team name and avatar can still be corrected."
   }
 }

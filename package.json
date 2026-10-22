@@ -25,7 +25,8 @@
     "db:import-editions": "tsx scripts/import-editions.ts",
     "production:setup": "bash scripts/production.sh setup",
     "production:start": "bash scripts/production.sh start",
-    "production:update": "bash scripts/update.sh"
+    "production:update": "bash scripts/update.sh",
+    "media:cleanup": "tsx scripts/cleanup-media.ts"
   },
   "dependencies": {
     "@next/env": "16.4.2",
@@ -35,6 +36,7 @@
     "pg": "^8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "sharp": "^0.35.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {

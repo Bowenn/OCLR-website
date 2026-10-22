@@ -35,6 +35,15 @@ const commandSchema = z
         .strict(),
       z
         .object({
+          action: z.literal("edit"),
+          teamId: z.uuid(),
+          name: teamInput.shape.name,
+          capacity: teamInput.shape.capacity,
+          avatarKey: z.uuid().nullable(),
+        })
+        .strict(),
+      z
+        .object({
           action: z.literal("publish"),
           teamId: z.uuid(),
           identityPublished: z.boolean(),
@@ -83,7 +92,12 @@ export async function staffTeams(actor: User, slug: string) {
     { isolationLevel: "repeatable read" },
   );
 }
-export async function updateTeams(actor: User, slug: string, input: unknown) {
+export async function updateTeams(
+  actor: User,
+  slug: string,
+  input: unknown,
+  uploadedAvatar?: string | null,
+) {
   await assertCapability(actor, "manage_teams", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   const parsed = commandSchema.safeParse(input);
@@ -96,6 +110,7 @@ export async function updateTeams(actor: User, slug: string, input: unknown) {
       .from(editionState)
       .where(eq(editionState.slug, slug))
       .for("update");
+    await assertCapability(actor, "manage_teams", slug, tx);
     if (!state || state.setupVersion !== expectedVersion)
       throw new HttpError(409, "Setup changed. Refresh before continuing.");
     const before = await tx
@@ -152,6 +167,42 @@ export async function updateTeams(actor: User, slug: string, input: unknown) {
           });
         }
       }
+    } else if (command.action === "edit") {
+      const team = before.find((t) => t.id === command.teamId);
+      if (!team) throw new HttpError(404, "Team not found.");
+      if (
+        command.avatarKey !== null &&
+        command.avatarKey !== team.avatarKey &&
+        command.avatarKey !== uploadedAvatar
+      )
+        throw new HttpError(400, "Upload a valid team image before saving.");
+      if (
+        (state.lockedAt || team.finalizedAt) &&
+        command.capacity !== team.capacity
+      )
+        throw new HttpError(
+          409,
+          "Roster capacity is locked. Only team name and avatar can be corrected.",
+        );
+      const roster = await tx
+        .select()
+        .from(memberships)
+        .where(
+          and(eq(memberships.teamId, team.id), isNull(memberships.leftAt)),
+        );
+      if (command.capacity !== null && command.capacity < roster.length)
+        throw new HttpError(
+          409,
+          "Capacity cannot be smaller than the current roster.",
+        );
+      await tx
+        .update(teams)
+        .set({
+          name: command.name,
+          capacity: command.capacity,
+          avatarKey: command.avatarKey,
+        })
+        .where(eq(teams.id, team.id));
     } else {
       const team = before.find((t) => t.id === command.teamId);
       if (!team) throw new HttpError(404, "Team not found.");
@@ -194,9 +245,18 @@ export async function updateTeams(actor: User, slug: string, input: unknown) {
       actorId: actor.osuId,
       kind: `team_${command.action}`,
       detail: {
-        entity: { type: "team_setup", id: slug },
-        before,
-        after,
+        entity:
+          command.action === "edit"
+            ? { type: "team", id: command.teamId }
+            : { type: "team_setup", id: slug },
+        before:
+          command.action === "edit"
+            ? before.find((t) => t.id === command.teamId)
+            : before,
+        after:
+          command.action === "edit"
+            ? after.find((t) => t.id === command.teamId)
+            : after,
         fromVersion: expectedVersion,
         toVersion: expectedVersion + 1,
       },
@@ -254,6 +314,7 @@ export async function publishedTeams(slug: string) {
         .select({
           id: teams.id,
           name: teams.name,
+          avatarKey: teams.avatarKey,
           captainId: teams.captainId,
           captainName: users.username,
           finalizedAt: teams.finalizedAt,
@@ -313,6 +374,7 @@ export async function publishedTeams(slug: string) {
         published.push({
           id: team.id,
           name: team.name,
+          avatarKey: team.avatarKey,
           captainId: team.captainId,
           captainName: team.captainName,
           finalized: Boolean(team.finalizedAt),

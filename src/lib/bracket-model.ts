@@ -66,6 +66,7 @@ export const bracketSchema = z
 export type Bracket = z.infer<typeof bracketSchema>;
 type Match = z.infer<typeof matchSchema>;
 export type ResolvedSlot = {
+  avatarKey?: string | null;
   teamId: string | null;
   label: string;
   sourceMatchId: string | null;
@@ -97,7 +98,7 @@ export function bracketTeamIds(bracket: Bracket) {
 }
 export function resolveBracket(
   bracket: Bracket,
-  identities: { id: string; name: string }[],
+  identities: { id: string; name: string; avatarKey?: string | null }[],
 ): ResolvedBracket {
   const matches = bracket.groups.flatMap((g) =>
     g.rounds.flatMap((r) => r.matches),
@@ -130,6 +131,8 @@ export function resolveBracket(
           );
         return {
           teamId: value.teamId,
+          avatarKey:
+            identities.find((t) => t.id === value.teamId)?.avatarKey ?? null,
           label,
           sourceMatchId: null,
           kind: "team",

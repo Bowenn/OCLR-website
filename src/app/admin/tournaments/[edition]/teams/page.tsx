@@ -1,3 +1,5 @@
+import { TeamEditor } from "@/components/team-editor";
+import { TeamAvatar } from "@/components/team-avatar";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
@@ -28,7 +30,7 @@ export default async function Teams({
         {data.locked && (
           <p className="notice small" role="status">
             {tr(
-              "Team configuration is locked for the draft. Names and roster capacities cannot be edited here.",
+              "Roster capacity is locked for the draft. Team name and avatar can still be corrected.",
             )}{" "}
             <Link
               className="text-link"
@@ -70,7 +72,10 @@ export default async function Teams({
         <div className="stack">
           {data.teams.map((t) => (
             <article className="panel" key={t.id}>
-              <h2>{t.name}</h2>
+              <div className="public-team-heading">
+                <TeamAvatar team={t} />
+                <h2>{t.name}</h2>
+              </div>
               <p className="muted small">
                 {tr("Captain osu! ID ")}
                 {t.captainId} · {t.members.length} {tr(" member(s)")}
@@ -87,6 +92,13 @@ export default async function Teams({
                 ))}
               </ul>
               <div className="actions">
+                <TeamEditor
+                  key={`${t.id}:${data.version}`}
+                  slug={edition}
+                  version={data.version}
+                  team={t}
+                  locked={data.locked}
+                />
                 <ConfirmMutation
                   label={
                     t.identityPublished

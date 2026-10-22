@@ -274,3 +274,17 @@ describe("Bash site updates", () => {
     },
   );
 });
+
+it("backs up configured durable media within the stopped-write boundary", () => {
+  const script = readFileSync(join(source, "update.sh"), "utf8");
+  const stop = script.indexOf(
+    'stop "$service"',
+    script.indexOf("Stopping writes"),
+  );
+  const media = script.indexOf('tar -cf "$backup_dir/team-media.tar"');
+  const migrations = script.indexOf('run database apply "$backup_dir"');
+  expect(stop).toBeGreaterThan(0);
+  expect(media).toBeGreaterThan(stop);
+  expect(migrations).toBeGreaterThan(media);
+  expect(script).toContain("sha256sum team-media.tar");
+});

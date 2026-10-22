@@ -1,3 +1,4 @@
+import { TeamAvatar } from "@/components/team-avatar";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -19,6 +20,7 @@ export default async function Team({
       <Link className="context-link" href={`/tournaments/${edition}/teams`}>
         {tr("All teams")}
       </Link>
+      <TeamAvatar team={team} />
       <PageHeading eyebrow={tr("PUBLISHED TEAM")} title={team.name} />
       {team.members ? (
         <section aria-labelledby="roster-heading">

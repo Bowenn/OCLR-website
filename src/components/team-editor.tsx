@@ -1,0 +1,171 @@
+"use client";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useAppTranslations } from "@/i18n/shared";
+import type { staffTeams } from "@/lib/teams";
+import { TeamAvatar } from "./team-avatar";
+export function TeamEditor({
+  slug,
+  version,
+  team,
+  locked,
+}: {
+  slug: string;
+  version: number;
+  team: Awaited<ReturnType<typeof staffTeams>>["teams"][number];
+  locked: boolean;
+}) {
+  const tr = useAppTranslations(),
+    router = useRouter(),
+    dialog = useRef<HTMLDialogElement>(null);
+  const [image, setImage] = useState<File | null>(null),
+    [preview, setPreview] = useState<string | null>(null),
+    [remove, setRemove] = useState(false),
+    [pending, setPending] = useState(false),
+    [error, setError] = useState("");
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    },
+    [preview],
+  );
+  function chooseImage(value: File | null) {
+    setImage(value);
+    setPreview(value ? URL.createObjectURL(value) : null);
+  }
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+    setError("");
+    const form = new FormData(event.currentTarget);
+    form.set("expectedVersion", String(version));
+    form.set("removeAvatar", String(remove));
+    if (image) form.set("image", image);
+    try {
+      const r = await fetch(`/api/admin/tournaments/${slug}/teams/${team.id}`, {
+        method: "PATCH",
+        body: form,
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error);
+      dialog.current?.close();
+      router.refresh();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "The action could not be completed.",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+  return (
+    <>
+      <button
+        type="button"
+        className="secondary"
+        onClick={() => {
+          chooseImage(null);
+          setRemove(false);
+          setError("");
+          dialog.current?.showModal();
+        }}
+      >
+        {tr("Edit team")}
+      </button>
+      <dialog
+        ref={dialog}
+        className="team-editor-dialog"
+        aria-label={tr("Edit team")}
+        onCancel={(e) => {
+          if (pending) e.preventDefault();
+        }}
+      >
+        <form className="form-stack" onSubmit={save}>
+          <h2>{tr("Edit team")}</h2>
+          <label className="field">
+            <span>{tr("Team name")}</span>
+            <input
+              required
+              disabled={pending}
+              name="name"
+              maxLength={80}
+              defaultValue={team.name}
+            />
+          </label>
+          <label className="field">
+            <span>{tr("Roster capacity (optional)")}</span>
+            <input
+              disabled={pending}
+              name="capacity"
+              type="number"
+              min={team.members.length}
+              max={256}
+              readOnly={locked || !!team.finalizedAt}
+              defaultValue={team.capacity ?? ""}
+            />
+          </label>
+          <div className="team-image-preview">
+            {preview ? (
+              <Image
+                width={96}
+                height={96}
+                src={preview}
+                unoptimized
+                alt={tr("Pending team image")}
+              />
+            ) : (
+              <TeamAvatar
+                team={{ ...team, avatarKey: remove ? null : team.avatarKey }}
+              />
+            )}
+          </div>
+          <label className="field">
+            <span>{tr("Team avatar")}</span>
+            <input
+              disabled={pending}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                chooseImage(e.target.files?.[0] ?? null);
+                setRemove(false);
+              }}
+            />
+          </label>
+          <p className="small muted">
+            {tr("JPEG, PNG or WebP · up to 5 MB · saved as a square image")}
+          </p>
+          <div className="actions">
+            <button
+              type="button"
+              className="secondary"
+              disabled={pending}
+              onClick={() => {
+                setRemove(true);
+                chooseImage(null);
+              }}
+            >
+              {tr("Remove avatar")}
+            </button>
+            <button disabled={pending} type="submit">
+              {tr("Save team")}
+            </button>
+            <button
+              disabled={pending}
+              type="button"
+              className="secondary"
+              onClick={() => dialog.current?.close()}
+            >
+              {tr("Cancel")}
+            </button>
+          </div>
+          {error && (
+            <p className="notice error-text" role="alert">
+              {tr(error)}
+            </p>
+          )}
+        </form>
+      </dialog>
+    </>
+  );
+}

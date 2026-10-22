@@ -1,5 +1,6 @@
 "use client";
 
+import { TeamAvatar } from "./team-avatar";
 import { useAppTranslations } from "@/i18n/shared";
 
 import Link from "next/link";
@@ -42,7 +43,9 @@ export function MatchCard({
         </Link>
       </h3>
       <div className="match-versus">
-        <span>{f.home.label}</span>
+        <span>
+          {f.home.team && <TeamAvatar team={f.home.team} />} {f.home.label}
+        </span>
         <strong
           aria-label={
             f.result
@@ -55,7 +58,9 @@ export function MatchCard({
         >
           {f.result ? `${f.result.homeWins} : ${f.result.awayWins}` : tr("vs")}
         </strong>
-        <span>{f.away.label}</span>
+        <span>
+          {f.away.team && <TeamAvatar team={f.away.team} />} {f.away.label}
+        </span>
       </div>
       <p className="match-time muted">
         {f.scheduledAt ? (

@@ -276,6 +276,7 @@ export const teams = pgTable(
     captainId: bigint("captain_id", { mode: "number" })
       .notNull()
       .references(() => users.osuId),
+    avatarKey: uuid("avatar_key"),
     name: text("name").notNull(),
     capacity: integer("capacity"),
     identityPublished: boolean("identity_published").notNull().default(false),

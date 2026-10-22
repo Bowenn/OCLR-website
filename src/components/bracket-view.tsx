@@ -1,5 +1,6 @@
 "use client";
 
+import { TeamAvatar } from "./team-avatar";
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -146,6 +147,13 @@ export function BracketView({
                                 <Link
                                   href={`/tournaments/${bracket.editionSlug}/teams/${slot.teamId}`}
                                 >
+                                  <TeamAvatar
+                                    team={{
+                                      id: slot.teamId,
+                                      name: slot.label,
+                                      avatarKey: slot.avatarKey,
+                                    }}
+                                  />{" "}
                                   {slot.label}
                                 </Link>
                               ) : (
