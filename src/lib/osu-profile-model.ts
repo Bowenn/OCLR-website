@@ -149,7 +149,7 @@ const responseSchema = z.object({
   is_bot: z.boolean().nullish().catch(null),
   is_restricted: z.boolean().nullish().catch(null),
   statistics: stats,
-  badges: z.unknown(),
+  badges: z.unknown().optional(),
 });
 function imageUrl(value: string | null | undefined, host: string) {
   if (!value) return null;

@@ -18,7 +18,15 @@ import { HttpError } from "./http";
 const choices = z.array(z.enum(badgeClassifications)).max(100);
 export function badgeFingerprint(snapshot: ProfileSnapshot) {
   return createHash("sha256")
-    .update(JSON.stringify(snapshot.profile.badges ?? null))
+    .update(
+      JSON.stringify(
+        snapshot.profile.badges?.map((b) => [
+          b.description,
+          b.awardedAt,
+          b.url,
+        ]) ?? null,
+      ),
+    )
     .digest("hex");
 }
 const key = (slug: string, userId: number, mode: string) =>
