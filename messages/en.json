@@ -1916,6 +1916,16 @@
     "m8f70115d39ec": "Calculation sources",
     "m76f4062170b3": "Revision {value0}",
     "mf883632da1b4": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and Admin-assigned Tier of T4, T5 or below. Awards are independent; ties remain tied.",
-    "mb7d610eb51a9": "{value0} percentage points"
+    "mb7d610eb51a9": "{value0} percentage points",
+    "m14c7e4b3aae2": "Registration opens in",
+    "m386b6b91fc63": "Registration closes in",
+    "m864927fe11e0": "Time remaining",
+    "me08c0aa8f558": "Days",
+    "m21e8492938ab": "Hours",
+    "m4f846a84e7fc": "Minutes",
+    "m381a8e969905": "Seconds",
+    "m212c09859041": "Registration window elapsed",
+    "m02c3b353e715": "Approved players",
+    "m6d3d8dee4170": "Planned milestones; dates do not confirm stage completion."
   }
 }

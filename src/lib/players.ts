@@ -1,8 +1,9 @@
-import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
   captains,
+  editionState,
   memberships,
   registrations,
   teams,
@@ -186,4 +187,27 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
 }
 export async function publicPlayer(osuId: number, edition?: string) {
   return (await publicPlayers(edition ? { edition } : {}, osuId)).rows;
+}
+
+/** Same accepted/public boundary as the directory; never count private applications. */
+export async function publicParticipantCount(slug: string) {
+  if (!process.env.DATABASE_URL) return null;
+  const [row] = await db()
+    .select({ total: count(registrations.id) })
+    .from(editionState)
+    .leftJoin(
+      registrations,
+      and(
+        eq(registrations.editionSlug, editionState.slug),
+        eq(registrations.status, "accepted"),
+      ),
+    )
+    .where(
+      and(
+        eq(editionState.slug, slug),
+        sql`${editionState.configuration}->>'published' = 'true'`,
+      ),
+    )
+    .groupBy(editionState.slug);
+  return row?.total ?? null;
 }

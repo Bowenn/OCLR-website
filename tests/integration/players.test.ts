@@ -13,7 +13,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { captains, registrations, teams } from "../../src/db/schema";
-import { publicPlayers } from "../../src/lib/players";
+import { publicPlayers, publicParticipantCount } from "../../src/lib/players";
 import { edition } from "../fixtures/edition";
 import { seedPublicDirectory } from "../fixtures/players";
 const url = process.env.TEST_DATABASE_URL;
@@ -36,6 +36,22 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
   afterAll(async () => {
     await closeDb();
     vi.unstubAllEnvs();
+  });
+  it("counts only accepted participants in a currently published edition", async () => {
+    expect(await publicParticipantCount("test-cup")).toBe(3);
+    expect(await publicParticipantCount("private-test-cup")).toBeNull();
+    expect(await publicParticipantCount("missing-cup")).toBeNull();
+    for (const status of ["pending", "rejected", "withdrawn"] as const) {
+      await db()
+        .update(registrations)
+        .set({ status })
+        .where(eq(registrations.userId, fixture.memberId));
+      expect(await publicParticipantCount("test-cup")).toBe(2);
+    }
+    await seedEditions([{ ...edition, slug: "empty-public-cup" }]);
+    expect(await publicParticipantCount("empty-public-cup")).toBe(0);
+    await seedEditions([{ ...edition, published: false }]);
+    expect(await publicParticipantCount("test-cup")).toBeNull();
   });
   it("exposes every accepted player, independently of role/roster release", async () => {
     const data = await publicPlayers({ edition: "test-cup" });
@@ -119,15 +135,13 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
       [edition, { ...edition, slug: "second-cup", name: "Second cup" }],
       false,
     );
-    await db()
-      .insert(registrations)
-      .values({
-        userId: fixture.privateId,
-        editionSlug: "second-cup",
-        status: "accepted",
-        rulesVersion: null,
-        answers: {},
-      });
+    await db().insert(registrations).values({
+      userId: fixture.privateId,
+      editionSlug: "second-cup",
+      status: "accepted",
+      rulesVersion: null,
+      answers: {},
+    });
     expect(
       (
         await publicPlayers({

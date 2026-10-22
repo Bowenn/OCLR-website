@@ -9,6 +9,11 @@ import { publicMappools } from "@/lib/mappools";
 import { publishedTeams } from "@/lib/teams";
 import { Action, Badge } from "@/components/ui";
 import { EventArtwork } from "@/components/event-artwork";
+import { SeasonCountdown } from "@/components/season-countdown";
+import { nextPlannedMilestone } from "@/lib/public-milestones";
+import { publicParticipantCount } from "@/lib/players";
+import { EligibilityLimitsSummary } from "@/components/eligibility-summary";
+import { hasEligibilityLimits } from "@/lib/eligibility-model";
 import { MatchCard, GroupStandings } from "@/components/public-matches";
 export async function generateMetadata({
   params,
@@ -28,13 +33,15 @@ export default async function Overview({
   const { edition: slug } = await params;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
-  const [state, [competitionResult, poolsResult, teamsResult]] =
+  const now = new Date().getTime();
+  const [state, [competitionResult, poolsResult, teamsResult, countResult]] =
     await Promise.all([
       registrationAvailability(edition),
       Promise.allSettled([
         publicCompetition(slug),
         publicMappools(slug),
         publishedTeams(slug),
+        publicParticipantCount(slug),
       ]),
     ]);
   const competition =
@@ -53,13 +60,35 @@ export default async function Overview({
     .sort((a, b) => b.result!.updatedAt.localeCompare(a.result!.updatedAt))
     .slice(0, 4);
   const base = `/tournaments/${slug}`;
+  const participantCount =
+    countResult.status === "fulfilled" ? countResult.value : null;
+  const hasCompetition = Boolean(
+    upcoming.length ||
+    latest.length ||
+    competition?.groups.length ||
+    pools.length,
+  );
+  const hasEligibility = Boolean(
+    edition.eligibility || hasEligibilityLimits(edition.automaticEligibility),
+  );
+  const nextMilestone = nextPlannedMilestone(edition.schedule, now);
+  const compactDate = (at: string | null) =>
+    at
+      ? new Intl.DateTimeFormat(tr.locale, {
+          timeZone: edition.timeZone,
+          dateStyle: "medium",
+          timeStyle: "short",
+          hourCycle: "h23",
+        }).format(new Date(at))
+      : tr("To be announced");
   return (
     <>
       <section
-        className={`event-hero${edition.branding.keyVisual ? " has-artwork" : ""}`}
+        className="event-hero season-overview-hero"
         aria-labelledby="event-title"
       >
         <div className="event-intro">
+          <p className="eyebrow season-lifecycle">{tr(edition.status)}</p>
           <h1 id="event-title">{edition.name}</h1>
           {publicEditionSummary(edition.summary) && (
             <p className="muted">{publicEditionSummary(edition.summary)}</p>
@@ -76,33 +105,170 @@ export default async function Overview({
               {tr("Explore mappools")}
             </Action>
           </div>
-          <Badge>{tr(edition.status)}</Badge>
         </div>
-        {edition.branding.keyVisual && (
-          <EventArtwork src={edition.branding.keyVisual} name={edition.name} />
-        )}
+        <div className="season-hero-aside">
+          {edition.branding.keyVisual && (
+            <EventArtwork
+              src={edition.branding.keyVisual}
+              name={edition.name}
+            />
+          )}
+          <SeasonCountdown
+            registration={
+              edition.registration
+                ? {
+                    opensAt: edition.registration.opensAt,
+                    closesAt: edition.registration.closesAt,
+                    opensLabel: formatDate(
+                      edition.registration.opensAt,
+                      edition.timeZone,
+                      tr.locale,
+                    ),
+                    closesLabel: formatDate(
+                      edition.registration.closesAt,
+                      edition.timeZone,
+                      tr.locale,
+                    ),
+                  }
+                : null
+            }
+            state={state}
+            initialNow={now}
+          />
+        </div>
+      </section>
+      <section
+        className="season-registration"
+        aria-labelledby="season-registration-heading"
+      >
+        <div className="section-title">
+          <h2 id="season-registration-heading">{tr("Registration")}</h2>
+          <Badge>{tr(state)}</Badge>
+        </div>
+        <div
+          className={`season-registration-grid${edition.registration ? " has-registration-dates" : ""}`}
+        >
+          <div className="panel season-entry-summary">
+            {participantCount !== null &&
+              (edition.registration || participantCount > 0) && (
+                <div className="season-player-count">
+                  <strong>
+                    {new Intl.NumberFormat(tr.locale).format(participantCount)}
+                  </strong>
+                  <div>
+                    <span>{tr("Approved players")}</span>
+                    <Link className="context-link" href={`${base}/players`}>
+                      {tr("Players")} →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            {!edition.registration && (
+              <p className="muted">{tr("Registration not announced")}</p>
+            )}
+            {hasEligibility && (
+              <div className="season-eligibility">
+                <h3>{tr("Eligibility")}</h3>
+                {edition.eligibility && (
+                  <p className="preserve-lines">{edition.eligibility}</p>
+                )}
+                {hasEligibilityLimits(edition.automaticEligibility) && (
+                  <EligibilityLimitsSummary
+                    limits={edition.automaticEligibility!}
+                  />
+                )}
+              </div>
+            )}
+            <p className="muted small">
+              {tr("Individual entry. Captain-led team draft.")}
+            </p>
+            {edition.rules && (
+              <Link className="context-link" href={`${base}/rules`}>
+                {tr("Read the rules")} →
+              </Link>
+            )}
+          </div>
+          {edition.registration && (
+            <div className="panel season-registration-facts">
+              <p className="muted small season-shared-zone">
+                {edition.timeZone}
+              </p>
+              <dl className="detail-list">
+                <div>
+                  <dt>{tr("Opens")}</dt>
+                  <dd>
+                    <time dateTime={edition.registration.opensAt}>
+                      {compactDate(edition.registration.opensAt)}
+                    </time>
+                  </dd>
+                </div>
+                <div>
+                  <dt>{tr("Closes")}</dt>
+                  <dd>
+                    <time dateTime={edition.registration.closesAt}>
+                      {compactDate(edition.registration.closesAt)}
+                    </time>
+                  </dd>
+                </div>
+                {edition.registration.withdrawUntil && (
+                  <div>
+                    <dt>{tr("Withdrawal deadline")}</dt>
+                    <dd>
+                      <time dateTime={edition.registration.withdrawUntil}>
+                        {compactDate(edition.registration.withdrawUntil)}
+                      </time>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
+        </div>
       </section>
       {edition.schedule.length > 0 && (
-        <ol
-          className="event-milestones"
-          aria-label={tr("Tournament milestones")}
+        <section
+          className="season-stages"
+          aria-labelledby="season-stages-heading"
         >
-          {edition.schedule.map((event, i) => (
-            <li key={i}>
-              <span className="event-step">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <strong>{event.label}</strong>
-                <p className="muted small">
-                  {tr(formatDate(event.at, edition.timeZone, tr.locale))}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+          <div className="section-title">
+            <h2 id="season-stages-heading">{tr("Tournament milestones")}</h2>
+            <Link className="context-link" href={`${base}/schedule`}>
+              {tr("Full schedule")} →
+            </Link>
+          </div>
+          <p className="small muted">
+            {tr("Planned milestones; dates do not confirm stage completion.")}
+          </p>
+          <ol
+            className="event-milestones"
+            tabIndex={0}
+            aria-label={tr("Tournament milestones")}
+          >
+            {edition.schedule.map((event, i) => (
+              <li key={i} data-next={i === nextMilestone || undefined}>
+                <span className="event-step">{i + 1}</span>
+                <div>
+                  <strong>{event.label}</strong>
+                  <p className="muted small">
+                    {event.at ? (
+                      <time dateTime={event.at}>{compactDate(event.at)}</time>
+                    ) : (
+                      tr("To be announced")
+                    )}
+                  </p>
+                  {i === nextMilestone && (
+                    <span className="small season-next-label">
+                      {tr("Next milestone")}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="small muted season-shared-zone">{edition.timeZone}</p>
+        </section>
       )}
-      {[competitionResult, poolsResult, teamsResult].some(
+      {[competitionResult, poolsResult, teamsResult, countResult].some(
         (r) => r.status === "rejected",
       ) && (
         <p className="notice" role="status">
@@ -111,146 +277,102 @@ export default async function Overview({
           )}
         </p>
       )}
-      <div className="event-overview-grid">
-        <div className="event-overview-main">
-          {upcoming.length > 0 && (
-            <section aria-labelledby="upcoming-heading">
-              <div className="section-title">
-                <h2 id="upcoming-heading">{tr("Coming up")}</h2>
-                <Link className="context-link" href={`${base}/schedule`}>
-                  {tr("Full schedule")}
-                </Link>
-              </div>
-              <div className="overview-matches">
-                {upcoming.map((f) => (
-                  <MatchCard key={f.id} fixture={f} slug={slug} />
-                ))}
-              </div>
-            </section>
-          )}
-          {latest.length > 0 && (
-            <section aria-labelledby="latest-heading">
-              <div className="section-title">
-                <h2 id="latest-heading">{tr("Latest results")}</h2>
-                <Link className="context-link" href={`${base}/results`}>
-                  {tr("All results")}
-                </Link>
-              </div>
-              <div className="overview-matches">
-                {latest.map((f) => (
-                  <MatchCard key={f.id} fixture={f} slug={slug} />
-                ))}
-              </div>
-            </section>
-          )}
-          {competition?.groups.length ? (
-            <GroupStandings groups={competition.groups} slug={slug} />
-          ) : null}
-          {pools.length > 0 && (
-            <section className="panel">
-              <div className="section-title">
-                <h2>{tr("Released mappools")}</h2>
-                <Link className="context-link" href={`${base}/mappools`}>
-                  {tr("All mappools")}
-                </Link>
-              </div>
-              <ul className="event-pool-list">
-                {pools.slice(0, 4).map((pool) => (
-                  <li key={pool.id}>
-                    <Link href={`${base}/mappools/${pool.id}`}>
-                      <span className="eyebrow">{pool.roundName}</span>
-                      <strong>{pool.name}</strong>
-                      <span className="muted small">
-                        {pool.entries.length} {tr(" maps")}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-        <aside
-          className="event-overview-aside"
-          aria-label={tr("Tournament information")}
+      {(hasCompetition || teams.length > 0) && (
+        <div
+          className={`event-overview-grid${hasCompetition && teams.length ? " has-team-rail" : ""}${!hasCompetition ? " teams-only" : ""}${!hasCompetition && teams.length === 1 ? " single-team" : ""}`}
         >
-          <section className="panel">
-            <div className="section-title">
-              <h2>{tr("Registration")}</h2>
-              <Badge>{tr(state)}</Badge>
+          {hasCompetition && (
+            <div className="event-overview-main">
+              {upcoming.length > 0 && (
+                <section aria-labelledby="upcoming-heading">
+                  <div className="section-title">
+                    <h2 id="upcoming-heading">{tr("Coming up")}</h2>
+                    <Link className="context-link" href={`${base}/schedule`}>
+                      {tr("Full schedule")}
+                    </Link>
+                  </div>
+                  <div className="overview-matches">
+                    {upcoming.map((f) => (
+                      <MatchCard key={f.id} fixture={f} slug={slug} />
+                    ))}
+                  </div>
+                </section>
+              )}
+              {latest.length > 0 && (
+                <section aria-labelledby="latest-heading">
+                  <div className="section-title">
+                    <h2 id="latest-heading">{tr("Latest results")}</h2>
+                    <Link className="context-link" href={`${base}/results`}>
+                      {tr("All results")}
+                    </Link>
+                  </div>
+                  <div className="overview-matches">
+                    {latest.map((f) => (
+                      <MatchCard key={f.id} fixture={f} slug={slug} />
+                    ))}
+                  </div>
+                </section>
+              )}
+              {competition?.groups.length ? (
+                <GroupStandings groups={competition.groups} slug={slug} />
+              ) : null}
+              {pools.length > 0 && (
+                <section className="panel">
+                  <div className="section-title">
+                    <h2>{tr("Released mappools")}</h2>
+                    <Link className="context-link" href={`${base}/mappools`}>
+                      {tr("All mappools")}
+                    </Link>
+                  </div>
+                  <ul className="event-pool-list">
+                    {pools.slice(0, 4).map((pool) => (
+                      <li key={pool.id}>
+                        <Link href={`${base}/mappools/${pool.id}`}>
+                          <span className="eyebrow">{pool.roundName}</span>
+                          <strong>{pool.name}</strong>
+                          <span className="muted small">
+                            {pool.entries.length} {tr(" maps")}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </div>
-            <p className="muted small">
-              {tr("Individual entry. Captain-led team draft.")}
-            </p>
-            <dl className="detail-list">
-              <div>
-                <dt>{tr("Opens")}</dt>
-                <dd>
-                  {tr(
-                    formatDate(
-                      edition.registration?.opensAt ?? null,
-                      edition.timeZone,
-                      tr.locale,
-                    ),
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>{tr("Closes")}</dt>
-                <dd>
-                  {tr(
-                    formatDate(
-                      edition.registration?.closesAt ?? null,
-                      edition.timeZone,
-                      tr.locale,
-                    ),
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>{tr("Time zone")}</dt>
-                <dd>{edition.timeZone}</dd>
-              </div>
-            </dl>
-            {edition.rules && (
-              <p className="spaced">
-                <Link href={`${base}/rules`} className="context-link">
-                  {tr("Read the rules")}
-                </Link>
-              </p>
-            )}
-          </section>
-          {edition.eligibility && (
-            <section className="panel">
-              <h2>{tr("Eligibility")}</h2>
-              <p className="muted preserve-lines">{edition.eligibility}</p>
-            </section>
           )}
           {teams.length > 0 && (
-            <section className="panel">
-              <div className="section-title">
-                <h2>{tr("Teams")}</h2>
-                <Badge>{teams.length}</Badge>
-              </div>
-              <ul className="event-team-links">
-                {teams.slice(0, 6).map((t) => (
-                  <li key={t.id}>
-                    <Link
-                      className="context-link"
-                      href={`${base}/teams/${t.id}`}
-                    >
-                      {t.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link className="context-link" href={`${base}/teams`}>
-                {tr("Explore teams")}
-              </Link>
-            </section>
+            <aside
+              className="event-overview-aside"
+              aria-label={tr("Tournament information")}
+            >
+              {teams.length > 0 && (
+                <section className="panel">
+                  <div className="section-title">
+                    <h2>{tr("Teams")}</h2>
+                    <Badge>{teams.length}</Badge>
+                  </div>
+                  <ul className="event-team-links">
+                    {teams.slice(0, 6).map((t) => (
+                      <li key={t.id}>
+                        <Link
+                          className="context-link"
+                          href={`${base}/teams/${t.id}`}
+                        >
+                          {t.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link className="context-link" href={`${base}/teams`}>
+                    {tr("Explore teams")}
+                  </Link>
+                </section>
+              )}
+            </aside>
           )}
-        </aside>
-      </div>
+        </div>
+      )}
     </>
   );
 }
