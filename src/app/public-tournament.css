@@ -353,16 +353,6 @@ html[data-theme="dark"] .public-site {
 .event-intro .actions {
   margin-top: 1.75rem;
 }
-.event-hero-caption {
-  margin: 1.5rem 0 0;
-  color: var(--public-accent);
-  font-size: 0.8rem;
-  font-weight: 650;
-}
-.event-hero-caption span {
-  color: var(--public-muted);
-  font-weight: 400;
-}
 .event-artwork {
   min-width: 0;
   background: var(--public-border);
@@ -1331,6 +1321,10 @@ html[data-theme="dark"] .public-site {
 .public-site .hero {
   color: #f4f3fc;
 }
+.public-site .hero h1 {
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
 .public-site .hero .eyebrow {
   color: #ecc2f9;
 }
@@ -1362,4 +1356,8 @@ html[data-theme="dark"] .public-site {
 }
 .public-tournament .rules-version {
   margin-block: 0 1rem;
+}
+.public-site .page-heading h1 {
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  margin-bottom: 0.65rem;
 }

@@ -95,9 +95,7 @@ export default async function MappoolsPage({
   });
   return (
     <>
-      <PageHeading eyebrow={tr("THE MAPS")} title={tr("Mappools")}>
-        {tr("Released beatmaps, organized by competition stage and round.")}
-      </PageHeading>
+      <PageHeading title={tr("Mappools")} />
       {stages.length ? (
         <MappoolStages stages={stages} />
       ) : (

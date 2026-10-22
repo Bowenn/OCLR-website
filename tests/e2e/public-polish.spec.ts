@@ -204,9 +204,7 @@ test.describe("public presentation follow-ups", () => {
         });
         await page.goto("/tournaments/polish-empty-test");
         const crumb = page.locator(".event-identity a").first();
-        const action = page.locator(
-          '.context-link[href="/tournaments/polish-empty-test/schedule"]',
-        );
+        const action = page.locator(".event-identity a").last();
         for (const link of [crumb, action]) {
           await expect(link).toHaveCSS("text-decoration-line", "none");
           await link.focus();

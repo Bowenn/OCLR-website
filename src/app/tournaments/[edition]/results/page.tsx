@@ -22,11 +22,7 @@ export default async function Results({
   const data = await publicCompetition(slug);
   return (
     <>
-      <PageHeading eyebrow={edition.name} title={tr("Results")}>
-        {tr(
-          "Published scores, verified match sources and group standings. Referee submissions remain private until approval and publication.",
-        )}
-      </PageHeading>
+      <PageHeading title={tr("Results")} />
       <PublicMatches
         fixtures={data?.fixtures ?? []}
         slug={slug}

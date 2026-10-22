@@ -19,15 +19,8 @@ export default async function Bracket({
   const bracket = await publicBracket(edition);
   return (
     <>
-      <PageHeading
-        eyebrow={tr("THE COMPETITION")}
-        title={tr("Bracket & results")}
-      >
-        {bracket
-          ? bracket.formatLabel
-          : tr(
-              "Confirmed match data will appear after final rosters and competition format are published.",
-            )}
+      <PageHeading title={tr("Bracket & results")}>
+        {bracket?.formatLabel}
       </PageHeading>
       {bracket ? (
         <>

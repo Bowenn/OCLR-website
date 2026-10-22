@@ -26,7 +26,7 @@ export default async function Schedule({
   );
   return (
     <>
-      <PageHeading eyebrow={edition.name} title={tr("Schedule")}>
+      <PageHeading title={tr("Schedule")}>
         {tr(
           "Match times use each fixture’s IANA time zone. Unconfirmed times remain TBA.",
         )}

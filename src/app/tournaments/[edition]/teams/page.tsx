@@ -22,9 +22,7 @@ export default async function Teams({
   ]);
   return (
     <>
-      <PageHeading eyebrow={tr("TEAM COMPETITION")} title={tr("Teams")}>
-        {tr("Published team identities and finalized rosters.")}
-      </PageHeading>
+      <PageHeading title={tr("Teams")} />
       {teams.length ? (
         <PublicTeams
           teams={teams}

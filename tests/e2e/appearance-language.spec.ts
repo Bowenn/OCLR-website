@@ -96,7 +96,7 @@ test.describe("appearance and language preferences", () => {
             "data-theme",
             theme,
           );
-          await expect(page.locator("body")).toHaveCSS(
+          await expect(page.locator(".public-site")).toHaveCSS(
             "background-color",
             theme === "light" ? "rgb(244, 241, 247)" : "rgb(9, 12, 23)",
           );

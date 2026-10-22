@@ -34,7 +34,7 @@ export default async function Register({
     : null;
   return (
     <>
-      <PageHeading eyebrow={edition.name} title={tr("Individual registration")}>
+      <PageHeading title={tr("Individual registration")}>
         {tr(
           "Apply as yourself. Teams are formed later through the captain draft.",
         )}
