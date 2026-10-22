@@ -16,7 +16,10 @@ test.describe("quick paste and mappool ordering", () => {
     const id = isMobile ? 70001 : 60001;
     await seedSession(id);
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
-    await context.addCookies([await seedSession(id)]);
+    await context.addCookies([
+      await seedSession(id),
+      { name: "oclr-theme", value: "light", domain: "127.0.0.1", path: "/" },
+    ]);
     await context.route("https://assets.ppy.sh/beatmaps/**", (route) =>
       route.abort(),
     );
@@ -351,9 +354,14 @@ test.describe("quick paste and mappool ordering", () => {
     await expect(page.locator(".mappool-feedback")).toContainText(
       "This pool changed",
     );
-    await expect(
-      page.getByRole("alert").filter({ hasText: "This pool changed" }),
-    ).toHaveCSS("color", "rgb(255, 158, 175)");
+    const conflict = page
+      .getByRole("alert")
+      .filter({ hasText: "This pool changed" });
+    await expect(conflict).toHaveCSS("color", "rgb(164, 37, 74)");
+    await page.locator(".theme-control").click();
+    await expect(conflict).toHaveCSS("color", "rgb(255, 158, 175)");
+    await page.locator(".theme-control").click();
+    await expect(conflict).toHaveCSS("color", "rgb(164, 37, 74)");
     await expect.poll(uiOrder).toEqual(authoritative);
     await expect(save).toBeDisabled();
     data = await (await page.request.get(api)).json();
