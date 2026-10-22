@@ -7,3 +7,7 @@ Original Open Lane mark and custom path OCLR wordmark for **osu! Chinese League 
 - PNGs: practical 16, 32, 48 and 180px sizes, rendered directly from the compact SVG.
 - Keep proportions. Leave at least one stroke-width of clear space; use the compact mark rather than shrinking the wordmark into a favicon. Invert the monochrome stroke on dark backgrounds.
 - When replacing icon files, increment the metadata URL version to refresh cached icons. No external fonts or images are required.
+
+Three original directions were explored: Open Lane (selected implementation),
+Rookie Rise and League Link. See `docs/design/oclr-logo-concepts.svg` for the
+light/dark comparison and actual-size icon samples.
