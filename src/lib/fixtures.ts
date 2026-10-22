@@ -73,6 +73,15 @@ const commandSchema = z.discriminatedUnion("action", [
   z
     .object({
       ...confirmation,
+      action: z.literal("delete"),
+      fixtureId: z.uuid(),
+      expectedVersion: z.number().int().nonnegative(),
+      expectedAssignmentRevision: z.number().int().nonnegative(),
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
       action: z.literal("stage_groups"),
       stageId: z.uuid(),
       expectedVersion: z.number().int().nonnegative(),
@@ -772,10 +781,143 @@ export async function fixtureCommand(
                 ),
               )
               .for("update");
-      if (c.action !== "create" && !before)
+      if (c.action !== "create" && !before) {
+        if (c.action === "delete") {
+          const [deleted] = await tx
+            .select({ id: editionEvents.id })
+            .from(editionEvents)
+            .where(
+              and(
+                eq(editionEvents.editionSlug, slug),
+                eq(editionEvents.actorId, actor.osuId),
+                eq(editionEvents.kind, "competition_fixture_delete"),
+                sql`${editionEvents.detail}->'entity'->>'id' = ${c.fixtureId}`,
+                sql`${editionEvents.detail}->'before'->>'version' = ${String(c.expectedVersion)}`,
+                sql`${editionEvents.detail}->'before'->>'assignmentRevision' = ${String(c.expectedAssignmentRevision)}`,
+              ),
+            )
+            .limit(1);
+          if (deleted) return;
+        }
         throw new HttpError(404, "Fixture not found.");
+      }
       if (c.action !== "create" && before!.version !== c.expectedVersion)
         throw new HttpError(409, "Fixture changed. Refresh before continuing.");
+      if (c.action === "delete") {
+        if (before!.publishedAt)
+          throw new HttpError(
+            409,
+            "Unpublish this fixture before deleting it from the schedule.",
+          );
+        if (before!.status === "in_progress")
+          throw new HttpError(
+            409,
+            "An in-progress fixture cannot be deleted. Use the established match correction workflow.",
+          );
+        if (before!.assignmentRevision !== c.expectedAssignmentRevision)
+          throw new HttpError(
+            409,
+            "Referee assignments changed. Refresh before deleting this fixture.",
+          );
+        const [dependent] = await tx
+          .select({ label: fixtures.label })
+          .from(fixtures)
+          .where(
+            or(
+              eq(fixtures.homeSourceId, before!.id),
+              eq(fixtures.awaySourceId, before!.id),
+            ),
+          )
+          .limit(1);
+        if (dependent)
+          throw new HttpError(
+            409,
+            "Another fixture uses this match for bracket progression. Clear that fixture's source selection first.",
+          );
+        const protectedRows = await tx.execute(
+          sql`SELECT 1 FROM match_imports WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM match_results WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM result_revisions WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM result_game_claims WHERE fixture_id = ${before!.id} LIMIT 1`,
+        );
+        if (protectedRows.rows.length)
+          throw new HttpError(
+            409,
+            "This fixture has match records or result history. Use result review or cancellation; these records cannot be deleted.",
+          );
+        const history = await tx
+          .select()
+          .from(resultAuditEvents)
+          .where(eq(resultAuditEvents.fixtureId, before!.id));
+        const setupActions = [
+          "fixture_create",
+          "fixture_amend",
+          "fixture_publish",
+          "fixture_unpublish",
+          "fixture_referees",
+        ];
+        if (history.some((event) => !setupActions.includes(event.action)))
+          throw new HttpError(
+            409,
+            "This fixture has protected competition history and cannot be deleted.",
+          );
+        const referees = await tx
+          .select()
+          .from(fixtureReferees)
+          .where(eq(fixtureReferees.fixtureId, before!.id));
+        // Move harmless setup history to the existing edition stream before its
+        // fixture FK disappears. Preserve original actors, IDs and timestamps.
+        const knownActors = new Set(
+          (history.length
+            ? await tx
+                .select({ id: users.osuId })
+                .from(users)
+                .where(
+                  inArray(
+                    users.osuId,
+                    history.map((e) => e.actorId),
+                  ),
+                )
+            : []
+          ).map((u) => u.id),
+        );
+        if (history.length)
+          await tx
+            .insert(editionEvents)
+            .values(
+              history.map((event) => ({
+                id: event.id,
+                editionSlug: slug,
+                actorId: knownActors.has(event.actorId) ? event.actorId : null,
+                kind: `competition_${event.action}`,
+                createdAt: event.createdAt,
+                reason: event.reason,
+                detail: {
+                  ...event.detail,
+                  historicalActorOsuId: event.actorId,
+                  entity: { type: "fixture", id: before!.id },
+                },
+              })),
+            );
+        await tx
+          .insert(editionEvents)
+          .values({
+            editionSlug: slug,
+            actorId: actor.osuId,
+            kind: "competition_fixture_delete",
+            detail: {
+              entity: { type: "fixture", id: before!.id },
+              before,
+              after: null,
+              referees,
+            },
+          });
+        await tx
+          .delete(fixtureReferees)
+          .where(eq(fixtureReferees.fixtureId, before!.id));
+        await tx
+          .delete(resultAuditEvents)
+          .where(eq(resultAuditEvents.fixtureId, before!.id));
+        await tx.delete(fixtures).where(eq(fixtures.id, before!.id));
+        return;
+      }
       if (c.action === "publish") {
         const official = await officialTeams(tx, slug);
         if (

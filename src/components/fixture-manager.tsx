@@ -749,6 +749,8 @@ export function FixtureManager({
       ? requested
       : "schedule";
   const [roundId, setRound] = useState("");
+  const [notice, setNotice] = useState("");
+  const createButton = useRef<HTMLButtonElement>(null);
   const [editing, setEditing] = useState<Fixture | "new" | null>(null);
   const editor = useRef<HTMLDialogElement>(null),
     id = useId();
@@ -843,6 +845,11 @@ export function FixtureManager({
   }
   return (
     <div className="fixture-workspace stack">
+      {notice && (
+        <p role="status" className="notice small">
+          {tr(notice)}
+        </p>
+      )}
       <div className="fixture-toolbar">
         <WorkspaceTabs
           id="fixture-views"
@@ -867,6 +874,7 @@ export function FixtureManager({
             type="button"
             className="secondary"
             disabled={!data.rounds.length}
+            ref={createButton}
             onClick={() => open("new")}
           >
             {tr("Create a fixture")}
@@ -1041,6 +1049,62 @@ export function FixtureManager({
                   setEditing(null);
                 }}
               />
+            )}
+            {editing && editing !== "new" && (
+              <div className="fixture-delete-section">
+                <ConfirmMutation
+                  label={tr("Delete fixture")}
+                  className="secondary destructive-action"
+                  title={tr("Delete fixture {label}?", {
+                    label: editing.label,
+                  })}
+                  description={tr(
+                    "Delete an incorrect, unused setup fixture and its referee assignments. Match records, results and bracket dependencies cannot be deleted. This is separate from cancelling a match.",
+                  )}
+                  disabled={Boolean(editing.publishedAt)}
+                  url={`/api/admin/tournaments/${slug}/matches`}
+                  payload={{
+                    action: "delete",
+                    fixtureId: editing.id,
+                    expectedVersion: editing.version,
+                    expectedAssignmentRevision: editing.assignmentRevision,
+                    confirmed: true,
+                  }}
+                  onSuccess={() => {
+                    editor.current?.close();
+                    setEditing(null);
+                    setNotice("Fixture deleted.");
+                    requestAnimationFrame(() => createButton.current?.focus());
+                  }}
+                >
+                  <dl className="detail-list">
+                    <div>
+                      <dt>{tr("Round")}</dt>
+                      <dd>
+                        {
+                          data.rounds.find(
+                            (r) => r.round.id === editing.roundId,
+                          )?.round.name
+                        }
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{tr("Teams")}</dt>
+                      <dd>
+                        {fixtureSlot(data, editing, "home").label} ·{" "}
+                        {fixtureSlot(data, editing, "away").label}
+                      </dd>
+                    </div>
+                  </dl>
+                </ConfirmMutation>
+                {editing.publishedAt && (
+                  <p className="muted small">
+                    {tr(
+                      "Unpublish this fixture before deleting it from the schedule.",
+                    )}
+                  </p>
+                )}
+              </div>
             )}
           </dialog>
         </>
