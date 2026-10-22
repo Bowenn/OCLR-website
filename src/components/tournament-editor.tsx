@@ -992,24 +992,24 @@ export function TournamentEditor({ data }: { data: Workspace }) {
           />
         </div>
         <div hidden={section !== "registration"}>
-            <Registration
-              key={JSON.stringify(data.edition.registration)}
-              {...props}
-            />
-          </div>
+          <Registration
+            key={JSON.stringify(data.edition.registration)}
+            {...props}
+          />
+        </div>
         <div hidden={section !== "rules"}>
-            <Rules
-              key={JSON.stringify([
-                data.edition.rules,
-                data.edition.eligibility,
-                data.edition.automaticEligibility,
-              ])}
-              {...props}
-            />
-          </div>
+          <Rules
+            key={JSON.stringify([
+              data.edition.rules,
+              data.edition.eligibility,
+              data.edition.automaticEligibility,
+            ])}
+            {...props}
+          />
+        </div>
         <div hidden={section !== "schedule"}>
-            <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
-          </div>
+          <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
+        </div>
         <div hidden={section !== "publication"}>
           <Publication key={String(data.edition.published)} {...props} />
         </div>
