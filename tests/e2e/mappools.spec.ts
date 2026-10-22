@@ -153,7 +153,9 @@ test.describe("published mappools and restricted editing", () => {
       ).toBe(400);
       await page.getByRole("tab", { name: "Maps", exact: true }).click();
       await page.getByRole("button", { name: "FM (0)", exact: true }).click();
-      await page.getByText("Add a FM beatmap", { exact: true }).click();
+      await page
+        .getByRole("button", { name: "Add a FM beatmap", exact: true })
+        .click();
       const input = page.getByRole("textbox", {
         name: "Beatmap URL or ID",
         exact: true,
@@ -399,11 +401,7 @@ test.describe("published mappools and restricted editing", () => {
     await page
       .getByRole("button", { name: "+ New round", exact: true })
       .click();
-    await expect(page.getByLabel("Round order", { exact: true })).toBeHidden();
-    await page
-      .locator("summary")
-      .filter({ hasText: /^Round order$/ })
-      .click();
+    await expect(page.getByLabel("Round order", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Round order", { exact: true })).toHaveValue(
       "3",
     );
@@ -519,7 +517,7 @@ test.describe("published mappools and restricted editing", () => {
       page.getByRole("tab", { name: /Bulk import|Batch edit|Pool settings/ }),
     ).toHaveCount(0);
     await expect(
-      page.getByText("Edit or replace NM1", { exact: true }),
+      page.getByRole("button", { name: "Edit or replace NM1", exact: true }),
     ).toHaveCount(0);
     expect(
       (

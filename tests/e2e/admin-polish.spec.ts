@@ -154,15 +154,13 @@ test.describe("operational UI follow-ups", () => {
           .click();
         await expect(page.locator(".mappool-sheet tbody tr")).toHaveCount(18);
       }
-    await db()
-      .insert(mappools)
-      .values({
-        editionSlug: "test-cup",
-        roundId: seed.context.fixture.roundId,
-        name: "Terminology draft pool",
-        fmMode: "free_mod",
-        fmRestrictions: "Synthetic approved FM policy",
-      });
+    await db().insert(mappools).values({
+      editionSlug: "test-cup",
+      roundId: seed.context.fixture.roundId,
+      name: "Terminology draft pool",
+      fmMode: "free_mod",
+      fmRestrictions: "Synthetic approved FM policy",
+    });
     await context.addCookies([cookie]);
     for (const locale of ["en", "zh-Hans", "zh-Hant"]) {
       await prefs(context, locale);
@@ -170,7 +168,7 @@ test.describe("operational UI follow-ups", () => {
       await page
         .getByRole("button", { name: /Terminology draft pool/ })
         .click();
-      await page.locator(".mappool-task > details > summary").click();
+      await page.locator(".mappool-add-map > button").click();
       const names = await page
         .locator(".mappool-task select option")
         .allTextContents();

@@ -100,11 +100,19 @@ test.describe("bulk mappool operations", () => {
 
     await page.getByRole("tab", { name: "Maps", exact: true }).click();
     await page.getByRole("button", { name: /^DT \(2\)$/ }).click();
-    await page.getByText("Edit or replace DT1", { exact: true }).click();
-    const editor = page
-      .locator("details")
-      .filter({ has: page.getByText("Edit or replace DT1", { exact: true }) });
-    await editor.getByText("Official mod attributes", { exact: true }).click();
+    await page
+      .getByRole("button", { name: "Edit or replace DT1", exact: true })
+      .click();
+    const editor = page.getByRole("region", {
+      name: "Edit or replace DT1",
+      exact: true,
+    });
+    await expect(
+      editor.getByRole("group", {
+        name: "Official mod attributes",
+        exact: true,
+      }),
+    ).toBeVisible();
     await editor
       .getByLabel("Difficulty calculation mods", { exact: true })
       .selectOption("DT");

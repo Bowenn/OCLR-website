@@ -864,7 +864,7 @@ export function MappoolEditor({
                           entries={poolEntries}
                           onSuccess={() => {
                             setEditingEntry(null);
-                            setFeedback("Map slot saved.");
+                            setFeedback(tr("Map slot saved."));
                             requestAnimationFrame(() =>
                               addButton.current?.focus(),
                             );

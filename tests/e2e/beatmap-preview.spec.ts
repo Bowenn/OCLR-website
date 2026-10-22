@@ -81,7 +81,9 @@ test.describe("automatic beatmap preview boundaries", () => {
       .getByRole("tab", { name: "Knockout Stage", exact: true })
       .click();
     await page.getByRole("button", { name: round.name, exact: true }).click();
-    await page.getByText("Add a NM beatmap", { exact: true }).click();
+    await page
+      .getByRole("button", { name: "Add a NM beatmap", exact: true })
+      .click();
     const input = page.getByRole("textbox", {
       name: "Beatmap URL or ID",
       exact: true,
@@ -157,6 +159,10 @@ test.describe("automatic beatmap preview boundaries", () => {
     await expect(
       page.getByRole("button", { name: "NM (1)", exact: true }),
     ).toBeVisible();
+    await expect(page.locator(".mappool-inline-editor")).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Add a NM beatmap", exact: true })
+      .click();
     await expect(
       page.getByRole("spinbutton", { name: "Slot number", exact: true }),
     ).toHaveValue("4");
