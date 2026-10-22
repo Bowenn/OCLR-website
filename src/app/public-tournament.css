@@ -791,6 +791,7 @@ body:has(.public-tournament) .site-footer {
   min-width: 0;
 }
 .map-card-copy .eyebrow {
+  text-transform: none;
   font-size: 0.65rem;
   letter-spacing: 0.06em;
   margin-bottom: 0.25rem;
@@ -814,7 +815,8 @@ body:has(.public-tournament) button.map-open-button {
   font-size: 1rem;
   min-height: 44px;
 }
-body:has(.public-tournament) button.map-open-button:is(:hover, :focus-visible, :active) {
+body:has(.public-tournament)
+  button.map-open-button:is(:hover, :focus-visible, :active) {
   background: transparent;
   box-shadow: none;
   color: var(--public-accent);
