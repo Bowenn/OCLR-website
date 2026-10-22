@@ -84,7 +84,7 @@ export default async function Overview({
   return (
     <>
       <section
-        className="event-hero season-overview-hero"
+        className={`event-hero season-overview-hero${edition.branding.keyVisual ? " has-artwork" : ""}`}
         aria-labelledby="event-title"
       >
         <div className="event-intro">
@@ -105,14 +105,6 @@ export default async function Overview({
               {tr("Explore mappools")}
             </Action>
           </div>
-        </div>
-        <div className="season-hero-aside">
-          {edition.branding.keyVisual && (
-            <EventArtwork
-              src={edition.branding.keyVisual}
-              name={edition.name}
-            />
-          )}
           <SeasonCountdown
             registration={
               edition.registration
@@ -136,12 +128,20 @@ export default async function Overview({
             initialNow={now}
           />
         </div>
+        {edition.branding.keyVisual && (
+          <div className="season-hero-aside">
+            <EventArtwork
+              src={edition.branding.keyVisual}
+              name={edition.name}
+            />
+          </div>
+        )}
       </section>
       <section
         className="season-registration"
         aria-labelledby="season-registration-heading"
       >
-        <div className="section-title">
+        <div className="section-title season-registration-heading">
           <h2 id="season-registration-heading">{tr("Registration")}</h2>
           <Badge>{tr(state)}</Badge>
         </div>
@@ -190,6 +190,7 @@ export default async function Overview({
           </div>
           {edition.registration && (
             <div className="panel season-registration-facts">
+              <h3>{tr("Timeline")}</h3>
               <p className="muted small season-shared-zone">
                 {edition.timeZone}
               </p>

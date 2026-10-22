@@ -1491,10 +1491,13 @@ html[data-theme="dark"] .themed-site {
 }
 
 /* Season overview: use the existing OCLR palette, with data-led composition. */
-.public-tournament .season-overview-hero {
+.public-tournament .season-overview-hero.has-artwork {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
+}
+.public-tournament .season-overview-hero:not(.has-artwork) {
+  max-width: 48rem;
 }
 .season-overview-hero .event-intro {
   min-width: 0;
@@ -1519,7 +1522,9 @@ html[data-theme="dark"] .themed-site {
   object-fit: contain;
 }
 .season-countdown {
-  padding: clamp(1.25rem, 3vw, 2rem);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--site-border);
 }
 .season-countdown > .eyebrow {
   margin: 0 0 1rem;
@@ -1587,6 +1592,14 @@ html[data-theme="dark"] .themed-site {
 .season-registration > .section-title,
 .season-stages > .section-title {
   margin-bottom: 1rem;
+}
+.season-registration > .season-registration-heading {
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+.season-registration-facts h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
 }
 .season-registration .section-title h2,
 .season-stages .section-title h2 {
@@ -1745,7 +1758,7 @@ html[data-theme="dark"] .themed-site {
   }
 }
 @media (max-width: 760px) {
-  .public-tournament .season-overview-hero,
+  .public-tournament .season-overview-hero.has-artwork,
   .season-registration-grid.has-registration-dates {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -70,6 +70,24 @@ test.describe("season overview composition", () => {
           await page.setViewportSize({ width, height: 1000 });
           await page.goto("/tournaments/s11");
           await expect(page.locator("#event-title")).toHaveText(season.name);
+          await expect(
+            page.locator(".event-intro > .season-countdown"),
+          ).toHaveCount(1);
+          await expect(
+            page.locator(".season-hero-aside .season-countdown"),
+          ).toHaveCount(0);
+          await expect(
+            page.locator(".season-registration-facts h3"),
+          ).toBeVisible();
+          const heading = await page
+            .locator("#season-registration-heading")
+            .boundingBox();
+          const badge = await page
+            .locator(".season-registration-heading .badge")
+            .boundingBox();
+          expect(badge!.x - (heading!.x + heading!.width)).toBeLessThanOrEqual(
+            16,
+          );
           await expect(page.locator(".event-overview-main")).toHaveCount(0);
           await expect(
             page.locator(".season-player-count > strong"),
@@ -109,6 +127,17 @@ test.describe("season overview composition", () => {
             return {
               documentWidth: document.documentElement.scrollWidth,
               cards,
+              intro: document
+                .querySelector(".event-intro")!
+                .getBoundingClientRect()
+                .toJSON(),
+              artwork: document
+                .querySelector(".season-hero-aside")!
+                .getBoundingClientRect()
+                .toJSON(),
+              units: [
+                ...document.querySelectorAll(".countdown-units strong"),
+              ].map((el) => el.getBoundingClientRect().toJSON()),
               aspect:
                 image.getBoundingClientRect().width /
                 image.getBoundingClientRect().height,
@@ -117,6 +146,18 @@ test.describe("season overview composition", () => {
           });
           expect(measured.documentWidth).toBeLessThanOrEqual(width);
           expect(measured.aspect).toBeCloseTo(measured.expected, 1);
+          if (width <= 760)
+            expect(measured.artwork.top).toBeGreaterThanOrEqual(
+              measured.intro.bottom,
+            );
+          else
+            expect(measured.artwork.left).toBeGreaterThanOrEqual(
+              measured.intro.right,
+            );
+          for (let i = 1; i < measured.units.length; i++)
+            expect(measured.units[i].left).toBeGreaterThanOrEqual(
+              measured.units[i - 1].right,
+            );
           if (width > 760) {
             expect(measured.cards[0].top).toBeCloseTo(measured.cards[1].top, 0);
             expect(
