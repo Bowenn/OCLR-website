@@ -1,4 +1,5 @@
 /** Test-process transport fixture only. Never imported by application code. */
+import { profileResponse } from "./osu-profile";
 import { assertTestDatabase } from "../database";
 assertTestDatabase(process.env.TEST_DATABASE_URL);
 if (
@@ -78,6 +79,21 @@ globalThis.fetch = async (input, init) => {
       });
     return new Response(null, { status: 404 });
   }
-  // This fixture supplies public beatmap metadata only; it cannot authenticate a user.
+  const profile =
+    /^\/api\/v2\/users\/([1-9]\d*)\/(osu|taiko|fruits|mania)$/.exec(
+      url.pathname,
+    );
+  if (profile) {
+    const id = Number(profile[1]);
+    if ([981001, 981002, 981003, 982001, 982002, 982003].includes(id))
+      return Response.json({
+        ...profileResponse,
+        id,
+        username: `Synthetic Assisted ${id}`,
+        avatar_url: `https://a.ppy.sh/${id}`,
+      });
+    return new Response(null, { status: id === 888 ? 503 : 404 });
+  }
+  // Test-only public metadata transport; never authenticates or impersonates a player.
   return new Response(null, { status: 503 });
 };

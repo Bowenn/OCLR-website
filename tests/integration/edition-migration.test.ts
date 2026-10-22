@@ -278,11 +278,16 @@ describe.skipIf(!base)(
               (await pool.query("SELECT about_published FROM staff_roles"))
                 .rows,
             ).toEqual([{ about_published: false }]);
+            expect(
+              (await pool.query("SELECT source FROM registrations")).rows.every(
+                (row) => row.source === "player",
+              ),
+            ).toBe(true);
             for (const table of tables)
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));
