@@ -1715,6 +1715,8 @@
     "m610c1d8d7d6c": "Saved settings",
     "m4ccbe8d894fd": "Registration window & enablement",
     "m24530c193bb9": "Application questions",
-    "m9d1ffe7a65f0": "{count, plural, one {# question} other {# questions}}"
+    "m9d1ffe7a65f0": "{count, plural, one {# question} other {# questions}}",
+    "m05391b66015e": "Switch site to {value0} theme",
+    "ma9363787e6da": "Site appearance: {value0}"
   }
 }

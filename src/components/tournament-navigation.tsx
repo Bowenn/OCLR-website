@@ -88,13 +88,11 @@ export function TournamentNavigation(props: {
 export function TournamentShell({
   slug,
   name,
-  season,
   liveDraft,
   children,
 }: {
   slug: string;
   name: string;
-  season: string | null;
   liveDraft: boolean;
   children: ReactNode;
 }) {
@@ -132,12 +130,6 @@ export function TournamentShell({
           <Link href={base} className="context-link">
             {name}
           </Link>
-          {season && (
-            <span className="badge">
-              {tr("Season ")}
-              {season}
-            </span>
-          )}
         </div>
         <TournamentNavigation slug={slug} liveDraft={liveDraft} mobileMenu />
       </div>

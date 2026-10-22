@@ -20,9 +20,7 @@ export default async function Rules({
   if (!edition) notFound();
   return (
     <>
-      <PageHeading eyebrow={edition.name} title={tr("Rules")}>
-        {tr("Published rules and organizer updates for this edition.")}
-      </PageHeading>
+      <PageHeading title={tr("Rules")} />
 
       {edition.rules ? (
         <>

@@ -13,3 +13,15 @@ export function publicTournamentSection(path: string, base: string) {
   if (suffix === "team") return "teams";
   return suffix;
 }
+
+/** A single public appearance boundary; operational tools keep their dark UI. */
+export function isPublicPage(path: string, presenter = false) {
+  if (/^\/(admin|dashboard|login|auth|api)(?:\/|$)/.test(path)) return false;
+  if (
+    /^\/tournaments\/[^/]+\/(team(?:\/|$)|draft\/(captain|overlay)(?:\/|$))/.test(
+      path,
+    )
+  )
+    return false;
+  return !(presenter && /^\/tournaments\/[^/]+\/draft$/.test(path));
+}

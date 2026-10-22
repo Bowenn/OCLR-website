@@ -20,12 +20,7 @@ export default async function EditionLayout({
   const draft = draftResult.status === "fulfilled" ? draftResult.value : null;
   const liveUnavailable = draftResult.status === "rejected";
   return (
-    <TournamentShell
-      slug={slug}
-      name={edition.name}
-      season={edition.season ?? null}
-      liveDraft={Boolean(draft)}
-    >
+    <TournamentShell slug={slug} name={edition.name} liveDraft={Boolean(draft)}>
       {liveUnavailable && (
         <p className="notice" role="status">
           {tr(

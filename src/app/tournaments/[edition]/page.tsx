@@ -60,11 +60,6 @@ export default async function Overview({
         aria-labelledby="event-title"
       >
         <div className="event-intro">
-          <p className="eyebrow">
-            {tr("OCLR ")}
-            {edition.season &&
-              tr(" / SEASON {value0}", { value0: edition.season })}
-          </p>
           <h1 id="event-title">{edition.name}</h1>
           {publicEditionSummary(edition.summary) && (
             <p className="muted">{publicEditionSummary(edition.summary)}</p>
@@ -81,10 +76,7 @@ export default async function Overview({
               {tr("Explore mappools")}
             </Action>
           </div>
-          <p className="event-hero-caption">
-            {tr("osu! Chinese League Rookie ")}
-            <span>· {tr(edition.status)}</span>
-          </p>
+          <Badge>{tr(edition.status)}</Badge>
         </div>
         {edition.branding.keyVisual && (
           <EventArtwork src={edition.branding.keyVisual} name={edition.name} />
@@ -177,19 +169,6 @@ export default async function Overview({
               </ul>
             </section>
           )}
-          {!upcoming.length && !latest.length && !pools.length && (
-            <section className="panel">
-              <h2>{tr("The next stage")}</h2>
-              <p className="muted">
-                {tr(
-                  "Confirmed matches, released mappools and results will appear here as the tournament progresses.",
-                )}
-              </p>
-              <Link className="context-link" href={`${base}/schedule`}>
-                {tr("View tournament schedule")}
-              </Link>
-            </section>
-          )}
         </div>
         <aside
           className="event-overview-aside"
@@ -233,11 +212,6 @@ export default async function Overview({
                 <dd>{edition.timeZone}</dd>
               </div>
             </dl>
-            {state === "open" && (
-              <Action href={`${base}/register`}>
-                {tr("Register individually")}
-              </Action>
-            )}
             {edition.rules && (
               <p className="spaced">
                 <Link href={`${base}/rules`} className="context-link">
@@ -261,7 +235,10 @@ export default async function Overview({
               <ul className="event-team-links">
                 {teams.slice(0, 6).map((t) => (
                   <li key={t.id}>
-                    <Link className="context-link" href={`${base}/teams/${t.id}`}>
+                    <Link
+                      className="context-link"
+                      href={`${base}/teams/${t.id}`}
+                    >
                       {t.name}
                     </Link>
                   </li>

@@ -31,9 +31,9 @@ html:has([data-broadcast]),
 body:has([data-broadcast]) {
   background: transparent;
 }
-body:has([data-broadcast]) > .site-header,
-body:has([data-broadcast]) > .site-footer,
-body:has([data-broadcast]) > .container,
+body:has([data-broadcast]) .site-shell > .site-header,
+body:has([data-broadcast]) .site-shell > .site-footer,
+body:has([data-broadcast]) .site-shell > .container,
 .workspace:has([data-broadcast]) > .sidebar,
 .workspace:has([data-broadcast]) > .workspace-main > .notice {
   display: none;
@@ -3938,4 +3938,17 @@ html:lang(zh-Hant) .eyebrow {
   .settings-artwork-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.site-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+.site-shell > main {
+  flex: 1;
+  min-width: 0;
+}
+body:has([data-broadcast]) .site-shell {
+  min-height: 0;
 }

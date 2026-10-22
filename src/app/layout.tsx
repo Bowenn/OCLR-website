@@ -2,6 +2,7 @@ import { getAppTranslations } from "@/i18n/server";
 import type { Metadata } from "next";
 import { isStaff } from "@/lib/auth/staff";
 import { currentUser } from "@/lib/auth/user";
+import { SiteFrame } from "@/components/site-frame";
 import { Header } from "@/components/header";
 import "./globals.css";
 import "./public-tournament.css";
@@ -58,44 +59,46 @@ export default async function RootLayout({
     <html lang={locale} data-theme={theme}>
       <body>
         <NextIntlClientProvider>
-          <a className="skip-link" href="#main">
-            {tr("Skip to content")}
-          </a>
-          <Header
-            theme={theme}
-            user={
-              user
-                ? { osuId: user.osuId, username: user.username, staff }
-                : null
-            }
-          />
-          {authUnavailable && (
-            <div className="container">
-              <p className="notice" role="status">
-                {tr(
-                  "Sign-in is temporarily unavailable. Public tournament information remains accessible.",
-                )}
+          <SiteFrame>
+            <a className="skip-link" href="#main">
+              {tr("Skip to content")}
+            </a>
+            <Header
+              theme={theme}
+              user={
+                user
+                  ? { osuId: user.osuId, username: user.username, staff }
+                  : null
+              }
+            />
+            {authUnavailable && (
+              <div className="container">
+                <p className="notice" role="status">
+                  {tr(
+                    "Sign-in is temporarily unavailable. Public tournament information remains accessible.",
+                  )}
+                </p>
+              </div>
+            )}
+            <main id="main">{children}</main>
+            <footer className="site-footer">
+              <p>
+                © {new Date().getUTCFullYear()}{" "}
+                <a
+                  className="footer-credit"
+                  href="https://osu.ppy.sh/users/1176704"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {"Lapis"}
+                </a>{" "}
+                {"· OCLR — osu! Chinese League Rookie"}
               </p>
-            </div>
-          )}
-          <main id="main">{children}</main>
-          <footer className="site-footer">
-            <p>
-              © {new Date().getUTCFullYear()}{" "}
-              <a
-                className="footer-credit"
-                href="https://osu.ppy.sh/users/1176704"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {"Lapis"}
-              </a>{" "}
-              {"· OCLR — osu! Chinese League Rookie"}
-            </p>
-            <p className="muted">
-              {tr("Not affiliated with or endorsed by osu!.")}
-            </p>
-          </footer>
+              <p className="muted">
+                {tr("Not affiliated with or endorsed by osu!.")}
+              </p>
+            </footer>
+          </SiteFrame>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -12,10 +12,10 @@ export function ThemeControl({ initialTheme }: { initialTheme: Theme }) {
     <button
       type="button"
       className="secondary theme-control"
-      aria-label={tr("Switch tournament to {value0} theme", {
+      aria-label={tr("Switch site to {value0} theme", {
         value0: tr(theme === "light" ? "dark" : "light"),
       })}
-      title={tr("Tournament appearance: {value0}", { value0: tr(theme) })}
+      title={tr("Site appearance: {value0}", { value0: tr(theme) })}
       onClick={() => {
         const next = theme === "light" ? "dark" : "light";
         document.documentElement.dataset.theme = next;
