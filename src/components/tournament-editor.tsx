@@ -978,14 +978,6 @@ export function TournamentEditor({ data }: { data: Workspace }) {
             {tr(message)}
           </p>
         )}
-        {data.frozen &&
-          ["rules", "registration", "schedule"].includes(section) && (
-            <p className="notice">
-              {tr(
-                "These settings are frozen after setup locks or drafting begins. Existing registrations and competition history are retained.",
-              )}
-            </p>
-          )}
         <div hidden={section !== "general"}>
           <General
             key={JSON.stringify({
@@ -999,16 +991,13 @@ export function TournamentEditor({ data }: { data: Workspace }) {
             {...props}
           />
         </div>
-        {!data.frozen && (
-          <div hidden={section !== "registration"}>
+        <div hidden={section !== "registration"}>
             <Registration
               key={JSON.stringify(data.edition.registration)}
               {...props}
             />
           </div>
-        )}
-        {!data.frozen && (
-          <div hidden={section !== "rules"}>
+        <div hidden={section !== "rules"}>
             <Rules
               key={JSON.stringify([
                 data.edition.rules,
@@ -1018,12 +1007,9 @@ export function TournamentEditor({ data }: { data: Workspace }) {
               {...props}
             />
           </div>
-        )}
-        {!data.frozen && (
-          <div hidden={section !== "schedule"}>
+        <div hidden={section !== "schedule"}>
             <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
           </div>
-        )}
         <div hidden={section !== "publication"}>
           <Publication key={String(data.edition.published)} {...props} />
         </div>
