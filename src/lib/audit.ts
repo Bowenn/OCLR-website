@@ -138,8 +138,8 @@ const projection = sql`
   FROM edition_events
   UNION ALL
   SELECT 'registration', e.id, r.edition_slug, e.actor_id, 'registration_' || COALESCE(e.operation, e.to_status::text), 'registrations', 'registration', r.id::text,
-    jsonb_build_object('status', e.from_status), jsonb_build_object('status', e.to_status), jsonb_build_object('reason', e.reason, 'registrationSource', r.source, 'osuId', r.user_id, 'configurationVersion', r.configuration_version), e.created_at
-  FROM registration_events e JOIN registrations r ON r.id=e.registration_id
+    jsonb_build_object('status', e.from_status), jsonb_build_object('status', e.to_status), jsonb_build_object('reason', e.reason, 'attempt', e.attempt, 'registrationSource', COALESCE(past.snapshot->>'source', r.source), 'osuId', r.user_id, 'configurationVersion', COALESCE(past.snapshot->'configurationVersion', to_jsonb(r.configuration_version))), e.created_at
+  FROM registration_events e JOIN registrations r ON r.id=e.registration_id LEFT JOIN registration_attempts past ON past.registration_id=r.id AND past.attempt=e.attempt
   UNION ALL
   SELECT 'mappool', id, edition_slug, actor_id, action, 'mappools', CASE WHEN pool_id IS NULL THEN 'round' ELSE 'mappool' END,
     COALESCE(pool_id::text, after->>'id', edition_slug), before, after, jsonb_build_object('reason', reason), created_at FROM mappool_events

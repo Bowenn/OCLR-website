@@ -16,13 +16,17 @@ import {
   editionState,
   editionRevisions,
   registrationEvents,
+  registrationAttempts,
   registrations,
   users,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
 import { assertCapability, capabilityScope } from "./auth/staff";
 import { HttpError } from "./http";
-import { registrationOperation } from "./registrations";
+import {
+  assertRegistrationUnassigned,
+  registrationOperation,
+} from "./registrations";
 import { applicationAnswers } from "./application-answers";
 import type { EditionConfiguration } from "./editions";
 const filterSchema = z
@@ -204,7 +208,23 @@ export async function applicationDetails(actor: User, id: string) {
     "manage_registrations",
     row.registration.editionSlug,
   );
-  return row;
+  const attempts = await db()
+    .select({
+      attempt: registrationAttempts.attempt,
+      snapshot: registrationAttempts.snapshot,
+      configuration: editionRevisions.configuration,
+    })
+    .from(registrationAttempts)
+    .leftJoin(
+      editionRevisions,
+      and(
+        eq(editionRevisions.editionSlug, registrationAttempts.editionSlug),
+        eq(editionRevisions.version, registrationAttempts.configurationVersion),
+      ),
+    )
+    .where(eq(registrationAttempts.registrationId, id))
+    .orderBy(desc(registrationAttempts.attempt));
+  return { ...row, attempts };
 }
 export async function reviewApplication(
   actor: User,
@@ -271,6 +291,7 @@ export async function reviewApplication(
     await tx.insert(registrationEvents).values({
       registrationId: id,
       actorId: actor.osuId,
+      attempt: current.attempt,
       fromStatus: current.status,
       toStatus: result.data.status,
       reason: result.data.reason || null,
@@ -337,32 +358,7 @@ export async function changeRegistrationParticipation(
         409,
         "Registration cannot be restored in a completed tournament.",
       );
-    const dependencies = await tx.execute<{
-      assigned: boolean;
-      protectedPool: boolean;
-    }>(sql`
-      SELECT (
-        EXISTS(SELECT 1 FROM captains WHERE edition_slug=${slug} AND user_id=${current.userId}) OR
-        EXISTS(SELECT 1 FROM teams WHERE edition_slug=${slug} AND captain_id=${current.userId} AND archived_at IS NULL) OR
-        EXISTS(SELECT 1 FROM memberships WHERE edition_slug=${slug} AND user_id=${current.userId} AND left_at IS NULL) OR
-        EXISTS(SELECT 1 FROM draft_picks p JOIN draft_sessions s ON s.id=p.session_id
-          WHERE s.edition_slug=${slug} AND p.voided_at IS NULL AND (p.player_id=${current.userId} OR p.captain_id=${current.userId})) OR
-        EXISTS(SELECT 1 FROM teams t JOIN fixtures f ON (f.home_team_id=t.id OR f.away_team_id=t.id)
-          WHERE t.edition_slug=${slug} AND (t.captain_id=${current.userId} OR
-            EXISTS(SELECT 1 FROM memberships m WHERE m.team_id=t.id AND m.user_id=${current.userId})))
-      ) AS "assigned", EXISTS(SELECT 1 FROM draft_sessions s WHERE s.edition_slug=${slug}
-        AND s.pool @> ${JSON.stringify([current.userId])}::jsonb
-      ) AS "protectedPool"`);
-    if (dependencies.rows[0].assigned)
-      throw new HttpError(
-        409,
-        "Resolve this player's captain, roster or competition references before removing registration. Use the captain, team or draft recovery tools.",
-      );
-    if (dependencies.rows[0].protectedPool)
-      throw new HttpError(
-        409,
-        "This player belongs to a protected draft pool. Use the explicit draft recovery tools before removing registration.",
-      );
+    await assertRegistrationUnassigned(tx, slug, current.userId);
     const updatedAt = new Date(
       Math.max(Date.now(), current.updatedAt.getTime() + 1),
     );
@@ -379,6 +375,7 @@ export async function changeRegistrationParticipation(
       registrationId: id,
       actorId: actor.osuId,
       operation: action === "remove" ? "staff_remove" : "staff_restore",
+      attempt: current.attempt,
       fromStatus: current.status,
       toStatus: status,
       createdAt: updatedAt,

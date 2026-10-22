@@ -86,6 +86,45 @@ export default async function Application({
             )}
           </dl>
         </section>
+        {data.attempts.length > 0 && (
+          <details className="spaced application-history">
+            <summary>{tr("Previous applications")}</summary>
+            {data.attempts.map((attempt) => (
+              <section className="panel" key={attempt.attempt}>
+                <h2>
+                  {tr("Application {number}", { number: attempt.attempt })}
+                </h2>
+                <p className="muted small">
+                  {tr(formatDate(attempt.snapshot.createdAt, "UTC", tr.locale))}{" "}
+                  · {tr(attempt.snapshot.status)} ·{" "}
+                  {attempt.snapshot.source === "staff"
+                    ? tr("Staff-assisted entry")
+                    : tr("Player submission")}
+                </p>
+                <dl className="detail-list">
+                  <div>
+                    <dt>{tr("Rules acknowledged")}</dt>
+                    <dd>
+                      {attempt.snapshot.rulesVersion ??
+                        tr("Not acknowledged by the player")}
+                    </dd>
+                  </div>
+                  {applicationAnswers(
+                    attempt.snapshot.answers,
+                    attempt.configuration,
+                  ).map((answer) => (
+                    <div key={answer.id}>
+                      <dt>{answer.label}</dt>
+                      <dd className="preserve-lines">
+                        {answer.value || tr("No answer")}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ))}
+          </details>
+        )}
         {r.eligibilityVerification && (
           <EligibilitySummary
             value={r.eligibilityVerification}

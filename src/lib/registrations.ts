@@ -5,6 +5,7 @@ import {
   editionState,
   registrationEvents,
   registrations,
+  registrationAttempts,
   captains,
   memberships,
 } from "@/db/schema";
@@ -20,7 +21,7 @@ import { HttpError } from "./http";
 // a second registration status. Mutations timestamp the event and row together.
 // Keep the outer qualifier literal: single-table projections otherwise strip it.
 export const registrationOperation = sql<
-  "staff_remove" | "staff_restore" | "player_withdraw" | null
+  "staff_remove" | "staff_restore" | "player_withdraw" | "player_reapply" | null
 >`(
   SELECT e.operation FROM registration_events e WHERE e.registration_id = "registrations"."id"
   ORDER BY e.created_at DESC, e.id DESC LIMIT 1
@@ -46,6 +47,13 @@ const applicationInput = z
     rulesAcknowledged: z.literal(true).optional(),
     eligibilityAcknowledged: z.literal(true).optional(),
     rulesVersion: z.string().min(1).max(80).nullable().optional(),
+    reapply: z
+      .object({
+        expectedUpdatedAt: z.iso.datetime(),
+        attempt: z.number().int().positive(),
+      })
+      .strict()
+      .optional(),
     configurationVersion: z.number().int().nonnegative(),
     answers: z.record(z.string(), z.string()).default({}),
   })
@@ -140,6 +148,7 @@ export function validateApplication(
   }
   return {
     answers,
+    ...(result.data.reapply ? { reapply: result.data.reapply } : {}),
     rulesVersion: edition.rules ? result.data.rulesVersion! : null,
     eligibilityAcknowledged: edition.eligibility ? true : null,
   };
@@ -189,26 +198,83 @@ export async function submitRegistration(
         400,
         "Your osu!standard statistics do not meet the configured eligibility limits.",
       );
-    const values = validateApplication(
+    const { reapply, ...values } = validateApplication(
       edition,
       input,
       state.configurationVersion,
     );
     if (state.registrationPausedAt || enrollmentState(edition) !== "open")
       throw new HttpError(409, "Registration is not open.");
-    const [registration] = await tx
-      .insert(registrations)
-      .values({
+    const [existing] = await tx
+      .select()
+      .from(registrations)
+      .where(
+        and(
+          eq(registrations.editionSlug, slug),
+          eq(registrations.userId, user.osuId),
+        ),
+      )
+      .for("update");
+    if (
+      existing &&
+      (existing.status !== "withdrawn" ||
+        !reapply ||
+        existing.attempt !== reapply.attempt ||
+        existing.updatedAt.toISOString() !== reapply.expectedUpdatedAt)
+    )
+      throw new HttpError(
+        409,
+        "You already have an application for this edition. View it in your dashboard.",
+      );
+    if (!existing && reapply)
+      throw new HttpError(
+        409,
+        "This registration changed. Refresh before continuing.",
+      );
+    const now = new Date(
+      Math.max(Date.now(), existing ? existing.updatedAt.getTime() + 1 : 0),
+    );
+    const active = {
+      ...values,
+      source: "player" as const,
+      status: "pending" as const,
+      configurationVersion: state.configurationVersion,
+      eligibilityVerification: verification,
+      createdAt: now,
+      updatedAt: now,
+      statusReason: null,
+      draftUnavailableReason: null,
+    };
+    let registration: typeof registrations.$inferSelect;
+    if (existing) {
+      await assertRegistrationUnassigned(tx, slug, user.osuId, true);
+      await tx.insert(registrationAttempts).values({
+        registrationId: existing.id,
+        attempt: existing.attempt,
         editionSlug: slug,
-        userId: user.osuId,
-        configurationVersion: state.configurationVersion,
-        eligibilityVerification: verification,
-        ...values,
-      })
-      .onConflictDoNothing({
-        target: [registrations.editionSlug, registrations.userId],
-      })
-      .returning();
+        configurationVersion: existing.configurationVersion,
+        archivedBy: user.osuId,
+        archivedAt: now,
+        snapshot: {
+          ...existing,
+          createdAt: existing.createdAt.toISOString(),
+          updatedAt: existing.updatedAt.toISOString(),
+        },
+      });
+      [registration] = await tx
+        .update(registrations)
+        .set({ ...active, attempt: existing.attempt + 1 })
+        .where(eq(registrations.id, existing.id))
+        .returning();
+    } else {
+      [registration] = await tx
+        .insert(registrations)
+        .values({ editionSlug: slug, userId: user.osuId, ...active })
+        .onConflictDoNothing({
+          target: [registrations.editionSlug, registrations.userId],
+        })
+        .returning();
+    }
     if (!registration)
       throw new HttpError(
         409,
@@ -218,6 +284,10 @@ export async function submitRegistration(
       registrationId: registration.id,
       actorId: user.osuId,
       toStatus: "pending",
+      fromStatus: existing?.status ?? null,
+      attempt: registration.attempt,
+      operation: existing ? "player_reapply" : null,
+      createdAt: now,
     });
     return registration;
   });
@@ -310,6 +380,7 @@ export async function withdrawRegistration(
       fromStatus: current.status,
       toStatus: "withdrawn",
       operation: "player_withdraw",
+      attempt: current.attempt,
       createdAt: updatedAt,
     });
     return updated;
@@ -324,6 +395,7 @@ export async function ownRegistrations(userId: number) {
       editionSlug: registrations.editionSlug,
       status: registrations.status,
       source: registrations.source,
+      attempt: registrations.attempt,
       rulesVersion: registrations.rulesVersion,
       eligibilityAcknowledged: registrations.eligibilityAcknowledged,
       configurationVersion: registrations.configurationVersion,
@@ -335,4 +407,46 @@ export async function ownRegistrations(userId: number) {
     .from(registrations)
     .where(eq(registrations.userId, userId))
     .orderBy(registrations.createdAt);
+}
+
+export async function assertRegistrationUnassigned(
+  tx: Pick<ReturnType<typeof db>, "execute">,
+  slug: string,
+  userId: number,
+  reapplying = false,
+) {
+  const dependencies = await tx.execute<{
+    assigned: boolean;
+    protectedPool: boolean;
+  }>(sql`
+      SELECT (
+        EXISTS(SELECT 1 FROM captains WHERE edition_slug=${slug} AND user_id=${userId}) OR
+        EXISTS(SELECT 1 FROM teams WHERE edition_slug=${slug} AND captain_id=${userId} AND archived_at IS NULL) OR
+        EXISTS(SELECT 1 FROM memberships WHERE edition_slug=${slug} AND user_id=${userId} AND left_at IS NULL) OR
+        EXISTS(SELECT 1 FROM draft_picks p JOIN draft_sessions s ON s.id=p.session_id
+          WHERE s.edition_slug=${slug} AND p.voided_at IS NULL AND (p.player_id=${userId} OR p.captain_id=${userId})) OR
+        EXISTS(SELECT 1 FROM teams t JOIN fixtures f ON (f.home_team_id=t.id OR f.away_team_id=t.id)
+          WHERE t.edition_slug=${slug} AND (t.captain_id=${userId} OR
+            EXISTS(SELECT 1 FROM memberships m WHERE m.team_id=t.id AND m.user_id=${userId})))
+      ) AS "assigned", EXISTS(SELECT 1 FROM draft_sessions s WHERE s.edition_slug=${slug}
+        AND s.pool @> ${JSON.stringify([userId])}::jsonb
+      ) AS "protectedPool"`);
+  if (
+    reapplying &&
+    (dependencies.rows[0].assigned || dependencies.rows[0].protectedPool)
+  )
+    throw new HttpError(
+      409,
+      "This registration still has team or draft references. Contact an administrator before applying again.",
+    );
+  if (dependencies.rows[0].assigned)
+    throw new HttpError(
+      409,
+      "Resolve this player's captain, roster or competition references before removing registration. Use the captain, team or draft recovery tools.",
+    );
+  if (dependencies.rows[0].protectedPool)
+    throw new HttpError(
+      409,
+      "This player belongs to a protected draft pool. Use the explicit draft recovery tools before removing registration.",
+    );
 }

@@ -3,7 +3,11 @@ import { db } from "@/db";
 import { editionState, editionRevisions, registrations } from "@/db/schema";
 import { getPublicEditions } from "./content";
 import { captainAppointment } from "./captains";
-import { canWithdraw, registrationOperation } from "./registrations";
+import {
+  canWithdraw,
+  registrationOperation,
+  registrationAvailability,
+} from "./registrations";
 export async function playerApplications(userId: number) {
   const rows = await db()
     .select({
@@ -52,6 +56,10 @@ export async function playerApplications(userId: number) {
             registration,
             Boolean(registrationPausedAt) || Boolean(appointment) || assigned,
           ),
+          reapplyAvailable:
+            registration.status === "withdrawn" && edition
+              ? (await registrationAvailability(edition)) === "open"
+              : false,
         };
       },
     ),

@@ -13,11 +13,13 @@ export function ApplicationForm({
   username,
   configurationVersion,
   verification = null,
+  previousAttempt,
 }: {
   edition: Edition;
   username: string;
   configurationVersion: number;
   verification?: EligibilityVerification | null;
+  previousAttempt?: { attempt: number; expectedUpdatedAt: string };
 }) {
   const tr = useAppTranslations();
 
@@ -59,6 +61,7 @@ export function ApplicationForm({
               ? { eligibilityAcknowledged: form.get("eligibility") === "on" }
               : {}),
             configurationVersion,
+            ...(previousAttempt ? { reapply: previousAttempt } : {}),
             answers,
           }),
         },

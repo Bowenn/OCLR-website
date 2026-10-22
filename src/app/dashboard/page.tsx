@@ -158,6 +158,7 @@ export default async function Dashboard({
                   lastOperation,
                   edition,
                   withdrawable,
+                  reapplyAvailable,
                   captainAssigned,
                   acknowledgedConfiguration,
                 }) => (
@@ -235,6 +236,13 @@ export default async function Dashboard({
                         </details>
                       )}
                       <div className="actions">
+                        {edition && reapplyAvailable && (
+                          <Action
+                            href={`/tournaments/${edition.slug}/register`}
+                          >
+                            {tr("Apply again")}
+                          </Action>
+                        )}
                         {edition && captainAssigned && (
                           <>
                             <Action

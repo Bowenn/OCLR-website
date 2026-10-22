@@ -40,7 +40,7 @@ export default async function Register({
           "Apply as yourself. Teams are formed later through the captain draft.",
         )}
       </PageHeading>
-      {existing ? (
+      {existing && existing.status !== "withdrawn" ? (
         <div className="panel">
           <h2>{tr("You have an application")}</h2>
           <p className="muted">
@@ -69,6 +69,16 @@ export default async function Register({
         </div>
       ) : (
         <>
+          {existing?.status === "withdrawn" && (
+            <div className="notice spaced">
+              <h2>{tr("Apply again")}</h2>
+              <p>
+                {tr(
+                  "Complete the current application and applicable acknowledgments again. Previous applications and review history are retained; the new application needs a fresh review.",
+                )}
+              </p>
+            </div>
+          )}
           {edition.eligibility && (
             <section className="notice spaced">
               <h2>{tr("Eligibility")}</h2>
@@ -84,6 +94,14 @@ export default async function Register({
               edition,
               record!.revision,
             )}
+            previousAttempt={
+              existing?.status === "withdrawn"
+                ? {
+                    attempt: existing.attempt,
+                    expectedUpdatedAt: existing.updatedAt.toISOString(),
+                  }
+                : undefined
+            }
           />
         </>
       )}

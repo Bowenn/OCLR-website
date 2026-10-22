@@ -140,6 +140,7 @@ export const registrations = pgTable(
     >(),
     configurationVersion: integer("configuration_version"),
     answers: jsonb("answers").$type<Record<string, string>>().notNull(),
+    attempt: integer("attempt").notNull().default(1),
     statusReason: text("status_reason"),
     draftUnavailableReason: text("draft_unavailable_reason"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -168,6 +169,41 @@ export const registrations = pgTable(
       table.userId,
     ),
     index("registrations_status_idx").on(table.editionSlug, table.status),
+    check("registrations_attempt_positive", sql`${table.attempt} > 0`),
+  ],
+);
+export type RegistrationAttemptSnapshot = Omit<
+  typeof registrations.$inferSelect,
+  "createdAt" | "updatedAt"
+> & { createdAt: string; updatedAt: string };
+export const registrationAttempts = pgTable(
+  "registration_attempts",
+  {
+    registrationId: uuid("registration_id")
+      .notNull()
+      .references(() => registrations.id, { onDelete: "cascade" }),
+    attempt: integer("attempt").notNull(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    configurationVersion: integer("configuration_version"),
+    snapshot: jsonb("snapshot").$type<RegistrationAttemptSnapshot>().notNull(),
+    archivedBy: bigint("archived_by", { mode: "number" }).references(
+      () => users.osuId,
+      { onDelete: "set null" },
+    ),
+    archivedAt: timestamp("archived_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.registrationId, t.attempt] }),
+    check("registration_attempts_positive", sql`${t.attempt} > 0`),
+    foreignKey({
+      name: "registration_attempts_configuration_fk",
+      columns: [t.editionSlug, t.configurationVersion],
+      foreignColumns: [editionRevisions.editionSlug, editionRevisions.version],
+    }),
   ],
 );
 export const registrationEvents = pgTable(
@@ -182,8 +218,9 @@ export const registrationEvents = pgTable(
       { onDelete: "set null" },
     ),
     operation: text("operation").$type<
-      "staff_remove" | "staff_restore" | "player_withdraw"
+      "staff_remove" | "staff_restore" | "player_withdraw" | "player_reapply"
     >(),
+    attempt: integer("attempt").notNull().default(1),
     fromStatus: registrationStatus("from_status"),
     toStatus: registrationStatus("to_status").notNull(),
     reason: text("reason"),
@@ -195,8 +232,9 @@ export const registrationEvents = pgTable(
     index("registration_events_registration_idx").on(table.registrationId),
     check(
       "registration_events_operation_valid",
-      sql`${table.operation} IS NULL OR ${table.operation} IN ('staff_remove', 'staff_restore', 'player_withdraw')`,
+      sql`${table.operation} IS NULL OR ${table.operation} IN ('staff_remove', 'staff_restore', 'player_withdraw', 'player_reapply')`,
     ),
+    check("registration_events_attempt_positive", sql`${table.attempt} > 0`),
   ],
 );
 

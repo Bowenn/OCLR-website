@@ -406,14 +406,14 @@ describe.skipIf(!base)("registration operation provenance migration", () => {
               registration.id,
             ])
           ).rows[0],
-        ).toEqual(registration);
+        ).toEqual({ ...registration, attempt: 1 });
         expect(
           (
             await pool.query("SELECT * FROM registration_events WHERE id=$1", [
               event.id,
             ])
           ).rows[0],
-        ).toEqual({ ...event, operation: null });
+        ).toEqual({ ...event, operation: null, attempt: 1 });
         await expect(
           pool.query(
             "INSERT INTO registration_events (registration_id,to_status,operation) VALUES ($1,'withdrawn','forged-operation')",

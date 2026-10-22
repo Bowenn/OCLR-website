@@ -1869,6 +1869,11 @@
     "mbf3a34ad12cb": "Changes to question types, options or labels only affect future applications. Submitted answers retain their original version.",
     "m472229873b09": "Choose a valid option for this question.",
     "m348b4e0fcad9": "Check the required answer and maximum length.",
-    "mad62a47b4c6c": "FM policy not configured"
+    "mad62a47b4c6c": "FM policy not configured",
+    "m75db7c2973e8": "This registration still has team or draft references. Contact an administrator before applying again.",
+    "m7cb21272ccf4": "Apply again",
+    "m123602b1a2de": "Complete the current application and applicable acknowledgments again. Previous applications and review history are retained; the new application needs a fresh review.",
+    "me883e0cc970e": "Previous applications",
+    "me58881e7ed5a": "Application {number}"
   }
 }
