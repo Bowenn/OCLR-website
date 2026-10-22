@@ -30,6 +30,7 @@ export function TournamentMenu({
         return r.json();
       })
       .then((rows: EditionLink[]) => {
+        if (controller.signal.aborted) return;
         setEditions(rows);
         setError(false);
       })
@@ -41,6 +42,7 @@ export function TournamentMenu({
     }
     function escape(e: KeyboardEvent) {
       if (e.key === "Escape") {
+        e.preventDefault();
         setOpen(false);
         trigger.current?.focus();
       }
@@ -78,52 +80,80 @@ export function TournamentMenu({
           {tr("Tournaments")}
         </Link>
         <button
-          className="secondary tournament-menu-trigger"
+          className="tournament-menu-trigger"
           type="button"
           ref={trigger}
           aria-label={tr("Select tournament")}
           aria-expanded={open}
           aria-controls={id}
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            if (!open) {
+              setEditions(null);
+              setError(false);
+            }
+            setOpen(!open);
+          }}
         >
-          ⌄
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            viewBox="0 0 16 16"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m4 6 4 4 4-4" />
+          </svg>
         </button>
       </div>
       {open && (
         <div
           className="tournament-dropdown"
           id={id}
+          role="region"
           aria-label={tr("Tournaments")}
         >
-          {error ? (
-            <p className="small muted" role="status">
-              {tr("Unable to load tournaments.")}
-            </p>
-          ) : editions === null ? (
-            <p className="small muted" role="status">
-              {tr("Loading…")}
-            </p>
-          ) : editions.length ? (
-            editions.map((e) => (
-              <Link
-                key={e.slug}
-                href={`/tournaments/${e.slug}`}
-                aria-current={
-                  path === `/tournaments/${e.slug}` ||
-                  path.startsWith(`/tournaments/${e.slug}/`)
-                    ? "page"
-                    : undefined
-                }
-                onClick={navigate}
-              >
-                {e.name}
-              </Link>
-            ))
-          ) : (
-            <p className="small muted">{tr("No tournaments published yet")}</p>
-          )}
-          <Link href="/tournaments" onClick={navigate}>
-            {tr("All tournaments")} →
+          <div className="tournament-dropdown-list">
+            {error ? (
+              <p className="small muted" role="status">
+                {tr("Unable to load tournaments.")}
+              </p>
+            ) : editions === null ? (
+              <p className="small muted" role="status">
+                {tr("Loading…")}
+              </p>
+            ) : editions.length ? (
+              editions.map((e) => (
+                <Link
+                  key={e.slug}
+                  href={`/tournaments/${e.slug}`}
+                  aria-current={
+                    path === `/tournaments/${e.slug}` ||
+                    path.startsWith(`/tournaments/${e.slug}/`)
+                      ? "page"
+                      : undefined
+                  }
+                  onClick={navigate}
+                >
+                  {e.name}
+                </Link>
+              ))
+            ) : (
+              <p className="small muted">
+                {tr("No tournaments published yet")}
+              </p>
+            )}
+          </div>
+          <Link
+            className="tournament-dropdown-all"
+            href="/tournaments"
+            onClick={navigate}
+          >
+            {tr("All tournaments")}
           </Link>
         </div>
       )}
