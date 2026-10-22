@@ -72,9 +72,13 @@ test.describe("weekly awards review", () => {
       },
     });
     try {
+      await anonymous.route("https://a.ppy.sh/**", (route) => route.abort());
       const publicPage = await anonymous.newPage();
       await publicPage.goto("/tournaments/test-cup/results/awards");
       await expect(publicPage.locator(".award-winners")).toBeVisible();
+      await expect(
+        publicPage.locator(".award-winner .avatar span").first(),
+      ).toBeVisible();
       expect((await anonymous.request.post(endpoint, { data: {} })).ok()).toBe(
         false,
       );

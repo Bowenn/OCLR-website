@@ -235,6 +235,7 @@ export function AwardManager({ initial }: { initial: Data }) {
               </ul>
             </details>
             <AwardTable
+              explain
               {...report}
               candidates={report.candidates.map((c) => ({
                 ...c,

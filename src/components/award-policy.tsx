@@ -12,7 +12,7 @@ export function AwardPolicy() {
       </p>
       <p>
         {tr(
-          "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and Admin-assigned Tier 4 or higher. Awards are independent; ties remain tied.",
+          "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and Admin-assigned Tier of T4, T5 or below. Awards are independent; ties remain tied.",
         )}
       </p>
       <p className="muted small">

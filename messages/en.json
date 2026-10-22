@@ -1890,7 +1890,6 @@
     "m4e4832b24d14": "Configure award weeks before reviewing results.",
     "mab6aa005038d": "Award policy and calculation",
     "ma7ff67e418ac": "One approved scored game is one appearance. Weekly performance is the mean of each player score divided by the highest eligible score in that game. The entire fixture belongs to the week containing its scheduled time.",
-    "mf5d488d2f78f": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and Admin-assigned Tier 4 or higher. Awards are independent; ties remain tied.",
     "mec1992ed2118": "Ratios and weekly means are rounded half up to 9 decimal places. Unverified games require review. Only reviewed and published awards are public.",
     "m7b0c7fb792df": "Appearances",
     "m2f5d357b60fd": "Weekly performance",
@@ -1915,6 +1914,8 @@
     "m0c96128f573d": "Rookie: {value0}/5 appearances; Tier T4/T5+ required",
     "m0ee9a1a89bf9": "Best Rookie",
     "m8f70115d39ec": "Calculation sources",
-    "m76f4062170b3": "Revision {value0}"
+    "m76f4062170b3": "Revision {value0}",
+    "mf883632da1b4": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and Admin-assigned Tier of T4, T5 or below. Awards are independent; ties remain tied.",
+    "mb7d610eb51a9": "{value0} percentage points"
   }
 }

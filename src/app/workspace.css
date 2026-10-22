@@ -435,3 +435,15 @@
 .award-winner p {
   margin: 0.25rem 0 0;
 }
+.award-winner .avatar {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+}
+.themed-site .award-table tbody th {
+  text-transform: none;
+  letter-spacing: normal;
+  background: transparent;
+  font-size: inherit;
+  font-weight: 600;
+}

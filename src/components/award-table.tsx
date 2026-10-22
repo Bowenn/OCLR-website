@@ -6,16 +6,18 @@ export function AwardTable({
   mvp,
   mip,
   rookie,
+  explain = false,
 }: {
   candidates: (AwardCandidate & { username: string })[];
   mvp: number[];
   mip: number[];
   rookie: number[];
+  explain?: boolean;
 }) {
   const tr = useAppTranslations();
   return (
     <div className="table-scroll">
-      <table>
+      <table className="award-table">
         <thead>
           <tr>
             <th>{tr("Player")}</th>
@@ -25,13 +27,13 @@ export function AwardTable({
             <th>{tr("Previous week")}</th>
             <th>{tr("Improvement")}</th>
             <th>{tr("Awards")}</th>
-            <th>{tr("Eligibility")}</th>
+            {explain && <th>{tr("Eligibility")}</th>}
           </tr>
         </thead>
         <tbody>
           {candidates.map((row) => (
             <tr key={row.userId}>
-              <th>
+              <th scope="row">
                 <a
                   href={`https://osu.ppy.sh/users/${row.userId}`}
                   target="_blank"
@@ -51,7 +53,9 @@ export function AwardTable({
               <td>
                 {row.improvement === null
                   ? "—"
-                  : `${row.improvement > 0 ? "+" : ""}${awardPercentage(row.improvement)}`}
+                  : tr("{value0} percentage points", {
+                      value0: `${row.improvement > 0 ? "+" : ""}${(row.improvement / 10_000_000).toFixed(7)}`,
+                    })}
               </td>
               <td>
                 {[
@@ -68,18 +72,25 @@ export function AwardTable({
                   )
                   .join(" · ") || "—"}
               </td>
-              <td className="small">
-                {tr("MVP: {value0}/6 appearances", { value0: row.appearances })}
-                <br />
-                {tr(
-                  "MIP: {value0}/5 current, {value1}/5 previous; positive gain required",
-                  { value0: row.appearances, value1: row.previousAppearances },
-                )}
-                <br />
-                {tr("Rookie: {value0}/5 appearances; Tier T4/T5+ required", {
-                  value0: row.appearances,
-                })}
-              </td>
+              {explain && (
+                <td className="small">
+                  {tr("MVP: {value0}/6 appearances", {
+                    value0: row.appearances,
+                  })}
+                  <br />
+                  {tr(
+                    "MIP: {value0}/5 current, {value1}/5 previous; positive gain required",
+                    {
+                      value0: row.appearances,
+                      value1: row.previousAppearances,
+                    },
+                  )}
+                  <br />
+                  {tr("Rookie: {value0}/5 appearances; Tier T4/T5+ required", {
+                    value0: row.appearances,
+                  })}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

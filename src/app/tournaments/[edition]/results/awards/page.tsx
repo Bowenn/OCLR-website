@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Avatar } from "@/components/avatar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { publicAwards } from "@/lib/awards";
@@ -18,7 +18,10 @@ export default async function Awards({
   const tr = await getAppTranslations();
   const releases = await publicAwards((await params).edition);
   if (!releases) notFound();
-  const selected = Number((await searchParams).week) || releases[0]?.week;
+  const requested = Number((await searchParams).week);
+  const selected = releases.some((r) => r.week === requested)
+    ? requested
+    : releases[0]?.week;
   return (
     <>
       <PageHeading title={tr("Weekly awards")} />
@@ -78,13 +81,7 @@ export default async function Awards({
                         )!;
                         return (
                           <div key={id} className="award-winner">
-                            <Image
-                              unoptimized
-                              src={`https://a.ppy.sh/${id}`}
-                              alt=""
-                              width={48}
-                              height={48}
-                            />
+                            <Avatar osuId={id} username={player.username} />
                             <div>
                               <a
                                 href={`https://osu.ppy.sh/users/${id}`}
@@ -95,7 +92,9 @@ export default async function Awards({
                               </a>
                               <p className="muted small">
                                 {kind === "mip"
-                                  ? `+${awardPercentage(player.improvement!)}`
+                                  ? tr("{value0} percentage points", {
+                                      value0: `+${(player.improvement! / 10_000_000).toFixed(7)}`,
+                                    })
                                   : awardPercentage(player.performance)}{" "}
                                 ·{" "}
                                 {tr("{value0} appearances", {
