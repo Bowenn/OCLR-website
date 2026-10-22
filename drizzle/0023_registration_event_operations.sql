@@ -1,0 +1,2 @@
+ALTER TABLE "registration_events" ADD COLUMN "operation" text;--> statement-breakpoint
+ALTER TABLE "registration_events" ADD CONSTRAINT "registration_events_operation_valid" CHECK ("registration_events"."operation" IS NULL OR "registration_events"."operation" IN ('staff_remove', 'staff_restore', 'player_withdraw'));

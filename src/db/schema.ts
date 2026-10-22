@@ -181,6 +181,9 @@ export const registrationEvents = pgTable(
       () => users.osuId,
       { onDelete: "set null" },
     ),
+    operation: text("operation").$type<
+      "staff_remove" | "staff_restore" | "player_withdraw"
+    >(),
     fromStatus: registrationStatus("from_status"),
     toStatus: registrationStatus("to_status").notNull(),
     reason: text("reason"),
@@ -190,6 +193,10 @@ export const registrationEvents = pgTable(
   },
   (table) => [
     index("registration_events_registration_idx").on(table.registrationId),
+    check(
+      "registration_events_operation_valid",
+      sql`${table.operation} IS NULL OR ${table.operation} IN ('staff_remove', 'staff_restore', 'player_withdraw')`,
+    ),
   ],
 );
 

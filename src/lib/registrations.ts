@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -16,6 +16,15 @@ import { enrollmentState, type Edition } from "./editions";
 import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
 import { HttpError } from "./http";
+// Latest explicit provenance, without rewriting legacy audit records or storing
+// a second registration status. Mutations timestamp the event and row together.
+// Keep the outer qualifier literal: single-table projections otherwise strip it.
+export const registrationOperation = sql<
+  "staff_remove" | "staff_restore" | "player_withdraw" | null
+>`(
+  SELECT e.operation FROM registration_events e WHERE e.registration_id = "registrations"."id"
+  ORDER BY e.created_at DESC, e.id DESC LIMIT 1
+)`;
 export async function registrationAvailability(
   edition: Edition,
 ): Promise<ReturnType<typeof enrollmentState> | "unavailable"> {
@@ -261,9 +270,12 @@ export async function withdrawRegistration(
         409,
         "Withdrawal is not available. Contact tournament staff for review.",
       );
+    const updatedAt = new Date(
+      Math.max(Date.now(), current.updatedAt.getTime() + 1),
+    );
     const [updated] = await tx
       .update(registrations)
-      .set({ status: "withdrawn", statusReason: null, updatedAt: new Date() })
+      .set({ status: "withdrawn", statusReason: null, updatedAt })
       .where(eq(registrations.id, id))
       .returning();
     await tx.insert(registrationEvents).values({
@@ -271,6 +283,8 @@ export async function withdrawRegistration(
       actorId: user.osuId,
       fromStatus: current.status,
       toStatus: "withdrawn",
+      operation: "player_withdraw",
+      createdAt: updatedAt,
     });
     return updated;
   });
@@ -279,6 +293,7 @@ export async function ownRegistrations(userId: number) {
   return db()
     .select({
       id: registrations.id,
+      lastOperation: registrationOperation,
       userId: registrations.userId,
       editionSlug: registrations.editionSlug,
       status: registrations.status,

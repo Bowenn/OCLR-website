@@ -371,3 +371,65 @@ describe.skipIf(!base)(
     );
   },
 );
+
+describe.skipIf(!base)("registration operation provenance migration", () => {
+  it("adds nullable provenance without inventing historical attribution or losing acknowledgments", async () =>
+    isolated(async (pool) => {
+      const folder = mkdtempSync(join(tmpdir(), "oclr-107-migration-test-"));
+      try {
+        cpSync("drizzle", folder, { recursive: true });
+        const file = join(folder, "meta/_journal.json");
+        const journal = JSON.parse(readFileSync(file, "utf8"));
+        journal.entries = journal.entries.filter(
+          (entry: { idx: number }) => entry.idx < 23,
+        );
+        writeFileSync(file, JSON.stringify(journal));
+        await migrate(drizzle(pool), { migrationsFolder: folder });
+        await pool.query(
+          "INSERT INTO users (osu_id,username) VALUES (710001,'Synthetic historical registrant')",
+        );
+        const registration = (
+          await pool.query(
+            "INSERT INTO registrations (edition_slug,user_id,status,rules_version,answers) VALUES ('s11',710001,'withdrawn','original-consent-v1','{\"private\":\"original answer\"}') RETURNING *",
+          )
+        ).rows[0];
+        const event = (
+          await pool.query(
+            "INSERT INTO registration_events (registration_id,actor_id,from_status,to_status,reason) VALUES ($1,710001,'pending','withdrawn','Historical explanation') RETURNING *",
+            [registration.id],
+          )
+        ).rows[0];
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect(
+          (
+            await pool.query("SELECT * FROM registrations WHERE id=$1", [
+              registration.id,
+            ])
+          ).rows[0],
+        ).toEqual(registration);
+        expect(
+          (
+            await pool.query("SELECT * FROM registration_events WHERE id=$1", [
+              event.id,
+            ])
+          ).rows[0],
+        ).toEqual({ ...event, operation: null });
+        await expect(
+          pool.query(
+            "INSERT INTO registration_events (registration_id,to_status,operation) VALUES ($1,'withdrawn','forged-operation')",
+            [registration.id],
+          ),
+        ).rejects.toThrow();
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect(
+          (
+            await pool.query(
+              "SELECT count(*)::int AS count FROM registration_events",
+            )
+          ).rows[0].count,
+        ).toBe(1);
+      } finally {
+        rmSync(folder, { recursive: true, force: true });
+      }
+    }));
+});

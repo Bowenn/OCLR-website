@@ -95,6 +95,7 @@ export async function RegistrationList({
           <label className="field">
             <span>{tr("Status")}</span>
             <select name="status" defaultValue={filters.status}>
+              <option value="active">{tr("Active registrations")}</option>
               <option value="">{tr("All statuses")}</option>
               {["pending", "accepted", "rejected", "withdrawn"].map(
                 (status) => (

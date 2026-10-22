@@ -1837,6 +1837,26 @@
     "m36cf641dfa56": "Unlock draft setup",
     "m82f016911fb9": "Reset draft",
     "m459ee921831b": "Reset this draft and return to setup. Picks are voided and draft roster assignments removed; saved order and audit history are retained. Registration stays unchanged.",
-    "mf00d697dffc9": "Registration pause removed. Enablement and time window still apply."
+    "mf00d697dffc9": "Registration pause removed. Enablement and time window still apply.",
+    "mbd2a6c52cdda": "Active registrations",
+    "m829c433b7bc6": "Registration management",
+    "m1de3e043bab9": "Restore for review",
+    "m79ad7a3b23d9": "Remove registration",
+    "m44996e9077d2": "Restore this registration for review?",
+    "mf4d4673738b6": "Remove this registration?",
+    "mc4562041f6a7": "Restore as Pending. This does not accept the player or record new player acknowledgments.",
+    "m5c8a9500339f": "Withdraw this tournament registration administratively, preserving application and review history. The osu! account is not deleted. Restore for review is a separate action.",
+    "m0f95e75c7bfe": "Confirm a valid registration change.",
+    "m96fefc278c15": "This registration changed. Refresh before continuing.",
+    "m059f278d1a0e": "This registration is already withdrawn.",
+    "m7c3195e69f03": "Only a registration removed by staff can be restored for review.",
+    "m540f5990ed6f": "Registration cannot be restored in a completed tournament.",
+    "mb0acdde6d33a": "Resolve this player's captain, roster or competition references before removing registration. Use the captain, team or draft recovery tools.",
+    "m32667a08fa6b": "This player belongs to a protected draft pool. Use the explicit draft recovery tools before removing registration.",
+    "mccb1c7c33cdd": "Staff withdrew this registration. Your application history is retained.",
+    "m5bab271c5b07": "Registration removed by staff. Its history is retained.",
+    "maf4c72e9e3a2": "Registration restored for review. No new player acknowledgments were recorded.",
+    "m041b429dabaa": "View registrations",
+    "m161b71b768cc": "This application is withdrawn. It will not enter the eligible player pool."
   }
 }

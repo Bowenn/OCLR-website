@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { RegistrationRemoval } from "@/components/registration-removal";
 import { EligibilitySummary } from "@/components/eligibility-summary";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
@@ -32,6 +34,19 @@ export default async function Application({
         </PageHeading>
         <section className="panel">
           <span className={`badge status-${r.status}`}>{tr(r.status)}</span>
+          {r.status === "withdrawn" &&
+            data.lastOperation === "staff_remove" && (
+              <p role="status" className="notice small">
+                {tr("Registration removed by staff. Its history is retained.")}
+              </p>
+            )}
+          {r.status === "pending" && data.lastOperation === "staff_restore" && (
+            <p role="status" className="notice small">
+              {tr(
+                "Registration restored for review. No new player acknowledgments were recorded.",
+              )}
+            </p>
+          )}
           <dl className="detail-list">
             <div>
               <dt>{tr("Submitted")}</dt>
@@ -78,10 +93,26 @@ export default async function Application({
             currentRevision={record?.revision}
           />
         )}
-        <BwsReview slug={slug} id={r.id} />
+        {r.status !== "withdrawn" && <BwsReview slug={slug} id={r.id} />}
         {r.status === "pending" && (
           <ReviewForm id={r.id} updatedAt={r.updatedAt.toISOString()} />
         )}
+        <RegistrationRemoval
+          id={r.id}
+          slug={slug}
+          tournament={edition?.name ?? slug}
+          username={username}
+          osuId={r.userId}
+          status={r.status}
+          updatedAt={r.updatedAt.toISOString()}
+          staffRemoved={data.lastOperation === "staff_remove"}
+        />
+        <Link
+          className="context-link spaced"
+          href={`/admin/tournaments/${slug}/registrations`}
+        >
+          {tr("View registrations")}
+        </Link>
       </>
     );
   });

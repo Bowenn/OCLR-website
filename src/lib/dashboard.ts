@@ -3,11 +3,12 @@ import { db } from "@/db";
 import { editionState, editionRevisions, registrations } from "@/db/schema";
 import { getPublicEditions } from "./content";
 import { captainAppointment } from "./captains";
-import { canWithdraw } from "./registrations";
+import { canWithdraw, registrationOperation } from "./registrations";
 export async function playerApplications(userId: number) {
   const rows = await db()
     .select({
       registration: registrations,
+      lastOperation: registrationOperation,
       registrationPausedAt: editionState.registrationPausedAt,
       assigned: sql<boolean>`EXISTS(SELECT 1 FROM memberships m WHERE m.edition_slug=${registrations.editionSlug} AND m.user_id=${registrations.userId} AND m.left_at IS NULL)`,
       acknowledgedConfiguration: editionRevisions.configuration,
@@ -29,6 +30,7 @@ export async function playerApplications(userId: number) {
       async ({
         registration,
         registrationPausedAt,
+        lastOperation,
         assigned,
         acknowledgedConfiguration,
       }) => {
@@ -42,6 +44,7 @@ export async function playerApplications(userId: number) {
         return {
           captainAssigned: Boolean(appointment),
           registration,
+          lastOperation,
           acknowledgedConfiguration,
           edition,
           withdrawable: canWithdraw(
@@ -61,5 +64,5 @@ export const statusCopy = {
   rejected:
     "Your application was not accepted. See the staff explanation below when provided.",
   withdrawn:
-    "You withdrew this application. It will not enter the eligible player pool.",
+    "This application is withdrawn. It will not enter the eligible player pool.",
 };

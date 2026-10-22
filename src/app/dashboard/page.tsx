@@ -154,6 +154,7 @@ export default async function Dashboard({
               {applications.map(
                 ({
                   registration: r,
+                  lastOperation,
                   edition,
                   withdrawable,
                   captainAssigned,
@@ -183,7 +184,14 @@ export default async function Dashboard({
                           {tr(r.status)}
                         </span>
                       </div>
-                      <p className="muted small">{tr(statusCopy[r.status])}</p>
+                      <p className="muted small">
+                        {r.status === "withdrawn" &&
+                        lastOperation === "staff_remove"
+                          ? tr(
+                              "Staff withdrew this registration. Your application history is retained.",
+                            )
+                          : tr(statusCopy[r.status])}
+                      </p>
                       <p className="small muted">
                         {tr("Submitted")}{" "}
                         {tr(
@@ -201,7 +209,7 @@ export default async function Dashboard({
                           )}
                         </p>
                       )}
-                      {r.statusReason && (
+                      {r.statusReason && r.status !== "withdrawn" && (
                         <p className="notice small">
                           {tr("Staff explanation: ")}
                           {r.statusReason}
