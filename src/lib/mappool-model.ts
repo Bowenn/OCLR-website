@@ -1,5 +1,6 @@
 export const categories = ["NM", "HD", "DT", "HR", "FM", "TB"] as const;
 export type MappoolCategory = (typeof categories)[number];
+// osu! mod names are fixed game terminology in every interface locale.
 export const categoryNames = {
   NM: "No Mod",
   HD: "Hidden",
@@ -7,7 +8,11 @@ export const categoryNames = {
   HR: "Hard Rock",
   FM: "FM",
   TB: "Tie Breaker",
-};
+} as const;
+export const fmModeNames = {
+  free_mod: "Free Mod",
+  force_mod: "Force Mod",
+} as const;
 export function slotLabel(category: string, position: number) {
   return category === "TB" && position === 1 ? "TB" : `${category}${position}`;
 }

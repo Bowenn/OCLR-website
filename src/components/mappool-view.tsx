@@ -3,6 +3,7 @@ import type { publicMappools } from "@/lib/mappools";
 import {
   categories,
   categoryNames,
+  fmModeNames,
   slotLabel,
   formatBeatmapDuration,
   formatBeatmapNumber,
@@ -184,8 +185,8 @@ export function MappoolView({
         const name =
           category === "FM" && pool.fmMode
             ? pool.fmMode === "free_mod"
-              ? "Free Mod"
-              : "Force Mod"
+              ? fmModeNames.free_mod
+              : fmModeNames.force_mod
             : categoryNames[category];
         return (
           <section
@@ -197,7 +198,7 @@ export function MappoolView({
             <div className="mappool-category-heading">
               <Heading id={`${prefix}-maps-${category}-title`}>
                 <strong>{category}</strong>
-                <span>{tr(name)}</span>
+                <span>{name}</span>
               </Heading>
               <span className="muted small">
                 {entries.length} {entries.length === 1 ? tr("map") : tr("maps")}

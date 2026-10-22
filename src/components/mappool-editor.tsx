@@ -11,6 +11,7 @@ import {
   difficultyConfigurations,
   type DifficultyConfiguration,
   categoryNames,
+  fmModeNames,
   slotLabel,
   parseBeatmapId,
   type BeatmapSnapshot,
@@ -171,8 +172,8 @@ function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
         <span>{tr("FM policy")}</span>
         <select value={fmMode} onChange={(e) => setFmMode(e.target.value)}>
           <option value="">{tr("Disabled")}</option>
-          <option value="free_mod">{tr("Free Mod")}</option>
-          <option value="force_mod">{tr("Force Mod")}</option>
+          <option value="free_mod">{fmModeNames.free_mod}</option>
+          <option value="force_mod">{fmModeNames.force_mod}</option>
         </select>
       </label>
       {(fmMode || fmRestrictions) && (
@@ -308,7 +309,7 @@ function EntryForm({
         >
           {categories.map((c) => (
             <option key={c} value={c}>
-              {c} — {tr(categoryNames[c])}
+              {c} — {categoryNames[c]}
             </option>
           ))}
         </select>
@@ -600,9 +601,9 @@ export function MappoolEditor({
               </h2>
               <p className="mappool-policy small muted">
                 {pool.fmMode === "free_mod"
-                  ? tr("Free Mod")
+                  ? fmModeNames.free_mod
                   : pool.fmMode === "force_mod"
-                    ? tr("Force Mod")
+                    ? fmModeNames.force_mod
                     : tr("FM disabled")}
                 {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
               </p>
@@ -712,9 +713,9 @@ export function MappoolEditor({
                   {category} /{" "}
                   {category === "FM" && pool.fmMode
                     ? pool.fmMode === "free_mod"
-                      ? tr("Free Mod")
-                      : tr("Force Mod")
-                    : tr(categoryNames[category])}
+                      ? fmModeNames.free_mod
+                      : fmModeNames.force_mod
+                    : categoryNames[category]}
                 </h3>
                 {entries.length > 0 && (
                   <MappoolOrder

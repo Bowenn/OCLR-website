@@ -8,6 +8,7 @@ import type { publicMappools } from "@/lib/mappools";
 import {
   categories,
   categoryNames,
+  fmModeNames,
   slotLabel,
   formatBeatmapNumber as number,
   formatBeatmapDuration as duration,
@@ -113,7 +114,9 @@ function MapDetails({
         </dl>
         {entry.category === "FM" && (
           <p className="notice">
-            {pool.fmMode === "force_mod" ? tr("Force Mod") : tr("Free Mod")}
+            {pool.fmMode === "force_mod"
+              ? fmModeNames.force_mod
+              : fmModeNames.free_mod}
             {pool.fmRestrictions
               ? `: ${pool.fmRestrictions}`
               : tr(": Detailed restrictions have not been published.")}
@@ -317,7 +320,9 @@ export function MappoolBrowser({
           </p>
           {pool.entries.some((e) => e.category === "FM") && (
             <p className="map-values-note muted small">
-              {pool.fmMode === "force_mod" ? tr("Force Mod") : tr("Free Mod")}
+              {pool.fmMode === "force_mod"
+                ? fmModeNames.force_mod
+                : fmModeNames.free_mod}
               {pool.fmRestrictions
                 ? `: ${pool.fmRestrictions}`
                 : tr(": Detailed restrictions have not been published.")}
@@ -339,7 +344,7 @@ export function MappoolBrowser({
                 </div>
                 <div className="map-card-copy">
                   <p className="eyebrow">
-                    {tr(categoryNames[e.category])} · {e.metadata.artist}
+                    {categoryNames[e.category]} · {e.metadata.artist}
                   </p>
                   <CardHeading>
                     <button
