@@ -1470,3 +1470,41 @@ html[data-theme="dark"] .themed-site {
 .application-answer {
   min-width: 0;
 }
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+.hero-meta .hero-kicker {
+  margin: 0;
+}
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-inline-start: 1px solid #ffffff50;
+  padding-inline-start: 1rem;
+  color: #eeebf6;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.hero-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #dab2ed;
+}
+.hero-status[data-state="live"]::before {
+  background: #a1e7cc;
+}
+.hero-status[data-state="completed"]::before {
+  background: #c5c0cd;
+}
+.hero .hero-enrollment {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #e0d9ea;
+  max-width: 42rem;
+}

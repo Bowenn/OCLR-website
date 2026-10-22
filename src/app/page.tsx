@@ -1,6 +1,6 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
-import { Action, Badge } from "@/components/ui";
+import { Action } from "@/components/ui";
 import { publicNewsContext } from "@/lib/public-news";
 import { nextConfirmedMilestone } from "@/lib/public-milestones";
 import { registrationAvailability } from "@/lib/registrations";
@@ -33,7 +33,26 @@ export default async function Home() {
         />
         <div className="hero-shade" aria-hidden="true" />
         <div className="container hero-content">
-          <p className="eyebrow hero-kicker">{"osu! Chinese League Rookie"}</p>
+          <div className="hero-meta">
+            <p className="eyebrow hero-kicker">
+              {"osu! Chinese League Rookie"}
+            </p>
+            {featured && (
+              <span
+                className="hero-status"
+                data-state={featured.status}
+                aria-label={tr("Tournament status")}
+              >
+                {tr(
+                  {
+                    upcoming: "Upcoming",
+                    live: "Live",
+                    completed: "Completed",
+                  }[featured.status],
+                )}
+              </span>
+            )}
+          </div>
           <h1 id="hero-title">{featured?.name ?? "OCLR"}</h1>
           {summary && <p className="hero-copy">{summary}</p>}
           {!featured && (
@@ -42,7 +61,7 @@ export default async function Home() {
             </p>
           )}
           {featured && availability !== "open" && (
-            <Badge>
+            <p className="hero-enrollment">
               {availability === "upcoming"
                 ? tr("Registration opens {value0}", {
                     value0: tr(
@@ -60,7 +79,7 @@ export default async function Home() {
                     : availability === "unavailable"
                       ? tr("Registration temporarily unavailable")
                       : tr("Registration not announced")}
-            </Badge>
+            </p>
           )}
           <div className="actions">
             {availability === "open" && (
