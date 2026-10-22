@@ -38,7 +38,9 @@ jobs:
         run: |
           pg_dump --version
           pg_restore --version
-      - run: npm ci
+      - run: npm ci --include=dev
+      - name: Verify ESLint peer tree
+        run: npm ls eslint
       - run: npm run db:migrate
       - run: npm run check
       - run: npm test
