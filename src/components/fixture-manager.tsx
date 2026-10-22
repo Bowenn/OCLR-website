@@ -1073,7 +1073,7 @@ export function FixtureManager({
                   onSuccess={() => {
                     editor.current?.close();
                     setEditing(null);
-                    setNotice("Fixture deleted.");
+                    setNotice(tr("Fixture deleted."));
                     requestAnimationFrame(() => createButton.current?.focus());
                   }}
                 >

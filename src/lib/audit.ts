@@ -130,7 +130,8 @@ export function auditChanges(before: unknown, after: unknown) {
   return changes;
 }
 const projection = sql`
-  SELECT 'edition' AS source, id, edition_slug, actor_id, kind AS action,
+  SELECT 'edition' AS source, id, edition_slug,
+    COALESCE(actor_id, CASE WHEN kind LIKE 'competition_fixture_%' AND detail->>'historicalActorOsuId' ~ '^[1-9][0-9]{0,15}$' THEN (detail->>'historicalActorOsuId')::bigint END) AS actor_id, kind AS action,
     CASE WHEN kind LIKE 'captain_%' THEN 'captains' WHEN kind LIKE 'team_%' THEN 'teams' WHEN kind LIKE 'draft_%' THEN 'draft' WHEN kind LIKE 'registration_%' THEN 'registrations' WHEN kind LIKE 'competition_%' THEN 'fixtures' ELSE 'tournament' END AS module,
     COALESCE(detail->'entity'->>'type', 'edition') AS entity_type, COALESCE(detail->'entity'->>'id', edition_slug) AS entity_id,
     detail->'before' AS before, detail->'after' AS after, (detail - 'before' - 'after') || jsonb_build_object('reason', reason) AS details, created_at
