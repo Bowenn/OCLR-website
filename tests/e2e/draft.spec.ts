@@ -382,18 +382,13 @@ test.describe("isolated multi-captain rehearsal", () => {
       animations: "disabled",
     });
     await bracketPage.goto(`/tournaments/${slug}/participants`);
+    await expect(bracketPage).toHaveURL(
+      new RegExp(`/tournaments/${slug}/players$`),
+    );
     await expect(
-      bracketPage.getByRole("heading", {
-        name: "Published captains",
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(
-      bracketPage.getByRole("heading", {
-        name: "Teams & finalized rosters",
-        exact: true,
-      }),
-    ).toBeVisible();
+      bracketPage.locator(".badge").filter({ hasText: /^Captain$/ }),
+    ).toHaveCount(2);
+    // Accepted players remain public even when they have no released roster.
     await expect(
       bracketPage.getByRole("link", {
         name: fixture.players[0].username,
@@ -405,7 +400,7 @@ test.describe("isolated multi-captain rehearsal", () => {
         name: fixture.players[7].username,
         exact: true,
       }),
-    ).toHaveCount(0);
+    ).toBeVisible();
     await bracketPage.close();
     await staff.page.goto(`/admin/tournaments/${slug}/draft`);
     for (const [page, name] of [

@@ -19,10 +19,7 @@ export default async function Team({
       <Link className="context-link" href={`/tournaments/${edition}/teams`}>
         {tr("All teams")}
       </Link>
-      <PageHeading eyebrow={tr("PUBLISHED TEAM")} title={team.name}>
-        {tr("Captain: ")}
-        {team.captainName}
-      </PageHeading>
+      <PageHeading eyebrow={tr("PUBLISHED TEAM")} title={team.name} />
       {team.members ? (
         <section aria-labelledby="roster-heading">
           <h2 id="roster-heading">{tr("Published roster")}</h2>

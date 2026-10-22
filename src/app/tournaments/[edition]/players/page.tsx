@@ -79,7 +79,7 @@ export default async function Players({
                   {p.participation === "finalized_roster"
                     ? tr("Finalized roster")
                     : p.captain
-                      ? tr("Appointed captain")
+                      ? tr("Captain")
                       : tr("Accepted player")}
                 </span>
                 {p.captain && p.participation === "finalized_roster" && (

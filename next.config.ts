@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 const config: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    return [
+      {
+        source: "/tournaments/:edition/participants",
+        destination: "/tournaments/:edition/players",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

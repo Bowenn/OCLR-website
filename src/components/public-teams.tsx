@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useState } from "react";
 import type { publishedTeams } from "@/lib/teams";
 import type { PublicGroup } from "@/lib/public-competition";
-import { PublicPlayerIdentity } from "./public-player-identity";
 import { GroupStandings } from "./public-matches";
 export function PublicTeams({
   teams,
@@ -103,11 +102,6 @@ export function PublicTeams({
                       )}
                     </div>
                   </div>
-                  <p className="eyebrow">{tr("Captain")}</p>
-                  <PublicPlayerIdentity
-                    osuId={t.captainId}
-                    username={t.captainName}
-                  />
                   <p className="muted small">
                     {t.members
                       ? tr("{value0} published roster members", {
