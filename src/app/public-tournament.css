@@ -144,15 +144,19 @@ html[data-theme="dark"] .themed-site {
   color: var(--site-secondary-text);
 }
 .public-tournament {
+  container: tournament / inline-size;
   width: min(1400px, calc(100% - clamp(2rem, 7vw, 6rem)));
   margin-inline: auto;
   min-height: 65vh;
   padding: 1.5rem 0 4rem;
 }
 .event-context {
-  display: grid;
-  gap: 0.85rem;
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1.25rem;
+  margin-bottom: 1rem;
 }
 .event-identity {
   display: flex;
@@ -161,6 +165,15 @@ html[data-theme="dark"] .themed-site {
   flex-wrap: wrap;
   font-size: 0.85rem;
   color: var(--color-muted);
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.event-identity > a:last-of-type {
+  overflow-wrap: anywhere;
+}
+.public-tournament .tournament-navigation {
+  max-width: 100%;
+  min-width: 0;
 }
 .event-identity > a:last-of-type {
   color: var(--site-foreground);
@@ -174,7 +187,7 @@ html[data-theme="dark"] .themed-site {
 }
 .public-tournament .tournament-navigation nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.25rem;
   padding: 0.3rem;
   border-radius: 1.5rem;
@@ -183,6 +196,7 @@ html[data-theme="dark"] .themed-site {
   max-width: 100%;
 }
 .public-tournament .tournament-navigation nav a {
+  white-space: nowrap;
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -305,6 +319,11 @@ html[data-theme="dark"] .themed-site {
   }
   .public-tournament {
     padding-top: 1rem;
+  }
+}
+@container tournament (max-width: 52rem) {
+  .tournament-navigation {
+    flex: 1 1 auto;
   }
   .tournament-menu {
     display: inline-flex;
@@ -666,7 +685,7 @@ html[data-theme="dark"] .themed-site {
   border-color: var(--site-border);
 }
 .public-tournament .mappool-release-heading {
-  background: var(--site-raised);
+  background: transparent;
   border-color: var(--site-border);
 }
 .public-tournament .mappool-sheet {
@@ -1217,11 +1236,24 @@ body:has(dialog[open].map-dialog) {
   color: var(--site-accent);
 }
 .public-tournament .mappool-release {
-  padding: 1rem;
+  padding: 0.25rem 0;
+  border: 0;
 }
 .public-tournament .mappool-release-heading {
-  padding: 0.75rem;
-  border-radius: 0.75rem;
+  padding: 0.25rem 0 0.65rem;
+  border: 0;
+  border-bottom: 1px solid var(--site-border);
+  border-radius: 0;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.35rem 1rem;
+  flex-wrap: wrap;
+}
+.public-tournament .mappool-release-heading :is(h3, p) {
+  margin: 0;
+}
+.public-tournament .mappool-release-heading h3 {
+  font-size: 1rem;
 }
 
 .public-tournament .match-alternative summary {
