@@ -1520,3 +1520,8 @@ html[data-theme="dark"] .themed-site {
     height: 25px;
   }
 }
+
+/* Keep foreground/background contrast stable while the theme changes. */
+.themed-site :is(button, .button) {
+  transition-property: transform, border-color, box-shadow;
+}

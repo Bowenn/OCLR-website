@@ -117,7 +117,7 @@ test.describe("tournament-centered administration", () => {
       .getByRole("link", { name: "Registrations", exact: true })
       .click();
     await expect(
-      page.getByText("No registrations yet.", { exact: true }),
+      page.getByText("No matching registrations.", { exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /Export CSV/ })).toHaveCount(0);
     await expect(page.getByLabel("Edition", { exact: true })).toHaveCount(0);

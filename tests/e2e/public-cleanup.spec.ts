@@ -196,8 +196,8 @@ test.describe("concise public tournament surfaces", () => {
         item.name === "open" ? "Register" : "View tournament",
       );
       if (item.label)
-        await expect(page.locator(".hero .badge")).toContainText(item.label);
-      else await expect(page.locator(".hero .badge")).toHaveCount(0);
+        await expect(page.locator(".hero-enrollment")).toContainText(item.label);
+      else await expect(page.locator(".hero-enrollment")).toHaveCount(0);
       if (item.name === "open")
         await captureResponsiveLayout(page, info, "compact-s11-home");
       const [after] = await db()
