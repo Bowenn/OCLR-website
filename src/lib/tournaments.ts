@@ -206,7 +206,7 @@ export async function tournamentList(actor: User) {
       })),
   };
 }
-async function configurationFrozen(
+export async function configurationFrozen(
   slug: string,
   locked: boolean,
   reader: Reader,

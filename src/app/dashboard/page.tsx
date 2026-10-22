@@ -206,6 +206,13 @@ export default async function Dashboard({
                           ),
                         )}
                       </p>
+                      {r.source === "staff" && (
+                        <p className="small muted">
+                          {tr(
+                            "Staff-assisted entry. No player answers or acknowledgments are recorded.",
+                          )}
+                        </p>
+                      )}
                       {r.statusReason && (
                         <p className="notice small">
                           {tr("Staff explanation: ")}

@@ -126,6 +126,10 @@ export const registrations = pgTable(
       .notNull()
       .references(() => users.osuId, { onDelete: "cascade" }),
     status: registrationStatus("status").notNull().default("pending"),
+    source: text("source")
+      .$type<"player" | "staff">()
+      .notNull()
+      .default("player"),
     rulesVersion: text("rules_version"),
     eligibilityAcknowledged: boolean("eligibility_acknowledged"),
     configurationVersion: integer("configuration_version"),
@@ -145,6 +149,14 @@ export const registrations = pgTable(
       columns: [table.editionSlug, table.configurationVersion],
       foreignColumns: [editionRevisions.editionSlug, editionRevisions.version],
     }),
+    check(
+      "registrations_source_valid",
+      sql`${table.source} IN ('player', 'staff')`,
+    ),
+    check(
+      "registrations_staff_no_ack",
+      sql`${table.source} <> 'staff' OR (${table.rulesVersion} IS NULL AND ${table.eligibilityAcknowledged} IS NULL AND ${table.answers} = '{}'::jsonb)`,
+    ),
     unique("registrations_edition_user_unique").on(
       table.editionSlug,
       table.userId,

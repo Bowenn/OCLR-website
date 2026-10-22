@@ -7,6 +7,7 @@ import { permits, staffAccess } from "@/lib/auth/staff";
 import { listApplications } from "@/lib/staff";
 import { getEditions } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
+import { ManualRegistration } from "./manual-registration";
 import { PageHeading } from "@/components/ui";
 export async function RegistrationList({
   actor,
@@ -54,6 +55,11 @@ export async function RegistrationList({
               { count: total },
             )}
           </p>
+          {editionSlug && editions.find((e) => e.slug === editionSlug) && (
+            <ManualRegistration
+              edition={editions.find((e) => e.slug === editionSlug)!}
+            />
+          )}
           {total > 0 && (
             <a
               className="button secondary"
@@ -126,7 +132,7 @@ export async function RegistrationList({
                     "Review",
                   ].map((h) => (
                     <th key={h} scope="col">
-                      {h}
+                      {tr(h)}
                     </th>
                   ))}
                 </tr>

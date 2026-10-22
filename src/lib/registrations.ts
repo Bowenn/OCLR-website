@@ -248,6 +248,7 @@ export async function ownRegistrations(userId: number) {
       userId: registrations.userId,
       editionSlug: registrations.editionSlug,
       status: registrations.status,
+      source: registrations.source,
       rulesVersion: registrations.rulesVersion,
       eligibilityAcknowledged: registrations.eligibilityAcknowledged,
       configurationVersion: registrations.configurationVersion,

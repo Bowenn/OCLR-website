@@ -1,0 +1,3 @@
+ALTER TABLE "registrations" ADD COLUMN "source" text DEFAULT 'player' NOT NULL;--> statement-breakpoint
+ALTER TABLE "registrations" ADD CONSTRAINT "registrations_source_valid" CHECK ("registrations"."source" IN ('player', 'staff'));--> statement-breakpoint
+ALTER TABLE "registrations" ADD CONSTRAINT "registrations_staff_no_ack" CHECK ("registrations"."source" <> 'staff' OR ("registrations"."rules_version" IS NULL AND "registrations"."eligibility_acknowledged" IS NULL AND "registrations"."answers" = '{}'::jsonb));

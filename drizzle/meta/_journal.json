@@ -127,6 +127,13 @@
       "when": 1792499107900,
       "tag": "0017_public_staff_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792640728379,
+      "tag": "0018_manual_registration_source",
+      "breakpoints": true
     }
   ]
 }

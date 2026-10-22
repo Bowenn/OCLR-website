@@ -35,9 +35,20 @@ export default async function Application({
               <dd>{tr(formatDate(r.createdAt, "UTC", tr.locale))}</dd>
             </div>
             <div>
+              <dt>{tr("Registration source")}</dt>
+              <dd>
+                {r.source === "staff"
+                  ? tr("Staff-assisted entry")
+                  : tr("Player submission")}
+              </dd>
+            </div>
+            <div>
               <dt>{tr("Rules acknowledged")}</dt>
               <dd>
-                {r.rulesVersion ?? tr("No rules configured at submission")}
+                {r.rulesVersion ??
+                  (r.source === "staff"
+                    ? tr("Not acknowledged by the player")
+                    : tr("No rules configured at submission"))}
               </dd>
             </div>
             {Object.entries(r.answers).map(([key, value]) => (
