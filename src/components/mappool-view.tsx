@@ -4,6 +4,7 @@ import {
   categories,
   categoryNames,
   fmModeNames,
+  fmPolicyName,
   slotLabel,
   formatBeatmapDuration,
   formatBeatmapNumber,
@@ -19,7 +20,13 @@ const columns = [
   "AR / OD / CS / HP",
 ] as const;
 
-function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
+function MappoolRow({
+  entry: e,
+  fmMode,
+}: {
+  entry: Pool["entries"][number];
+  fmMode: Pool["fmMode"];
+}) {
   const tr = useAppTranslations();
 
   const m = e.metadata;
@@ -102,6 +109,11 @@ function MappoolRow({ entry: e }: { entry: Pool["entries"][number] }) {
                 {e.beatmapId}
               </a>
             </p>
+            {e.category === "FM" && (
+              <p className="mappool-fm-policy small muted">
+                {fmPolicyName(fmMode) ?? tr("FM policy not configured")}
+              </p>
+            )}
           </div>
         </div>
         <details className="mappool-mobile-details">
@@ -206,7 +218,7 @@ export function MappoolView({
             </div>
             {category === "FM" && (
               <p className="mappool-fm-note muted small">
-                {tr(name)}:{" "}
+                {name}:{" "}
                 {pool.fmRestrictions ||
                   tr("Detailed mod restrictions have not been published.")}
               </p>
@@ -243,7 +255,11 @@ export function MappoolView({
                 </thead>
                 <tbody>
                   {entries.map((entry) => (
-                    <MappoolRow key={entry.id} entry={entry} />
+                    <MappoolRow
+                      key={entry.id}
+                      entry={entry}
+                      fmMode={pool.fmMode}
+                    />
                   ))}
                 </tbody>
               </table>

@@ -8,7 +8,7 @@ import type { publicMappools } from "@/lib/mappools";
 import {
   categories,
   categoryNames,
-  fmModeNames,
+  fmPolicyName,
   slotLabel,
   formatBeatmapNumber as number,
   formatBeatmapDuration as duration,
@@ -23,7 +23,7 @@ function modRating(entry: Entry) {
     ? `${number(m.attributes.stars, 2)} ★ · ${m.attributes.configuration}`
     : entry.category === "NM"
       ? "No Mod uses base difficulty"
-      : ["FM", "TB"].includes(entry.category)
+      : entry.category === "TB"
         ? "Variable mods"
         : "Not calculated";
 }
@@ -122,9 +122,7 @@ function MapDetails({
         </dl>
         {entry.category === "FM" && (
           <p className="notice">
-            {pool.fmMode === "force_mod"
-              ? fmModeNames.force_mod
-              : fmModeNames.free_mod}
+            {fmPolicyName(pool.fmMode) ?? tr("FM policy not configured")}
             {pool.fmRestrictions
               ? `: ${pool.fmRestrictions}`
               : tr(": Detailed restrictions have not been published.")}
@@ -329,9 +327,7 @@ export function MappoolBrowser({
           </p>
           {pool.entries.some((e) => e.category === "FM") && (
             <p className="map-values-note muted small">
-              {pool.fmMode === "force_mod"
-                ? fmModeNames.force_mod
-                : fmModeNames.free_mod}
+              {fmPolicyName(pool.fmMode) ?? tr("FM policy not configured")}
               {pool.fmRestrictions
                 ? `: ${pool.fmRestrictions}`
                 : tr(": Detailed restrictions have not been published.")}
@@ -382,9 +378,17 @@ export function MappoolBrowser({
                     </span>
                     <span>{duration(e.metadata.duration)}</span>
                   </div>
-                  <p className="map-mod-rating muted small">
-                    {tr(modRating(e))}
-                  </p>
+                  {e.category === "FM" && (
+                    <p className="map-fm-policy muted small">
+                      {fmPolicyName(pool.fmMode) ??
+                        tr("FM policy not configured")}
+                    </p>
+                  )}
+                  {(e.category !== "FM" || e.metadata.attributes) && (
+                    <p className="map-mod-rating muted small">
+                      {tr(modRating(e))}
+                    </p>
+                  )}
                 </div>
               </article>
             ))}

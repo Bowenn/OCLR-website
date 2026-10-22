@@ -13,6 +13,13 @@ export const fmModeNames = {
   free_mod: "Free Mod",
   force_mod: "Force Mod",
 } as const;
+export function fmPolicyName(mode: string | null | undefined) {
+  return mode === "free_mod"
+    ? fmModeNames.free_mod
+    : mode === "force_mod"
+      ? fmModeNames.force_mod
+      : null;
+}
 export function slotLabel(category: string, position: number) {
   return category === "TB" && position === 1 ? "TB" : `${category}${position}`;
 }
