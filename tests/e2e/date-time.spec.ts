@@ -136,9 +136,9 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       withdrawUntil: null,
     });
     await page.reload();
-    await page
-      .getByText("Withdrawal & application questions", { exact: true })
-      .click();
+    await expect(
+      page.getByRole("button", { name: "Add question", exact: true }),
+    ).toBeVisible();
     await expect(time("Withdrawal deadline")).toHaveValue("");
     await time("Registration opens").focus();
     await page.keyboard.press("Tab");
@@ -152,7 +152,9 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       ).violations,
     ).toEqual([]);
     await captureResponsiveLayout(page, info, "compact-registration-time");
-    for (const field of await page.locator(".zoned-date-fields input").all()) {
+    for (const field of await page
+      .locator(".zoned-date-fields input:visible")
+      .all()) {
       expect((await field.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     }
     await page.goto(`/admin/tournaments/${slug}/settings?section=schedule`);
@@ -230,7 +232,9 @@ test.describe("compact zoned date and 24-hour time editing", () => {
     await dialog
       .getByLabel("Fixture label", { exact: true })
       .fill("Synthetic zoned fixture");
-    await dialog.getByText("Match options", { exact: true }).click();
+    await expect(
+      dialog.getByRole("group", { name: "Match options", exact: true }),
+    ).toBeVisible();
     await expect(
       dialog.getByRole("button", { name: "Time zone", exact: true }),
     ).toContainText("Asia/Hong_Kong");
@@ -306,7 +310,9 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       .getByRole("button", { name: "Manage fixture", exact: true })
       .click();
     await expect(time("Scheduled date and time", dialog)).toHaveValue("15:10");
-    await dialog.getByText("Match options", { exact: true }).click();
+    await expect(
+      dialog.getByRole("group", { name: "Match options", exact: true }),
+    ).toBeVisible();
     await selectTimeZone(dialog, "UTC");
     await expect(time("Scheduled date and time", dialog)).toHaveValue("07:10");
     await dialog
@@ -393,9 +399,14 @@ test.describe("compact zoned date and 24-hour time editing", () => {
     await expect(
       page.getByLabel("Milestone 1 time: time (HH:mm)", { exact: true }),
     ).toHaveValue("23:10");
-    await expect(page.locator(".zoned-date-zone")).toHaveText(
-      "Asia/Hong_Kong (GMT+08:00)",
-    );
+    await expect(
+      page
+        .getByRole("group", {
+          name: "Milestone 1 time (optional)",
+          exact: true,
+        })
+        .locator(".zoned-date-zone"),
+    ).toHaveText("Asia/Hong_Kong (GMT+08:00)");
     await saveZone("America/New_York");
     await expect(time()).toHaveValue("11:10");
     await expect(suffix()).toHaveText("America/New_York (GMT-04:00)");
