@@ -799,18 +799,24 @@ body:has(.public-tournament) .site-footer {
   margin: 0 0 0.25rem;
   font-size: 1rem;
 }
-body:has(.public-tournament) .map-open-button {
+body:has(.public-tournament) button.map-open-button {
   display: block;
   text-align: left;
   color: var(--public-foreground);
   border: 0;
   border-radius: 0.25rem;
-  background: none;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
   padding: 0;
   font-size: 1rem;
   min-height: 44px;
 }
-body:has(.public-tournament) .map-open-button:hover {
+body:has(.public-tournament) button.map-open-button:is(:hover, :focus-visible, :active) {
+  background: transparent;
+  box-shadow: none;
   color: var(--public-accent);
   transform: none;
   text-decoration: underline;
