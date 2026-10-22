@@ -3192,13 +3192,6 @@ body:has(.presenter-view) .site-footer,
 .draft-pick-status:empty {
   display: none;
 }
-.draft-room-turn {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  flex-wrap: wrap;
-  max-width: none;
-}
 @media (max-width: 760px) {
   .draft-pick-workspace {
     grid-template-columns: minmax(0, 1fr);
@@ -3208,15 +3201,6 @@ body:has(.presenter-view) .site-footer,
     max-height: 22rem;
   }
 }
-.draft-room-connection {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.75rem;
-}
-.draft-room-connection p {
-  margin: 0;
-}
-
 /* Settings use the same compact tab strip as the mappool workspace. */
 .tournament-settings > .workspace-tabs {
   margin-bottom: 1.25rem;
@@ -4027,4 +4011,124 @@ body:has([data-broadcast]) .site-shell {
   margin-top: 1.5rem;
   border-top: 1px solid var(--color-border);
   padding-top: 1rem;
+}
+
+/* Captain operations stay compact; spectator and OBS compositions are separate. */
+.captain-draft-status,
+.captain-draft-turn {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+}
+.captain-draft-status {
+  justify-content: space-between;
+  border-block: 1px solid var(--color-border);
+  padding-block: 0.8rem;
+}
+.captain-draft-status p {
+  margin: 0;
+}
+.captain-draft-turn {
+  min-width: 0;
+}
+.captain-draft-turn strong {
+  overflow-wrap: anywhere;
+}
+.captain-draft-turns {
+  margin-block: 0.75rem 1rem;
+}
+.captain-draft-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.captain-draft-overview > section {
+  min-width: 0;
+}
+.captain-rosters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+.captain-roster {
+  padding: 0.75rem;
+  border-inline-start: 2px solid var(--color-border);
+  background: var(--color-surface);
+  min-width: 0;
+}
+.captain-roster[data-active="true"] {
+  border-color: var(--color-accent);
+}
+.captain-roster h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+.captain-roster ul,
+.captain-picks {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.captain-roster li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.3rem;
+}
+.captain-roster li a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.captain-roster li > .small {
+  margin-inline-start: auto;
+}
+.captain-roster .avatar {
+  flex: 0 0 1.75rem;
+  font-size: 0.65rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.35rem;
+}
+.captain-roster .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.captain-picks {
+  max-height: 24rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline: 0.25rem;
+}
+.captain-picks li {
+  display: flex;
+  gap: 0.75rem;
+  padding-block: 0.65rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.captain-picks li > div {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#captain-own-team {
+  scroll-margin-top: 6rem;
+}
+@media (max-width: 760px) {
+  .captain-draft-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .captain-draft-status {
+    align-items: flex-start;
+  }
+}
+
+.captain-draft-room .draft-player-list {
+  max-height: 14rem;
 }

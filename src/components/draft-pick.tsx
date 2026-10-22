@@ -30,6 +30,7 @@ export function DraftPick({
   pool,
   players,
   capacity,
+  teamAnchorId,
   staff,
   enabled,
   unavailableMessage,
@@ -43,6 +44,7 @@ export function DraftPick({
   pool: DraftIdentity[];
   players: DraftIdentity[];
   capacity?: number | null;
+  teamAnchorId?: string;
   staff: boolean;
   enabled: boolean;
   unavailableMessage: string;
@@ -235,6 +237,7 @@ export function DraftPick({
         )}
       </section>
       <section
+        id={teamAnchorId}
         className={`draft-own-team ${dragOver && canStage ? "is-dragging" : ""}`}
         aria-label={staff ? tr("Receiving team") : tr("My team")}
         onDragOver={(event) => {

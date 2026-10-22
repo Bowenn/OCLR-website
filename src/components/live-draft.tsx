@@ -5,7 +5,8 @@ import { useAppTranslations } from "@/i18n/shared";
 import { useState } from "react";
 import type { CaptainBoard, DraftBoard } from "@/lib/draft-types";
 import { usePoll } from "./use-poll";
-import { DraftBoardView } from "./draft-board";
+import { DraftBoardView, draftLabels } from "./draft-board";
+import { CaptainDraftOverview } from "./captain-draft-overview";
 import { DraftPick } from "./draft-pick";
 import { Action, EmptyState } from "./ui";
 export function LiveDraft({
@@ -51,9 +52,43 @@ export function LiveDraft({
       </section>
     );
   return (
-    <div className={presenter ? "presenter-view" : ""}>
-      <div className={captainId ? "draft-room-connection" : "section-title"}>
-        {!captainId && <p className="eyebrow">{tr("OCLR / LIVE DRAFT")}</p>}
+    <div
+      className={
+        captainId ? "captain-draft-room" : presenter ? "presenter-view" : ""
+      }
+    >
+      <div className={captainId ? "captain-draft-status" : "section-title"}>
+        {captainId && board ? (
+          <div
+            className="captain-draft-turn"
+            role="status"
+            aria-label={tr("Current draft turn")}
+          >
+            <span
+              className={`badge ${board.state === "live" ? "status-accepted" : "status-pending"}`}
+            >
+              {tr(draftLabels[board.state])}
+            </span>
+            <span>
+              {board.turnCount
+                ? tr("Pick {value0} of {value1}", {
+                    value0: Math.min(board.turnIndex + 1, board.turnCount),
+                    value1: board.turnCount,
+                  })
+                : tr("No picks configured")}
+            </span>
+            <strong>
+              {board.activeTeam?.name ??
+                tr(
+                  board.state === "completed" || board.state === "finalized"
+                    ? "The draft is complete."
+                    : "Awaiting the next stage.",
+                )}
+            </strong>
+          </div>
+        ) : (
+          !captainId && <p className="eyebrow">{tr("OCLR / LIVE DRAFT")}</p>
+        )}
         <p className="connection-state small" role="status">
           {connected
             ? tr("Connected · updates every 2s")
@@ -68,7 +103,7 @@ export function LiveDraft({
       {board ? (
         <>
           {captainId && "eligiblePool" in board && (
-            <p className="muted small">
+            <p className="captain-draft-turns muted small">
               {tr("Your configured turns:")}{" "}
               {(board.turnSequence ?? [])
                 .flatMap((teamId, index) =>
@@ -91,12 +126,6 @@ export function LiveDraft({
               );
               return own ? (
                 <>
-                  <p className="draft-room-turn">
-                    <span className="badge">{board.state}</span>{" "}
-                    {board.activeTeam
-                      ? `Pick ${board.turnIndex + 1} of ${board.turnCount} · Captain ${board.activeTeam.captain.username}`
-                      : "No active turn"}
-                  </p>
                   <DraftPick
                     key={`${board.sessionId}:${board.engineRevision}:${board.version}:${own.team.id}`}
                     slug={slug}
@@ -108,6 +137,7 @@ export function LiveDraft({
                     capacity={board.capacities?.[own.team.id]}
                     pool={board.eligiblePool}
                     staff={false}
+                    teamAnchorId="captain-own-team"
                     enabled={canPick}
                     unavailableMessage={
                       !connected
@@ -120,12 +150,7 @@ export function LiveDraft({
                       setFeedback({ message, version: board.version })
                     }
                   />
-                  <details className="section-space">
-                    <summary>
-                      {tr("Published draft board and pick history")}
-                    </summary>
-                    <DraftBoardView board={{ ...board, pool: null }} />
-                  </details>
+                  <CaptainDraftOverview board={board} ownTeamId={own.team.id} />
                 </>
               ) : (
                 <p className="notice">
