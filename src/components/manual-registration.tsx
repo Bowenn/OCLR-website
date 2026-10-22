@@ -1,4 +1,5 @@
 "use client";
+import { EligibilitySummary } from "./eligibility-summary";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAppTranslations } from "@/i18n/shared";
@@ -21,6 +22,7 @@ export function ManualRegistration({
   const [status, setStatus] = useState<"pending" | "accepted">("pending");
   const [published, setPublished] = useState(false);
   const [override, setOverride] = useState(false);
+  const [eligibilityOverride, setEligibilityOverride] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, setPending] = useState<"lookup" | "save" | null>(null);
   const [error, setError] = useState("");
@@ -35,6 +37,7 @@ export function ManualRegistration({
     setStatus("pending");
     setPublished(false);
     setOverride(false);
+    setEligibilityOverride(false);
     setReason("");
   }
   async function submit(event: FormEvent) {
@@ -61,6 +64,7 @@ export function ManualRegistration({
                   confirmed: true,
                   publicationAcknowledged: published,
                   overrideWindow: override,
+                  overrideEligibility: eligibilityOverride,
                   exceptionReason: reason,
                 }
               : { input },
@@ -123,6 +127,26 @@ export function ManualRegistration({
           <strong>{edition.name}</strong>
         </p>
         <form className="form-stack" onSubmit={submit}>
+          {preview?.verification && (
+            <>
+              <EligibilitySummary value={preview.verification} />
+              {preview.verification.status !== "pass" && (
+                <label className="check-field">
+                  <input
+                    required
+                    type="checkbox"
+                    checked={eligibilityOverride}
+                    onChange={(e) => setEligibilityOverride(e.target.checked)}
+                  />
+                  <span>
+                    {tr(
+                      "I approve a staff exception to the automatic eligibility limits.",
+                    )}
+                  </span>
+                </label>
+              )}
+            </>
+          )}
           <label className="field">
             <span>{tr("osu! profile ID or URL")}</span>
             <input
@@ -138,6 +162,7 @@ export function ManualRegistration({
                 setError("");
                 setPublished(false);
                 setOverride(false);
+                setEligibilityOverride(false);
                 setReason("");
                 setInput(event.target.value);
               }}

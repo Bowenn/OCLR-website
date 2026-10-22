@@ -1,5 +1,7 @@
 "use client";
 
+import type { EligibilityVerification } from "@/lib/eligibility-model";
+import { EligibilitySummary } from "./eligibility-summary";
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useState, type FormEvent } from "react";
@@ -10,10 +12,12 @@ export function ApplicationForm({
   edition,
   username,
   configurationVersion,
+  verification = null,
 }: {
   edition: Edition;
   username: string;
   configurationVersion: number;
+  verification?: EligibilityVerification | null;
 }) {
   const tr = useAppTranslations();
 
@@ -74,6 +78,7 @@ export function ApplicationForm({
         <strong>{username}</strong>
         {tr(". Your osu! identity comes from your signed-in session.")}
       </p>
+      {verification && <EligibilitySummary value={verification} />}
       {edition.registration?.questions.map((q) => (
         <label key={q.id} className="field">
           <span>

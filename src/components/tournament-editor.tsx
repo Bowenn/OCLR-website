@@ -1,5 +1,7 @@
 "use client";
 
+import { EligibilityLimitsSummary } from "./eligibility-summary";
+import { noEligibilityLimits } from "@/lib/eligibility-model";
 import { useAppTranslations } from "@/i18n/shared";
 
 import Image from "next/image";
@@ -339,6 +341,9 @@ function Rules({ data, saved }: EditorProps) {
   const [sections, setSections] = useState(
     data.edition.rules?.sections ?? [{ heading: "", body: "" }],
   );
+  const [limits, setLimits] = useState(
+    data.edition.automaticEligibility ?? noEligibilityLimits,
+  );
   const [eligibility, setEligibility] = useState(
     data.edition.eligibility ?? "",
   );
@@ -477,6 +482,46 @@ function Rules({ data, saved }: EditorProps) {
           />
         </label>
       </fieldset>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Automatic eligibility")}</legend>
+        <p className="small muted">
+          {"osu!standard"} ·{" "}
+          {tr(
+            "All configured limits apply together, inclusively. Empty fields impose no restriction.",
+          )}
+        </p>
+        <div className="form-grid">
+          {(["minPp", "maxPp", "minRank", "maxRank"] as const).map((key) => (
+            <label className="field" key={key}>
+              <span>
+                {tr(
+                  key === "minPp"
+                    ? "Minimum PP"
+                    : key === "maxPp"
+                      ? "Maximum PP"
+                      : key === "minRank"
+                        ? "Minimum numeric rank (rank ≥)"
+                        : "Maximum numeric rank (rank ≤)",
+                )}
+              </span>
+              <input
+                type="number"
+                min={key.endsWith("Rank") ? 1 : 0}
+                step={key.endsWith("Rank") ? 1 : "any"}
+                value={limits[key] ?? ""}
+                onChange={(e) =>
+                  setLimits({
+                    ...limits,
+                    [key]:
+                      e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
+              />
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <EligibilityLimitsSummary limits={limits} />
       <Save
         data={data}
         saved={saved}
@@ -484,6 +529,7 @@ function Rules({ data, saved }: EditorProps) {
         fields={{
           rules: configured ? { version, sections } : null,
           eligibility: eligibility.trim() || null,
+          automaticEligibility: limits,
         }}
         label={tr("Save rules & eligibility")}
       />
@@ -967,6 +1013,7 @@ export function TournamentEditor({ data }: { data: Workspace }) {
               key={JSON.stringify([
                 data.edition.rules,
                 data.edition.eligibility,
+                data.edition.automaticEligibility,
               ])}
               {...props}
             />

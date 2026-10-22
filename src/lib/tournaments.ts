@@ -107,6 +107,7 @@ const commandSchema = z.discriminatedUnion("action", [
       action: z.literal("rules"),
       rules: shape.rules,
       eligibility: shape.eligibility,
+      automaticEligibility: shape.automaticEligibility,
     })
     .strict(),
   z
@@ -354,7 +355,12 @@ export async function tournamentCommand(
           "Use a new rules version when changing previously saved rules. Historical acknowledgments are preserved.",
         );
       }
-      next = { ...e, rules: c.rules, eligibility: c.eligibility };
+      next = {
+        ...e,
+        rules: c.rules,
+        eligibility: c.eligibility,
+        automaticEligibility: c.automaticEligibility ?? null,
+      };
     }
     if (c.action === "registration") {
       if (c.registration?.enabled) {
@@ -424,6 +430,7 @@ export function publicEditionSummary(
     branding: e.branding,
     rules: e.rules,
     eligibility: e.eligibility,
+    automaticEligibility: e.automaticEligibility ?? null,
     schedule: e.schedule,
     registration: e.registration
       ? {

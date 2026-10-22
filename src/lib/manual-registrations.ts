@@ -14,6 +14,7 @@ import { configurationFrozen, storedEdition } from "./tournaments";
 import { enrollmentState } from "./editions";
 import { getOsuUserProfile } from "./osu-profiles";
 import { parseOsuProfile } from "./osu-profile-model";
+import { verifyEligibility } from "./eligibility";
 import { HttpError } from "./http";
 const lookupInput = z
   .object({ input: z.string().trim().min(1).max(300) })
@@ -25,6 +26,7 @@ const enrollmentInput = lookupInput
     confirmed: z.literal(true),
     publicationAcknowledged: z.boolean().default(false),
     overrideWindow: z.boolean().default(false),
+    overrideEligibility: z.boolean().default(false),
     exceptionReason: z.string().trim().max(1000).default(""),
   })
   .strict();
@@ -85,6 +87,11 @@ export async function previewManualRegistration(
   const current = await context(actor, slug);
   return {
     profile,
+    verification: await verifyEligibility(
+      profile.osuId,
+      current.edition,
+      current.revision,
+    ),
     edition: {
       slug,
       name: current.edition.name,
@@ -108,11 +115,28 @@ export async function addManualRegistration(
       400,
       "Confirm publication of the accepted player's basic identity.",
     );
-  await context(actor, slug);
+  const initial = await context(actor, slug);
   const profile = await verifiedIdentity(command.input);
+  const verification = await verifyEligibility(
+    profile.osuId,
+    initial.edition,
+    initial.revision,
+  );
+  if (
+    verification &&
+    verification.status !== "pass" &&
+    !command.overrideEligibility
+  )
+    throw new HttpError(
+      409,
+      "Explicitly confirm the staff eligibility override before adding this player.",
+    );
   return db().transaction(async (tx) => {
     const current = await context(actor, slug, tx, true);
-    if (current.revision !== command.expectedRevision)
+    if (
+      current.revision !== command.expectedRevision ||
+      current.revision !== initial.revision
+    )
       throw new HttpError(
         409,
         "The tournament configuration changed. Verify the player again before adding.",
@@ -141,6 +165,13 @@ export async function addManualRegistration(
         configurationVersion: current.revision,
         rulesVersion: null,
         eligibilityAcknowledged: null,
+        eligibilityVerification: verification
+          ? {
+              ...verification,
+              status:
+                verification.status === "pass" ? "pass" : "staff_override",
+            }
+          : null,
         answers: {},
       })
       .onConflictDoNothing({
@@ -152,14 +183,12 @@ export async function addManualRegistration(
         409,
         "This player already has a registration for this tournament. Review the existing entry.",
       );
-    await tx
-      .insert(registrationEvents)
-      .values({
-        registrationId: registration.id,
-        actorId: actor.osuId,
-        toStatus: command.status,
-        reason: current.outsideWindow ? command.exceptionReason : null,
-      });
+    await tx.insert(registrationEvents).values({
+      registrationId: registration.id,
+      actorId: actor.osuId,
+      toStatus: command.status,
+      reason: current.outsideWindow ? command.exceptionReason : null,
+    });
     return registration;
   });
 }

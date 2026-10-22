@@ -1,9 +1,10 @@
+import { EligibilitySummary } from "@/components/eligibility-summary";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireStaff } from "@/lib/auth/staff";
 import { applicationDetails } from "@/lib/staff";
-import { getEdition } from "@/lib/content";
+import { readTournament } from "@/lib/tournaments";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
 import { BwsReview } from "@/components/bws-review";
@@ -21,7 +22,8 @@ export default async function Application({
     const data = await applicationDetails(actor, id);
     if (data.registration.editionSlug !== slug) notFound();
     const { registration: r, username } = data;
-    const edition = await getEdition(r.editionSlug);
+    const record = await readTournament(r.editionSlug);
+    const edition = record?.edition;
     return (
       <>
         <PageHeading eyebrow={edition?.name ?? r.editionSlug} title={username}>
@@ -70,6 +72,12 @@ export default async function Application({
             )}
           </dl>
         </section>
+        {r.eligibilityVerification && (
+          <EligibilitySummary
+            value={r.eligibilityVerification}
+            currentRevision={record?.revision}
+          />
+        )}
         <BwsReview slug={slug} id={r.id} />
         {r.status === "pending" && (
           <ReviewForm id={r.id} updatedAt={r.updatedAt.toISOString()} />

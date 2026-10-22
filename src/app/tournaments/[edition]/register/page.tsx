@@ -1,3 +1,4 @@
+import { verifyEligibility } from "@/lib/eligibility";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
@@ -78,6 +79,11 @@ export default async function Register({
             edition={edition}
             username={user.username}
             configurationVersion={record!.revision}
+            verification={await verifyEligibility(
+              user.osuId,
+              edition,
+              record!.revision,
+            )}
           />
         </>
       )}

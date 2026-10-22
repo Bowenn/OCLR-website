@@ -8,6 +8,9 @@ import {
   captains,
   memberships,
 } from "@/db/schema";
+import { readTournament } from "./tournaments";
+import { ELIGIBILITY_FRESH_MS } from "./eligibility-model";
+import { verifyEligibility } from "./eligibility";
 import { storedEdition } from "./tournaments";
 import { enrollmentState, type Edition } from "./editions";
 import type { User } from "./auth/sessions";
@@ -113,6 +116,16 @@ export async function submitRegistration(
 ) {
   if (!privacyReady())
     throw new HttpError(503, "Registration is awaiting privacy configuration.");
+  // Provider I/O precedes row locks. Recheck revision/freshness inside the transaction.
+  const current = await readTournament(slug);
+  if (!current?.edition.published)
+    throw new HttpError(404, "Tournament not found.");
+  validateApplication(current.edition, input, current.revision);
+  const verification = await verifyEligibility(
+    user.osuId,
+    current.edition,
+    current.revision,
+  );
   return db().transaction(async (tx) => {
     const [state] = await tx
       .select()
@@ -121,6 +134,26 @@ export async function submitRegistration(
       .for("update");
     const edition = state && storedEdition(state)?.edition;
     if (!edition?.published) throw new HttpError(404, "Tournament not found.");
+    if (state.configurationVersion !== current.revision)
+      throw new HttpError(
+        409,
+        "Eligibility settings changed. Refresh before applying.",
+      );
+    if (
+      verification &&
+      (verification.status === "unavailable" ||
+        !verification.fetchedAt ||
+        Date.now() - Date.parse(verification.fetchedAt) >= ELIGIBILITY_FRESH_MS)
+    )
+      throw new HttpError(
+        503,
+        "Unable to verify eligibility. Retry or contact staff.",
+      );
+    if (verification?.status === "fail")
+      throw new HttpError(
+        400,
+        "Your osu!standard statistics do not meet the configured eligibility limits.",
+      );
     const values = validateApplication(
       edition,
       input,
@@ -134,6 +167,7 @@ export async function submitRegistration(
         editionSlug: slug,
         userId: user.osuId,
         configurationVersion: state.configurationVersion,
+        eligibilityVerification: verification,
         ...values,
       })
       .onConflictDoNothing({

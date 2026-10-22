@@ -1793,6 +1793,25 @@
     "m551b4edbc04e": "Upload a valid team image before saving.",
     "m9c732225df98": "Roster capacity is locked. Only team name and avatar can be corrected.",
     "m1688dc349d6f": "Capacity cannot be smaller than the current roster.",
-    "mafb909962bde": "Roster capacity is locked for the draft. Team name and avatar can still be corrected."
+    "mafb909962bde": "Roster capacity is locked for the draft. Team name and avatar can still be corrected.",
+    "m2ff8f0f72df2": "Automatic eligibility",
+    "m3ecc60060953": "Global Rank",
+    "mdebc3c718bf5": "Configuration revision",
+    "m9ae9e1503c52": "I approve a staff exception to the automatic eligibility limits.",
+    "m8aa49a7e595b": "All configured limits apply together, inclusively. Empty fields impose no restriction.",
+    "mad545faf5961": "Explicitly confirm the staff eligibility override before adding this player.",
+    "mab27cce87857": "Eligibility settings changed. Refresh before applying.",
+    "md1b2b4c489ed": "Unable to verify eligibility. Retry or contact staff.",
+    "m9e448d390b5d": "Your osu!standard statistics do not meet the configured eligibility limits.",
+    "m41894e0b856f": "Minimum PP",
+    "m44892ee11d41": "Maximum PP",
+    "md3de59a47680": "Minimum numeric rank (rank ≥)",
+    "m9389e839c809": "Maximum numeric rank (rank ≤)",
+    "mebdf8cc00bc4": "Pass",
+    "mab564b91b62c": "Does not meet",
+    "m1a51f062fcfb": "Unable to verify",
+    "mfb624ab883e4": "Staff override",
+    "m33b5ac928ddf": "No automatic PP or rank restriction.",
+    "mc4317599bac4": "Eligibility limits have changed since this verification. The saved decision is unchanged."
   }
 }

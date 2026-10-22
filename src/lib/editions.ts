@@ -1,3 +1,4 @@
+import { eligibilityLimitsSchema } from "./eligibility-model";
 import { z } from "zod";
 const instant = z.iso.datetime({ offset: true });
 export const questionSchema = z
@@ -58,6 +59,7 @@ export const editionSchema = z
       })
       .strict()
       .nullable(),
+    automaticEligibility: eligibilityLimitsSchema.nullable().optional(),
     eligibility: z.string().trim().min(1).max(4000).nullable(),
     registration: z
       .object({

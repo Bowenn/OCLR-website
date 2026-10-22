@@ -49,3 +49,12 @@ BWS is informational for osu!standard only. The formula is [documented by osu!](
 The organizer approved the Chinese BWS caveat and same-mode badge-classification wording on 2026-10-22 under #89. This approval does not classify any player’s badges or confirm live provider data.
 
 An incorrect, unused fixture can be removed from **Manage fixture → Delete fixture**. Unpublish it first. Imports, result/revision records, protected competition history or downstream bracket references block deletion. Harmless referee assignments are removed, while the setup audit records are transferred transactionally to the existing edition audit stream with their original IDs, actors and times; deletion also records the prior fixture snapshot. Cancellation remains a distinct competition operation.
+
+### Automatic eligibility and BWS
+Automatic eligibility is optional, edition-specific, osu!standard-only PP/global-rank bounds. All configured limits are inclusive and combined with AND. Numeric rank ≥ 10000 excludes rank 9999; numeric rank ≤ 20000 excludes 20001. No limits means no automatic restriction, including for an unranked player. Text eligibility remains optional and separate. BWS is informational and is never substituted for global rank.
+
+Applicant checks reuse the profile cache but require a snapshot under five minutes old; refreshes retain the existing one-minute claim/backoff and provider-error handling. Provider I/O occurs before the edition row lock. Submission rechecks configuration revision, snapshot freshness and current registration/lock state transactionally. Failure blocks self-service; unavailable data requests retry rather than fabricating zero/pass. Private registration verification stores inputs, comparisons, source and edition revision. Existing applications keep their original snapshot and status when limits change. Staff-assisted exceptions require explicit confirmation and are stored as Staff override, never automatic Pass. No public registration verification history is exposed.
+
+BWS badge review is now osu!standard-only. Other-mode historical classifications remain excluded; ordinary profile statistics retain all four rulesets. Saving classification needs no evidence/reason field; automatic audit retains source badge facts and before/after values.
+
+The organizer approved the new Chinese automatic-eligibility and permissive-draft explanation (and corresponding Traditional Chinese meaning) on 2026-10-22 for #100/#101.

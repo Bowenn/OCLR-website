@@ -148,6 +148,13 @@
       "when": 1792662462573,
       "tag": "0020_team_avatars",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792662905536,
+      "tag": "0021_registration_eligibility",
+      "breakpoints": true
     }
   ]
 }

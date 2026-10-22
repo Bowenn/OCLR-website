@@ -1,3 +1,4 @@
+import { hasEligibilityLimits } from "@/lib/eligibility-model";
 import { getAppTranslations } from "@/i18n/server";
 import { RulesHandbook } from "@/components/rules-handbook";
 import { notFound } from "next/navigation";
@@ -22,6 +23,23 @@ export default async function Rules({
     <>
       <PageHeading title={tr("Rules")} />
 
+      {hasEligibilityLimits(edition.automaticEligibility) && (
+        <section className="panel">
+          <h2>
+            {tr("Automatic eligibility")} · {"osu!standard"}
+          </h2>
+          <ul>
+            {Object.entries(edition.automaticEligibility!)
+              .filter(([, v]) => v !== null)
+              .map(([key, v]) => (
+                <li key={key}>
+                  {key.endsWith("Pp") ? "PP" : tr("Global Rank")}{" "}
+                  {key.startsWith("min") ? "≥" : "≤"} {v}
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
       {edition.rules ? (
         <>
           <p className="rules-version muted small">
