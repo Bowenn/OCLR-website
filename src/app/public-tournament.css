@@ -1474,14 +1474,14 @@ html[data-theme="dark"] .themed-site {
 }
 .brand .oclr-wordmark {
   display: block;
-  width: 92px;
-  height: 27px;
+  width: 106px;
+  height: auto;
+  aspect-ratio: 296 / 92;
   flex-shrink: 0;
 }
 @media (max-width: 400px) {
   .brand .oclr-wordmark {
-    width: 84px;
-    height: 25px;
+    width: 94px;
   }
 }
 

@@ -1,13 +1,13 @@
 # OCLR identity
 
-Original Open Lane mark and custom path OCLR wordmark for **osu! Chinese League Rookie**. These are community-tournament artwork, separate from osu!'s identity and Season 11 illustrations.
+Approved minimal **OCLR** wordmark for **osu! Chinese League Rookie**.
 
-- `oclr-wordmark.svg`: editable horizontal source. The header uses the matching inline paths with theme-inherited color, at 92 × 27px (84 × 25px on narrow phones).
-- `oclr-mark.svg`: compact purple/white identity for tabs and touch icons; monochrome outline in `oclr-mark-mono.svg` for other backgrounds.
-- PNGs: practical 16, 32, 48 and 180px sizes, rendered directly from the compact SVG.
-- Keep proportions. Leave at least one stroke-width of clear space; use the compact mark rather than shrinking the wordmark into a favicon. Invert the monochrome stroke on dark backgrounds.
-- When replacing icon files, increment the metadata URL version to refresh cached icons. No external fonts or images are required.
+- The **O** is a circular pink-to-purple gradient; **CLR** is solid, with dark/light variants. No extra star, slider tail, or outer emblem.
+- `oclr-wordmark.svg` / `oclr-wordmark-dark.svg`: transparent wordmark for dark surfaces. `oclr-wordmark-light.svg`: transparent wordmark for light surfaces.
+- `src/components/oclr-logo.tsx` renders matching paths in the Header, adapting the letters to the selected site theme without downloading a font.
+- `oclr-mark.svg`: just the transparent gradient **O**, used for favicon. `oclr-mark-mono.svg`: no-background single-color outline.
+- `oclr-16.png`, `oclr-32.png`, `oclr-48.png`, and `oclr-180.png`: transparent favicon/touch-icon PNGs rendered from the same circular mark.
+- Keep clear space around the lettering and do not squeeze the mark. Small icons use the **O only**; don't downscale the entire wordmark.
+- This is independent community-event branding, not osu!'s official logo. No copyrighted character art, external imagery, or packaged font files are included.
 
-Three original directions were explored: Open Lane (selected implementation),
-Rookie Rise and League Link. See `docs/design/oclr-logo-concepts.svg` for the
-light/dark comparison and actual-size icon samples.
+The brand reference rendering was approved for this simple wordmark direction. The earlier Open Lane implementation and experimental directions in `docs/design/oclr-logo-concepts.svg` are superseded by these assets.
