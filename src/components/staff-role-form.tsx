@@ -95,18 +95,17 @@ export function RevokeRole({
   const tr = useAppTranslations();
 
   return (
-    <div className="form-stack">
-      <ConfirmMutation
-        label={tr("Revoke role")}
-        title={tr("Revoke staff access?")}
-        description={tr(
-          "Remove {value0}'s {value1} role for {value2}. Other grants remain active. This applies to existing sessions on the next authorization check.",
-          { value0: username, value1: role, value2: scope ?? "all editions" },
-        )}
-        url="/api/admin/staff"
-        payload={{ action: "revoke", grantId: id, confirmed: true }}
-      />
-    </div>
+    <ConfirmMutation
+      className="secondary role-revoke"
+      label={tr("Revoke role")}
+      title={tr("Revoke staff access?")}
+      description={tr(
+        "Remove {value0}'s {value1} role for {value2}. Other grants remain active. This applies to existing sessions on the next authorization check.",
+        { value0: username, value1: role, value2: scope ?? "all editions" },
+      )}
+      url="/api/admin/staff"
+      payload={{ action: "revoke", grantId: id, confirmed: true }}
+    />
   );
 }
 

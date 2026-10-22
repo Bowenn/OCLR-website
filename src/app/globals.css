@@ -3850,3 +3850,21 @@ html:lang(zh-Hant) .eyebrow {
 .news-kind {
   text-transform: none;
 }
+
+/* Staff grant actions share the same row without form-stack offsets. */
+.staff-role-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+.staff-role-actions > button {
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+}
+.staff-role-actions .role-revoke {
+  color: #ffb5c5;
+  border-color: #9a5268;
+}

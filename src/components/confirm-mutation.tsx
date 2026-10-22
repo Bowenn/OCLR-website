@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 export function ConfirmMutation({
   label,
+  className = "secondary",
   title,
   description,
   url,
@@ -19,6 +20,7 @@ export function ConfirmMutation({
   children,
 }: {
   label: string;
+  className?: string;
   title: string;
   description?: string;
   url: string;
@@ -70,7 +72,7 @@ export function ConfirmMutation({
     <>
       <button
         type="button"
-        className="secondary"
+        className={className}
         disabled={disabled || pending || (!requireConfirmation && !canConfirm)}
         onClick={() => {
           setError("");

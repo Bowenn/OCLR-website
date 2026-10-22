@@ -80,7 +80,7 @@ export default async function StaffPage({
                   {g.grantedBy} {tr(" on")} {g.grantedAt.toISOString()}
                 </p>
                 {!g.revokedAt && (
-                  <div className="actions">
+                  <div className="staff-role-actions">
                     <StaffPublicVisibility
                       id={g.id}
                       username={username}
