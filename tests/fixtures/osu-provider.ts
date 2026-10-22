@@ -92,7 +92,8 @@ globalThis.fetch = async (input, init) => {
         username: `Synthetic Assisted ${id}`,
         avatar_url: `https://a.ppy.sh/${id}`,
       });
-    return new Response(null, { status: id === 888 ? 503 : 404 });
+    // Preserve the default outage fixture; only 999 explicitly represents deletion.
+    return new Response(null, { status: id === 999 ? 404 : 503 });
   }
   // Test-only public metadata transport; never authenticates or impersonates a player.
   return new Response(null, { status: 503 });
