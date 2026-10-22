@@ -424,6 +424,8 @@ Set `OCLR_MEDIA_DIR=/var/lib/oclr/media` in the existing runtime environment. Pr
 
 Apply additive migration `0020_team_avatars` and `0021_registration_eligibility` through the normal stopped-writes backup/migration workflow. Existing teams and historical applications keep NULL image/verification references. Automatic limits default to disabled on existing editions; no invented eligibility rules or retroactive acknowledgment. On application rollback retain these nullable columns; never reverse applied migration history.
 
+On the separate Nginx host, allow the bounded 5 MB upload plus multipart overhead (`client_max_body_size 6m`, as in docs/examples/oclr-nginx.conf), then validate and reload your existing proxy. The application still enforces smaller per-operation JSON limits and the actual image byte/pixel limits.
+
 The updater captures the configured media directory alongside the database while writes are stopped. Restore the matching `database.dump` and `team-media.tar` together, with the service stopped, into the configured durable directory owned by `oclr`; verify `team-media.tar.sha256` before extraction. Retain matching media/database backup sets for the same operator-approved backup period. Replaced/removed images are removed after a successful save. For interrupted uploads or post-commit transport failures, run `npm run media:cleanup` in a maintenance window with the service stopped; it removes only unreferenced UUID WebP files older than 24 hours, leaving current references and historical backup archives intact. Do not manually delete files referenced by active teams.
 
 ### Development-tool dependency review (#92, 2026-10-22)

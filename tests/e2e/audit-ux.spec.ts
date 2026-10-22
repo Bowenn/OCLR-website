@@ -249,10 +249,13 @@ test.describe("automatic staff auditing", () => {
       fullPage: true,
     });
     await page
-      .getByText("Publication and advanced controls", { exact: true })
+      .getByRole("button", { name: "Lock draft setup", exact: true })
+      .first()
       .click();
-    await page.getByRole("combobox", { name: /^Action/ }).selectOption("lock");
-    await page.getByRole("button", { name: "Review setup change" }).click();
+    await page
+      .getByRole("button", { name: "Lock draft setup", exact: true })
+      .last()
+      .click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("button", { name: "Confirm", exact: true }).click();
     await expect(
@@ -270,7 +273,7 @@ test.describe("automatic staff auditing", () => {
     ).toHaveCount(0);
     await page.goto("/admin/tournaments/test-cup/teams");
     await expect(page.getByRole("status")).toContainText(
-      "Team configuration is locked for the draft",
+      "Roster capacity is locked for the draft",
     );
     await expect(
       page.getByRole("button", {
@@ -288,9 +291,11 @@ test.describe("automatic staff auditing", () => {
       .selectOption("custom");
     await page.getByRole("button", { name: "Append captain order" }).click();
     await page.getByRole("button", { name: "Remove turn 2" }).click();
-    await page.getByRole("button", { name: "Save turn sequence" }).click();
+    await page
+      .getByRole("button", { name: "Save draft configuration" })
+      .click();
     await expect(
-      page.getByRole("button", { name: "Freeze draft setup" }),
+      page.getByRole("button", { name: "Start draft" }),
     ).toBeVisible();
     const events = await db().select().from(editionEvents);
     expect(events).toHaveLength(8);

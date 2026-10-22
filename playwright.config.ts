@@ -56,6 +56,9 @@ export default defineConfig({
     env: process.env.TEST_DATABASE_URL
       ? {
           DATABASE_URL: process.env.TEST_DATABASE_URL,
+          OCLR_MEDIA_DIR:
+            process.env.OCLR_MEDIA_DIR ||
+            join(tmpdir(), `oclr-browser-test-media-${process.pid}`),
           ADMIN_OSU_IDS: "60001,70001,110001,120001",
           TEST_DATABASE_URL: process.env.TEST_DATABASE_URL,
           OSU_CLIENT_ID: "123",
