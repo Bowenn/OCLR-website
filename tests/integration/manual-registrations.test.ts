@@ -34,6 +34,7 @@ import { auditLog } from "../../src/lib/audit";
 import { createSession } from "../../src/lib/auth/sessions";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
+import { applicationQuestions } from "../fixtures/application-questions";
 import { profileResponse } from "../fixtures/osu-profile";
 import { assertTestDatabase } from "../database";
 vi.mock("../../src/lib/osu-api", () => ({ osuApi: vi.fn() }));
@@ -86,6 +87,15 @@ describe.skipIf(!url)("staff-assisted registration integrity", () => {
     expect(await db().select().from(sessions)).toEqual([]);
   });
   it("adds Pending with truthful provenance, revision and no player acknowledgments", async () => {
+    await seedEditions([
+      {
+        ...edition,
+        registration: {
+          ...edition.registration,
+          questions: applicationQuestions,
+        },
+      },
+    ]);
     const row = await addManualRegistration(admin, edition.slug, command);
     expect(row).toMatchObject({
       userId: playerId,

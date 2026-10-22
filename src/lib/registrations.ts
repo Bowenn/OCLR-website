@@ -50,6 +50,14 @@ const applicationInput = z
     answers: z.record(z.string(), z.string()).default({}),
   })
   .strict();
+export class ApplicationFieldError extends HttpError {
+  constructor(
+    public field: string,
+    message: string,
+  ) {
+    super(400, message);
+  }
+}
 export function validateApplication(
   edition: Edition,
   input: unknown,
@@ -107,9 +115,27 @@ export function validateApplication(
     throw new HttpError(400, "The application contains an unknown question.");
   const answers: Record<string, string> = {};
   for (const question of questions) {
-    const answer = (result.data.answers[question.id] ?? "").trim();
-    if ((question.required && !answer) || answer.length > question.maxLength)
-      throw new HttpError(400, `Check your answer to “${question.label}”.`);
+    const submitted = result.data.answers[question.id] ?? "";
+    const answer =
+      question.type === "single_choice" ? submitted : submitted.trim();
+    if (question.type === "single_choice") {
+      if (
+        (question.required && !answer) ||
+        (answer && !question.options.some((option) => option.id === answer))
+      )
+        throw new ApplicationFieldError(
+          question.id,
+          "Choose a valid option for this question.",
+        );
+    } else if (
+      (question.required && !answer) ||
+      answer.length > question.maxLength
+    ) {
+      throw new ApplicationFieldError(
+        question.id,
+        "Check the required answer and maximum length.",
+      );
+    }
     answers[question.id] = answer;
   }
   return {

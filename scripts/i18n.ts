@@ -24,7 +24,9 @@ export function sourceMessages() {
         value = node.arguments[0];
       if (
         ts.isNewExpression(node) &&
-        node.expression.getText(file) === "HttpError"
+        ["HttpError", "ApplicationFieldError"].includes(
+          node.expression.getText(file),
+        )
       )
         value = node.arguments?.[1];
       if (value && ts.isStringLiteral(value)) messages.add(value.text);

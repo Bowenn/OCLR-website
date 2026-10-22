@@ -9,6 +9,7 @@ import { useId, useRef, useState, type ReactNode, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   registrationBlockers,
+  questionSchema,
   suggestEditionSlug,
   type Edition,
 } from "@/lib/editions";
@@ -16,6 +17,7 @@ import type { tournamentForAdmin } from "@/lib/tournaments";
 import { ConfirmMutation } from "./confirm-mutation";
 import { WorkspaceTabs } from "./workspace-tabs";
 import { TimeZonePicker } from "./time-zone-picker";
+import { ApplicationQuestionEditor } from "./application-question-editor";
 import { ZonedDateInput } from "./zoned-date-input";
 type Workspace = Pick<
   Awaited<ReturnType<typeof tournamentForAdmin>>,
@@ -672,67 +674,28 @@ function Registration({ data, saved }: EditorProps) {
                 "Collect only necessary information. Saved applications retain their original answers.",
               )}
             </p>
+            <p className="muted small">
+              {tr(
+                "Changes to question types, options or labels only affect future applications. Submitted answers retain their original version.",
+              )}
+            </p>
             {questions.map((q, i) => (
-              <fieldset className="form-stack" key={q.id}>
+              <fieldset className="application-question form-stack" key={q.id}>
                 <legend>
                   {tr("Question ")}
                   {i + 1}
                 </legend>
-                <label className="field">
-                  <span>
-                    {tr("Question ")}
-                    {i + 1} {tr(" label")}
-                  </span>
-                  <input
-                    maxLength={200}
-                    value={q.label}
-                    onChange={(e) =>
-                      setQuestions(
-                        questions.map((v, j) =>
-                          j === i ? { ...v, label: e.target.value } : v,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label className="check-field">
-                  <input
-                    type="checkbox"
-                    checked={q.required}
-                    onChange={(e) =>
-                      setQuestions(
-                        questions.map((v, j) =>
-                          j === i ? { ...v, required: e.target.checked } : v,
-                        ),
-                      )
-                    }
-                  />
-                  <span>
-                    {tr("Question ")}
-                    {i + 1} {tr(" is required")}
-                  </span>
-                </label>
-                <label className="field">
-                  <span>
-                    {tr("Question ")}
-                    {i + 1} {tr(" maximum length")}
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={2000}
-                    value={q.maxLength}
-                    onChange={(e) =>
-                      setQuestions(
-                        questions.map((v, j) =>
-                          j === i
-                            ? { ...v, maxLength: Number(e.target.value) }
-                            : v,
-                        ),
-                      )
-                    }
-                  />
-                </label>
+                <ApplicationQuestionEditor
+                  question={q}
+                  index={i}
+                  onChange={(question) =>
+                    setQuestions(
+                      questions.map((value, index) =>
+                        index === i ? question : value,
+                      ),
+                    )
+                  }
+                />
                 <div className="actions">
                   <button
                     type="button"
@@ -777,6 +740,7 @@ function Registration({ data, saved }: EditorProps) {
                     id: `question_${crypto.randomUUID().slice(0, 8)}`,
                     label: "",
                     required: false,
+                    type: "text",
                     maxLength: 500,
                   },
                 ])
@@ -799,7 +763,10 @@ function Registration({ data, saved }: EditorProps) {
         label={tr("Save registration settings")}
         disabled={
           configured &&
-          (!opensValid ||
+          (questions.some(
+            (question) => !questionSchema.safeParse(question).success,
+          ) ||
+            !opensValid ||
             !closesValid ||
             !withdrawValid ||
             (enabled && blockers.length > 0))

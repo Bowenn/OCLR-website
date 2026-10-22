@@ -1,4 +1,15 @@
-import { and, count, desc, eq, ilike, or, inArray, ne, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  ilike,
+  or,
+  inArray,
+  ne,
+  sql,
+  exists,
+} from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -12,6 +23,8 @@ import type { User } from "./auth/sessions";
 import { assertCapability, capabilityScope } from "./auth/staff";
 import { HttpError } from "./http";
 import { registrationOperation } from "./registrations";
+import { applicationAnswers } from "./application-answers";
+import type { EditionConfiguration } from "./editions";
 const filterSchema = z
   .object({
     q: z.string().trim().max(100).default(""),
@@ -93,6 +106,76 @@ export async function listApplications(
       "Narrow the export filters to at most 10,000 applications.",
     );
   return { rows, total: totals[0].count, filters };
+}
+export async function exportApplications(actor: User, input: unknown) {
+  const { rows } = await listApplications(actor, input, true);
+  if (!rows.length) return [];
+  const snapshots = await db()
+    .select({
+      id: registrations.id,
+      answers: registrations.answers,
+      editionSlug: registrations.editionSlug,
+      version: registrations.configurationVersion,
+    })
+    .from(registrations)
+    .where(
+      inArray(
+        registrations.id,
+        rows.map((row) => row.id),
+      ),
+    );
+  // Read each submitted question revision once, without repeating large rules
+  // documents for every applicant in the bounded export.
+  const revisions = await db()
+    .select({
+      slug: editionRevisions.editionSlug,
+      version: editionRevisions.version,
+      registration: sql<
+        EditionConfiguration["registration"]
+      >`${editionRevisions.configuration}->'registration'`,
+    })
+    .from(editionRevisions)
+    .where(
+      exists(
+        db()
+          .select({ id: registrations.id })
+          .from(registrations)
+          .where(
+            and(
+              inArray(
+                registrations.id,
+                rows.map((row) => row.id),
+              ),
+              eq(registrations.editionSlug, editionRevisions.editionSlug),
+              eq(registrations.configurationVersion, editionRevisions.version),
+            ),
+          ),
+      ),
+    );
+  const byRevision = new Map(
+    revisions.map((row) => [
+      `${row.slug}:${row.version}`,
+      { registration: row.registration },
+    ]),
+  );
+  const byId = new Map(snapshots.map((row) => [row.id, row]));
+  return rows.map((row) => {
+    const snapshot = byId.get(row.id);
+    return {
+      ...row,
+      applicationAnswers: snapshot
+        ? applicationAnswers(
+            snapshot.answers,
+            byRevision.get(`${snapshot.editionSlug}:${snapshot.version}`),
+          )
+            .map(
+              (answer) =>
+                `${answer.label} [${answer.id}]: ${answer.value}${answer.optionId ? ` [${answer.optionId}]` : ""}`,
+            )
+            .join("\n")
+        : "",
+    };
+  });
 }
 export async function applicationDetails(actor: User, id: string) {
   await capabilityScope(actor, "manage_registrations");

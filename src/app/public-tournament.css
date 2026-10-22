@@ -260,7 +260,8 @@ html[data-theme="dark"] .themed-site {
 .public-tournament .error-text {
   color: var(--site-danger);
 }
-.public-tournament :is(input:not([type="checkbox"]), select, textarea) {
+.public-tournament
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   color: var(--site-foreground);
   background: var(--site-surface);
   border-color: var(--site-control-border);
@@ -1301,7 +1302,8 @@ html[data-theme="dark"] .themed-site {
   border-color: var(--site-border);
   border-radius: 999px;
 }
-.themed-site :is(input:not([type="checkbox"]), select, textarea) {
+.themed-site
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background: var(--site-surface);
   color: var(--site-foreground);
   border-color: var(--site-control-border);
@@ -1523,4 +1525,67 @@ html[data-theme="dark"] .themed-site {
 }
 .mappool-round-group + .mappool-round-group {
   margin-top: 1.5rem;
+}
+.question-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  max-width: 42rem;
+}
+.form-stack .application-question {
+  min-width: 0;
+  border-color: var(--site-border);
+}
+.form-stack .application-choices {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.question-controls > .field {
+  flex: 1 1 10rem;
+}
+.question-controls > .check-field {
+  min-height: 44px;
+}
+.question-options {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 42rem;
+}
+.question-option-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+}
+.question-option-row > .field {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.question-option-row .actions {
+  gap: 0.375rem;
+}
+.question-options > button {
+  justify-self: start;
+}
+.application-choice-list {
+  display: grid;
+  gap: 0.25rem;
+}
+.application-choice-list .check-field {
+  min-height: 44px;
+  align-items: center;
+}
+.application-choice-list input {
+  accent-color: var(--site-accent);
+  flex-shrink: 0;
+  margin-top: 0;
+}
+.application-choice-list span {
+  overflow-wrap: anywhere;
+}
+.application-answer {
+  min-width: 0;
 }

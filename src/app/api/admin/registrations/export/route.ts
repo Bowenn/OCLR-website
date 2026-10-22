@@ -1,23 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireStaff } from "@/lib/auth/staff";
-import { listApplications } from "@/lib/staff";
+import { exportApplications } from "@/lib/staff";
 import { csv } from "@/lib/csv";
 import { apiError } from "@/lib/http";
 export async function GET(request: NextRequest) {
   try {
-    const { rows } = await listApplications(
+    const rows = await exportApplications(
       await requireStaff(),
       Object.fromEntries(request.nextUrl.searchParams),
-      true,
     );
     const body = csv([
-      ["osu! ID", "Username", "Edition", "Status", "Submitted at (UTC)"],
+      [
+        "osu! ID",
+        "Username",
+        "Edition",
+        "Status",
+        "Submitted at (UTC)",
+        "Application answers",
+      ],
       ...rows.map((r) => [
         r.userId,
         r.username,
         r.editionSlug,
         r.status,
         r.createdAt.toISOString(),
+        r.applicationAnswers,
       ]),
     ]);
     return new NextResponse(body, {

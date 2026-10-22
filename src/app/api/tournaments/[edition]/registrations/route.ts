@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/user";
-import { submitRegistration } from "@/lib/registrations";
+import { submitRegistration, ApplicationFieldError } from "@/lib/registrations";
 import { apiError, readJson, requireSameOrigin } from "@/lib/http";
 export async function POST(
   request: Request,
@@ -23,6 +23,14 @@ export async function POST(
       },
     );
   } catch (error) {
+    if (error instanceof ApplicationFieldError)
+      return NextResponse.json(
+        { error: error.message, field: error.field },
+        {
+          status: error.status,
+          headers: { "Cache-Control": "no-store" },
+        },
+      );
     return apiError(error);
   }
 }

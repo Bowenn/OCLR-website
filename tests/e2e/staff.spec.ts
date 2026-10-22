@@ -112,7 +112,8 @@ test.describe("staff registration review", () => {
     expect(csv.status()).toBe(200);
     const content = await csv.text();
     expect(content).toContain("accepted");
-    expect(content).not.toContain("Private test answer");
+    expect(content).toContain("Application answers");
+    expect(content).toContain("private [private]: Private test answer");
     const own = await other.request.get(
       "http://127.0.0.1:3100/api/registrations",
     );

@@ -1,3 +1,4 @@
+import { applicationAnswers } from "@/lib/application-answers";
 import Link from "next/link";
 import { RegistrationRemoval } from "@/components/registration-removal";
 import { EligibilitySummary } from "@/components/eligibility-summary";
@@ -69,16 +70,14 @@ export default async function Application({
                     : tr("No rules configured at submission"))}
               </dd>
             </div>
-            {Object.entries(r.answers).map(([key, value]) => (
-              <div key={key}>
-                <dt>
-                  {data.acknowledgedConfiguration?.registration?.questions.find(
-                    (q) => q.id === key,
-                  )?.label ?? key}
-                </dt>
-                <dd className="preserve-lines">{value || tr("No answer")}</dd>
-              </div>
-            ))}
+            {applicationAnswers(r.answers, data.acknowledgedConfiguration).map(
+              ({ id, label, value }) => (
+                <div key={id}>
+                  <dt>{label}</dt>
+                  <dd className="preserve-lines">{value || tr("No answer")}</dd>
+                </div>
+              ),
+            )}
             {r.statusReason && (
               <div>
                 <dt>{tr("Explanation")}</dt>

@@ -1,14 +1,54 @@
 import { eligibilityLimitsSchema } from "./eligibility-model";
 import { z } from "zod";
 const instant = z.iso.datetime({ offset: true });
-export const questionSchema = z
-  .object({
-    id: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/),
-    label: z.string().trim().min(1).max(200),
-    required: z.boolean(),
-    maxLength: z.number().int().min(1).max(2000).default(500),
-  })
-  .strict();
+const questionFields = {
+  id: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/),
+  label: z.string().trim().min(1).max(200),
+  required: z.boolean(),
+};
+export const questionSchema = z.union([
+  z
+    .object({
+      ...questionFields,
+      // Existing stored questions have no discriminator and remain text questions.
+      type: z.literal("text").default("text"),
+      maxLength: z.number().int().min(1).max(2000).default(500),
+    })
+    .strict(),
+  z
+    .object({
+      ...questionFields,
+      type: z.literal("single_choice"),
+      options: z
+        .array(
+          z
+            .object({
+              id: questionFields.id,
+              label: z.string().trim().min(1).max(200),
+            })
+            .strict(),
+        )
+        .min(2)
+        .max(20),
+    })
+    .strict()
+    .superRefine((question, context) => {
+      for (const field of ["id", "label"] as const) {
+        const seen = new Set<string>();
+        question.options.forEach((option, index) => {
+          const value = option[field];
+          if (seen.has(value))
+            context.addIssue({
+              code: "custom",
+              path: ["options", index, field],
+              message: "Options must have distinct IDs and labels.",
+            });
+          seen.add(value);
+        });
+      }
+    }),
+]);
+export type ApplicationQuestion = z.output<typeof questionSchema>;
 export const editionSchema = z
   .object({
     slug: z

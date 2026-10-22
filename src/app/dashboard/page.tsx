@@ -1,3 +1,4 @@
+import { applicationAnswers } from "@/lib/application-answers";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import Image from "next/image";
@@ -219,13 +220,12 @@ export default async function Dashboard({
                         <details className="spaced">
                           <summary>{tr("My application")}</summary>
                           <dl className="detail-list">
-                            {Object.entries(r.answers).map(([key, value]) => (
-                              <div key={key}>
-                                <dt>
-                                  {acknowledgedConfiguration?.registration?.questions.find(
-                                    (q) => q.id === key,
-                                  )?.label ?? key}
-                                </dt>
+                            {applicationAnswers(
+                              r.answers,
+                              acknowledgedConfiguration,
+                            ).map(({ id, label, value }) => (
+                              <div key={id}>
+                                <dt>{label}</dt>
                                 <dd className="preserve-lines">
                                   {value || tr("No answer")}
                                 </dd>

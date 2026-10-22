@@ -1857,6 +1857,20 @@
     "m5bab271c5b07": "Registration removed by staff. Its history is retained.",
     "maf4c72e9e3a2": "Registration restored for review. No new player acknowledgments were recorded.",
     "m041b429dabaa": "View registrations",
-    "m161b71b768cc": "This application is withdrawn. It will not enter the eligible player pool."
+    "m161b71b768cc": "This application is withdrawn. It will not enter the eligible player pool.",
+    "mfb1cbc38fb40": "Select an option",
+    "mefe8656fc7c2": "Question type",
+    "m0c0d5f208d8a": "Text answer",
+    "m45a76a9d2e7a": "Single choice",
+    "m6034059d1689": "Option {number}",
+    "m651490b41ba9": "Move option {number} up",
+    "m75614cf1e1ca": "Move option {number} down",
+    "m19e46fd3dda0": "Remove option {number}",
+    "mffbcabd155ad": "Add option",
+    "m100e271198c4": "Add a question label and 2–20 distinct, nonempty options.",
+    "md9f0c77ce746": "Add a question label and a maximum length between 1 and 2000.",
+    "mbf3a34ad12cb": "Changes to question types, options or labels only affect future applications. Submitted answers retain their original version.",
+    "m472229873b09": "Choose a valid option for this question.",
+    "m348b4e0fcad9": "Check the required answer and maximum length."
   }
 }
