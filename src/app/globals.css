@@ -962,25 +962,6 @@ dialog::backdrop {
   .registration-details h3 {
     font-size: 1rem;
   }
-  .player-workspace .sidebar {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding-bottom: 1rem;
-  }
-  .player-workspace .sidebar .eyebrow {
-    grid-column: 1 / -1;
-    margin-bottom: 0.5rem;
-  }
-  .player-workspace .sidebar h2 {
-    display: none;
-  }
-  .player-workspace .sidebar nav {
-    gap: 0.25rem;
-  }
-  .player-workspace .sidebar .spaced {
-    margin-top: 0.5rem;
-  }
 }
 .filters {
   display: grid;

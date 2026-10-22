@@ -41,26 +41,14 @@ export default async function Dashboard({
   const number = new Intl.NumberFormat(tr.locale, { maximumFractionDigits: 2 });
   const params = await searchParams;
   return (
-    <div className="container page workspace player-workspace">
-      <aside className="sidebar">
-        <p className="eyebrow">{tr("PLAYER CENTER")}</p>
-        <h2>{tr("Your OCLR")}</h2>
-        <nav aria-label={tr("Player navigation")}>
-          <Link href="/dashboard" aria-current="page">
-            {tr("Dashboard")}
-          </Link>
-        </nav>
-        <form className="spaced" action="/auth/logout" method="post">
-          <button className="secondary">{tr("Sign out")}</button>
-        </form>
-      </aside>
+    <div className="container page player-workspace">
       <div className="workspace-main">
-        <PageHeading
-          eyebrow={tr("YOUR ROOKIE STAGE")}
-          title={tr("Player dashboard")}
-        >
-          {tr("Your identity and tournament applications, in one place.")}
-        </PageHeading>
+        <div className="player-page-heading">
+          <PageHeading title={tr("Player dashboard")} />
+          <form action="/auth/logout" method="post">
+            <button className="secondary">{tr("Sign out")}</button>
+          </form>
+        </div>
         {params.submitted && (
           <p className="notice" role="status">
             {tr("Application submitted. Your saved status appears below.")}

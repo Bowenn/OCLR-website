@@ -240,10 +240,8 @@ test.describe("role-aware header actions and compact tournament context", () => 
       .click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(
-      page
-        .getByRole("navigation", { name: "Player navigation" })
-        .getByRole("link"),
-    ).toHaveText(["Dashboard"]);
+      page.getByRole("button", { name: "Sign out", exact: true }),
+    ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Browse tournaments", exact: true }),
     ).toBeVisible();
