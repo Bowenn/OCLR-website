@@ -40,6 +40,9 @@ test.describe("role-aware header actions and compact tournament context", () => 
       surface: string,
       current?: string,
     ) {
+      // Exercise the real initials fallback rather than relying on provider images.
+      await target.route("https://a.ppy.sh/**", (route) => route.abort());
+      await target.reload();
       const original = target.viewportSize()!;
       const control = target.getByRole("button", {
         name: "Dashboard",
@@ -49,6 +52,11 @@ test.describe("role-aware header actions and compact tournament context", () => 
         name: "Dashboards",
         exact: true,
       });
+      await expect(control.locator(".avatar img")).toHaveCount(0);
+      await expect(control.locator(".avatar")).toHaveCSS(
+        "color",
+        "rgb(255, 255, 255)",
+      );
       for (const width of [320, 390, 768, 1024, 1440]) {
         await target.setViewportSize({ width, height: 900 });
         await target.evaluate(() => window.scrollTo(0, 0));
