@@ -20,7 +20,7 @@ export function CaptainManager({
 }) {
   const tr = useAppTranslations();
 
-  const [action, setAction] = useState("publish");
+  const [action, setAction] = useState("replace");
   const [userId, setUserId] = useState("");
   const [previousUserId, setPrevious] = useState("");
   const [order, setOrder] = useState(setup.captains.map((c) => c.userId));
@@ -32,11 +32,20 @@ export function CaptainManager({
   const dragged = useRef<number | null>(null);
   const router = useRouter();
   const [revision, setRevision] = useState(setup.version);
+  const [published, setPublished] = useState(
+    setup.captains.length > 0 && setup.captains.every((c) => c.published),
+  );
+  const [available, setAvailable] = useState(true);
+  const [poolPublished, setPoolPublished] = useState(setup.poolPublished);
   // Sync authoritative order changes without losing conflict/error feedback.
   if (revision !== setup.version) {
     setRevision(setup.version);
     setOrder(setup.captains.map((c) => c.userId));
     setDragging(null);
+    setPublished(
+      setup.captains.length > 0 && setup.captains.every((c) => c.published),
+    );
+    setPoolPublished(setup.poolPublished);
   }
   const ordered = order.flatMap((id) =>
     setup.captains.filter((c) => c.userId === id),
@@ -146,8 +155,6 @@ export function CaptainManager({
   );
 
   const [unavailableExplanation, setExplanation] = useState("");
-  const [published, setPublished] = useState(false);
-  const [poolPublished, setPoolPublished] = useState(false);
   const command =
     action === "publish"
       ? { action, published, poolPublished }
@@ -163,8 +170,8 @@ export function CaptainManager({
             ? {
                 action,
                 userId: Number(userId),
-                available: published,
-                ...(!published ? { unavailableExplanation } : {}),
+                available,
+                ...(!available ? { unavailableExplanation } : {}),
               }
             : { action, userId: Number(userId) };
   return (
@@ -413,115 +420,168 @@ export function CaptainManager({
           )}
         </section>
       </div>
-      <details className="panel">
-        <summary>{tr("Publication and advanced controls")}</summary>
-        <div className="form-stack spaced">
-          <h2>{tr("Captain and pool controls")}</h2>
+      <section
+        className="panel form-stack"
+        aria-labelledby="captain-publication-heading"
+      >
+        <h2 id="captain-publication-heading">{tr("Publication settings")}</h2>
+        <label className="check-field">
+          <input
+            type="checkbox"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+          />
+          <span>{tr("Publish captains & order")}</span>
+        </label>
+        <label className="check-field">
+          <input
+            type="checkbox"
+            checked={poolPublished}
+            onChange={(e) => setPoolPublished(e.target.checked)}
+          />
+          <span>{tr("Publish eligible draft pool")}</span>
+        </label>
+        <ConfirmMutation
+          label={tr("Save publication settings")}
+          title={tr("Change public visibility?")}
+          description={tr(
+            "This releases the selected captain identities and draft pool. Accepted players remain in the Players directory.",
+          )}
+          disabled={
+            pending ||
+            changed ||
+            (published ===
+              (setup.captains.length > 0 &&
+                setup.captains.every((c) => c.published)) &&
+              poolPublished === setup.poolPublished)
+          }
+          url={`/api/admin/tournaments/${slug}/captains`}
+          payload={{
+            command: { action: "publish", published, poolPublished },
+            expectedVersion: setup.version,
+            confirmed: true,
+          }}
+        />
+      </section>
+      <section
+        className="panel form-stack"
+        aria-label={tr("Captain and pool controls")}
+      >
+        <div
+          className="actions"
+          role="group"
+          aria-label={tr("Captain and pool controls")}
+        >
+          {[
+            ["replace", "Replace captain"],
+            ["availability", "Update draft availability"],
+            ["lock", "Lock draft setup"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className="secondary"
+              aria-pressed={action === value}
+              onClick={() => setAction(value)}
+            >
+              {tr(label)}
+            </button>
+          ))}
+        </div>
+        {["replace", "availability"].includes(action) && (
           <label className="field">
-            <span>{tr("Action")}</span>
-            <select value={action} onChange={(e) => setAction(e.target.value)}>
-              {["replace", "availability", "lock", "publish"].map((a) => (
-                <option key={a} value={a}>
-                  {tr(a)}
+            <span>{tr("Player")}</span>
+            <select
+              value={userId}
+              onChange={(e) => {
+                setUserId(e.target.value);
+                const candidate = setup.candidates.find(
+                  (c) => c.userId === Number(e.target.value),
+                );
+                setAvailable(!candidate?.unavailableReason);
+                setExplanation(candidate?.unavailableReason ?? "");
+              }}
+            >
+              <option value="">{tr("Choose an accepted player")}</option>
+              {setup.candidates.map((c) => (
+                <option key={c.userId} value={c.userId}>
+                  {c.username} ({c.userId})
                 </option>
               ))}
             </select>
           </label>
-          {["replace", "availability"].includes(action) && (
-            <label className="field">
-              <span>{tr("Player")}</span>
-              <select
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-              >
-                <option value="">{tr("Choose an accepted player")}</option>
-                {setup.candidates.map((c) => (
-                  <option key={c.userId} value={c.userId}>
-                    {c.username} ({c.userId})
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          {action === "replace" && (
-            <label className="field">
-              <span>{tr("Captain to replace")}</span>
-              <select
-                value={previousUserId}
-                onChange={(e) => setPrevious(e.target.value)}
-              >
-                <option value="">{tr("Choose captain")}</option>
-                {setup.captains.map((c) => (
-                  <option key={c.userId} value={c.userId}>
-                    {c.username}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          {["publish", "availability"].includes(action) && (
-            <label className="check-field">
-              <input
-                type="checkbox"
-                checked={published}
-                onChange={(e) => setPublished(e.target.checked)}
-              />
-              <span>
-                {action === "availability"
-                  ? tr("Player is available for draft")
-                  : tr("Publish approved captain identities and order")}
-              </span>
-            </label>
-          )}
-          {action === "publish" && (
-            <label className="check-field">
-              <input
-                type="checkbox"
-                checked={poolPublished}
-                onChange={(e) => setPoolPublished(e.target.checked)}
-              />
-              <span>
-                {tr(
-                  "Approve public display of remaining eligible player identities",
-                )}
-              </span>
-            </label>
-          )}
+        )}
+        {action === "replace" && (
+          <label className="field">
+            <span>{tr("Captain to replace")}</span>
+            <select
+              value={previousUserId}
+              onChange={(e) => setPrevious(e.target.value)}
+            >
+              <option value="">{tr("Choose captain")}</option>
+              {setup.captains.map((c) => (
+                <option key={c.userId} value={c.userId}>
+                  {c.username}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {action === "availability" && (
+          <label className="check-field">
+            <input
+              type="checkbox"
+              checked={available}
+              onChange={(e) => setAvailable(e.target.checked)}
+            />
+            <span>{tr("Player is available for draft")}</span>
+          </label>
+        )}
 
-          {action === "availability" && !published && (
-            <label className="field">
-              <span>{tr("Draft unavailability explanation")}</span>
-              <textarea
-                value={unavailableExplanation}
-                onChange={(e) => setExplanation(e.target.value)}
-                maxLength={1000}
-              />
-            </label>
+        {action === "availability" && !available && (
+          <label className="field">
+            <span>{tr("Draft unavailability explanation")}</span>
+            <textarea
+              value={unavailableExplanation}
+              onChange={(e) => setExplanation(e.target.value)}
+              maxLength={1000}
+            />
+          </label>
+        )}
+        <ConfirmMutation
+          requireConfirmation={[
+            "publish",
+            "lock",
+            "replace",
+            "availability",
+          ].includes(action)}
+          disabled={
+            pending ||
+            changed ||
+            (setup.locked && action !== "publish") ||
+            (action === "replace" && (!userId || !previousUserId)) ||
+            (action === "availability" &&
+              (!userId || (!available && !unavailableExplanation.trim())))
+          }
+          label={tr(
+            action === "replace"
+              ? "Replace captain"
+              : action === "lock"
+                ? "Lock draft setup"
+                : "Update draft availability",
           )}
-          <ConfirmMutation
-            requireConfirmation={[
-              "publish",
-              "lock",
-              "replace",
-              "availability",
-            ].includes(action)}
-            disabled={
-              pending || changed || (setup.locked && action !== "publish")
-            }
-            label={tr("Review setup change")}
-            title={tr("Apply this captain setup change?")}
-            description={tr(
-              "This can change draft eligibility or release player identities publicly. Review the selected players and approval before confirming.",
-            )}
-            url={`/api/admin/tournaments/${slug}/captains`}
-            payload={{
-              command,
-              expectedVersion: setup.version,
-              confirmed: true,
-            }}
-          />
-        </div>
-      </details>
+          title={tr("Apply this captain setup change?")}
+          description={tr(
+            "This can change draft eligibility or release player identities publicly. Review the selected players and approval before confirming.",
+          )}
+          url={`/api/admin/tournaments/${slug}/captains`}
+          payload={{
+            command,
+            expectedVersion: setup.version,
+            confirmed: true,
+          }}
+        />
+      </section>
     </div>
   );
 }

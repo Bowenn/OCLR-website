@@ -1769,6 +1769,15 @@
     "m9dc9dccd31c8": "Unable to load tournaments.",
     "mba3bbbe10d8b": "Loading…",
     "m17fbef5d73dd": "No tournaments published yet",
-    "m8ac730122f75": "All tournaments"
+    "m8ac730122f75": "All tournaments",
+    "m823182dcedd9": "Publication settings",
+    "m87158a0d730e": "Publish captains & order",
+    "m15f83ece2e63": "Publish eligible draft pool",
+    "m58a22553fd3a": "Save publication settings",
+    "mab3076469b76": "Change public visibility?",
+    "m54dc6725bc66": "This releases the selected captain identities and draft pool. Accepted players remain in the Players directory.",
+    "mb2a1f7de2626": "Replace captain",
+    "m6067714a6045": "Update draft availability",
+    "md214a8837d2a": "Lock draft setup"
   }
 }
