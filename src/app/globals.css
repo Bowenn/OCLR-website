@@ -2922,6 +2922,9 @@ body:has(.presenter-view) .site-footer,
   text-align: left;
 }
 .mappool-workbench .mappool-pool-heading {
+  display: grid;
+  justify-content: start;
+  gap: 0.5rem;
   padding-block: 1rem 0.75rem;
 }
 .mappool-pool-heading h2,
@@ -3824,9 +3827,53 @@ html:lang(zh-Hant) .eyebrow {
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-border);
 }
-.mappool-workbench .mappool-entry-actions > .actions {
-  margin-top: 0.5rem;
+.mappool-workbench .mappool-entry-action-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
+.mappool-workbench
+  :is(.mappool-entry-action-row, .mappool-pool-actions)
+  > :is(button, .button) {
+  flex: 0 0 auto;
+  align-self: start;
+  width: auto;
+  min-height: 44px;
+}
+.mappool-edit-action {
+  border-color: #a778c1;
+}
+.mappool-inline-editor {
+  max-width: 44rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 1rem;
+  background: var(--color-surface);
+}
+.mappool-inline-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+.mappool-inline-heading h4 {
+  margin: 0;
+}
+.mappool-attributes {
+  border: 1px solid var(--color-border);
+  border-radius: 0.4rem;
+  padding: 0.75rem;
+}
+.mappool-attributes .field {
+  margin: 0;
+}
+.mappool-add-map {
+  margin-top: 1rem;
+}
+
 @media (max-width: 600px) {
   .mappool-workbench .mappool-context {
     padding: 0.75rem;

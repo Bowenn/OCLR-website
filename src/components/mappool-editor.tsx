@@ -4,7 +4,7 @@ import { useAppTranslations } from "@/i18n/shared";
 
 import Link from "next/link";
 import { WorkspaceTabs } from "./workspace-tabs";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { MappoolWorkspace } from "@/lib/mappools";
 import {
   categories,
@@ -28,6 +28,7 @@ function Save({
   change,
   label,
   description,
+  className,
   payload,
   disabled = false,
   onSuccess,
@@ -35,12 +36,14 @@ function Save({
   change: Change;
   label: string;
   description?: string;
+  className?: string;
   payload: Record<string, unknown>;
   disabled?: boolean;
   onSuccess?: () => void;
 }) {
   return (
     <ConfirmMutation
+      className={className}
       disabled={disabled}
       onSuccess={onSuccess}
       requireConfirmation={["pool_publish", "entry_remove"].includes(
@@ -84,8 +87,7 @@ function RoundForm({
           placeholder={tr("Approved round label")}
         />
       </label>
-      <details className="form-options" open={Boolean(round)}>
-        <summary>{tr("Round order")}</summary>
+      <div>
         <label className="field">
           <span>{tr("Round order")}</span>
           <input
@@ -96,7 +98,7 @@ function RoundForm({
             onChange={(e) => setPosition(e.target.value)}
           />
         </label>
-      </details>
+      </div>
       <Save
         change={change}
         onSuccess={onSuccess}
@@ -207,12 +209,14 @@ function EntryForm({
   category,
   entry,
   entries = [],
+  onSuccess,
 }: {
   change: Change;
   pool: Pool;
   category: string;
   entry?: Entry;
   entries?: Entry[];
+  onSuccess?: () => void;
 }) {
   const tr = useAppTranslations();
 
@@ -220,6 +224,10 @@ function EntryForm({
     useState<DifficultyConfiguration | null>(
       entry?.metadata.attributes?.configuration ?? null,
     );
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    input.current?.focus();
+  }, []);
   const [beatmap, setBeatmap] = useState(entry ? String(entry.beatmapId) : "");
   const id = parseBeatmapId(beatmap);
   const [preview, setPreview] = useState<BeatmapSnapshot | null>(null);
@@ -242,6 +250,7 @@ function EntryForm({
       <label className="field">
         <span>{tr("Beatmap URL or ID")}</span>
         <input
+          ref={input}
           value={beatmap}
           onChange={(e) => {
             const next = e.target.value;
@@ -258,11 +267,8 @@ function EntryForm({
           {tr("Enter a numeric beatmap ID or an official osu! difficulty URL.")}
         </p>
       )}
-      <details
-        className="form-options"
-        open={Boolean(entry?.metadata.attributes)}
-      >
-        <summary>{tr("Official mod attributes")}</summary>
+      <fieldset className="mappool-attributes">
+        <legend>{tr("Official mod attributes")}</legend>
         <label className="field">
           <span>{tr("Difficulty calculation mods")}</span>
           <select
@@ -288,7 +294,7 @@ function EntryForm({
             ))}
           </select>
         </label>
-      </details>
+      </fieldset>
       {id && (
         <BeatmapPreview
           key={`${id}-${difficultyConfiguration}`}
@@ -327,6 +333,7 @@ function EntryForm({
       <Save
         change={change}
         label={entry ? tr("Save map slot") : tr("Add beatmap")}
+        onSuccess={onSuccess}
         disabled={!id || preview?.beatmapId !== id}
         payload={{
           action: "entry_save",
@@ -348,30 +355,87 @@ function EntryEditor({
   pool,
   category,
   entry,
+  open,
+  onOpen,
+  onClose,
 }: {
   change: Change;
   pool: Pool;
   category: string;
   entry: Entry;
+  open: boolean;
+  onOpen: () => void;
+  onClose: () => void;
 }) {
   const tr = useAppTranslations();
-
-  const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const id = useId();
+  const slot = slotLabel(entry.category, entry.position);
+  function close() {
+    onClose();
+    requestAnimationFrame(() => trigger.current?.focus());
+  }
   return (
-    <details onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary>
-        {tr("Edit or replace ")}
-        {slotLabel(entry.category, entry.position)}
-      </summary>
-      {open && (
-        <EntryForm
+    <>
+      <div className="mappool-entry-action-row">
+        <button
+          type="button"
+          className="secondary mappool-edit-action"
+          ref={trigger}
+          aria-expanded={open}
+          aria-controls={open ? id : undefined}
+          onClick={() => (open ? close() : onOpen())}
+        >
+          {tr("Edit or replace {slot}", { slot })}
+        </button>
+        <Save
           change={change}
-          pool={pool}
-          category={category}
-          entry={entry}
+          label={tr("Refresh {slot} metadata", { slot })}
+          payload={{
+            action: "entry_refresh",
+            poolId: pool.id,
+            expectedVersion: pool.version,
+            entryId: entry.id,
+          }}
         />
+        <Save
+          change={change}
+          className="secondary destructive-action"
+          label={tr("Remove {slot}", { slot })}
+          description={tr(
+            "Remove this map slot. Published pools update immediately; history is retained.",
+          )}
+          payload={{
+            action: "entry_remove",
+            poolId: pool.id,
+            expectedVersion: pool.version,
+            entryId: entry.id,
+          }}
+          onSuccess={onClose}
+        />
+      </div>
+      {open && (
+        <section
+          className="mappool-inline-editor"
+          id={id}
+          aria-label={tr("Edit or replace {slot}", { slot })}
+        >
+          <div className="mappool-inline-heading">
+            <h4>{tr("Edit or replace {slot}", { slot })}</h4>
+            <button type="button" className="secondary" onClick={close}>
+              {tr("Cancel")}
+            </button>
+          </div>
+          <EntryForm
+            change={change}
+            pool={pool}
+            category={category}
+            entry={entry}
+            onSuccess={close}
+          />
+        </section>
       )}
-    </details>
+    </>
   );
 }
 type Task = "maps" | "import" | "batch" | "settings";
@@ -392,6 +456,8 @@ export function MappoolEditor({
   const [category, setCategory] = useState<(typeof categories)[number]>("NM");
   const [task, setTask] = useState<Task>("maps");
   const [setup, setSetup] = useState<Setup | null>(null);
+  const [editingEntry, setEditingEntry] = useState<string | null>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
   const [feedback, updateFeedback] = useState("");
   const [feedbackFailed, setFeedbackFailed] = useState(false);
   function setFeedback(message: string, failed = false) {
@@ -413,6 +479,7 @@ export function MappoolEditor({
     setTask("maps");
     setCategory("NM");
     setSetup(null);
+    setEditingEntry(null);
     setFeedback("");
   }
   function toggleSetup(value: Setup) {
@@ -608,10 +675,15 @@ export function MappoolEditor({
                 {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
               </p>
             </div>
-            <div className="actions">
+            <div className="actions mappool-pool-actions">
               {!pool.lockedAt && (
                 <Save
                   change={change}
+                  className={
+                    pool.publishedAt
+                      ? "secondary destructive-action"
+                      : "secondary"
+                  }
                   label={
                     pool.publishedAt ? tr("Unpublish pool") : tr("Publish pool")
                   }
@@ -634,7 +706,7 @@ export function MappoolEditor({
               )}
               {pool.publishedAt && (
                 <Link
-                  className="text-link small"
+                  className="button secondary"
                   href={`/tournaments/${slug}/mappools/${pool.id}`}
                 >
                   {tr("View public pool")}
@@ -661,6 +733,7 @@ export function MappoolEditor({
             value={activeTask}
             onChange={(value) => {
               setTask(value);
+              setEditingEntry(null);
               setFeedback("");
             }}
             items={
@@ -697,7 +770,10 @@ export function MappoolEditor({
                       data-empty={
                         poolEntries.every((e) => e.category !== c) || undefined
                       }
-                      onClick={() => setCategory(c)}
+                      onClick={() => {
+                        setCategory(c);
+                        setEditingEntry(null);
+                      }}
                     >
                       {c} (
                       {
@@ -727,38 +803,16 @@ export function MappoolEditor({
                     editable={editable}
                     onFeedback={setFeedback}
                     renderActions={(entry) => (
-                      <>
-                        <EntryEditor
-                          key={`${entry.id}-${pool.version}`}
-                          change={change}
-                          pool={pool}
-                          category={category}
-                          entry={entry}
-                        />
-                        <div className="actions">
-                          <Save
-                            change={change}
-                            label={`Refresh ${slotLabel(entry.category, entry.position)} metadata`}
-                            payload={{
-                              action: "entry_refresh",
-                              poolId: pool.id,
-                              expectedVersion: pool.version,
-                              entryId: entry.id,
-                            }}
-                          />
-                          <Save
-                            change={change}
-                            label={`Remove ${slotLabel(entry.category, entry.position)}`}
-                            description="Remove this map slot from the draft pool. The previous map remains in the audit history."
-                            payload={{
-                              action: "entry_remove",
-                              poolId: pool.id,
-                              expectedVersion: pool.version,
-                              entryId: entry.id,
-                            }}
-                          />
-                        </div>
-                      </>
+                      <EntryEditor
+                        key={`${entry.id}-${pool.version}`}
+                        change={change}
+                        pool={pool}
+                        category={category}
+                        entry={entry}
+                        open={editingEntry === entry.id}
+                        onOpen={() => setEditingEntry(entry.id)}
+                        onClose={() => setEditingEntry(null)}
+                      />
                     )}
                   />
                 )}
@@ -769,19 +823,56 @@ export function MappoolEditor({
                   </p>
                 )}
                 {editable && (category !== "FM" || pool.fmMode) && (
-                  <details className="spaced">
-                    <summary>
-                      {tr("Add a ")}
-                      {category} {tr(" beatmap")}
-                    </summary>
-                    <EntryForm
-                      key={`${pool.id}-${category}-${pool.version}`}
-                      change={change}
-                      pool={pool}
-                      category={category}
-                      entries={poolEntries}
-                    />
-                  </details>
+                  <div className="mappool-add-map">
+                    <button
+                      type="button"
+                      className="secondary"
+                      ref={addButton}
+                      aria-expanded={editingEntry === "new"}
+                      aria-label={tr("Add a {category} beatmap", { category })}
+                      onClick={() =>
+                        setEditingEntry(editingEntry === "new" ? null : "new")
+                      }
+                    >
+                      {tr("Add beatmap")}
+                    </button>
+                    {editingEntry === "new" && (
+                      <section
+                        className="mappool-inline-editor"
+                        aria-label={tr("Add beatmap")}
+                      >
+                        <div className="mappool-inline-heading">
+                          <h4>
+                            {tr("Add a {category} beatmap", { category })}
+                          </h4>
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => {
+                              setEditingEntry(null);
+                              addButton.current?.focus();
+                            }}
+                          >
+                            {tr("Cancel")}
+                          </button>
+                        </div>
+                        <EntryForm
+                          key={`${pool.id}-${category}-${pool.version}`}
+                          change={change}
+                          pool={pool}
+                          category={category}
+                          entries={poolEntries}
+                          onSuccess={() => {
+                            setEditingEntry(null);
+                            setFeedback("Map slot saved.");
+                            requestAnimationFrame(() =>
+                              addButton.current?.focus(),
+                            );
+                          }}
+                        />
+                      </section>
+                    )}
+                  </div>
                 )}
                 {category === "FM" && !pool.fmMode && (
                   <p className="muted">
