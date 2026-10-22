@@ -14,6 +14,8 @@ import {
 import type { User } from "./auth/sessions";
 import { assertCapability } from "./auth/staff";
 import { getEdition, getPublicEdition } from "./content";
+import { draftSetupProtection } from "./draft-setup";
+import { refreshDraftSnapshot } from "./draft";
 import { HttpError } from "./http";
 const teamInput = z
   .object({
@@ -80,9 +82,10 @@ export async function staffTeams(actor: User, slug: string) {
           and(eq(memberships.editionSlug, slug), isNull(memberships.leftAt)),
         )
         .orderBy(memberships.joinedAt);
+      const protection = await draftSetupProtection(tx, slug);
       return {
         version: state?.setupVersion ?? 0,
-        locked: Boolean(state?.lockedAt),
+        locked: protection.locked,
         teams: rows.map((team) => ({
           ...team,
           members: members.filter((m) => m.teamId === team.id),
@@ -113,12 +116,13 @@ export async function updateTeams(
     await assertCapability(actor, "manage_teams", slug, tx);
     if (!state || state.setupVersion !== expectedVersion)
       throw new HttpError(409, "Setup changed. Refresh before continuing.");
+    const protection = await draftSetupProtection(tx, slug);
     const before = await tx
       .select()
       .from(teams)
       .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
     if (command.action === "configure") {
-      if (state.lockedAt)
+      if (protection.locked)
         throw new HttpError(
           409,
           "Team configuration is locked. Use supervised draft recovery.",
@@ -143,6 +147,20 @@ export async function updateTeams(
         const existing = before.find((t) => t.captainId === value.captainId);
         let teamId: string;
         if (existing) {
+          const [roster] = await tx
+            .select({ count: sql<number>`count(*)::int` })
+            .from(memberships)
+            .where(
+              and(
+                eq(memberships.teamId, existing.id),
+                isNull(memberships.leftAt),
+              ),
+            );
+          if (value.capacity !== null && value.capacity < roster.count)
+            throw new HttpError(
+              409,
+              "Capacity cannot be smaller than the current roster.",
+            );
           if (existing.finalizedAt)
             throw new HttpError(409, "Finalized team identity is immutable.");
           await tx
@@ -177,7 +195,7 @@ export async function updateTeams(
       )
         throw new HttpError(400, "Upload a valid team image before saving.");
       if (
-        (state.lockedAt || team.finalizedAt) &&
+        (protection.locked || team.finalizedAt) &&
         command.capacity !== team.capacity
       )
         throw new HttpError(
@@ -240,11 +258,13 @@ export async function updateTeams(
       .select()
       .from(teams)
       .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
+    const draftRevision = await refreshDraftSnapshot(tx, slug);
     await tx.insert(editionEvents).values({
       editionSlug: slug,
       actorId: actor.osuId,
       kind: `team_${command.action}`,
       detail: {
+        draftRevision,
         entity:
           command.action === "edit"
             ? { type: "team", id: command.teamId }

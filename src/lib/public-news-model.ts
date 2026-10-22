@@ -36,7 +36,7 @@ export function publicNewsKind(
   };
   return labels[item.kind];
 }
-export type NewsEdition = { edition: Edition; locked: boolean };
+export type NewsEdition = { edition: Edition; registrationPaused: boolean };
 export type OfficialNewsEvent = {
   editionSlug: string;
   kind: "mappool" | "fixture" | "result";
@@ -76,7 +76,7 @@ export function projectPublicNews(
       future: false,
       source: null,
     }));
-  for (const { edition: e, locked } of editions.filter(
+  for (const { edition: e, registrationPaused } of editions.filter(
     (r) => r.edition.published,
   )) {
     function add(
@@ -102,7 +102,9 @@ export function projectPublicNews(
     if (e.registration) {
       const r = e.registration;
       const available =
-        !locked && privacyConfigured && enrollmentState(e, now) === "open";
+        !registrationPaused &&
+        privacyConfigured &&
+        enrollmentState(e, now) === "open";
       add(
         "registration",
         "opens",

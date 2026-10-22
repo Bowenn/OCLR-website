@@ -159,7 +159,7 @@ export async function reviewApplication(
       .where(eq(registrations.id, id))
       .for("update");
     if (
-      edition.lockedAt ||
+      edition.registrationPausedAt ||
       current.status !== "pending" ||
       current.updatedAt.toISOString() !== result.data.expectedUpdatedAt
     )

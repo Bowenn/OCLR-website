@@ -28,7 +28,7 @@ export function DraftBoardView({
           <span
             className={`badge ${board.state === "live" ? "status-accepted" : "status-pending"}`}
           >
-            {draftLabels[board.state]}
+            {tr(draftLabels[board.state])}
           </span>
           <p className="eyebrow spaced">
             {board.turnCount

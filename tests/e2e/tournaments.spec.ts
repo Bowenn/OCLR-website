@@ -377,7 +377,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
       ).toBe("open");
       await db()
         .update(editionState)
-        .set({ lockedAt: new Date() })
+        .set({ registrationPausedAt: new Date() })
         .where(eq(editionState.slug, slug));
       expect(
         (await (await guest.request.get(`/api/tournaments/${slug}`)).json())
@@ -385,7 +385,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
       ).toBe("closed");
       await db()
         .update(editionState)
-        .set({ lockedAt: null })
+        .set({ registrationPausedAt: null })
         .where(eq(editionState.slug, slug));
 
       await player.addCookies([await seedSession(playerId)]);

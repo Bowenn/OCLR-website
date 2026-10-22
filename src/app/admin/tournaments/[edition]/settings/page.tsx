@@ -30,7 +30,7 @@ export default async function Settings({
             edition: data.edition,
             revision: data.revision,
             applications: data.applications,
-            frozen: data.frozen,
+            registrationPaused: data.registrationPaused,
             readiness: data.readiness,
           }}
         />

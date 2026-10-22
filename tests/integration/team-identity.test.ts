@@ -9,12 +9,8 @@ import {
 } from "vitest";
 import { sql, eq } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import {
-  editionState,
-  teams,
-  memberships,
-  editionEvents,
-} from "../../src/db/schema";
+import { teams, memberships, editionEvents } from "../../src/db/schema";
+import { draftCommand, staffDraft } from "../../src/lib/draft";
 import { prepareDraft } from "../fixtures/draft";
 import { staffTeams, updateTeams, publishedTeams } from "../../src/lib/teams";
 import { assertTestDatabase } from "../database";
@@ -92,10 +88,15 @@ describe.skipIf(!url)("targeted team identity corrections", () => {
     ).toHaveLength(1);
   });
   it("permits unlocked capacity changes but rejects shrinking below membership", async () => {
-    await db()
-      .update(editionState)
-      .set({ lockedAt: null })
-      .where(eq(editionState.slug, "team-identity-test"));
+    const current = await staffDraft(f.staff, "team-identity-test");
+    await draftCommand(f.staff, "team-identity-test", {
+      command: {
+        action: "unlock",
+        expectedSetupVersion: current.edition!.setupVersion,
+      },
+      expectedVersion: current.session!.version,
+      confirmed: true,
+    });
     const data = await staffTeams(f.staff, "team-identity-test"),
       team = data.teams[0];
     const input = {

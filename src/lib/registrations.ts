@@ -24,10 +24,10 @@ export async function registrationAvailability(
   if (!privacyReady() || !process.env.DATABASE_URL) return "unavailable";
   try {
     const [saved] = await db()
-      .select({ lockedAt: editionState.lockedAt })
+      .select({ registrationPausedAt: editionState.registrationPausedAt })
       .from(editionState)
       .where(eq(editionState.slug, edition.slug));
-    return saved?.lockedAt ? "closed" : "open";
+    return saved?.registrationPausedAt ? "closed" : "open";
   } catch {
     return "unavailable";
   }
@@ -159,7 +159,7 @@ export async function submitRegistration(
       input,
       state.configurationVersion,
     );
-    if (state.lockedAt || enrollmentState(edition) !== "open")
+    if (state.registrationPausedAt || enrollmentState(edition) !== "open")
       throw new HttpError(409, "Registration is not open.");
     const [registration] = await tx
       .insert(registrations)
@@ -256,7 +256,7 @@ export async function withdrawRegistration(
       throw new HttpError(409, "Roster withdrawal requires staff review.");
     if (captain)
       throw new HttpError(409, "Captain withdrawal requires staff review.");
-    if (!canWithdraw(edition, current, Boolean(state.lockedAt)))
+    if (!canWithdraw(edition, current, Boolean(state.registrationPausedAt)))
       throw new HttpError(
         409,
         "Withdrawal is not available. Contact tournament staff for review.",

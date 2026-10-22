@@ -259,6 +259,20 @@ describe.skipIf(!base)(
               )
             ).rows;
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+            expect(
+              (
+                await pool.query(
+                  "SELECT registration_paused_at = locked_at AS preserved FROM edition_state WHERE locked_at IS NOT NULL",
+                )
+              ).rows.every((r) => r.preserved),
+            ).toBe(true);
+            expect(
+              (
+                await pool.query(
+                  "SELECT registration_paused_at FROM edition_state WHERE locked_at IS NULL",
+                )
+              ).rows.every((r) => r.registration_paused_at === null),
+            ).toBe(true);
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
             expect(
               (

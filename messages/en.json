@@ -1822,6 +1822,21 @@
     "m7aedaeceb5d8": "Start draft",
     "m3f51277fe919": "Abort this draft and void its picks. Draft roster assignments are removed; audit history is retained.",
     "m3c93cf98a658": "Previous teams",
-    "m54c2aabdf7da": "Next teams"
+    "m54c2aabdf7da": "Next teams",
+    "meb4b508063ed": "Draft setup is editable. Registration availability is unchanged.",
+    "mb9798cf589f5": "Draft structure is locked. Tournament settings remain editable.",
+    "md5bcafa349b8": "Registration remains paused by tournament operations.",
+    "m304b02a5f2d6": "Resume registration",
+    "m87640a9cf7e9": "Captain assignments are protected. Unlock setup before picks, or use the explicit draft reset.",
+    "m94e6fa93f2ab": "This captain's team is referenced by fixtures. Resolve the fixtures before replacing the captain.",
+    "m851cd29a058b": "An assigned player's draft eligibility cannot be changed. Use supervised pick correction first.",
+    "m2f52397a7577": "Finalized rosters or match evidence protect this draft. Use supervised competition recovery.",
+    "me19fd3b60bad": "Pause the draft before resetting rehearsal picks.",
+    "m2c371b8cebea": "Confirmed turns cannot be reassigned or removed. Edit future turns, or explicitly reset the draft.",
+    "mbf26d7964c7a": "Pause and edit",
+    "m36cf641dfa56": "Unlock draft setup",
+    "m82f016911fb9": "Reset draft",
+    "m459ee921831b": "Reset this draft and return to setup. Picks are voided and draft roster assignments removed; saved order and audit history are retained. Registration stays unchanged.",
+    "mf00d697dffc9": "Registration pause removed. Enablement and time window still apply."
   }
 }

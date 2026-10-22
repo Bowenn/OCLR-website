@@ -52,18 +52,24 @@ export function DraftOrderEditor({
       generationError = (error as Error).message;
     }
   }
-  const problem = !mode
-    ? "Choose a pick order."
-    : generationError ||
-      turnSequenceStructureProblem(
-        sequence,
-        data.teams.map(({ team }) => ({
-          id: team.id,
-          capacity: team.capacity,
-          members: data.members.filter((m) => m.membership.teamId === team.id)
-            .length,
-        })),
-      );
+  const committed = data.session?.turnIndex ?? 0;
+  const problem =
+    sequence.length < committed ||
+    sequence.slice(0, committed).some((id, i) => id !== saved[i])
+      ? "Confirmed turns cannot be reassigned or removed. Edit future turns, or explicitly reset the draft."
+      : !mode
+        ? "Choose a pick order."
+        : generationError ||
+          turnSequenceStructureProblem(
+            sequence,
+            data.teams.map(({ team }) => ({
+              id: team.id,
+              capacity: team.capacity,
+              members: data.members.filter(
+                (m) => m.membership.teamId === team.id,
+              ).length,
+            })),
+          );
   const sameSaved = JSON.stringify(sequence) === JSON.stringify(saved);
   const version = data.session?.version ?? 0;
   const url = `/api/admin/tournaments/${slug}/draft`;
@@ -136,6 +142,7 @@ export function DraftOrderEditor({
                     {i + 1}
                   </span>
                   <select
+                    disabled={i < committed}
                     value={teamId}
                     onChange={(e) =>
                       setCustom(
@@ -153,6 +160,7 @@ export function DraftOrderEditor({
                 <button
                   className="secondary"
                   aria-label={tr("Remove turn {value0}", { value0: i + 1 })}
+                  disabled={i < committed}
                   onClick={() => setCustom(custom.filter((_, n) => n !== i))}
                 >
                   {tr("Remove")}
@@ -175,7 +183,8 @@ export function DraftOrderEditor({
         <h3>{tr("Sequence preview")}</h3>
         <span className="muted small">
           {sequence.length} {tr(" picks · ")}
-          {data.setupPoolSize ?? 0} {tr(" eligible players")}
+          {data.setupPoolSize ?? data.availablePool.length}{" "}
+          {tr(" eligible players")}
         </span>
       </div>
       {sequence.length > 0 && (
@@ -219,10 +228,11 @@ export function DraftOrderEditor({
       )}
       {problem && (
         <p className="muted small" role="status">
-          {problem}
+          {tr(problem)}
         </p>
       )}
-      {sequence.length > (data.setupPoolSize ?? 0) && (
+      {sequence.length - committed >
+        (data.setupPoolSize ?? data.availablePool.length) && (
         <p className="notice small">
           {tr(
             "Planned turns exceed the current pool. You can save and start; each pick requires an available player.",
@@ -249,7 +259,11 @@ export function DraftOrderEditor({
         />
         <ConfirmMutation
           requireConfirmation={false}
-          label={tr("Start draft")}
+          label={
+            data.session?.state === "paused"
+              ? tr("Resume draft")
+              : tr("Start draft")
+          }
           title={tr("Start draft")}
           description={tr(
             "Start the saved turn order. Public release remains separate.",
@@ -259,7 +273,9 @@ export function DraftOrderEditor({
           payload={{
             expectedVersion: version,
             confirmed: true,
-            command: { action: "start" },
+            command: {
+              action: data.session?.state === "paused" ? "resume" : "start",
+            },
           }}
         />
       </div>

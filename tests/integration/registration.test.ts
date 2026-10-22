@@ -182,7 +182,7 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
     const saved = await submitRegistration(a, edition.slug, valid);
     await db()
       .update(editionState)
-      .set({ lockedAt: new Date() })
+      .set({ registrationPausedAt: new Date() })
       .where(eq(editionState.slug, edition.slug));
     expect(await registrationAvailability(edition)).toBe("closed");
     await expect(

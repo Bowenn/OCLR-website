@@ -10,7 +10,7 @@ import {
 import { assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
-import { configurationFrozen, storedEdition } from "./tournaments";
+import { competitionStructureProtected, storedEdition } from "./tournaments";
 import { enrollmentState } from "./editions";
 import { getOsuUserProfile } from "./osu-profiles";
 import { parseOsuProfile } from "./osu-profile-model";
@@ -56,7 +56,7 @@ async function context(
   if (!edition) throw new HttpError(404, "Tournament not found.");
   if (
     edition.status === "completed" ||
-    (await configurationFrozen(slug, Boolean(state.lockedAt), reader))
+    (await competitionStructureProtected(slug, Boolean(state.lockedAt), reader))
   )
     throw new HttpError(
       409,
