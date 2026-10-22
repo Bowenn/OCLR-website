@@ -5,6 +5,7 @@ import { useAppTranslations } from "@/i18n/shared";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { TournamentMenu } from "./tournament-menu";
 import { Avatar } from "./avatar";
 import { ThemeControl } from "./theme-control";
 import type { Theme } from "@/lib/preferences";
@@ -232,24 +233,32 @@ export function Header({
           aria-label={tr("Main navigation")}
           className={open ? "main-nav open" : "main-nav"}
         >
-          {links.map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={
-                (
-                  href === "/"
-                    ? path === "/"
-                    : path === href || path.startsWith(`${href}/`)
-                )
-                  ? "page"
-                  : undefined
-              }
-              onClick={() => setOpen(false)}
-            >
-              {tr(href === "/" ? "navigation_home" : label)}
-            </Link>
-          ))}
+          {links.map(([href, label]) =>
+            href === "/tournaments" ? (
+              <TournamentMenu
+                key={path + href}
+                path={path}
+                onNavigate={() => setOpen(false)}
+              />
+            ) : (
+              <Link
+                key={href}
+                href={href}
+                aria-current={
+                  (
+                    href === "/"
+                      ? path === "/"
+                      : path === href || path.startsWith(`${href}/`)
+                  )
+                    ? "page"
+                    : undefined
+                }
+                onClick={() => setOpen(false)}
+              >
+                {tr(href === "/" ? "navigation_home" : label)}
+              </Link>
+            ),
+          )}
         </nav>
         <div className="site-preferences">
           <ThemeControl initialTheme={theme} />

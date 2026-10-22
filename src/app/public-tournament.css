@@ -1370,6 +1370,75 @@ html[data-theme="dark"] .themed-site {
   margin-bottom: 0.65rem;
 }
 
+/* Header edition chooser: independent floating surface, no private editions. */
+.header-tournaments {
+  position: relative;
+  min-width: 0;
+}
+.tournament-menu-heading {
+  display: flex;
+  align-items: center;
+}
+.themed-site .tournament-menu-heading > a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--site-muted);
+  text-decoration: none;
+  padding: 0.35rem 0.15rem 0.35rem 0.6rem;
+}
+.themed-site .tournament-menu-trigger {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--site-accent);
+}
+.tournament-dropdown {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(20rem, calc(100vw - 2rem));
+  max-height: min(28rem, 65svh);
+  overflow: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--site-border);
+  border-radius: 20px;
+  background: var(--site-surface);
+  box-shadow: 0 12px 36px #0002;
+}
+.themed-site .tournament-dropdown > a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--site-foreground);
+  overflow-wrap: anywhere;
+}
+.themed-site .tournament-dropdown > a:hover,
+.themed-site .tournament-dropdown > a[aria-current] {
+  background: var(--site-tint);
+  color: var(--site-accent);
+}
+.tournament-dropdown > p {
+  padding: 0.5rem 0.8rem;
+}
+@media (max-width: 760px) {
+  .tournament-menu-heading {
+    justify-content: space-between;
+  }
+  .tournament-dropdown {
+    position: static;
+    width: 100%;
+    margin: 0.25rem 0 0.5rem;
+    box-shadow: none;
+  }
+}
 .mappool-round-group > h3 {
   margin: 0.6rem 0;
 }
