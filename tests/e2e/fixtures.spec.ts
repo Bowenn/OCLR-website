@@ -130,11 +130,12 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         .getByRole("combobox", { name: /^Away team/ })
         .selectOption(away.teamId);
       await expect(
-        page.getByLabel("Associated mappool", { exact: true }),
-      ).toBeHidden();
+        page.getByRole("combobox", { name: "Associated mappool", exact: true }),
+      ).toBeVisible();
       await captureResponsiveLayout(page, info, "minimal-fixture");
-      await page.getByText("Match options", { exact: true }).focus();
-      await page.keyboard.press("Enter");
+      await expect(
+        page.getByText("Match options", { exact: true }),
+      ).toBeVisible();
       await expect(
         page.getByLabel("Fixture order within round", { exact: true }),
       ).toHaveValue("1");
@@ -293,16 +294,17 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       expect(afterUnavailable.context.result).toBeNull();
       expect(afterUnavailable.source).toBeNull();
       await page
-        .getByText("Competition configuration", { exact: true })
+        .getByRole("tab", { name: "Competition configuration", exact: true })
         .click();
-      await page
-        .getByText(`${round.name}: approved competition rules`, { exact: true })
-        .click();
-      const rules = page.locator("details").filter({
-        has: page.locator("summary", {
-          hasText: `${round.name}: approved competition rules`,
-        }),
-      });
+      const rules = page
+        .locator("section.settings-card")
+        .filter({
+          has: page.getByRole("heading", {
+            name: `${round.name}: approved competition rules`,
+            exact: true,
+          }),
+        })
+        .last();
       await rules.getByLabel("Configure approved scoring rules").check();
       await expect(
         rules.getByLabel("Approved scoring rules version"),
@@ -361,6 +363,7 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      await page.getByRole("tab", { name: "Schedule", exact: true }).click();
       await page.evaluate(() => window.scrollTo(0, 0));
       await captureResponsiveLayout(page, info, "fixtures");
       await page.screenshot({

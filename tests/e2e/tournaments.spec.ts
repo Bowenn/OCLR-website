@@ -51,8 +51,10 @@ test.describe("browser-managed authoritative tournament editions", () => {
       timeZone: "UTC",
     });
     await page.goto(`/admin/tournaments/${slug}/settings`);
-    await expect(page.getByLabel("Season identifier (optional)")).toBeHidden();
-    await expect(page.getByLabel("Square logo", { exact: true })).toBeHidden();
+    await expect(page.getByLabel("Season identifier (optional)")).toBeVisible();
+    await expect(
+      page.getByRole("combobox", { name: "Square logo", exact: true }),
+    ).toBeVisible();
     await captureResponsiveLayout(page, info, "minimal-general");
     await page.getByRole("tab", { name: "Publication", exact: true }).click();
     await page
@@ -67,8 +69,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
     expect(failed.edition.published).toBe(false);
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await page.getByRole("tab", { name: "General", exact: true }).click();
-    await page.getByText("Season & artwork", { exact: true }).focus();
-    await page.keyboard.press("Enter");
+    await expect(page.locator(".tournament-settings details")).toHaveCount(0);
     await expect(page.getByLabel("Season identifier (optional)")).toBeVisible();
     expect((await (await context.request.get(endpoint)).json()).revision).toBe(
       0,
@@ -79,17 +80,15 @@ test.describe("browser-managed authoritative tournament editions", () => {
       .click();
     await expect(page.getByRole("status")).toContainText("saved");
     await page.reload();
-    await page.getByText("Season & artwork", { exact: true }).click();
     await expect(page.getByLabel("Season identifier (optional)")).toHaveValue(
       "Test season",
     );
     await page.goto("/admin/tournaments/new");
     await page.getByLabel("Tournament name", { exact: true }).fill(name);
-    await page.getByText("Customize URL", { exact: true }).click();
+    await page.getByRole("button", { name: "Edit URL", exact: true }).click();
     await page
       .getByLabel("Permanent slug", { exact: true })
       .fill("Invalid / URL");
-    await page.getByText("Customize URL", { exact: true }).click();
     await page
       .getByRole("button", { name: "Create private draft", exact: true })
       .click();
@@ -172,7 +171,7 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Tournament name", { exact: true })
         .fill("Synthetic managed edition");
-      await page.getByText("Customize URL", { exact: true }).click();
+      await page.getByRole("button", { name: "Edit URL", exact: true }).click();
       await page.getByLabel("Permanent slug", { exact: true }).fill(slug);
       await page
         .getByRole("button", { name: "Create private draft", exact: true })
@@ -302,9 +301,9 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await page
         .getByLabel("Registration closes: time (HH:mm)", { exact: true })
         .fill("20:00");
-      await page
-        .getByText("Withdrawal & application questions", { exact: true })
-        .click();
+      await expect(
+        page.getByRole("button", { name: "Add question", exact: true }),
+      ).toBeVisible();
       await page
         .getByLabel("Withdrawal deadline: date", { exact: true })
         .fill("2099-01-01");

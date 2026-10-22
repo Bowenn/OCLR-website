@@ -141,6 +141,7 @@ export function CreateTournamentForm() {
   const tr = useAppTranslations();
 
   const router = useRouter();
+  const slugInput = useRef<HTMLInputElement>(null);
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [customSlug, setCustomSlug] = useState(false);
@@ -196,7 +197,10 @@ export function CreateTournamentForm() {
         <button
           type="button"
           className="secondary"
-          onClick={() => setCustomSlug(true)}
+          onClick={() => {
+            setCustomSlug(true);
+            requestAnimationFrame(() => slugInput.current?.focus());
+          }}
         >
           {tr("Edit URL")}
         </button>
@@ -206,6 +210,7 @@ export function CreateTournamentForm() {
           <label className="field">
             <span>{tr("Permanent slug")}</span>
             <input
+              ref={slugInput}
               pattern="[a-z0-9]+(-[a-z0-9]+)*"
               maxLength={80}
               value={slug}
@@ -567,150 +572,148 @@ function Registration({ data, saved }: EditorProps) {
           </>
         )}
       </fieldset>
-      {configured && (
-        <>
-          <fieldset className="settings-card form-stack">
-            <legend>{tr("Withdrawal deadline")}</legend>
-            <div className="form-stack">
-              <ZonedDateInput
-                label={tr("Withdrawal deadline")}
-                value={withdrawUntil}
-                timeZone={e.timeZone}
-                onChange={setWithdraw}
-                onValidityChange={setWithdrawValid}
-                optional
-              />
-            </div>
-          </fieldset>
-          <fieldset className="settings-card form-stack">
-            <legend>{tr("Application questions")}</legend>
+      <>
+        <fieldset className="settings-card form-stack" disabled={!configured}>
+          <legend>{tr("Withdrawal deadline")}</legend>
+          <div className="form-stack">
+            <ZonedDateInput
+              label={tr("Withdrawal deadline")}
+              value={withdrawUntil}
+              timeZone={e.timeZone}
+              onChange={setWithdraw}
+              onValidityChange={setWithdrawValid}
+              optional
+            />
+          </div>
+        </fieldset>
+        <fieldset className="settings-card form-stack" disabled={!configured}>
+          <legend>{tr("Application questions")}</legend>
+          <p className="muted small">
+            {tr("{count, plural, one {# question} other {# questions}}", {
+              count: questions.length,
+            })}
+          </p>
+          <div className="form-stack">
             <p className="muted small">
-              {tr("{count, plural, one {# question} other {# questions}}", {
-                count: questions.length,
-              })}
+              {tr(
+                "Collect only necessary information. Saved applications retain their original answers.",
+              )}
             </p>
-            <div className="form-stack">
-              <p className="muted small">
-                {tr(
-                  "Collect only necessary information. Saved applications retain their original answers.",
-                )}
-              </p>
-              {questions.map((q, i) => (
-                <fieldset className="form-stack" key={q.id}>
-                  <legend>
+            {questions.map((q, i) => (
+              <fieldset className="form-stack" key={q.id}>
+                <legend>
+                  {tr("Question ")}
+                  {i + 1}
+                </legend>
+                <label className="field">
+                  <span>
                     {tr("Question ")}
-                    {i + 1}
-                  </legend>
-                  <label className="field">
-                    <span>
-                      {tr("Question ")}
-                      {i + 1} {tr(" label")}
-                    </span>
-                    <input
-                      maxLength={200}
-                      value={q.label}
-                      onChange={(e) =>
-                        setQuestions(
-                          questions.map((v, j) =>
-                            j === i ? { ...v, label: e.target.value } : v,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                  <label className="check-field">
-                    <input
-                      type="checkbox"
-                      checked={q.required}
-                      onChange={(e) =>
-                        setQuestions(
-                          questions.map((v, j) =>
-                            j === i ? { ...v, required: e.target.checked } : v,
-                          ),
-                        )
-                      }
-                    />
-                    <span>
-                      {tr("Question ")}
-                      {i + 1} {tr(" is required")}
-                    </span>
-                  </label>
-                  <label className="field">
-                    <span>
-                      {tr("Question ")}
-                      {i + 1} {tr(" maximum length")}
-                    </span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={2000}
-                      value={q.maxLength}
-                      onChange={(e) =>
-                        setQuestions(
-                          questions.map((v, j) =>
-                            j === i
-                              ? { ...v, maxLength: Number(e.target.value) }
+                    {i + 1} {tr(" label")}
+                  </span>
+                  <input
+                    maxLength={200}
+                    value={q.label}
+                    onChange={(e) =>
+                      setQuestions(
+                        questions.map((v, j) =>
+                          j === i ? { ...v, label: e.target.value } : v,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <label className="check-field">
+                  <input
+                    type="checkbox"
+                    checked={q.required}
+                    onChange={(e) =>
+                      setQuestions(
+                        questions.map((v, j) =>
+                          j === i ? { ...v, required: e.target.checked } : v,
+                        ),
+                      )
+                    }
+                  />
+                  <span>
+                    {tr("Question ")}
+                    {i + 1} {tr(" is required")}
+                  </span>
+                </label>
+                <label className="field">
+                  <span>
+                    {tr("Question ")}
+                    {i + 1} {tr(" maximum length")}
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={2000}
+                    value={q.maxLength}
+                    onChange={(e) =>
+                      setQuestions(
+                        questions.map((v, j) =>
+                          j === i
+                            ? { ...v, maxLength: Number(e.target.value) }
+                            : v,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="secondary"
+                    disabled={!i}
+                    onClick={() =>
+                      setQuestions(
+                        questions.map((v, j) =>
+                          j === i - 1
+                            ? questions[i]
+                            : j === i
+                              ? questions[i - 1]
                               : v,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                  <div className="actions">
-                    <button
-                      type="button"
-                      className="secondary"
-                      disabled={!i}
-                      onClick={() =>
-                        setQuestions(
-                          questions.map((v, j) =>
-                            j === i - 1
-                              ? questions[i]
-                              : j === i
-                                ? questions[i - 1]
-                                : v,
-                          ),
-                        )
-                      }
-                    >
-                      {tr("Move question ")}
-                      {i + 1} {tr(" up")}
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary"
-                      onClick={() =>
-                        setQuestions(questions.filter((_, j) => j !== i))
-                      }
-                    >
-                      {tr("Remove question ")}
-                      {i + 1}
-                    </button>
-                  </div>
-                </fieldset>
-              ))}
-              <button
-                type="button"
-                className="secondary"
-                disabled={questions.length >= 16}
-                onClick={() =>
-                  setQuestions([
-                    ...questions,
-                    {
-                      id: `question_${crypto.randomUUID().slice(0, 8)}`,
-                      label: "",
-                      required: false,
-                      maxLength: 500,
-                    },
-                  ])
-                }
-              >
-                {tr("Add question")}
-              </button>
-            </div>
-          </fieldset>
-        </>
-      )}
+                        ),
+                      )
+                    }
+                  >
+                    {tr("Move question ")}
+                    {i + 1} {tr(" up")}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() =>
+                      setQuestions(questions.filter((_, j) => j !== i))
+                    }
+                  >
+                    {tr("Remove question ")}
+                    {i + 1}
+                  </button>
+                </div>
+              </fieldset>
+            ))}
+            <button
+              type="button"
+              className="secondary"
+              disabled={questions.length >= 16}
+              onClick={() =>
+                setQuestions([
+                  ...questions,
+                  {
+                    id: `question_${crypto.randomUUID().slice(0, 8)}`,
+                    label: "",
+                    required: false,
+                    maxLength: 500,
+                  },
+                ])
+              }
+            >
+              {tr("Add question")}
+            </button>
+          </div>
+        </fieldset>
+      </>
       <Save
         data={data}
         saved={saved}
