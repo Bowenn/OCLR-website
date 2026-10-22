@@ -32,11 +32,13 @@ function IdentityFields({
   onChange,
   published,
   children,
+  metadata,
 }: {
   published: boolean;
   value: Identity;
   onChange: (value: Identity) => void;
   children: ReactNode;
+  metadata?: ReactNode;
 }) {
   const tr = useAppTranslations();
   const assets = [
@@ -59,7 +61,12 @@ function IdentityFields({
   return (
     <>
       <fieldset className="settings-card form-stack">
-        <legend>{tr("Tournament identity")}</legend>
+        <legend>
+          {tr("Tournament identity")}
+          {metadata && (
+            <span className="settings-identity-meta">{metadata}</span>
+          )}
+        </legend>
         <label className="field">
           <span>{tr("Tournament name")}</span>
           <input
@@ -299,16 +306,17 @@ function General({ data, saved }: EditorProps) {
   });
   const [status, setStatus] = useState(data.edition.status);
   return (
-    <section className="panel form-stack">
-      <h2>{tr("General settings")}</h2>
-      <p className="muted small tournament-slug">
-        {tr("Permanent slug: ")}
-        <strong>{data.edition.slug}</strong>
-      </p>
+    <section className="general-settings form-stack">
       <IdentityFields
         value={value}
         onChange={setValue}
         published={data.edition.published}
+        metadata={
+          <>
+            {tr("Permanent slug: ")}
+            <strong>{data.edition.slug}</strong>
+          </>
+        }
       >
         <label className="field">
           <span>{tr("Tournament status")}</span>
@@ -943,6 +951,7 @@ export function TournamentEditor({ data }: { data: Workspace }) {
   return (
     <div className="tournament-settings">
       <WorkspaceTabs
+        appearance="line"
         id={id}
         label={tr("Tournament settings")}
         value={section}

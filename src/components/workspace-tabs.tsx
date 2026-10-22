@@ -8,12 +8,14 @@ export function WorkspaceTabs<T extends string>({
   items,
   value,
   onChange,
+  appearance = "segmented",
 }: {
   id: string;
   label: string;
   items: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  appearance?: "segmented" | "line";
 }) {
   const tr = useAppTranslations();
   // Reveal a restored/deep-linked tab horizontally without moving the page.
@@ -29,7 +31,12 @@ export function WorkspaceTabs<T extends string>({
       strip.scrollLeft += itemBounds.right - stripBounds.right;
   }, [id, value]);
   return (
-    <div className="workspace-tabs" role="tablist" aria-label={tr(label)}>
+    <div
+      className="workspace-tabs"
+      data-appearance={appearance}
+      role="tablist"
+      aria-label={tr(label)}
+    >
       {items.map((item, index) => (
         <button
           type="button"

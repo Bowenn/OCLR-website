@@ -366,3 +366,50 @@
 .team-editor-dialog .small {
   margin: 0;
 }
+.themed-site.private-site
+  .tournament-settings
+  .workspace-tabs[data-appearance="line"] {
+  width: max-content;
+  max-width: 100%;
+  gap: 0.25rem;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--site-border);
+  border-radius: 0;
+  background: transparent;
+  scrollbar-width: thin;
+}
+.themed-site.private-site
+  .tournament-settings
+  .workspace-tabs[data-appearance="line"]
+  button {
+  min-height: 44px;
+  padding: 0.6rem 0.8rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.themed-site.private-site
+  .tournament-settings
+  .workspace-tabs[data-appearance="line"]
+  button[aria-selected="true"] {
+  border-bottom-color: var(--site-accent);
+  color: var(--site-accent);
+}
+.themed-site.private-site
+  .tournament-settings
+  .workspace-tabs[data-appearance="line"]
+  button:hover {
+  color: var(--site-accent-strong);
+}
+.settings-identity-meta {
+  margin-inline-start: 0.75rem;
+  color: var(--site-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.general-settings > .settings-card {
+  margin-top: 0;
+}
