@@ -36,7 +36,7 @@ async function preferences(
 test.describe("focused workflow improvements", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(closeDb);
-  test("public tournament chooser and flattened single pool remain accessible", async ({
+  test("direct tournament navigation and flattened single pool remain accessible", async ({
     page,
     context,
     isMobile,
@@ -84,31 +84,13 @@ test.describe("focused workflow improvements", () => {
           height: 900,
         });
         if (isMobile) await page.locator(".menu-toggle").click();
-        const trigger = page.locator(".tournament-menu-trigger");
-        await trigger.click();
-        await expect(page.locator(".tournament-dropdown")).toBeVisible();
-        expect(
-          await page.locator(".tournament-dropdown").innerText(),
-        ).not.toContain("PRIVATE_EDITION");
-        await trigger.press("Escape");
-        await expect(trigger).toBeFocused();
-        await expect(page.locator(".tournament-dropdown")).toHaveCount(0);
-        await trigger.press("Enter");
-        await expect(page.locator(".tournament-dropdown")).toBeVisible();
+        await page.locator('.main-nav > a[href="/tournaments"]').click();
+        await expect(page).toHaveURL(/\/tournaments$/);
+        await expect(page.locator(".header-tournaments")).toHaveCount(0);
+        await expect(page.locator("main")).not.toContainText("PRIVATE_EDITION");
         await page.screenshot({
-          path: info.outputPath(`tournaments-pool-${locale}-${theme}.png`),
-          fullPage: true,
+          path: info.outputPath(`tournaments-index-${locale}-${theme}.png`),
         });
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-        ).toBe(true);
-        await page
-          .locator('.tournament-dropdown a[href="/tournaments/test-cup"]')
-          .click();
-        await expect(page).toHaveURL(/\/tournaments\/test-cup$/);
-        await expect(page.locator(".tournament-dropdown")).toHaveCount(0);
       }
   });
   test("captain publication loads saved settings and saves independent switches", async ({
