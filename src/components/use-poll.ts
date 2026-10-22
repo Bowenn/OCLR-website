@@ -16,6 +16,7 @@ export function usePoll<T>(
     options?.initiallyConnected ?? true,
   );
   const [authorizationLost, setAuthorizationLost] = useState(false);
+  const [received, setReceived] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
@@ -42,6 +43,7 @@ export function usePoll<T>(
         const next: T | null = await response.json();
         if (active) {
           setAuthorizationLost(false);
+          setReceived(true);
           setValue((current) =>
             accept && !accept(current, next) ? current : next,
           );
@@ -60,5 +62,5 @@ export function usePoll<T>(
       clearTimeout(timer);
     };
   }, [endpoint, accept, credentials]);
-  return { value, connected, authorizationLost };
+  return { value, connected, authorizationLost, received };
 }

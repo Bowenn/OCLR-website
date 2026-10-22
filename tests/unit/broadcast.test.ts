@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   acceptBroadcastSnapshot,
   shouldRevealPick,
+  newPublishedPicks,
 } from "../../src/components/broadcast-draft";
 import type { DraftBoard } from "../../src/lib/draft-types";
 
@@ -66,5 +67,25 @@ describe("published broadcast reconciliation", () => {
       shouldRevealPick(snapshot(3, ["a"]), snapshot(1, ["b"], "new-session")),
     ).toBe(false);
     expect(shouldRevealPick(snapshot(3, ["a"]), null)).toBe(false);
+  });
+  it("rejects corrections, duplicate IDs, aborted drafts and reordered histories", () => {
+    expect(
+      newPublishedPicks(snapshot(2, ["a", "b"]), snapshot(3, ["a", "c", "d"])),
+    ).toEqual([]);
+    expect(newPublishedPicks(snapshot(1), snapshot(2, ["a", "a"]))).toEqual([]);
+    expect(
+      newPublishedPicks(snapshot(1), {
+        ...snapshot(2, ["a"]),
+        state: "aborted",
+      }),
+    ).toEqual([]);
+    expect(
+      newPublishedPicks(snapshot(2, ["a", "b"]), snapshot(3, ["b", "a", "c"])),
+    ).toEqual([]);
+    expect(
+      newPublishedPicks(snapshot(1, ["a"]), snapshot(2, ["a", "b", "c"])).map(
+        (p) => p.id,
+      ),
+    ).toEqual(["b", "c"]);
   });
 });

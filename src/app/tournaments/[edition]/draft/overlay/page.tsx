@@ -2,7 +2,8 @@ import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { BroadcastDraft } from "@/components/broadcast-draft";
 import { getPublicEdition } from "@/lib/content";
-import { publicDraft } from "@/lib/draft";
+import { after } from "next/server";
+import { publicBroadcastDraft } from "@/lib/broadcast";
 import type { DraftBoard } from "@/lib/draft-types";
 
 export async function generateMetadata() {
@@ -26,7 +27,7 @@ export default async function Overlay({
   let initial: DraftBoard | null = null;
   let available = true;
   try {
-    initial = await publicDraft(slug);
+    initial = await publicBroadcastDraft(slug, after);
   } catch {
     available = false;
   }

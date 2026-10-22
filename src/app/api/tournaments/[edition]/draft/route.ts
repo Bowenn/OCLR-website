@@ -1,13 +1,18 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { publicDraft } from "@/lib/draft";
+import { publicBroadcastDraft } from "@/lib/broadcast";
 import { apiError } from "@/lib/http";
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ edition: string }> },
 ) {
   try {
     const { edition } = await context.params;
-    return NextResponse.json(await publicDraft(edition), {
+    const board =
+      new URL(request.url).searchParams.get("overlay") === "1"
+        ? await publicBroadcastDraft(edition, after)
+        : await publicDraft(edition);
+    return NextResponse.json(board, {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {

@@ -116,7 +116,7 @@ test.describe("published OBS browser-source rehearsal", () => {
     );
     await pick(captain, fixture.players[0].osuId);
     await page.waitForResponse(
-      (res) => res.url().endsWith(endpoint) && res.status() === 200,
+      (res) => new URL(res.url()).pathname === endpoint && res.status() === 200,
     );
     await expect(selection).toContainText(fixture.players[0].username);
     const withheld = await (await context.request.get(overlay)).text();
@@ -135,12 +135,14 @@ test.describe("published OBS browser-source rehearsal", () => {
     await expect(current).toContainText(fixture.b.username);
 
     // A lagging response must never rewind the already displayed published turn.
-    await page.route(`**${endpoint}`, (route) =>
+    await page.route(`**${endpoint}*`, (route) =>
       route.fulfill({ json: initial }),
     );
-    await page.waitForResponse((res) => res.url().endsWith(endpoint));
+    await page.waitForResponse(
+      (res) => new URL(res.url()).pathname === endpoint,
+    );
     await expect(selection).toContainText(fixture.players[0].username);
-    await page.unroute(`**${endpoint}`);
+    await page.unroute(`**${endpoint}*`);
     await page.reload();
     expect(await selection.evaluate((el) => el.getAnimations().length)).toBe(0);
     await context.setOffline(true);
@@ -167,7 +169,9 @@ test.describe("published OBS browser-source rehearsal", () => {
     await command("pause");
     await expect(page.locator("[data-state]")).toHaveText("Paused");
     await command("undo");
-    await page.waitForResponse((res) => res.url().endsWith(endpoint));
+    await page.waitForResponse(
+      (res) => new URL(res.url()).pathname === endpoint,
+    );
     await expect(
       selection.getByRole("heading", {
         name: fixture.players[0].username,
