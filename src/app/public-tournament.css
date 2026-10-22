@@ -1508,3 +1508,15 @@ html[data-theme="dark"] .themed-site {
   color: #e0d9ea;
   max-width: 42rem;
 }
+.brand .oclr-wordmark {
+  display: block;
+  width: 92px;
+  height: 27px;
+  flex-shrink: 0;
+}
+@media (max-width: 400px) {
+  .brand .oclr-wordmark {
+    width: 84px;
+    height: 25px;
+  }
+}

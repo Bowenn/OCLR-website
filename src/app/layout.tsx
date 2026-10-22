@@ -15,6 +15,28 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const tr = await getAppTranslations();
   return {
+    icons: {
+      icon: [
+        {
+          url: "/branding/oclr-mark.svg?v=1",
+          type: "image/svg+xml",
+          sizes: "any",
+        },
+        ...[16, 32, 48].map((size) => ({
+          url: `/branding/oclr-${size}.png?v=1`,
+          type: "image/png",
+          sizes: `${size}x${size}`,
+        })),
+      ],
+      apple: [
+        {
+          url: "/branding/oclr-180.png?v=1",
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
+      shortcut: "/branding/oclr-32.png?v=1",
+    },
     title: {
       default: "OCLR — osu! Chinese League Rookie",
       template: "%s | OCLR",
