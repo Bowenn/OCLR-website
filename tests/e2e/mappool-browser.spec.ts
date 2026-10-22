@@ -102,7 +102,10 @@ test.describe("anonymous inline mappool browser", () => {
       page.getByRole("tablist", { name: "Mappool stages" }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("heading", { name: "Group Stage", exact: true }),
+      page.getByRole("heading", {
+        name: "Group Stage · Group Round 1 · Opening pool",
+        exact: true,
+      }),
     ).toBeVisible();
     await page
       .getByRole("button", { name: "Compact table", exact: true })
@@ -153,16 +156,10 @@ test.describe("anonymous inline mappool browser", () => {
     await expect(page.getByRole("tabpanel")).toHaveCount(1);
     expect(
       await page
-        .locator(".mappool-public-round > summary h3")
-        .allTextContents(),
+        .locator(".mappool-round-group")
+        .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("aria-label"))),
     ).toEqual(["Group Round 1", "Group Round 2", "Group Round 3"]);
-    await expect(page.locator(".mappool-public-round").first()).toHaveAttribute(
-      "open",
-      "",
-    );
-    await expect(
-      page.locator(".mappool-public-round").nth(1),
-    ).not.toHaveAttribute("open");
+    await expect(page.locator(".mappool-public-round")).toHaveCount(0);
     await expect(page.locator(`#pool-${first}-maps-NM`)).toBeVisible();
     await expect(page.locator(`#pool-${supplement}-maps-HD`)).toBeVisible();
     await expect(page.locator(`#pool-${knockout}-maps-NM`)).toHaveCount(0);
@@ -213,13 +210,7 @@ test.describe("anonymous inline mappool browser", () => {
       await button.click();
     expect(navigations).toBe(0);
     await expect(page).toHaveURL(index);
-    const roundSummary = page
-      .locator(".mappool-public-round > summary")
-      .first();
-    await roundSummary.focus();
-    await page.keyboard.press("Enter");
-    await expect(page.locator(`#pool-${first}-maps-NM`)).not.toBeVisible();
-    await page.keyboard.press("Enter");
+    await expect(page.locator(".mappool-public-round")).toHaveCount(0);
     await expect(page.locator(`#pool-${first}-maps-NM`)).toBeVisible();
     await expect(page).toHaveTitle(/Published mappools/);
     const shortcut = page

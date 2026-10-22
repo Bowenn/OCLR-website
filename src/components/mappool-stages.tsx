@@ -6,7 +6,9 @@ import { WorkspaceTabs } from "./workspace-tabs";
 
 export function MappoolStages({
   stages,
+  hideSingleHeading = false,
 }: {
+  hideSingleHeading?: boolean;
   stages: { value: "group" | "knockout"; label: string; content: ReactNode }[];
 }) {
   const tr = useAppTranslations();
@@ -37,7 +39,9 @@ export function MappoolStages({
         </>
       ) : (
         <>
-          <h2 className="mappool-stage-title">{active.label}</h2>
+          {!hideSingleHeading && (
+            <h2 className="mappool-stage-title">{active.label}</h2>
+          )}
           {active.content}
         </>
       )}

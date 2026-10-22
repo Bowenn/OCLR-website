@@ -174,11 +174,12 @@ export function MappoolBrowser({
 }: {
   pool: Pool;
   slug: string;
-  headingLevel?: 2 | 5;
+  headingLevel?: 2 | 4 | 5;
 }) {
   const tr = useAppTranslations();
 
-  const CardHeading = headingLevel === 5 ? "h5" : "h2";
+  const CardHeading =
+    headingLevel === 5 ? "h5" : headingLevel === 4 ? "h4" : "h2";
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("slot");

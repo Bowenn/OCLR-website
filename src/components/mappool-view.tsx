@@ -136,7 +136,7 @@ export function MappoolView({
   headingLevel = 2,
 }: {
   pool: Pool;
-  headingLevel?: 2 | 5;
+  headingLevel?: 2 | 4 | 5;
 }) {
   const tr = useAppTranslations();
 
@@ -144,7 +144,7 @@ export function MappoolView({
     pool.entries.some((entry) => entry.category === category),
   );
   const prefix = `pool-${pool.id}`;
-  const Heading = headingLevel === 5 ? "h5" : "h2";
+  const Heading = headingLevel === 5 ? "h5" : headingLevel === 4 ? "h4" : "h2";
   if (!populated.length)
     return (
       <p className="muted small">
