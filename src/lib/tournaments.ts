@@ -315,12 +315,8 @@ export async function tournamentCommand(
         409,
         "Tournament settings changed. Refresh before saving your changes.",
       );
-    const frozen = await configurationFrozen(slug, current.locked, tx);
-    if (frozen && ["rules", "registration", "schedule"].includes(c.action))
-      throw new HttpError(
-        409,
-        "Rules, registration and milestones are frozen after setup locks or drafting begins. Competition fixtures retain their separate workflow.",
-      );
+    // Draft locks protect roster/pick structure, not versioned tournament content.
+    // Existing applications keep their original revision and acknowledgments.
     const e = current.edition;
     let next: Edition = e;
     const revisions = await tx
