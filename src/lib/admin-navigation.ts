@@ -12,6 +12,7 @@ type Destination = {
 };
 export const globalNavigation: readonly (AdminLink & {
   capability?: Capability;
+  globalOnly?: boolean;
 })[] = [
   { href: "/admin", label: "Overview", group: "Administration" },
   { href: "/admin/tournaments", label: "Tournaments", group: "Administration" },
@@ -20,6 +21,13 @@ export const globalNavigation: readonly (AdminLink & {
     label: "Staff management",
     group: "Administration",
     capability: "manage_staff",
+  },
+  {
+    href: "/admin/settings",
+    label: "Site settings",
+    group: "Administration",
+    capability: "configure_tournament",
+    globalOnly: true,
   },
   {
     href: "/admin/audit",

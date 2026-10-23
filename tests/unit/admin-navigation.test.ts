@@ -51,6 +51,16 @@ describe("administration location", () => {
     });
   });
   it("keeps global tools and creation outside an edition context", () => {
+    expect(adminBreadcrumbs("/admin/settings").map((c) => c.label)).toEqual([
+      "Administration",
+      "Site settings",
+    ]);
+    expect(
+      globalNavigation.find((link) => link.href === "/admin/settings"),
+    ).toMatchObject({
+      globalOnly: true,
+      capability: "configure_tournament",
+    });
     expect(
       adminBreadcrumbs("/admin/tournaments/new").map((c) => c.label),
     ).toEqual(["Administration", "Tournaments", "Create tournament"]);

@@ -140,8 +140,9 @@ test.describe("optional visitor-selected pastel appearance", () => {
       );
       await noOverflow(page);
       await trigger.click();
-      await page.keyboard.press("Home");
-      await page.keyboard.press("Enter");
+      await page
+        .getByRole("menuitemradio", { name: "Original design", exact: true })
+        .click();
       await expect(page.locator("html")).toHaveAttribute(
         "data-appearance",
         "default",
@@ -263,7 +264,9 @@ test.describe("optional visitor-selected pastel appearance", () => {
       await page.goto("/admin/tournaments/test-cup/settings");
       await page.locator(".appearance-trigger").click();
       await noOverflow(page);
-      await page.locator("main h1").click();
+      // The taller preference menu can overlap the heading at tablet widths.
+      // Click an actual outside target rather than a point behind the menu.
+      await page.locator(".site-footer .muted").click();
       await expect(page.locator(".appearance-control [role=menu]")).toHaveCount(
         0,
       );

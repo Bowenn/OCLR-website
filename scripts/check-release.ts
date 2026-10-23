@@ -59,6 +59,12 @@ try {
   await db().execute(sql`SELECT before, after FROM staff_role_events LIMIT 0`);
   await db().execute(sql`SELECT about_published FROM staff_roles LIMIT 0`);
   await db().execute(
+    sql`SELECT default_appearance, revision FROM site_settings LIMIT 0`,
+  );
+  await db().execute(
+    sql`SELECT actor_id, before_appearance, after_appearance, revision FROM site_setting_events LIMIT 0`,
+  );
+  await db().execute(
     sql`SELECT operation, attempt FROM registration_events LIMIT 0`,
   );
   await db().execute(sql`SELECT attempt FROM registrations LIMIT 0`);

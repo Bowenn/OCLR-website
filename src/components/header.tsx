@@ -208,10 +208,14 @@ export function Header({
   user,
   theme,
   appearance = "default",
+  defaultAppearance = "default",
+  appearancePreference,
 }: {
   user: Account | null;
   theme: Theme;
   appearance?: Appearance;
+  defaultAppearance?: Appearance;
+  appearancePreference?: Appearance;
 }) {
   const tr = useAppTranslations();
 
@@ -256,7 +260,12 @@ export function Header({
           ))}
         </nav>
         <div className="site-preferences">
-          <AppearanceControl initialAppearance={appearance} />
+          <AppearanceControl
+            key={`${defaultAppearance}:${appearancePreference ?? "site"}`}
+            initialAppearance={appearance}
+            defaultAppearance={defaultAppearance}
+            initialPreference={appearancePreference}
+          />
           <ThemeControl initialTheme={theme} />
           <LanguageControl />
         </div>

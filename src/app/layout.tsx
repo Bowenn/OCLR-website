@@ -14,7 +14,9 @@ import {
   themeCookie,
   readAppearance,
   appearanceCookie,
+  isAppearance,
 } from "@/lib/preferences";
+import { defaultSiteAppearance } from "@/lib/site-settings";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 export const dynamic = "force-dynamic";
@@ -75,7 +77,12 @@ export default async function RootLayout({
 
   const preferences = await cookies();
   const theme = readTheme(preferences.get(themeCookie)?.value);
-  const appearance = readAppearance(preferences.get(appearanceCookie)?.value);
+  const defaultAppearance = await defaultSiteAppearance();
+  const appearanceValue = preferences.get(appearanceCookie)?.value;
+  const appearancePreference = isAppearance(appearanceValue)
+    ? appearanceValue
+    : undefined;
+  const appearance = readAppearance(appearanceValue, defaultAppearance);
   const locale = await getLocale();
   let user: Awaited<ReturnType<typeof currentUser>> = null;
   let authUnavailable = false;
@@ -97,6 +104,8 @@ export default async function RootLayout({
             <Header
               theme={theme}
               appearance={appearance}
+              defaultAppearance={defaultAppearance}
+              appearancePreference={appearancePreference}
               user={
                 user
                   ? { osuId: user.osuId, username: user.username, staff }

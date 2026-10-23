@@ -4,6 +4,7 @@ import {
   appearances,
   readAppearance,
   readTheme,
+  isAppearance,
 } from "../../src/lib/preferences";
 
 describe("visitor appearance preference", () => {
@@ -33,5 +34,14 @@ describe("visitor appearance preference", () => {
       expect(readTheme("light")).toBe("light");
       expect(readTheme("cute-pastel")).toBe("light");
     }
+  });
+  it("uses the site default only when there is no valid personal override", () => {
+    expect(readAppearance(undefined, "cute-pastel")).toBe("cute-pastel");
+    expect(readAppearance("unknown", "cute-pastel")).toBe("cute-pastel");
+    expect(readAppearance("default", "cute-pastel")).toBe("default");
+    expect(readAppearance("cute-pastel", "default")).toBe("cute-pastel");
+    expect(isAppearance("default")).toBe(true);
+    expect(isAppearance(undefined)).toBe(false);
+    expect(isAppearance("site")).toBe(false);
   });
 });

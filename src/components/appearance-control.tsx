@@ -11,18 +11,27 @@ import styles from "./language-control.module.css";
 
 export function AppearanceControl({
   initialAppearance,
+  defaultAppearance = "default",
+  initialPreference,
 }: {
   initialAppearance: Appearance;
+  defaultAppearance?: Appearance;
+  initialPreference?: Appearance;
 }) {
   const tr = useAppTranslations();
   const [appearance, setAppearance] = useState(initialAppearance);
+  const [preference, setPreference] = useState<Appearance | "site">(
+    initialPreference ?? "site",
+  );
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null),
     trigger = useRef<HTMLButtonElement>(null);
-  const focus = useRef<Appearance>(appearance),
+  const focus = useRef<Appearance | "site">(preference),
     id = useId();
-  const name = (value: Appearance) =>
-    tr(value === "cute-pastel" ? "Cute pastel" : "Website default");
+  const name = (value: Appearance | "site") =>
+    value === "site"
+      ? tr("Use site default")
+      : tr(value === "cute-pastel" ? "Cute pastel" : "Original design");
   useEffect(() => {
     if (!open) return;
     root.current
@@ -87,14 +96,13 @@ export function AppearanceControl({
         aria-expanded={open}
         aria-controls={id}
         onClick={() => {
-          focus.current = appearance;
+          focus.current = preference;
           setOpen(!open);
         }}
         onKeyDown={(event) => {
           if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
           event.preventDefault();
-          focus.current =
-            event.key === "ArrowUp" ? appearances[1] : appearances[0];
+          focus.current = event.key === "ArrowUp" ? appearances[1] : "site";
           setOpen(true);
         }}
       >
@@ -121,24 +129,26 @@ export function AppearanceControl({
           className={styles.menu}
           onKeyDown={keyboard}
         >
-          {appearances.map((value) => (
+          {(["site", ...appearances] as const).map((value) => (
             <button
               key={value}
               type="button"
               role="menuitemradio"
-              aria-checked={value === appearance}
+              aria-checked={value === preference}
               tabIndex={-1}
               data-appearance-option={value}
               onClick={() => {
-                document.documentElement.dataset.appearance = value;
-                document.cookie = `${appearanceCookie}=${value}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
-                setAppearance(value);
+                const effective = value === "site" ? defaultAppearance : value;
+                document.documentElement.dataset.appearance = effective;
+                document.cookie = `${appearanceCookie}=${value === "site" ? "" : value}; Path=/; Max-Age=${value === "site" ? 0 : 31536000}; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+                setPreference(value);
+                setAppearance(effective);
                 setOpen(false);
                 trigger.current?.focus();
               }}
             >
               <span>{name(value)}</span>
-              <span aria-hidden="true">{value === appearance ? "✓" : ""}</span>
+              <span aria-hidden="true">{value === preference ? "✓" : ""}</span>
             </button>
           ))}
         </div>

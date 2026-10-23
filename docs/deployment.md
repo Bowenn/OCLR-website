@@ -471,3 +471,7 @@ versioned releases. It does not create weeks, assign Tiers or publish awards. Ap
 with the normal backup/migration procedure. An older application can leave these
 additive tables in place; never drop award or registration-attempt history as an
 automatic rollback. Review compatibility before switching releases.
+
+### Site default appearance
+
+Migration `0026_site_appearance.sql` adds a single site default and its automatic audit events, preserving the original design until a global Admin changes `/admin/settings`. The normal deployment/update script applies it; no new environment variables are required. Visitor appearance cookies override the site default. Rollback to the previous application can leave these additive tables in place; do not drop them or lose settings/history during recovery.

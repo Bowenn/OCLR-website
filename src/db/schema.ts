@@ -23,6 +23,52 @@ export const users = pgTable("users", {
     .notNull()
     .defaultNow(),
 });
+// One site-wide default; visitor cookies remain independent overrides.
+export const siteSettings = pgTable(
+  "site_settings",
+  {
+    id: integer("id").primaryKey().default(1),
+    defaultAppearance: text("default_appearance")
+      .$type<import("@/lib/preferences").Appearance>()
+      .notNull()
+      .default("default"),
+    revision: integer("revision").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check("site_settings_singleton", sql`${t.id} = 1`),
+    check("site_settings_revision", sql`${t.revision} >= 0`),
+    check(
+      "site_settings_appearance",
+      sql`${t.defaultAppearance} IN ('default', 'cute-pastel')`,
+    ),
+  ],
+);
+export const siteSettingEvents = pgTable(
+  "site_setting_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: bigint("actor_id", { mode: "number" }).references(
+      () => users.osuId,
+      { onDelete: "set null" },
+    ),
+    before: text("before_appearance").notNull(),
+    after: text("after_appearance").notNull(),
+    revision: integer("revision").notNull().unique(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check("site_setting_events_revision", sql`${t.revision} > 0`),
+    check(
+      "site_setting_events_appearances",
+      sql`${t.before} IN ('default', 'cute-pastel') AND ${t.after} IN ('default', 'cute-pastel') AND ${t.before} <> ${t.after}`,
+    ),
+  ],
+);
 // Compact public provider projection; independent of OAuth identities/participation.
 export const userProfileCache = pgTable(
   "user_profile_cache",

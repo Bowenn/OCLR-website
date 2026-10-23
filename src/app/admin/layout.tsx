@@ -26,9 +26,11 @@ export default async function StaffLayout({
   const globalLinks = globalNavigation.filter(
     (link) =>
       !link.capability ||
-      grants.some((grant) =>
-        permits([grant], link.capability!, grant.editionSlug ?? undefined),
-      ),
+      (link.globalOnly
+        ? permits(grants, link.capability)
+        : grants.some((grant) =>
+            permits([grant], link.capability!, grant.editionSlug ?? undefined),
+          )),
   );
   return (
     <StaffNavigation

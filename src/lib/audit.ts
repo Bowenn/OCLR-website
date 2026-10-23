@@ -5,6 +5,7 @@ import type { User } from "./auth/sessions";
 import { capabilityScope } from "./auth/staff";
 import { HttpError } from "./http";
 export const auditModules = [
+  "site",
   "tournament",
   "registrations",
   "captains",
@@ -149,7 +150,12 @@ const projection = sql`
   UNION ALL
   SELECT 'result', e.id, f.edition_slug, e.actor_id, e.action, CASE WHEN e.action LIKE 'fixture_%' THEN 'fixtures' ELSE 'results' END, 'fixture', f.id::text,
     e.detail->'before', e.detail->'after', (e.detail - 'before' - 'after') || jsonb_build_object('reason', e.reason), e.created_at
-  FROM result_audit_events e JOIN fixtures f ON f.id=e.fixture_id`;
+  FROM result_audit_events e JOIN fixtures f ON f.id=e.fixture_id
+  UNION ALL
+  SELECT 'site', id, NULL::text, actor_id, 'site_appearance_changed', 'site', 'site settings', '1',
+    jsonb_build_object('defaultAppearance', before_appearance, 'revision', revision - 1),
+    jsonb_build_object('defaultAppearance', after_appearance, 'revision', revision),
+    '{}'::jsonb, created_at FROM site_setting_events`;
 type AuditRow = {
   source: string;
   id: string;

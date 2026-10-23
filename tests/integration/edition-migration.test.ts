@@ -52,6 +52,24 @@ describe.skipIf(!base)(
       async () =>
         isolated(async (pool, connection) => {
           await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+          expect(
+            (
+              await pool.query(
+                "SELECT default_appearance, revision FROM site_settings",
+              )
+            ).rows,
+          ).toEqual([{ default_appearance: "default", revision: 0 }]);
+          await pool.query(
+            "UPDATE site_settings SET default_appearance='cute-pastel', revision=1 WHERE id=1",
+          );
+          await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+          expect(
+            (
+              await pool.query(
+                "SELECT default_appearance, revision FROM site_settings",
+              )
+            ).rows,
+          ).toEqual([{ default_appearance: "cute-pastel", revision: 1 }]);
           const initial = (
             await pool.query("SELECT * FROM edition_state WHERE slug='s11'")
           ).rows[0];
@@ -259,6 +277,13 @@ describe.skipIf(!base)(
               )
             ).rows;
             await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+            expect(
+              (
+                await pool.query(
+                  "SELECT default_appearance, revision FROM site_settings",
+                )
+              ).rows,
+            ).toEqual([{ default_appearance: "default", revision: 0 }]);
             expect(
               (
                 await pool.query(

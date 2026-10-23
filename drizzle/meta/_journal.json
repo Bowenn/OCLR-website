@@ -183,6 +183,13 @@
       "when": 1792692297873,
       "tag": "0025_weekly_awards",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792728488447,
+      "tag": "0026_site_appearance",
+      "breakpoints": true
     }
   ]
 }
