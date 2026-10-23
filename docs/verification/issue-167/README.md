@@ -1,0 +1,3 @@
+# S8 whitespace evidence
+
+Captured on 2026-10-24. `before-production.png` is the published S8 coach section in Simplified Chinese. The local screenshots use the identical archived text and images: English interface on desktop, Traditional Chinese/dark interface on mobile. Interface translation does not alter the source rulebook text. The before/after views show the reduced gaps, retained paragraph breaks and unchanged sponsor notice. These are not deployment acceptance screenshots. Automated browser checks additionally covered every S8/S9/S10 section, figure order and original anchors in three locales and both themes.
