@@ -1972,6 +1972,11 @@
     "m03433c29cbfc": "Confirm teams & import source",
     "ma879a9004f76": "Match source changed. Retrieve the preview again.",
     "m98d1820d70e7": "Existing teams and bracket sources are preserved. Amend conflicting fixture settings first.",
-    "m39bc5f990a47": "Approved fixture history cannot be completed from an MP preview."
+    "m39bc5f990a47": "Approved fixture history cannot be completed from an MP preview.",
+    "mfa053e56b493": "OBS Browser Source / Overlay URL",
+    "mb26d1037f1c2": "Copy URL",
+    "m28f5de31a4eb": "Only released draft information appears in the overlay.",
+    "m13e98440497e": "URL copied.",
+    "m27b5bf60e9a9": "Copy failed. Select the URL and copy it manually."
   }
 }

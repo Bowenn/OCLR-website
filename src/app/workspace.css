@@ -620,3 +620,20 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.obs-source-link {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--site-border);
+  min-width: 0;
+}
+.obs-source-link :is(textarea, .field) {
+  min-width: 0;
+  max-width: 100%;
+}
+.obs-source-link .actions,
+.obs-source-link p {
+  margin: 0;
+}
