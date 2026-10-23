@@ -153,7 +153,7 @@ test.describe("published mappools and restricted editing", () => {
         ).status(),
       ).toBe(400);
       await page.getByRole("tab", { name: "Maps", exact: true }).click();
-      await page.getByRole("button", { name: "FM (0)", exact: true }).click();
+      await page.getByRole("tab", { name: "FM (0)", exact: true }).click();
       await page
         .getByRole("button", { name: "Add a FM beatmap", exact: true })
         .click();
@@ -194,7 +194,7 @@ test.describe("published mappools and restricted editing", () => {
         .getByRole("button", { name: "Add beatmap", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "FM (1)", exact: true }),
+        page.getByRole("tab", { name: "FM (1)", exact: true }),
       ).toBeVisible();
       await expect(page.getByRole("dialog")).toHaveCount(0);
       const [entry] = await db()
@@ -217,7 +217,7 @@ test.describe("published mappools and restricted editing", () => {
         reason: null,
         after: { entries: [{ beatmapId: 123, metadata: entry.metadata }] },
       });
-      await page.getByRole("button", { name: "FM (1)", exact: true }).click();
+      await page.getByRole("tab", { name: "FM (1)", exact: true }).click();
       await expect(
         page.getByRole("heading", { name: /Synthetic Browser Song/ }),
       ).toBeVisible();

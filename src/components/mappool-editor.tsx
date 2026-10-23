@@ -401,12 +401,10 @@ export function MappoolEditor({
   const pools = data.pools.filter((p) => p.roundId === round?.id);
   const pool = pools.find((p) => p.id === poolId) ?? pools[0];
   const poolEntries = data.entries.filter((e) => e.poolId === pool?.id);
-  const entries = poolEntries
-    .filter((e) => e.category === category)
-    .sort((a, b) => a.position - b.position);
   const change = { url: `/api/admin/tournaments/${slug}/mappools` };
   const editable = Boolean(pool && !pool.lockedAt);
   const activeTask = editable ? task : "maps";
+  const selectedCategory = category;
   function resetContext() {
     setTask("maps");
     setCategory("NM");
@@ -419,6 +417,7 @@ export function MappoolEditor({
       <div className="mappool-context">
         <div className="mappool-toolbar">
           <WorkspaceTabs
+            appearance="line"
             id={`${id}-stage`}
             label={tr("Competition stage")}
             value={stage}
@@ -626,12 +625,12 @@ export function MappoolEditor({
             )
           )}
           <WorkspaceTabs
+            appearance="line"
             id={`${id}-task`}
             label={tr("Pool tools")}
             value={activeTask}
             onChange={(value) => {
               setTask(value);
-              setEditingEntry(null);
               setFeedback("");
             }}
             items={
@@ -652,155 +651,160 @@ export function MappoolEditor({
             aria-labelledby={`${id}-task-${activeTask}`}
             tabIndex={0}
           >
-            {activeTask === "maps" && (
-              <>
-                <h3 className="sr-only">{tr("Map slots")}</h3>
-                <div
-                  className="mappool-mods"
-                  role="group"
-                  aria-label={tr("Mod categories")}
-                >
-                  {categories.map((c) => (
-                    <button
-                      key={c}
-                      className="secondary"
-                      aria-pressed={category === c}
-                      data-empty={
-                        poolEntries.every((e) => e.category !== c) || undefined
-                      }
-                      onClick={() => {
-                        setCategory(c);
-                        setEditingEntry(null);
-                      }}
-                    >
-                      {c} (
-                      {
-                        data.entries.filter(
-                          (e) => e.poolId === pool.id && e.category === c,
-                        ).length
-                      }
-                      )
-                    </button>
-                  ))}
-                </div>
-                <h3 className="spaced">
-                  {category} /{" "}
-                  {category === "FM" && pool.fmMode
-                    ? pool.fmMode === "free_mod"
-                      ? fmModeNames.free_mod
-                      : fmModeNames.force_mod
-                    : categoryNames[category]}
-                </h3>
-                {entries.length > 0 && (
-                  <MappoolOrder
-                    key={`${pool.id}-${category}`}
-                    url={change.url}
-                    pool={pool}
-                    category={category}
-                    entries={entries}
-                    editable={editable}
-                    onFeedback={setFeedback}
-                    renderActions={(entry) => (
-                      <EntryEditor
-                        key={`${entry.id}-${pool.version}`}
-                        change={change}
-                        pool={pool}
-                        category={category}
-                        entry={entry}
-                        open={editingEntry === entry.id}
-                        onOpen={() => setEditingEntry(entry.id)}
-                        onClose={() => setEditingEntry(null)}
-                      />
-                    )}
-                  />
-                )}
-                {!entries.length && (
-                  <p className="notice spaced">
-                    {tr("No ")}
-                    {category} {tr(" slots configured.")}
-                  </p>
-                )}
-                {editable && (category !== "FM" || pool.fmMode) && (
-                  <div className="mappool-add-map">
-                    <button
-                      type="button"
-                      className="secondary"
-                      ref={addButton}
-                      aria-expanded={editingEntry === "new"}
-                      aria-label={tr("Add a {category} beatmap", { category })}
-                      onClick={() =>
-                        setEditingEntry(editingEntry === "new" ? null : "new")
-                      }
-                    >
-                      {tr("Add beatmap")}
-                    </button>
-                    {editingEntry === "new" && (
-                      <section
-                        className="mappool-inline-editor"
-                        aria-label={tr("Add beatmap")}
-                      >
-                        <div className="mappool-inline-heading">
-                          <h4>
-                            {tr("Add a {category} beatmap", { category })}
-                          </h4>
+            <div hidden={activeTask !== "maps"}>
+              <h3 className="sr-only">{tr("Map slots")}</h3>
+              <WorkspaceTabs
+                id={`${id}-mods`}
+                label={tr("Mod categories")}
+                appearance="line"
+                value={category}
+                onChange={setCategory}
+                items={categories.map((c) => ({
+                  value: c,
+                  label: `${c} (${poolEntries.filter((e) => e.category === c).length})`,
+                }))}
+              />
+              <div
+                role="tabpanel"
+                id={`${id}-mods-panel`}
+                aria-labelledby={`${id}-mods-${category}`}
+                tabIndex={0}
+              >
+                {categories.map((mod) => {
+                  const entries = poolEntries
+                    .filter((e) => e.category === mod)
+                    .sort((a, b) => a.position - b.position);
+                  const active = selectedCategory === mod;
+                  const category = mod;
+                  return (
+                    <div key={mod} hidden={!active}>
+                      <h3 className="spaced">
+                        {category} /{" "}
+                        {category === "FM" && pool.fmMode
+                          ? pool.fmMode === "free_mod"
+                            ? fmModeNames.free_mod
+                            : fmModeNames.force_mod
+                          : categoryNames[category]}
+                      </h3>
+                      {entries.length > 0 && (
+                        <MappoolOrder
+                          key={`${pool.id}-${category}`}
+                          url={change.url}
+                          pool={pool}
+                          category={category}
+                          entries={entries}
+                          editable={editable}
+                          onFeedback={setFeedback}
+                          renderActions={(entry) => (
+                            <EntryEditor
+                              key={`${entry.id}-${pool.version}`}
+                              change={change}
+                              pool={pool}
+                              category={category}
+                              entry={entry}
+                              open={editingEntry === entry.id}
+                              onOpen={() => setEditingEntry(entry.id)}
+                              onClose={() => setEditingEntry(null)}
+                            />
+                          )}
+                        />
+                      )}
+                      {!entries.length && (
+                        <p className="notice spaced">
+                          {tr("No ")}
+                          {category} {tr(" slots configured.")}
+                        </p>
+                      )}
+                      {editable && (category !== "FM" || pool.fmMode) && (
+                        <div className="mappool-add-map">
                           <button
                             type="button"
                             className="secondary"
-                            onClick={() => {
-                              setEditingEntry(null);
-                              addButton.current?.focus();
-                            }}
+                            ref={active ? addButton : undefined}
+                            aria-expanded={editingEntry === "new"}
+                            aria-label={tr("Add a {category} beatmap", {
+                              category,
+                            })}
+                            onClick={() =>
+                              setEditingEntry(
+                                editingEntry === "new" ? null : "new",
+                              )
+                            }
                           >
-                            {tr("Cancel")}
+                            {tr("Add beatmap")}
                           </button>
+                          {editingEntry === "new" && (
+                            <section
+                              className="mappool-inline-editor"
+                              aria-label={tr("Add beatmap")}
+                            >
+                              <div className="mappool-inline-heading">
+                                <h4>
+                                  {tr("Add a {category} beatmap", { category })}
+                                </h4>
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  onClick={() => {
+                                    setEditingEntry(null);
+                                    addButton.current?.focus();
+                                  }}
+                                >
+                                  {tr("Cancel")}
+                                </button>
+                              </div>
+                              <EntryForm
+                                key={`${pool.id}-${category}-${pool.version}`}
+                                change={change}
+                                pool={pool}
+                                category={category}
+                                entries={poolEntries}
+                                onSuccess={() => {
+                                  setEditingEntry(null);
+                                  setFeedback(tr("Map slot saved."));
+                                  requestAnimationFrame(() =>
+                                    addButton.current?.focus(),
+                                  );
+                                }}
+                              />
+                            </section>
+                          )}
                         </div>
-                        <EntryForm
-                          key={`${pool.id}-${category}-${pool.version}`}
-                          change={change}
-                          pool={pool}
-                          category={category}
-                          entries={poolEntries}
-                          onSuccess={() => {
-                            setEditingEntry(null);
-                            setFeedback(tr("Map slot saved."));
-                            requestAnimationFrame(() =>
-                              addButton.current?.focus(),
-                            );
-                          }}
-                        />
-                      </section>
-                    )}
-                  </div>
-                )}
-                {category === "FM" && !pool.fmMode && (
-                  <p className="muted">
-                    {tr(
-                      "Choose Free Mod or Force Mod in pool settings to enable FM.",
-                    )}
-                  </p>
-                )}
-              </>
-            )}
-            {(activeTask === "import" || activeTask === "batch") && (
-              <MappoolBatch
-                key={`${pool.id}-${activeTask}`}
-                url={change.url}
-                pool={pool}
-                entries={poolEntries}
-                mode={activeTask}
-                onFeedback={setFeedback}
-              />
-            )}
-            {activeTask === "settings" && (
-              <div className="mappool-settings">
-                <h3>{tr("Pool name and FM policy")}</h3>
-                <PoolSettings
-                  key={`${pool.id}-${pool.version}`}
-                  change={change}
+                      )}
+                      {category === "FM" && !pool.fmMode && (
+                        <p className="muted">
+                          {tr(
+                            "Choose Free Mod or Force Mod in pool settings to enable FM.",
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            {(["import", "batch"] as const).map((mode) => (
+              <div key={`${pool.id}-${mode}`} hidden={activeTask !== mode}>
+                <MappoolBatch
+                  url={change.url}
                   pool={pool}
+                  entries={poolEntries}
+                  mode={mode}
+                  onFeedback={setFeedback}
                 />
               </div>
-            )}
+            ))}
+            <div
+              className="mappool-settings"
+              hidden={activeTask !== "settings"}
+            >
+              <h3>{tr("Pool name and FM policy")}</h3>
+              <PoolSettings
+                key={`${pool.id}-${pool.version}`}
+                change={change}
+                pool={pool}
+              />
+            </div>
           </div>
         </section>
       ) : (
