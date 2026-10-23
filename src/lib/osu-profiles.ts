@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { userProfileCache, users } from "@/db/schema";
 import { osuApi } from "./osu-api";
@@ -12,6 +12,73 @@ import {
 } from "./osu-profile-model";
 export const PROFILE_TTL_MS = 30 * 60 * 1000;
 export const PROFILE_CACHE_LIMIT = 1000;
+export type DirectoryStatistics = {
+  globalRank: number | null;
+  pp: number | null;
+  fetchedAt: string;
+  stale: boolean;
+};
+/** Only call after publication filtering, with the current directory page's IDs. */
+export async function cachedDirectoryStatistics(osuIds: number[]) {
+  const ids = [...new Set(osuIds)];
+  if (ids.length > 24)
+    throw new HttpError(400, "Choose a valid player search and page.");
+  for (const id of ids) parseOsuProfile(String(id), "osu");
+  const statistics = new Map<number, DirectoryStatistics>();
+  if (!ids.length || !process.env.DATABASE_URL)
+    return { statistics, refreshIds: [] as number[] };
+  const rows = await db()
+    .select()
+    .from(userProfileCache)
+    .where(
+      and(
+        inArray(userProfileCache.osuId, ids),
+        eq(userProfileCache.mode, "osu"),
+      ),
+    );
+  const byId = new Map(rows.map((row) => [row.osuId, row]));
+  const now = Date.now();
+  for (const row of rows) {
+    if (!row.profile || row.errorStatus === 404) continue;
+    statistics.set(row.osuId, {
+      globalRank: row.profile.statistics.globalRank,
+      pp: row.profile.statistics.pp,
+      fetchedAt: row.profile.fetchedAt,
+      stale:
+        row.errorStatus !== null ||
+        now - Date.parse(row.profile.fetchedAt) >= PROFILE_TTL_MS,
+    });
+  }
+  // Oldest attempts first so repeated visits progressively fill the page.
+  const refreshIds = ids
+    .filter((id) => {
+      const row = byId.get(id);
+      return (
+        (!row || row.retryAt.getTime() <= now) &&
+        (!statistics.has(id) || statistics.get(id)!.stale)
+      );
+    })
+    .sort(
+      (a, b) =>
+        (byId.get(a)?.attemptedAt.getTime() ?? 0) -
+        (byId.get(b)?.attemptedAt.getTime() ?? 0),
+    );
+  return { statistics, refreshIds };
+}
+let directoryRefreshAfter = 0;
+/** Post-response only: at most two sequential lookups per 10s per Node process.
+ * Existing profile claims/backoff and the shared provider pacer still apply. */
+export async function refreshDirectoryStatistics(osuIds: number[]) {
+  if (!osuIds.length || Date.now() < directoryRefreshAfter) return;
+  directoryRefreshAfter = Date.now() + 10000;
+  for (const id of [...new Set(osuIds)].slice(0, 2)) {
+    try {
+      await getOsuUserProfile(id, "osu");
+    } catch {
+      // The profile service retains last-good data and records retry backoff.
+    }
+  }
+}
 const pending = new Map<string, Promise<ProfileSnapshot>>();
 function saved(
   row: typeof userProfileCache.$inferSelect,
