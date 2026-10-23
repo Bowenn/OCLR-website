@@ -1,5 +1,6 @@
 "use client";
 
+import { BeatmapCover } from "./beatmap-cover";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
@@ -97,8 +98,10 @@ type Pool = HistoricalArchive["pools"][number];
 export function ArchiveMappools({
   pool,
   stages,
+  artworkSetIds,
 }: {
   pool: Pool;
+  artworkSetIds: Record<number, number | null>;
   stages: { id: string; name: string; count: number; href: string }[];
 }) {
   const tr = useAppTranslations(),
@@ -280,11 +283,9 @@ export function ArchiveMappools({
               >
                 {view === "cards" ? (
                   <div className="map-card-cover">
-                    <div className="beatmap-cover">
-                      <span className="muted small">
-                        {tr("Cover unavailable")}
-                      </span>
-                    </div>
+                    <BeatmapCover
+                      setId={m.beatmapId ? artworkSetIds[m.beatmapId] : null}
+                    />
                     <span className="map-slot-badge">{m.slot}</span>
                   </div>
                 ) : (

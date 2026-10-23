@@ -1,3 +1,4 @@
+import { archiveArtworkSetIds } from "@/lib/archive-artwork";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArchivePlayerSearch } from "./archive-player-search";
@@ -365,6 +366,9 @@ export async function HistoricalArchiveView({
       <ArchiveMappools
         key={pool.id}
         pool={pool}
+        artworkSetIds={await archiveArtworkSetIds(
+          pool.maps.map((m) => m.beatmapId),
+        )}
         stages={a.pools.map((p) => ({
           id: p.id,
           name: p.name,
