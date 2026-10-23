@@ -1,3 +1,4 @@
+import { getOsuUserProfile } from "@/lib/osu-profiles";
 import { applicationAnswers } from "@/lib/application-answers";
 import Link from "next/link";
 import { RegistrationRemoval } from "@/components/registration-removal";
@@ -25,14 +26,59 @@ export default async function Application({
     const data = await applicationDetails(actor, id);
     if (data.registration.editionSlug !== slug) notFound();
     const { registration: r, username } = data;
-    const record = await readTournament(r.editionSlug);
+    const [record, snapshot] = await Promise.all([
+      readTournament(r.editionSlug),
+      getOsuUserProfile(r.userId, "osu").catch(() => null),
+    ]);
     const edition = record?.edition;
+    const profile = snapshot?.profile;
+    const stats = profile?.statistics;
+    const number = new Intl.NumberFormat(tr.locale, {
+      maximumFractionDigits: 2,
+    });
     return (
       <>
-        <PageHeading eyebrow={edition?.name ?? r.editionSlug} title={username}>
-          {tr("Private individual application · osu! ID ")}
-          {r.userId}
-        </PageHeading>
+        <div className="application-heading">
+          <PageHeading
+            eyebrow={edition?.name ?? r.editionSlug}
+            title={username}
+          >
+            {tr("Private individual application · osu! ID ")}
+            {r.userId}
+          </PageHeading>
+          <div className="application-profile-summary">
+            <span className="muted small">{"osu!standard"}</span>
+            <dl>
+              <div>
+                <dt>{tr("Global rank")}</dt>
+                <dd>
+                  {stats?.globalRank != null && stats.globalRank > 0
+                    ? `#${number.format(stats.globalRank)}`
+                    : tr("Unavailable")}
+                </dd>
+              </div>
+              <div>
+                <dt>PP</dt>
+                <dd>
+                  {stats?.pp != null
+                    ? number.format(stats.pp)
+                    : tr("Unavailable")}
+                </dd>
+              </div>
+            </dl>
+            {snapshot?.stale && (
+              <span className="badge">{tr("SAVED SNAPSHOT")}</span>
+            )}
+            <p className="muted small">
+              {profile
+                ? tr("Updated {value0}{value1}", {
+                    value0: formatDate(profile.fetchedAt, "UTC", tr.locale),
+                    value1: "",
+                  })
+                : tr("osu! statistics are temporarily unavailable.")}
+            </p>
+          </div>
+        </div>
         <section className="panel">
           <span className={`badge status-${r.status}`}>{tr(r.status)}</span>
           {r.status === "withdrawn" &&

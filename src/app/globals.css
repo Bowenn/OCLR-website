@@ -4170,3 +4170,40 @@ body:has([data-broadcast]) .site-shell {
 .captain-draft-room .draft-player-list {
   max-height: 14rem;
 }
+
+/* Applicant profile data stays separate from the saved eligibility decision. */
+.application-heading .page-heading {
+  margin-bottom: 0.75rem;
+}
+.application-profile-summary,
+.application-profile-summary dl,
+.application-profile-summary dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.25rem;
+}
+.application-profile-summary {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+.application-profile-summary dl,
+.application-profile-summary p {
+  margin: 0;
+}
+.application-profile-summary dl > div {
+  gap: 0.4rem;
+}
+.application-profile-summary dt {
+  color: var(--color-muted);
+}
+.application-profile-summary dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.application-profile-summary > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
