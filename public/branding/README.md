@@ -2,12 +2,13 @@
 
 Approved minimal **OCLR** wordmark for **osu! Chinese League Rookie**.
 
-- The **O** is a circular pink-to-purple gradient, sized to the same letter height as **CLR**; the latter is solid, with dark/light variants. No extra star, slider tail, or outer emblem.
-- `oclr-wordmark.svg` / `oclr-wordmark-dark.svg`: transparent wordmark for dark surfaces. `oclr-wordmark-light.svg`: transparent wordmark for light surfaces.
-- `src/components/oclr-logo.tsx` renders matching paths in the Header, adapting the letters to the selected site theme without downloading a font.
-- `oclr-mark.svg`: just the transparent gradient **O**, used for favicon. `oclr-mark-mono.svg`: no-background single-color outline.
-- `oclr-16.png`, `oclr-32.png`, `oclr-48.png`, and `oclr-180.png`: transparent favicon/touch-icon PNGs rendered from the same circular mark.
-- The standard wordmark uses a 260 × 92 viewBox; the O ring and CLR letters share the same optical cap height. Keep clear space around the lettering and do not squeeze the mark. Small icons use the **O only**; don't downscale the entire wordmark.
-- This is independent community-event branding, not osu!'s official logo. No copyrighted character art, external imagery, or packaged font files are included.
+- All four letterforms (**O**, **C**, **L**, **R**) are outlined from the **same Inter Display Black** typeface at the same scale and baseline, retaining the font's intentional optical overshoot. The shapes are SVG paths, so rendering requires no downloaded or locally installed font.
+- Only the **O** uses the existing pink-to-purple gradient; **CLR** is solid and theme-aware. No extra star, slider tail, background, or outer emblem.
+- `oclr-wordmark.svg` / `oclr-wordmark-dark.svg`: transparent wordmark with light CLR lettering for dark surfaces. `oclr-wordmark-light.svg`: transparent wordmark with dark CLR lettering for light surfaces.
+- `src/components/oclr-logo.tsx` uses those same four paths in the website Header, with CLR inheriting the site's current foreground color.
+- `oclr-mark.svg`: existing transparent gradient circular **O** favicon mark (intentionally unchanged). `oclr-mark-mono.svg`: monochrome favicon mark.
+- `oclr-16.png`, `oclr-32.png`, `oclr-48.png`, and `oclr-180.png`: existing transparent favicon/touch-icon PNGs (unchanged).
+- The wordmark uses a **238 × 74** viewBox. Keep its aspect ratio and clear space; the Header normally renders it at 106 px wide, or 94 px on narrow screens. Small icons use the standalone favicon mark, not a downscaled full wordmark.
+- The outlines derive from **Inter** (SIL Open Font License 1.1), with no font binaries bundled. This is independent community-event branding, not osu!'s official logo.
 
-The brand reference rendering was approved for this simple wordmark direction. The earlier Open Lane implementation and experimental directions in `docs/design/oclr-logo-concepts.svg` are superseded by these assets.
+The previous hand-drawn CLR and circular O combination, the earlier Open Lane implementation, and experimental directions in `docs/design/oclr-logo-concepts.svg` are superseded by this wordmark.
