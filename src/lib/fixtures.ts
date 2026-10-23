@@ -1,3 +1,4 @@
+import { assertOperationalEdition } from "./archive-guard";
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
@@ -247,6 +248,7 @@ export async function assignFixtureReferees(
     // Share the role-management lock so a concurrent revocation cannot pass a stale eligibility check.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(17301)`);
     await assertCapability(actor, "manage_fixtures", slug, tx);
+    await assertOperationalEdition(slug, tx);
     const [fixture] = await tx
       .select()
       .from(fixtures)
@@ -630,6 +632,7 @@ export async function fixtureCommand(
         .where(eq(editionState.slug, slug))
         .for("update");
       await assertCapability(actor, "manage_fixtures", slug, tx);
+      await assertOperationalEdition(slug, tx);
       if (c.action === "stage_groups") {
         const [stage] = await tx
           .select()

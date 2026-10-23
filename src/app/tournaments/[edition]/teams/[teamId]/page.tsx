@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { TeamAvatar } from "@/components/team-avatar";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
@@ -13,6 +14,8 @@ export default async function Team({
   const tr = await getAppTranslations();
 
   const { edition, teamId } = await params;
+  const archivePage = await historicalPage(edition, "team", teamId);
+  if (archivePage) return archivePage;
   const team = (await publishedTeams(edition)).find((t) => t.id === teamId);
   if (!team) notFound();
   return (

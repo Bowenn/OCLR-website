@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import { publicBracket } from "@/lib/brackets";
 import { formatDate } from "@/lib/editions";
@@ -16,6 +17,8 @@ export default async function Bracket({
   const tr = await getAppTranslations();
 
   const { edition } = await params;
+  const archivePage = await historicalPage(edition, "bracket");
+  if (archivePage) return archivePage;
   const bracket = await publicBracket(edition);
   return (
     <>

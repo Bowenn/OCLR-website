@@ -1,3 +1,4 @@
+import { assertOperationalEdition } from "./archive-guard";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
@@ -114,6 +115,7 @@ export async function updateTeams(
       .where(eq(editionState.slug, slug))
       .for("update");
     await assertCapability(actor, "manage_teams", slug, tx);
+    await assertOperationalEdition(slug, tx);
     if (!state || state.setupVersion !== expectedVersion)
       throw new HttpError(409, "Setup changed. Refresh before continuing.");
     const protection = await draftSetupProtection(tx, slug);

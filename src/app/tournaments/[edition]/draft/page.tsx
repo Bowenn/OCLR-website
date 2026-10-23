@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicDraft } from "@/lib/draft";
@@ -18,6 +19,8 @@ export default async function Draft({
   const tr = await getAppTranslations();
 
   const { edition } = await params;
+  const archivePage = await historicalPage(edition, "draft");
+  if (archivePage) return archivePage;
   const presenter = (await searchParams).presenter === "1";
   return (
     <>

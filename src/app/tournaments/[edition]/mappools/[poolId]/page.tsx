@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,6 +18,8 @@ export default async function PoolPage({
   const tr = await getAppTranslations();
 
   const { edition, poolId } = await params;
+  const archivePage = await historicalPage(edition, "pool", poolId);
+  if (archivePage) return archivePage;
   const [pool] = await publicMappools(edition, poolId);
   if (!pool) notFound();
   return (

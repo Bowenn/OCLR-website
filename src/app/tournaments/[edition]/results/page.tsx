@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { getPublicEdition } from "@/lib/content";
@@ -18,6 +19,8 @@ export default async function Results({
   const tr = await getAppTranslations();
 
   const { edition: slug } = await params;
+  const archivePage = await historicalPage(slug, "results");
+  if (archivePage) return archivePage;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const data = await publicCompetition(slug);

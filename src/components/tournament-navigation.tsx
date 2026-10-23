@@ -10,10 +10,12 @@ import { publicTournamentSection } from "@/lib/public-navigation";
 function Navigation({
   slug,
   liveDraft,
+  archived = false,
   mobileMenu = false,
 }: {
   slug: string;
   liveDraft: boolean;
+  archived?: boolean;
   mobileMenu?: boolean;
 }) {
   const tr = useAppTranslations();
@@ -33,6 +35,7 @@ function Navigation({
     ["bracket", "Bracket"],
     ["players", "Players"],
     ...(liveDraft ? [["draft", "Live draft"]] : []),
+    ...(archived ? [["draft", "Draft results"]] : []),
   ];
   const active = publicTournamentSection(pathname, base);
   return (
@@ -78,6 +81,7 @@ function Navigation({
 export function TournamentNavigation(props: {
   slug: string;
   liveDraft: boolean;
+  archived?: boolean;
   mobileMenu?: boolean;
 }) {
   const path = usePathname();
@@ -89,11 +93,13 @@ export function TournamentShell({
   slug,
   name,
   liveDraft,
+  archived = false,
   children,
 }: {
   slug: string;
   name: string;
   liveDraft: boolean;
+  archived?: boolean;
   children: ReactNode;
 }) {
   const tr = useAppTranslations();
@@ -114,7 +120,11 @@ export function TournamentShell({
             {tr("Tournaments")}
           </Link>
           <h2>{name}</h2>
-          <TournamentNavigation slug={slug} liveDraft={liveDraft} />
+          <TournamentNavigation
+            slug={slug}
+            liveDraft={liveDraft}
+            archived={archived}
+          />
         </aside>
         <div className="workspace-main">{children}</div>
       </div>
@@ -131,7 +141,12 @@ export function TournamentShell({
             {name}
           </Link>
         </div>
-        <TournamentNavigation slug={slug} liveDraft={liveDraft} mobileMenu />
+        <TournamentNavigation
+          slug={slug}
+          liveDraft={liveDraft}
+          archived={archived}
+          mobileMenu
+        />
       </div>
       <div className="event-content">{children}</div>
     </div>

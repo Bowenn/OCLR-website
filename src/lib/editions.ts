@@ -1,6 +1,7 @@
 import { appearances } from "./preferences";
 import { eligibilityLimitsSchema } from "./eligibility-model";
 import { z } from "zod";
+import { historicalArchiveSchema } from "./historical-archive";
 const instant = z.iso.datetime({ offset: true });
 const questionFields = {
   id: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/),
@@ -67,6 +68,7 @@ export const editionSchema = z
       .strict()
       .default({ logo: null, background: null, keyVisual: null }),
     defaultAppearance: z.enum(appearances).nullable().optional(),
+    archive: historicalArchiveSchema.optional(),
     published: z.boolean(),
     status: z.enum(["upcoming", "live", "completed"]),
     summary: z.string().trim().max(2000),
@@ -140,6 +142,17 @@ export const editionSchema = z
       .max(64),
   })
   .strict()
+  .refine(
+    (edition) =>
+      !edition.archive ||
+      (edition.status === "completed" &&
+        edition.archive.editionSlug === edition.slug &&
+        !edition.registration),
+    {
+      message:
+        "Historical archives require a matching completed edition without registration.",
+    },
+  )
   .refine((edition) => !edition.published || Boolean(edition.summary), {
     path: ["summary"],
     message: "Add a public summary before publishing.",

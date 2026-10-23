@@ -12,6 +12,7 @@ import {
   registrations,
   draftSessions,
   teams,
+  tournamentStages,
 } from "@/db/schema";
 import { assertCapability, staffAccess, permits } from "./auth/staff";
 import type { User } from "./auth/sessions";
@@ -95,6 +96,13 @@ const createSchema = z
   })
   .strict();
 const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...version,
+      action: z.literal("archive"),
+      archive: shape.archive.unwrap(),
+    })
+    .strict(),
   z
     .object({
       ...version,
@@ -327,6 +335,32 @@ export async function tournamentCommand(
     const e = current.edition;
     let next: Edition = e;
     let registrationPausedAt = state.registrationPausedAt;
+    if (c.action === "archive") {
+      if (e.published || e.status !== "completed" || e.registration)
+        throw new HttpError(
+          409,
+          "Import archives into an unpublished, completed tournament without registration.",
+        );
+      // Serialize with live setup writers. Never disguise operational history as an archive.
+      for (const table of [
+        registrations,
+        teams,
+        draftSessions,
+        tournamentStages,
+      ]) {
+        const rows = await tx
+          .select({ slug: table.editionSlug })
+          .from(table)
+          .where(eq(table.editionSlug, slug))
+          .limit(1);
+        if (rows.length)
+          throw new HttpError(
+            409,
+            "This tournament already has live competition data. Use a separate historical edition.",
+          );
+      }
+      next = { ...e, archive: c.archive };
+    }
     if (c.action === "enrollment") {
       if (!c.paused) {
         const blockers = registrationBlockers(e, privacyReady());

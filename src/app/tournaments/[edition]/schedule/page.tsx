@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import { publicCompetition } from "@/lib/public-competition";
 import { PublicMatches } from "@/components/public-matches";
@@ -18,6 +19,8 @@ export default async function Schedule({
   const tr = await getAppTranslations();
 
   const { edition: slug } = await params;
+  const archivePage = await historicalPage(slug, "schedule");
+  if (archivePage) return archivePage;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const competition = await publicCompetition(slug);

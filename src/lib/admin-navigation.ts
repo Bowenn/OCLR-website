@@ -45,6 +45,11 @@ export const tournamentNavigation: readonly {
     items: [
       { path: "", label: "Dashboard" },
       {
+        path: "archive",
+        label: "Historical archive",
+        capabilities: ["configure_tournament"],
+      },
+      {
         path: "settings",
         label: "Settings",
         capabilities: ["configure_tournament"],

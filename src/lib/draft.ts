@@ -1,3 +1,4 @@
+import { assertOperationalEdition } from "./archive-guard";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
@@ -351,6 +352,7 @@ export async function draftCommand(actor: User, slug: string, input: unknown) {
       .where(eq(editionState.slug, slug))
       .for("update");
     await assertCapability(actor, "manage_draft", slug, tx);
+    await assertOperationalEdition(slug, tx);
     if (!edition)
       throw new HttpError(409, "Configure captains and teams first.");
     if (["configure", "unlock"].includes(command.action))

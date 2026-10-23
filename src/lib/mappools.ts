@@ -1,3 +1,4 @@
+import { assertOperationalEdition } from "./archive-guard";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
@@ -540,6 +541,7 @@ export async function mappoolCommand(
         .where(eq(editionState.slug, slug))
         .for("update");
       await assertCapability(actor, "manage_mappools", slug, tx);
+      await assertOperationalEdition(slug, tx);
       if (c.action === "round_delete") {
         const [round] = await tx
           .select()

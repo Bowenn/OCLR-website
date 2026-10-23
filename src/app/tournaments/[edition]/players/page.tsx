@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicPlayers } from "@/lib/players";
@@ -35,6 +36,8 @@ export default async function Players({
   const tr = await getAppTranslations();
 
   const { edition } = await params;
+  const archivePage = await historicalPage(edition, "players");
+  if (archivePage) return archivePage;
   if (!(await getPublicEdition(edition))) notFound();
   const base = `/tournaments/${edition}/players`;
   let result;

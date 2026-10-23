@@ -8,15 +8,20 @@ export async function EditionCard({ edition }: { edition: Edition }) {
 
   const state = await registrationAvailability(edition);
   const summary = publicEditionSummary(edition.summary);
+  const historical = edition.status === "completed";
   return (
     <article className="edition-card">
       <EditionArtwork slug={edition.slug} logo={edition.branding.logo} />
       <div className="edition-copy">
-        {state !== "open" && (
-          <Badge>
-            {tr("Registration: ")}
-            {tr(state)}
-          </Badge>
+        {historical ? (
+          <Badge>{tr("Historical archive")}</Badge>
+        ) : (
+          state !== "open" && (
+            <Badge>
+              {tr("Registration: ")}
+              {tr(state)}
+            </Badge>
+          )
         )}
         <h2>{edition.name}</h2>
         {summary && <p className="muted">{summary}</p>}
@@ -31,32 +36,36 @@ export async function EditionCard({ edition }: { edition: Edition }) {
           </Action>
         </div>
       </div>
-      <dl className="edition-facts">
-        <div>
-          <dt>{tr("Registration opens")}</dt>
-          <dd>
-            {tr(
-              formatDate(
-                edition.registration?.opensAt ?? null,
-                edition.timeZone,
-                tr.locale,
-              ),
-            )}
-          </dd>
-        </div>
-        <div>
-          <dt>{tr("Registration closes")}</dt>
-          <dd>
-            {tr(
-              formatDate(
-                edition.registration?.closesAt ?? null,
-                edition.timeZone,
-                tr.locale,
-              ),
-            )}
-          </dd>
-        </div>
-      </dl>
+      {historical ? (
+        <p className="muted">{edition.season ?? edition.name}</p>
+      ) : (
+        <dl className="edition-facts">
+          <div>
+            <dt>{tr("Registration opens")}</dt>
+            <dd>
+              {tr(
+                formatDate(
+                  edition.registration?.opensAt ?? null,
+                  edition.timeZone,
+                  tr.locale,
+                ),
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>{tr("Registration closes")}</dt>
+            <dd>
+              {tr(
+                formatDate(
+                  edition.registration?.closesAt ?? null,
+                  edition.timeZone,
+                  tr.locale,
+                ),
+              )}
+            </dd>
+          </div>
+        </dl>
+      )}
     </article>
   );
 }

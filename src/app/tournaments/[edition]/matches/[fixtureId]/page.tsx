@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,6 +18,8 @@ export default async function MatchPage({
   const tr = await getAppTranslations();
 
   const { edition: slug, fixtureId } = await params;
+  const archivePage = await historicalPage(slug, "match", fixtureId);
+  if (archivePage) return archivePage;
   const f = await publicFixture(slug, fixtureId);
   if (!f) notFound();
   const result = f.result;

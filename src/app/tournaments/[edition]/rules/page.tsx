@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { hasEligibilityLimits } from "@/lib/eligibility-model";
 import { getAppTranslations } from "@/i18n/server";
 import { RulesHandbook } from "@/components/rules-handbook";
@@ -17,6 +18,8 @@ export default async function Rules({
   const tr = await getAppTranslations();
 
   const { edition: slug } = await params;
+  const archivePage = await historicalPage(slug, "rules");
+  if (archivePage) return archivePage;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   return (

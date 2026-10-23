@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { publicAwards } from "@/lib/awards";
 import { getAppTranslations } from "@/i18n/server";
+import { historicalPage } from "@/components/historical-archive";
 import { PageHeading } from "@/components/ui";
 import { AwardPolicy } from "@/components/award-policy";
 import { AwardTable } from "@/components/award-table";
@@ -17,7 +18,10 @@ export default async function Awards({
   searchParams: Promise<{ week?: string }>;
 }) {
   const tr = await getAppTranslations();
-  const releases = await publicAwards((await params).edition);
+  const slug = (await params).edition;
+  const archivePage = await historicalPage(slug, "awards");
+  if (archivePage) return archivePage;
+  const releases = await publicAwards(slug);
   if (!releases) notFound();
   const requested = Number((await searchParams).week);
   const selected = releases.some((r) => r.week === requested)

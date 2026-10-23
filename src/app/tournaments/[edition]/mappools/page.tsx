@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { publicMappools } from "@/lib/mappools";
@@ -15,6 +16,8 @@ export default async function MappoolsPage({
 }) {
   const tr = await getAppTranslations();
   const { edition } = await params;
+  const archivePage = await historicalPage(edition, "mappools");
+  if (archivePage) return archivePage;
   const pools = await publicMappools(edition);
   const stages = (["group", "knockout"] as const).flatMap((stage) => {
     const released = pools.filter((pool) => pool.stage === stage);

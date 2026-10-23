@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import { publishedTeams } from "@/lib/teams";
 import { publicCompetition } from "@/lib/public-competition";
@@ -16,6 +17,8 @@ export default async function Teams({
   const tr = await getAppTranslations();
 
   const { edition } = await params;
+  const archivePage = await historicalPage(edition, "teams");
+  if (archivePage) return archivePage;
   const [teams, competition] = await Promise.all([
     publishedTeams(edition),
     publicCompetition(edition),

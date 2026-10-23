@@ -1,3 +1,4 @@
+import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { registrationAvailability } from "@/lib/registrations";
@@ -31,6 +32,8 @@ export default async function Overview({
   const tr = await getAppTranslations();
 
   const { edition: slug } = await params;
+  const archivePage = await historicalPage(slug, "overview");
+  if (archivePage) return archivePage;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
   const now = new Date().getTime();

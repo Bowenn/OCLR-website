@@ -1,0 +1,2896 @@
+{
+  "formatVersion": 1,
+  "editionSlug": "s9",
+  "sourceUrl": "https://docs.google.com/spreadsheets/d/11PwNlEsUFb6f3VCY2-sdGlPysP0ukihN8_lE4DGuzfA/edit",
+  "capturedOn": "2026-10-23",
+  "notes": [
+    "資料來源為主辦方提供的 S9 歷史試算表快照，賽程日期為 2023-11-04 至 2023-12-10，原表時間為 UTC+8。",
+    "收錄 8 隊、64 名隊員（含 8 名 Captain）、8 名教練、4 名自由選手、56 筆選秀、19 名工作人員及 4 個圖池的 76 個位置。名稱保留各來源表的歷史寫法。",
+    "22 場對局有原表比分及 MP 連結。20A、20B、20C、20D、22A、22B 只有排期，是否進行及結果未確認，不計入已完成賽果。",
+    "Reg List 原始名單有 92 筆、篩選後顯示 68 筆；此歸檔只從 Team 與 Draft 的明確名單收錄身分，不將原始報名名單推定為已通過報名。",
+    "個人聯絡方式、報名答案、評語、選秀預測、聊天工作表及失效圖片公式均未匯入。工作人員職位只作歷史展示，不授予網站權限。",
+    "MRA、逐圖統計及賽事規則保留來源連結，尚未匯入逐圖成績或重算獎項。Weekly Awards 的結果存在失效引用，未據此推定獲獎者。",
+    "圖池屬性保留當年來源值，可能已包含 Mod 效果；不作目前 API 屬性或即時星數。Drain 單位為秒。",
+    "獨立圖池與總表存在衝突，GS TB1 的 ID、製圖者及相異屬性，以及 SF NM6／GF NM1 的星數暫留空，等待主辦方核對。"
+  ],
+  "links": [
+    {
+      "label": "Rule Doc",
+      "url": "https://docs.google.com/document/d/1MnBdNWzx81dfB3QnYq4zY3BjR-d7m3sJC7UZcZgIwMg/edit"
+    },
+    {
+      "label": "Challonge",
+      "url": "https://challonge.com/zh_TW/n9nygy2s"
+    },
+    {
+      "label": "OCLR S9 Draft Stream",
+      "url": "https://www.bilibili.com/video/BV1XN41137qk/"
+    },
+    {
+      "label": "Group Stage Stats",
+      "url": "https://docs.google.com/spreadsheets/d/1u9WXqu7KCQ53I_yQE6YCnl66pd3DW26HOpfZhbZV27w/"
+    },
+    {
+      "label": "Semi-Finals Stats",
+      "url": "https://docs.google.com/spreadsheets/d/1fpynjDMvfBnsL9-7t5EoCH-W9xK53dHjW7TI64oQHQo/"
+    },
+    {
+      "label": "Finals Stats",
+      "url": "https://docs.google.com/spreadsheets/d/1vcOwK__DjXs8A-BgQp4GclyN8Wg1lP6GoAwPgXR4AUs/"
+    },
+    {
+      "label": "Grand Finals Stats",
+      "url": "https://docs.google.com/spreadsheets/d/11uXtPS-33PjvSRAgg_g_X4pr6D0FY9-i9iiBQE7cyV0/"
+    }
+  ],
+  "teams": [
+    {
+      "id": "team-a",
+      "name": "你们这里谁最会EX",
+      "source": "Team!G9:AZ9"
+    },
+    {
+      "id": "team-b",
+      "name": "土地瓜队",
+      "source": "Team!G11:AZ11"
+    },
+    {
+      "id": "team-c",
+      "name": "不可选取",
+      "source": "Team!G13:AZ13"
+    },
+    {
+      "id": "team-d",
+      "name": "Baby birth",
+      "source": "Team!G15:AZ15"
+    },
+    {
+      "id": "team-e",
+      "name": "猪翅堡店",
+      "source": "Team!G17:AZ17"
+    },
+    {
+      "id": "team-f",
+      "name": "你怎么知道我一发十连出了水梓",
+      "source": "Team!G19:AZ19"
+    },
+    {
+      "id": "team-g",
+      "name": "彼瘾犯了",
+      "source": "Team!G21:AZ21"
+    },
+    {
+      "id": "team-h",
+      "name": "對手太強怎麼贏",
+      "source": "Team!G23:AZ23"
+    }
+  ],
+  "players": [
+    {
+      "osuId": 9697708,
+      "username": "VialVistas",
+      "teamId": "team-a",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K9"
+    },
+    {
+      "osuId": 8742486,
+      "username": "- Rainbow -",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P9"
+    },
+    {
+      "osuId": 7210268,
+      "username": "Tomoe",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U9"
+    },
+    {
+      "osuId": 7990368,
+      "username": "QiCaiLieMaxMox",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z9"
+    },
+    {
+      "osuId": 16134378,
+      "username": "Akisa 18",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE9"
+    },
+    {
+      "osuId": 13960915,
+      "username": "LittleStone",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ9"
+    },
+    {
+      "osuId": 21573458,
+      "username": "Liyuu_0109",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO9"
+    },
+    {
+      "osuId": 17074316,
+      "username": "itsushini",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT9"
+    },
+    {
+      "osuId": 9043058,
+      "username": "-Inui Sana-",
+      "teamId": "team-a",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY9"
+    },
+    {
+      "osuId": 1294891,
+      "username": "Hatsuki Yura",
+      "teamId": "team-b",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K11"
+    },
+    {
+      "osuId": 24013879,
+      "username": "Refu3",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P11"
+    },
+    {
+      "osuId": 10260284,
+      "username": "yiyue2",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U11"
+    },
+    {
+      "osuId": 11642021,
+      "username": "TwinIslandMilk",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z11"
+    },
+    {
+      "osuId": 13437541,
+      "username": "-TsukiAkari-",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE11"
+    },
+    {
+      "osuId": 18986229,
+      "username": "Untitled1",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ11"
+    },
+    {
+      "osuId": 7945343,
+      "username": "232333",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO11"
+    },
+    {
+      "osuId": 29552621,
+      "username": "Angelfood cake",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT11"
+    },
+    {
+      "osuId": 24010320,
+      "username": "Mimosa M",
+      "teamId": "team-b",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY11"
+    },
+    {
+      "osuId": 29250968,
+      "username": "YoungTian",
+      "teamId": "team-c",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K13"
+    },
+    {
+      "osuId": 12117924,
+      "username": "Rairakkuhana",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P13"
+    },
+    {
+      "osuId": 17178329,
+      "username": "AIXI1519YIXI",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U13"
+    },
+    {
+      "osuId": 10271830,
+      "username": "145ProMY",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z13"
+    },
+    {
+      "osuId": 24232404,
+      "username": "YRScarlet",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE13"
+    },
+    {
+      "osuId": 5185609,
+      "username": "Dura",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ13"
+    },
+    {
+      "osuId": 6330180,
+      "username": "SnowMagicK",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO13"
+    },
+    {
+      "osuId": 21847711,
+      "username": "Dichlorocarbene",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT13"
+    },
+    {
+      "osuId": 2917990,
+      "username": "jj986544591",
+      "teamId": "team-c",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY13"
+    },
+    {
+      "osuId": 11396041,
+      "username": "zmyk",
+      "teamId": "team-d",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K15"
+    },
+    {
+      "osuId": 9755808,
+      "username": "Sonoaoi",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P15"
+    },
+    {
+      "osuId": 13358640,
+      "username": "Stick_Fish",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U15"
+    },
+    {
+      "osuId": 603925,
+      "username": "Merry Christmas",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z15"
+    },
+    {
+      "osuId": 8398166,
+      "username": "Xuechun",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE15"
+    },
+    {
+      "osuId": 12965455,
+      "username": "Baymax 3Ha",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ15"
+    },
+    {
+      "osuId": 12207654,
+      "username": "MagicSquare834",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO15"
+    },
+    {
+      "osuId": 1611996,
+      "username": "SuperYANYAN",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT15"
+    },
+    {
+      "osuId": 12609921,
+      "username": "Mangent",
+      "teamId": "team-d",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY15"
+    },
+    {
+      "osuId": 14129921,
+      "username": "Piggice",
+      "teamId": "team-e",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K17"
+    },
+    {
+      "osuId": 13875116,
+      "username": "Reiji Maigo",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P17"
+    },
+    {
+      "osuId": 9218431,
+      "username": "Lifcoach",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U17"
+    },
+    {
+      "osuId": 14509964,
+      "username": "Hoshizora_3",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z17"
+    },
+    {
+      "osuId": 13013147,
+      "username": "BurgerKing",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE17"
+    },
+    {
+      "osuId": 8883892,
+      "username": "NaimuTongzi",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ17"
+    },
+    {
+      "osuId": 15603359,
+      "username": "red__pig",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO17"
+    },
+    {
+      "osuId": 13354073,
+      "username": "Marisaya",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT17"
+    },
+    {
+      "osuId": 13795588,
+      "username": "lelxdme",
+      "teamId": "team-e",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY17"
+    },
+    {
+      "osuId": 12749779,
+      "username": "[Lily_White]",
+      "teamId": "team-f",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K19"
+    },
+    {
+      "osuId": 8281276,
+      "username": "Texas",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P19"
+    },
+    {
+      "osuId": 3911472,
+      "username": "Moutreak",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U19"
+    },
+    {
+      "osuId": 13288760,
+      "username": "Xiangezuibang",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z19"
+    },
+    {
+      "osuId": 4902490,
+      "username": "zipated",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE19"
+    },
+    {
+      "osuId": 17049803,
+      "username": "SongDD",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ19"
+    },
+    {
+      "osuId": 8692802,
+      "username": "Guozi on Osu",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO19"
+    },
+    {
+      "osuId": 2428732,
+      "username": "huoyaoyuan",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT19"
+    },
+    {
+      "osuId": 6403393,
+      "username": "Kotoki",
+      "teamId": "team-f",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY19"
+    },
+    {
+      "osuId": 15044350,
+      "username": "[ RoneKu ]",
+      "teamId": "team-g",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K21"
+    },
+    {
+      "osuId": 10577496,
+      "username": "lolol250",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P21"
+    },
+    {
+      "osuId": 12228018,
+      "username": "carrywind",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U21"
+    },
+    {
+      "osuId": 14869510,
+      "username": "ppchara",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z21"
+    },
+    {
+      "osuId": 10501285,
+      "username": "Kinema",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE21"
+    },
+    {
+      "osuId": 16262106,
+      "username": "ShandenWhiter",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ21"
+    },
+    {
+      "osuId": 6854920,
+      "username": "Another Flower",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO21"
+    },
+    {
+      "osuId": 13833144,
+      "username": "Forget Me",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT21"
+    },
+    {
+      "osuId": 9984860,
+      "username": "Yue0429",
+      "teamId": "team-g",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY21"
+    },
+    {
+      "osuId": 12567023,
+      "username": "AstonFrenchWine",
+      "teamId": "team-h",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team!K23"
+    },
+    {
+      "osuId": 4801735,
+      "username": "Dragbit 5",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 1,
+      "source": "Team!P23"
+    },
+    {
+      "osuId": 4650756,
+      "username": "Citydival",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 2,
+      "source": "Team!U23"
+    },
+    {
+      "osuId": 21408888,
+      "username": "Rlyeh",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 3,
+      "source": "Team!Z23"
+    },
+    {
+      "osuId": 11324904,
+      "username": "ShiinaNanoha",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 4,
+      "source": "Team!AE23"
+    },
+    {
+      "osuId": 9164371,
+      "username": "- Q",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 5,
+      "source": "Team!AJ23"
+    },
+    {
+      "osuId": 3088670,
+      "username": "Blockade",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 6,
+      "source": "Team!AO23"
+    },
+    {
+      "osuId": 10638413,
+      "username": "Miyabi",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 7,
+      "source": "Team!AT23"
+    },
+    {
+      "osuId": 7660383,
+      "username": "Arsalan",
+      "teamId": "team-h",
+      "role": "coach",
+      "tier": null,
+      "source": "Team!AY23"
+    },
+    {
+      "osuId": 13228763,
+      "username": "Pcioafk",
+      "teamId": null,
+      "role": "free_agent",
+      "tier": null,
+      "source": "Draft!R2"
+    },
+    {
+      "osuId": 29037830,
+      "username": "misaki daisuki",
+      "teamId": null,
+      "role": "free_agent",
+      "tier": null,
+      "source": "Draft!R3"
+    },
+    {
+      "osuId": 21695850,
+      "username": "U4Dead",
+      "teamId": null,
+      "role": "free_agent",
+      "tier": null,
+      "source": "Draft!R4"
+    },
+    {
+      "osuId": 12790121,
+      "username": "Celia-Claire",
+      "teamId": null,
+      "role": "free_agent",
+      "tier": null,
+      "source": "Draft!R5"
+    }
+  ],
+  "picks": [
+    {
+      "round": 1,
+      "pick": 1,
+      "teamId": "team-a",
+      "osuId": 8742486,
+      "source": "Draft!B2:C2"
+    },
+    {
+      "round": 1,
+      "pick": 2,
+      "teamId": "team-d",
+      "osuId": 9755808,
+      "source": "Draft!B3:C3"
+    },
+    {
+      "round": 1,
+      "pick": 3,
+      "teamId": "team-h",
+      "osuId": 4801735,
+      "source": "Draft!B4:C4"
+    },
+    {
+      "round": 1,
+      "pick": 4,
+      "teamId": "team-g",
+      "osuId": 10577496,
+      "source": "Draft!B5:C5"
+    },
+    {
+      "round": 1,
+      "pick": 5,
+      "teamId": "team-c",
+      "osuId": 12117924,
+      "source": "Draft!B6:C6"
+    },
+    {
+      "round": 1,
+      "pick": 6,
+      "teamId": "team-b",
+      "osuId": 24013879,
+      "source": "Draft!B7:C7"
+    },
+    {
+      "round": 1,
+      "pick": 7,
+      "teamId": "team-f",
+      "osuId": 8281276,
+      "source": "Draft!B8:C8"
+    },
+    {
+      "round": 1,
+      "pick": 8,
+      "teamId": "team-e",
+      "osuId": 13875116,
+      "source": "Draft!B9:C9"
+    },
+    {
+      "round": 2,
+      "pick": 1,
+      "teamId": "team-e",
+      "osuId": 9218431,
+      "source": "Draft!D2:E2"
+    },
+    {
+      "round": 2,
+      "pick": 2,
+      "teamId": "team-f",
+      "osuId": 3911472,
+      "source": "Draft!D3:E3"
+    },
+    {
+      "round": 2,
+      "pick": 3,
+      "teamId": "team-b",
+      "osuId": 10260284,
+      "source": "Draft!D4:E4"
+    },
+    {
+      "round": 2,
+      "pick": 4,
+      "teamId": "team-c",
+      "osuId": 17178329,
+      "source": "Draft!D5:E5"
+    },
+    {
+      "round": 2,
+      "pick": 5,
+      "teamId": "team-g",
+      "osuId": 12228018,
+      "source": "Draft!D6:E6"
+    },
+    {
+      "round": 2,
+      "pick": 6,
+      "teamId": "team-h",
+      "osuId": 4650756,
+      "source": "Draft!D7:E7"
+    },
+    {
+      "round": 2,
+      "pick": 7,
+      "teamId": "team-d",
+      "osuId": 13358640,
+      "source": "Draft!D8:E8"
+    },
+    {
+      "round": 2,
+      "pick": 8,
+      "teamId": "team-a",
+      "osuId": 7210268,
+      "source": "Draft!D9:E9"
+    },
+    {
+      "round": 3,
+      "pick": 1,
+      "teamId": "team-a",
+      "osuId": 7990368,
+      "source": "Draft!F2:G2"
+    },
+    {
+      "round": 3,
+      "pick": 2,
+      "teamId": "team-d",
+      "osuId": 603925,
+      "source": "Draft!F3:G3"
+    },
+    {
+      "round": 3,
+      "pick": 3,
+      "teamId": "team-h",
+      "osuId": 21408888,
+      "source": "Draft!F4:G4"
+    },
+    {
+      "round": 3,
+      "pick": 4,
+      "teamId": "team-g",
+      "osuId": 14869510,
+      "source": "Draft!F5:G5"
+    },
+    {
+      "round": 3,
+      "pick": 5,
+      "teamId": "team-c",
+      "osuId": 10271830,
+      "source": "Draft!F6:G6"
+    },
+    {
+      "round": 3,
+      "pick": 6,
+      "teamId": "team-b",
+      "osuId": 11642021,
+      "source": "Draft!F7:G7"
+    },
+    {
+      "round": 3,
+      "pick": 7,
+      "teamId": "team-f",
+      "osuId": 13288760,
+      "source": "Draft!F8:G8"
+    },
+    {
+      "round": 3,
+      "pick": 8,
+      "teamId": "team-e",
+      "osuId": 14509964,
+      "source": "Draft!F9:G9"
+    },
+    {
+      "round": 4,
+      "pick": 1,
+      "teamId": "team-e",
+      "osuId": 13013147,
+      "source": "Draft!H2:I2"
+    },
+    {
+      "round": 4,
+      "pick": 2,
+      "teamId": "team-f",
+      "osuId": 4902490,
+      "source": "Draft!H3:I3"
+    },
+    {
+      "round": 4,
+      "pick": 3,
+      "teamId": "team-b",
+      "osuId": 13437541,
+      "source": "Draft!H4:I4"
+    },
+    {
+      "round": 4,
+      "pick": 4,
+      "teamId": "team-c",
+      "osuId": 24232404,
+      "source": "Draft!H5:I5"
+    },
+    {
+      "round": 4,
+      "pick": 5,
+      "teamId": "team-g",
+      "osuId": 10501285,
+      "source": "Draft!H6:I6"
+    },
+    {
+      "round": 4,
+      "pick": 6,
+      "teamId": "team-h",
+      "osuId": 11324904,
+      "source": "Draft!H7:I7"
+    },
+    {
+      "round": 4,
+      "pick": 7,
+      "teamId": "team-d",
+      "osuId": 8398166,
+      "source": "Draft!H8:I8"
+    },
+    {
+      "round": 4,
+      "pick": 8,
+      "teamId": "team-a",
+      "osuId": 16134378,
+      "source": "Draft!H9:I9"
+    },
+    {
+      "round": 5,
+      "pick": 1,
+      "teamId": "team-a",
+      "osuId": 13960915,
+      "source": "Draft!J2:K2"
+    },
+    {
+      "round": 5,
+      "pick": 2,
+      "teamId": "team-d",
+      "osuId": 12965455,
+      "source": "Draft!J3:K3"
+    },
+    {
+      "round": 5,
+      "pick": 3,
+      "teamId": "team-h",
+      "osuId": 9164371,
+      "source": "Draft!J4:K4"
+    },
+    {
+      "round": 5,
+      "pick": 4,
+      "teamId": "team-g",
+      "osuId": 16262106,
+      "source": "Draft!J5:K5"
+    },
+    {
+      "round": 5,
+      "pick": 5,
+      "teamId": "team-c",
+      "osuId": 5185609,
+      "source": "Draft!J6:K6"
+    },
+    {
+      "round": 5,
+      "pick": 6,
+      "teamId": "team-b",
+      "osuId": 18986229,
+      "source": "Draft!J7:K7"
+    },
+    {
+      "round": 5,
+      "pick": 7,
+      "teamId": "team-f",
+      "osuId": 17049803,
+      "source": "Draft!J8:K8"
+    },
+    {
+      "round": 5,
+      "pick": 8,
+      "teamId": "team-e",
+      "osuId": 8883892,
+      "source": "Draft!J9:K9"
+    },
+    {
+      "round": 6,
+      "pick": 1,
+      "teamId": "team-e",
+      "osuId": 15603359,
+      "source": "Draft!L2:M2"
+    },
+    {
+      "round": 6,
+      "pick": 2,
+      "teamId": "team-f",
+      "osuId": 8692802,
+      "source": "Draft!L3:M3"
+    },
+    {
+      "round": 6,
+      "pick": 3,
+      "teamId": "team-b",
+      "osuId": 7945343,
+      "source": "Draft!L4:M4"
+    },
+    {
+      "round": 6,
+      "pick": 4,
+      "teamId": "team-c",
+      "osuId": 6330180,
+      "source": "Draft!L5:M5"
+    },
+    {
+      "round": 6,
+      "pick": 5,
+      "teamId": "team-g",
+      "osuId": 6854920,
+      "source": "Draft!L6:M6"
+    },
+    {
+      "round": 6,
+      "pick": 6,
+      "teamId": "team-h",
+      "osuId": 3088670,
+      "source": "Draft!L7:M7"
+    },
+    {
+      "round": 6,
+      "pick": 7,
+      "teamId": "team-d",
+      "osuId": 12207654,
+      "source": "Draft!L8:M8"
+    },
+    {
+      "round": 6,
+      "pick": 8,
+      "teamId": "team-a",
+      "osuId": 21573458,
+      "source": "Draft!L9:M9"
+    },
+    {
+      "round": 7,
+      "pick": 1,
+      "teamId": "team-c",
+      "osuId": 21847711,
+      "source": "Draft!N2:O2"
+    },
+    {
+      "round": 7,
+      "pick": 2,
+      "teamId": "team-d",
+      "osuId": 1611996,
+      "source": "Draft!N3:O3"
+    },
+    {
+      "round": 7,
+      "pick": 3,
+      "teamId": "team-h",
+      "osuId": 10638413,
+      "source": "Draft!N4:O4"
+    },
+    {
+      "round": 7,
+      "pick": 4,
+      "teamId": "team-e",
+      "osuId": 13354073,
+      "source": "Draft!N5:O5"
+    },
+    {
+      "round": 7,
+      "pick": 5,
+      "teamId": "team-f",
+      "osuId": 2428732,
+      "source": "Draft!N6:O6"
+    },
+    {
+      "round": 7,
+      "pick": 6,
+      "teamId": "team-g",
+      "osuId": 13833144,
+      "source": "Draft!N7:O7"
+    },
+    {
+      "round": 7,
+      "pick": 7,
+      "teamId": "team-a",
+      "osuId": 17074316,
+      "source": "Draft!N8:O8"
+    },
+    {
+      "round": 7,
+      "pick": 8,
+      "teamId": "team-b",
+      "osuId": 29552621,
+      "source": "Draft!N9:O9"
+    }
+  ],
+  "staff": [
+    {
+      "osuId": 1176704,
+      "username": "Lapis",
+      "position": "Host",
+      "source": "Staff!B2:C2"
+    },
+    {
+      "osuId": 651307,
+      "username": "Prophet",
+      "position": "Co-Host",
+      "source": "Staff!B3:C3"
+    },
+    {
+      "osuId": 9984860,
+      "username": "Yue0429",
+      "position": "Co-Host",
+      "source": "Staff!B4:C4"
+    },
+    {
+      "osuId": 10436444,
+      "username": "No rank",
+      "position": "Co-Host",
+      "source": "Staff!B5:C5"
+    },
+    {
+      "osuId": 245276,
+      "username": "Explosive",
+      "position": "Consultant",
+      "source": "Staff!B6:C6"
+    },
+    {
+      "osuId": 7003013,
+      "username": "Muziyami",
+      "position": "TechSupport",
+      "source": "Staff!B7:C7"
+    },
+    {
+      "osuId": 6263426,
+      "username": "Shiratori",
+      "position": "TechSupport",
+      "source": "Staff!B8:C8"
+    },
+    {
+      "osuId": 15868788,
+      "username": "[ NekuRo ]",
+      "position": "Mappooler",
+      "source": "Staff!B9:C9"
+    },
+    {
+      "osuId": 13795588,
+      "username": "lelxdme",
+      "position": "Mappooler",
+      "source": "Staff!B10:C10"
+    },
+    {
+      "osuId": 6433183,
+      "username": "silly me",
+      "position": "Referee",
+      "source": "Staff!B11:C11"
+    },
+    {
+      "osuId": 13858681,
+      "username": "WorthlessPlayer",
+      "position": "Referee",
+      "source": "Staff!B12:C12"
+    },
+    {
+      "osuId": 2917990,
+      "username": "jj986544591",
+      "position": "Referee",
+      "source": "Staff!B13:C13"
+    },
+    {
+      "osuId": 6338477,
+      "username": "Shiki-Natsume",
+      "position": "Streamer",
+      "source": "Staff!B14:C14"
+    },
+    {
+      "osuId": 13999223,
+      "username": "ShandenOnter",
+      "position": "Streamer",
+      "source": "Staff!B15:C15"
+    },
+    {
+      "osuId": 9043058,
+      "username": "-Inui Sana-",
+      "position": "Streamer",
+      "source": "Staff!B16:C16"
+    },
+    {
+      "osuId": 6764156,
+      "username": "Ayase Eli",
+      "position": "Streamer",
+      "source": "Staff!B17:C17"
+    },
+    {
+      "osuId": 3367476,
+      "username": "Knd",
+      "position": "Playtester",
+      "source": "Staff!B18:C18"
+    },
+    {
+      "osuId": 13291701,
+      "username": "Yue0428",
+      "position": "Playtester",
+      "source": "Staff!B19:C19"
+    },
+    {
+      "osuId": 16288992,
+      "username": "Ruyaya",
+      "position": "Playtester",
+      "source": "Staff!B20:C20"
+    }
+  ],
+  "standings": [
+    {
+      "group": "A",
+      "teamId": "team-g",
+      "rank": 3,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 12,
+      "mapsLost": 15,
+      "source": "GroupScore!D6:L6"
+    },
+    {
+      "group": "A",
+      "teamId": "team-c",
+      "rank": 4,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 12,
+      "mapsLost": 17,
+      "source": "GroupScore!D7:L7"
+    },
+    {
+      "group": "A",
+      "teamId": "team-h",
+      "rank": 1,
+      "wins": 3,
+      "losses": 0,
+      "mapsWon": 18,
+      "mapsLost": 9,
+      "source": "GroupScore!D8:L8"
+    },
+    {
+      "group": "A",
+      "teamId": "team-b",
+      "rank": 2,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 15,
+      "mapsLost": 16,
+      "source": "GroupScore!D9:L9"
+    },
+    {
+      "group": "B",
+      "teamId": "team-a",
+      "rank": 4,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 13,
+      "mapsLost": 17,
+      "source": "GroupScore!D10:L10"
+    },
+    {
+      "group": "B",
+      "teamId": "team-e",
+      "rank": 2,
+      "wins": 2,
+      "losses": 1,
+      "mapsWon": 14,
+      "mapsLost": 13,
+      "source": "GroupScore!D11:L11"
+    },
+    {
+      "group": "B",
+      "teamId": "team-f",
+      "rank": 1,
+      "wins": 2,
+      "losses": 1,
+      "mapsWon": 17,
+      "mapsLost": 10,
+      "source": "GroupScore!D12:L12"
+    },
+    {
+      "group": "B",
+      "teamId": "team-d",
+      "rank": 3,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 10,
+      "mapsLost": 14,
+      "source": "GroupScore!D13:L13"
+    }
+  ],
+  "matches": [
+    {
+      "id": "match-1",
+      "label": "1",
+      "stage": "Group A",
+      "teamA": "team-g",
+      "teamB": "team-c",
+      "scheduledAt": "2023-11-04T22:00:00+08:00",
+      "score": [
+        6,
+        3
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111168428"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1LQ4y1n7q6/",
+      "referee": "Shiki-Natsume",
+      "streamer": "Lapis",
+      "commentators": "Prophet",
+      "bansA": "NM1 HD2",
+      "bansB": "HD4 DT3",
+      "source": "Schedule!D7:R7"
+    },
+    {
+      "id": "match-2",
+      "label": "2",
+      "stage": "Group A",
+      "teamA": "team-h",
+      "teamB": "team-b",
+      "scheduledAt": "2023-11-05T21:00:00+08:00",
+      "score": [
+        6,
+        4
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111183176"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Sc41197w7/",
+      "referee": "Shiratori",
+      "streamer": "Lapis",
+      "commentators": "-Inui sana-",
+      "bansA": "NM5 DT2",
+      "bansB": "HD2 NM3",
+      "source": "Schedule!D8:R8"
+    },
+    {
+      "id": "match-3",
+      "label": "3",
+      "stage": "Group A",
+      "teamA": "team-g",
+      "teamB": "team-h",
+      "scheduledAt": "2023-11-11T21:00:00+08:00",
+      "score": [
+        2,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111256053"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1nw411W7Hp/",
+      "referee": "[ NekuRo ]",
+      "streamer": "-Inui sana-",
+      "commentators": "Lapis",
+      "bansA": "HD3 NM2",
+      "bansB": "NM5 DT2",
+      "source": "Schedule!D9:R9"
+    },
+    {
+      "id": "match-4",
+      "label": "4",
+      "stage": "Group A",
+      "teamA": "team-c",
+      "teamB": "team-b",
+      "scheduledAt": "2023-11-12T21:00:00+08:00",
+      "score": [
+        6,
+        5
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111273908"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1iC4y1U7oG/",
+      "referee": "jj986544591",
+      "streamer": "ShandenOnter",
+      "commentators": null,
+      "bansA": "HR4 DT4",
+      "bansB": "HD2 NM3",
+      "source": "Schedule!D10:R10"
+    },
+    {
+      "id": "match-5",
+      "label": "5",
+      "stage": "Group A",
+      "teamA": "team-g",
+      "teamB": "team-b",
+      "scheduledAt": "2023-11-19T21:00:00+08:00",
+      "score": [
+        4,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111367122"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Ku4y1w7m6/",
+      "referee": "silly me",
+      "streamer": "ShandenOnter",
+      "commentators": null,
+      "bansA": "NM3 HR1",
+      "bansB": "HD2 NM5",
+      "source": "Schedule!D11:R11"
+    },
+    {
+      "id": "match-6",
+      "label": "6",
+      "stage": "Group A",
+      "teamA": "team-c",
+      "teamB": "team-h",
+      "scheduledAt": "2023-11-19T21:00:00+08:00",
+      "score": [
+        3,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111367124"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Hc411r79N/",
+      "referee": "silly me",
+      "streamer": "Ayase Eli",
+      "commentators": null,
+      "bansA": "HR4 NM1",
+      "bansB": "HD4 DT1",
+      "source": "Schedule!D12:R12"
+    },
+    {
+      "id": "match-7",
+      "label": "7",
+      "stage": "Group B",
+      "teamA": "team-a",
+      "teamB": "team-e",
+      "scheduledAt": "2023-11-04T21:00:00+08:00",
+      "score": [
+        5,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111167012"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Gw411u78Y/",
+      "referee": "Shiki-Natsume&jj986544591",
+      "streamer": "Lapis",
+      "commentators": "Prophet",
+      "bansA": "HD2 NM4",
+      "bansB": "DT2 NM5",
+      "source": "Schedule!D13:R13"
+    },
+    {
+      "id": "match-8",
+      "label": "8",
+      "stage": "Group B",
+      "teamA": "team-f",
+      "teamB": "team-d",
+      "scheduledAt": "2023-11-05T21:00:00+08:00",
+      "score": [
+        6,
+        2
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111183180"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Yu4y1a7rd/",
+      "referee": "Shiratori",
+      "streamer": "ShandenOnter",
+      "commentators": "-Inui sana-",
+      "bansA": "NM3 NM4",
+      "bansB": "HD2 NM1",
+      "source": "Schedule!D14:R14"
+    },
+    {
+      "id": "match-9",
+      "label": "9",
+      "stage": "Group B",
+      "teamA": "team-a",
+      "teamB": "team-f",
+      "scheduledAt": "2023-11-12T21:00:00+08:00",
+      "score": [
+        6,
+        5
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111273369"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1mg4y197wB/",
+      "referee": "silly me",
+      "streamer": "Lapis",
+      "commentators": "Prophet",
+      "bansA": "HD1 DT3",
+      "bansB": "NM3 HR3",
+      "source": "Schedule!D15:R15"
+    },
+    {
+      "id": "match-10",
+      "label": "10",
+      "stage": "Group B",
+      "teamA": "team-e",
+      "teamB": "team-d",
+      "scheduledAt": "2023-11-11T22:00:00+08:00",
+      "score": [
+        6,
+        2
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111257021"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1XN4y1D7Y9/",
+      "referee": "Yue0429",
+      "streamer": "Lapis",
+      "commentators": "Prophet",
+      "bansA": "HR4 DT2",
+      "bansB": "HD3 DT3",
+      "source": "Schedule!D16:R16"
+    },
+    {
+      "id": "match-11",
+      "label": "11",
+      "stage": "Group B",
+      "teamA": "team-a",
+      "teamB": "team-d",
+      "scheduledAt": "2023-11-19T21:30:00+08:00",
+      "score": [
+        2,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111367471"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Pa4y1S7tD/",
+      "referee": "Shiratori",
+      "streamer": "-Inui sana-",
+      "commentators": null,
+      "bansA": "HR3 DT2",
+      "bansB": "HD3 NM4",
+      "source": "Schedule!D17:R17"
+    },
+    {
+      "id": "match-12",
+      "label": "12",
+      "stage": "Group B",
+      "teamA": "team-e",
+      "teamB": "team-f",
+      "scheduledAt": "2023-11-19T21:45:00+08:00",
+      "score": [
+        2,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111367659"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV19C4y1m7md/",
+      "referee": "Shiratori",
+      "streamer": "Lapis",
+      "commentators": "Prophet",
+      "bansA": "DT2 HR4",
+      "bansB": "HD2 NM3",
+      "source": "Schedule!D18:R18"
+    },
+    {
+      "id": "match-13",
+      "label": "13",
+      "stage": "SF",
+      "teamA": "team-h",
+      "teamB": "team-e",
+      "scheduledAt": "2023-11-25T20:30:00+08:00",
+      "score": [
+        6,
+        3
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111445079"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1du4y157Mc/",
+      "referee": "No rank",
+      "streamer": "Shiki-Natsume",
+      "commentators": null,
+      "bansA": "HD2 NM3",
+      "bansB": "HR4 NM2",
+      "source": "Schedule!D19:R19"
+    },
+    {
+      "id": "match-14",
+      "label": "14",
+      "stage": "SF",
+      "teamA": "team-g",
+      "teamB": "team-a",
+      "scheduledAt": "2023-11-25T21:00:00+08:00",
+      "score": [
+        4,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111445307"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1VC4y1y7Fk/",
+      "referee": "Yue0429",
+      "streamer": "Lapis",
+      "commentators": null,
+      "bansA": "HD3 NM3",
+      "bansB": "DT3 HR3",
+      "source": "Schedule!D20:R20"
+    },
+    {
+      "id": "match-15",
+      "label": "15",
+      "stage": "SF",
+      "teamA": "team-b",
+      "teamB": "team-f",
+      "scheduledAt": "2023-11-24T21:00:00+08:00",
+      "score": [
+        3,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111429231"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV14N411M7EM/",
+      "referee": "Shiki-Natsume",
+      "streamer": "Lapis",
+      "commentators": "Prophet",
+      "bansA": "HD3 NM5",
+      "bansB": "NM3 HR3",
+      "source": "Schedule!D21:R21"
+    },
+    {
+      "id": "match-16",
+      "label": "16",
+      "stage": "SF",
+      "teamA": "team-c",
+      "teamB": "team-d",
+      "scheduledAt": "2023-11-26T22:00:00+08:00",
+      "score": [
+        3,
+        6
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111462956"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1fu4y157mm/",
+      "referee": "Lapis",
+      "streamer": "Lapis",
+      "commentators": null,
+      "bansA": "NM3 HR3",
+      "bansB": "HD3 DT2",
+      "source": "Schedule!D22:R22"
+    },
+    {
+      "id": "match-17",
+      "label": "17",
+      "stage": "Finals",
+      "teamA": "team-h",
+      "teamB": "team-f",
+      "scheduledAt": "2023-12-02T22:00:00+08:00",
+      "score": [
+        7,
+        5
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111540773"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Z64y1L7ma/",
+      "referee": "No rank&WorthlessPlayer",
+      "streamer": "Shiki-Natsume",
+      "commentators": null,
+      "bansA": "HD2 NM2",
+      "bansB": "HD3 NM3",
+      "source": "Schedule!D23:R23"
+    },
+    {
+      "id": "match-18",
+      "label": "18",
+      "stage": "Finals",
+      "teamA": "team-b",
+      "teamB": "team-a",
+      "scheduledAt": "2023-12-02T21:30:00+08:00",
+      "score": [
+        7,
+        4
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111540156"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1294y1j7z9/",
+      "referee": "Lapis",
+      "streamer": "Lapis",
+      "commentators": null,
+      "bansA": "NM3 HD3",
+      "bansB": "DT4 HR2",
+      "source": "Schedule!D24:R24"
+    },
+    {
+      "id": "match-19",
+      "label": "19",
+      "stage": "Finals",
+      "teamA": "team-e",
+      "teamB": "team-d",
+      "scheduledAt": "2023-12-02T22:00:00+08:00",
+      "score": [
+        4,
+        7
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111540778"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Eb4y1K7Rw/",
+      "referee": "No rank",
+      "streamer": "Ayase Eli",
+      "commentators": null,
+      "bansA": "HR3 NM5",
+      "bansB": "HD1 DT2",
+      "source": "Schedule!D25:R25"
+    },
+    {
+      "id": "match-20",
+      "label": "20",
+      "stage": "Finals",
+      "teamA": "team-b",
+      "teamB": "team-d",
+      "scheduledAt": "2023-12-03T22:00:00+08:00",
+      "score": [
+        7,
+        3
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111561449"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Ac411i79R/",
+      "referee": "No rank",
+      "streamer": "Lapis",
+      "commentators": null,
+      "bansA": "NM3 HD1",
+      "bansB": "DT3 HR2",
+      "source": "Schedule!D26:R26"
+    },
+    {
+      "id": "match-20a",
+      "label": "20A",
+      "stage": "Finals",
+      "teamA": "team-b",
+      "teamB": "team-e",
+      "scheduledAt": "2023-12-03T21:00:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": null,
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D27:R27"
+    },
+    {
+      "id": "match-20b",
+      "label": "20B",
+      "stage": "Finals",
+      "teamA": "team-b",
+      "teamB": "team-d",
+      "scheduledAt": "2023-12-03T22:00:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": null,
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D28:R28"
+    },
+    {
+      "id": "match-20c",
+      "label": "20C",
+      "stage": "Finals",
+      "teamA": "team-a",
+      "teamB": "team-e",
+      "scheduledAt": "2023-12-03T21:00:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": null,
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D29:R29"
+    },
+    {
+      "id": "match-20d",
+      "label": "20D",
+      "stage": "Finals",
+      "teamA": "team-a",
+      "teamB": "team-d",
+      "scheduledAt": "2023-12-03T21:30:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": null,
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D30:R30"
+    },
+    {
+      "id": "match-21",
+      "label": "21",
+      "stage": "GF",
+      "teamA": "team-f",
+      "teamB": "team-b",
+      "scheduledAt": "2023-12-09T21:40:00+08:00",
+      "score": [
+        4,
+        7
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111642611"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1LC4y1F7rX/",
+      "referee": "No rank",
+      "streamer": "Lapis",
+      "commentators": null,
+      "bansA": "DT4 HR3",
+      "bansB": "HD2 NM6",
+      "source": "Schedule!D31:R31"
+    },
+    {
+      "id": "match-22",
+      "label": "22",
+      "stage": "GF",
+      "teamA": "team-h",
+      "teamB": "team-b",
+      "scheduledAt": "2023-12-10T22:00:00+08:00",
+      "score": [
+        7,
+        3
+      ],
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/111661849"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1De411C7MH/",
+      "referee": "No rank",
+      "streamer": "Lapis",
+      "commentators": "Shiratori",
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D32:R32"
+    },
+    {
+      "id": "match-22a",
+      "label": "22A",
+      "stage": "GF",
+      "teamA": "team-h",
+      "teamB": "team-f",
+      "scheduledAt": "2023-12-10T21:00:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": null,
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D33:R33"
+    },
+    {
+      "id": "match-22b",
+      "label": "22B",
+      "stage": "GF",
+      "teamA": "team-h",
+      "teamB": "team-b",
+      "scheduledAt": "2023-12-10T22:00:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": null,
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "Schedule!D34:R34"
+    }
+  ],
+  "pools": [
+    {
+      "id": "gs",
+      "name": "GROUP STAGE",
+      "source": "GS Mappool!D7:S26",
+      "maps": [
+        {
+          "slot": "NM1",
+          "source": "GS Mappool!D8:S8",
+          "beatmapId": 3774074,
+          "title": "Toyama Nao - Gunjou Infinity [dahkjdas' Extra]",
+          "mapper": "_kotachi_",
+          "stars": 5.9165,
+          "bpm": 185.0,
+          "drainSeconds": 274.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.8
+        },
+        {
+          "slot": "NM2",
+          "source": "GS Mappool!D9:S9",
+          "beatmapId": 3645174,
+          "title": "SHIKI - Pure Ruby [owo (DAHT 3rd Edition)]",
+          "mapper": "MetaBee",
+          "stars": 5.83893,
+          "bpm": 178.0,
+          "drainSeconds": 118.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 8.9
+        },
+        {
+          "slot": "NM3",
+          "source": "GS Mappool!D10:S10",
+          "beatmapId": 3970481,
+          "title": "Islet feat. isui - Hakujitsumu [Kanui's Expert]",
+          "mapper": "Flame Haze",
+          "stars": 5.30871,
+          "bpm": 144.0,
+          "drainSeconds": 226.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.5
+        },
+        {
+          "slot": "NM4",
+          "source": "GS Mappool!D11:S11",
+          "beatmapId": 3434883,
+          "title": "C-Show ft. Aitsuki Nakuru - AImee [LeCandy's Expert]",
+          "mapper": "xLolicore-",
+          "stars": 5.3978,
+          "bpm": 170.0,
+          "drainSeconds": 164.0,
+          "cs": 3.6,
+          "ar": 9.2,
+          "od": 8.6
+        },
+        {
+          "slot": "NM5",
+          "source": "GS Mappool!D12:S12",
+          "beatmapId": 631361,
+          "title": "FOLiACETATE - Heterochromia Iridis [Extra]",
+          "mapper": "Mamayu",
+          "stars": 5.94741,
+          "bpm": 223.0,
+          "drainSeconds": 115.0,
+          "cs": 4.0,
+          "ar": 9.2,
+          "od": 8.0
+        },
+        {
+          "slot": "NM6",
+          "source": "GS Mappool!D13:S13",
+          "beatmapId": 3022593,
+          "title": "NIWASHI - Sapphire On Fire [Feiri's Another]",
+          "mapper": "DeviousPanda",
+          "stars": 5.34029,
+          "bpm": 175.0,
+          "drainSeconds": 123.0,
+          "cs": 4.0,
+          "ar": 9.2,
+          "od": 8.0
+        },
+        {
+          "slot": "HD1",
+          "source": "GS Mappool!D14:S14",
+          "beatmapId": 3426309,
+          "title": "Harumaki Gohan feat. Hatsune Miku - Hotaru wa Inakatta [Luminous]",
+          "mapper": "Irin",
+          "stars": 5.3338,
+          "bpm": 206.0,
+          "drainSeconds": 208.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.5
+        },
+        {
+          "slot": "HD2",
+          "source": "GS Mappool!D15:S15",
+          "beatmapId": 778232,
+          "title": "Tatsh - HEAVENLY MOON [Hyper]",
+          "mapper": "Jenny",
+          "stars": 5.48072,
+          "bpm": 185.0,
+          "drainSeconds": 113.0,
+          "cs": 4.0,
+          "ar": 8.5,
+          "od": 8.0
+        },
+        {
+          "slot": "HD3",
+          "source": "GS Mappool!D16:S16",
+          "beatmapId": 486597,
+          "title": "REDALiCE Feat. Ayumi Nomiya - Little Star [Extra]",
+          "mapper": "liaoxingyao",
+          "stars": 5.75723,
+          "bpm": 183.0,
+          "drainSeconds": 115.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.0
+        },
+        {
+          "slot": "HD4",
+          "source": "GS Mappool!D17:S17",
+          "beatmapId": 3083586,
+          "title": "ak+q x Street - neo kosmo [zyoi's extra]",
+          "mapper": "arronchu1207",
+          "stars": 5.29677,
+          "bpm": 190.0,
+          "drainSeconds": 131.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.8
+        },
+        {
+          "slot": "HR1",
+          "source": "GS Mappool!D18:S18",
+          "beatmapId": 3389215,
+          "title": "isekaijoucho - Dimension [Flraraup's Insane]",
+          "mapper": "Rtyzen",
+          "stars": 5.36299,
+          "bpm": 185.0,
+          "drainSeconds": 171.0,
+          "cs": 5.5,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR2",
+          "source": "GS Mappool!D19:S19",
+          "beatmapId": 3350322,
+          "title": "Down - Luscent [Lunatic]",
+          "mapper": "Down",
+          "stars": 5.2563,
+          "bpm": 170.0,
+          "drainSeconds": 140.0,
+          "cs": 6.0,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR3",
+          "source": "GS Mappool!D20:S20",
+          "beatmapId": 3544693,
+          "title": "Street - Hestia [bongo's Insane]",
+          "mapper": "GYGY",
+          "stars": 5.52483,
+          "bpm": 190.0,
+          "drainSeconds": 102.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR4",
+          "source": "GS Mappool!D21:S21",
+          "beatmapId": 3423331,
+          "title": "Roce - Jishu [Lobelia's Insane]",
+          "mapper": "Beren",
+          "stars": 5.19525,
+          "bpm": 136.0,
+          "drainSeconds": 155.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT1",
+          "source": "GS Mappool!D22:S22",
+          "beatmapId": 2799044,
+          "title": "8686m - Korekara [Lunatic]",
+          "mapper": "Gibune",
+          "stars": 5.81056,
+          "bpm": 222.0,
+          "drainSeconds": 186.0,
+          "cs": 4.4,
+          "ar": 9.7,
+          "od": 9.4
+        },
+        {
+          "slot": "DT2",
+          "source": "GS Mappool!D23:S23",
+          "beatmapId": 3558567,
+          "title": "yuki - Koisuru Kirigirisu [Daydream]",
+          "mapper": "pnky",
+          "stars": 5.73978,
+          "bpm": 213.0,
+          "drainSeconds": 154.666667,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.1
+        },
+        {
+          "slot": "DT3",
+          "source": "GS Mappool!D24:S24",
+          "beatmapId": 1349346,
+          "title": "YUC'e - Sunset Tea Cup [Hyper]",
+          "mapper": "Rumia-",
+          "stars": 5.58913,
+          "bpm": 240.0,
+          "drainSeconds": 112.0,
+          "cs": 4.0,
+          "ar": 10.0,
+          "od": 9.4
+        },
+        {
+          "slot": "DT4",
+          "source": "GS Mappool!D25:S25",
+          "beatmapId": 2145491,
+          "title": "Rin - Kishinjou set 10 ~ Reverse Ideology [Lunatic]",
+          "mapper": "defiance",
+          "stars": 5.59725,
+          "bpm": 192.0,
+          "drainSeconds": 172.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.1
+        },
+        {
+          "slot": "TB1",
+          "source": "GS Mappool!D26:S26; All Mappools!D26:S26",
+          "beatmapId": null,
+          "title": "TwoThirds - Bring it Back [Collab]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": 9.2,
+          "od": null
+        }
+      ]
+    },
+    {
+      "id": "sf",
+      "name": "SEMI-FINALS",
+      "source": "SF Mappool!D7:S26",
+      "maps": [
+        {
+          "slot": "NM1",
+          "source": "SF Mappool!D8:S8",
+          "beatmapId": 3643054,
+          "title": "Kito Akari - Desire Again [Flame Haze's Extra]",
+          "mapper": "Amateurre",
+          "stars": 6.24105,
+          "bpm": 191.0,
+          "drainSeconds": 234.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.7
+        },
+        {
+          "slot": "NM2",
+          "source": "SF Mappool!D9:S9",
+          "beatmapId": 4383862,
+          "title": "Risk Junk-G - Candy Galy [OCLR stream edits]",
+          "mapper": "Lapis",
+          "stars": 5.80416,
+          "bpm": 184.0,
+          "drainSeconds": 111.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.5
+        },
+        {
+          "slot": "NM3",
+          "source": "SF Mappool!D10:S10",
+          "beatmapId": 3201174,
+          "title": "Ryokuoushoku Shakai - Zutto Zutto Zutto [seros' Extra]",
+          "mapper": "Deca",
+          "stars": 5.58889,
+          "bpm": 128.0,
+          "drainSeconds": 220.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.8
+        },
+        {
+          "slot": "NM4",
+          "source": "SF Mappool!D11:S11",
+          "beatmapId": 2831914,
+          "title": "Sano Nobuyoshi - Duration [Expert]",
+          "mapper": "Acylica",
+          "stars": 5.72907,
+          "bpm": 180.0,
+          "drainSeconds": 117.0,
+          "cs": 4.0,
+          "ar": 9.5,
+          "od": 9.0
+        },
+        {
+          "slot": "NM5",
+          "source": "SF Mappool!D12:S12",
+          "beatmapId": 3830777,
+          "title": "seatrus - Stargaze Station [Hoshiyomi]",
+          "mapper": "xidorn",
+          "stars": 6.20248,
+          "bpm": 225.0,
+          "drainSeconds": 121.0,
+          "cs": 3.7,
+          "ar": 9.6,
+          "od": 8.3
+        },
+        {
+          "slot": "NM6",
+          "source": "SF Mappool!D13:S13; All Mappools!D39:S39",
+          "beatmapId": 4204086,
+          "title": "Down - Lince Cosmico [Expert]",
+          "mapper": "Pisapou",
+          "stars": null,
+          "bpm": 116.0,
+          "drainSeconds": 90.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.0
+        },
+        {
+          "slot": "HD1",
+          "source": "SF Mappool!D14:S14",
+          "beatmapId": 2165315,
+          "title": "04 Limited Sazabys - Squall [Loreley's Another]",
+          "mapper": "Gillstar",
+          "stars": 5.84007,
+          "bpm": 200.0,
+          "drainSeconds": 183.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.0
+        },
+        {
+          "slot": "HD2",
+          "source": "SF Mappool!D15:S15",
+          "beatmapId": 2729416,
+          "title": "Fujikawa Chiai - Gomi no Hi [Insane]",
+          "mapper": "a_Blue",
+          "stars": 5.19971,
+          "bpm": 248.0,
+          "drainSeconds": 210.0,
+          "cs": 4.0,
+          "ar": 8.8,
+          "od": 8.0
+        },
+        {
+          "slot": "HD3",
+          "source": "SF Mappool!D16:S16",
+          "beatmapId": 3523843,
+          "title": "BEMANI Sound Team \"SYUNN\" - Papilio ulysses [Flutter Bomb (cs3.7)]",
+          "mapper": "JeZag",
+          "stars": 5.94851,
+          "bpm": 180.0,
+          "drainSeconds": 107.0,
+          "cs": 3.7,
+          "ar": 9.4,
+          "od": 9.0
+        },
+        {
+          "slot": "HD4",
+          "source": "SF Mappool!D17:S17",
+          "beatmapId": 2357761,
+          "title": "O-SE - Gesui Meidoushite Nezumi Ippiki [Sewer Survival]",
+          "mapper": "Skidooskei",
+          "stars": 5.95,
+          "bpm": 168.0,
+          "drainSeconds": 134.0,
+          "cs": 4.0,
+          "ar": 9.5,
+          "od": 9.0
+        },
+        {
+          "slot": "HR1",
+          "source": "SF Mappool!D18:S18",
+          "beatmapId": 4059062,
+          "title": "Mili - Summoning 101 [Akir]",
+          "mapper": "Deca",
+          "stars": 5.45436,
+          "bpm": 186.0,
+          "drainSeconds": 163.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR2",
+          "source": "SF Mappool!D19:S19",
+          "beatmapId": 4027832,
+          "title": "Frog96 - Letter to the Black World [**, **, **]",
+          "mapper": "Ryuusei Aika",
+          "stars": 5.79299,
+          "bpm": 185.0,
+          "drainSeconds": 98.0,
+          "cs": 6.5,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR3",
+          "source": "SF Mappool!D20:S20",
+          "beatmapId": 4294679,
+          "title": "ZUN - Yorimashi wa Yume to Utsutsu no Aida ni ~ Necro-Fantasia [AdveNt's Extra]",
+          "mapper": "Shurelia",
+          "stars": 5.87096,
+          "bpm": 172.0,
+          "drainSeconds": 136.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR4",
+          "source": "SF Mappool!D21:S21",
+          "beatmapId": 3221246,
+          "title": "tokiwa - wasurena feat. Sennzai [remembrance]",
+          "mapper": "Mocaotic",
+          "stars": 5.39977,
+          "bpm": 176.0,
+          "drainSeconds": 175.0,
+          "cs": 5.7,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT1",
+          "source": "SF Mappool!D22:S22",
+          "beatmapId": 1271343,
+          "title": "GET IN THE RING - Rebirth [Paradise Tries to Be Reborn Again]",
+          "mapper": "Metaku",
+          "stars": 6.19026,
+          "bpm": 225.0,
+          "drainSeconds": 206.666667,
+          "cs": 4.0,
+          "ar": 10.1,
+          "od": 9.8
+        },
+        {
+          "slot": "DT2",
+          "source": "SF Mappool!D23:S23",
+          "beatmapId": 67895,
+          "title": "PokeRemixStudio - Primal Dialga Remix [Ain's Insane]",
+          "mapper": "Blazevoir",
+          "stars": 6.10139,
+          "bpm": 225.0,
+          "drainSeconds": 88.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.8
+        },
+        {
+          "slot": "DT3",
+          "source": "SF Mappool!D24:S24",
+          "beatmapId": 859007,
+          "title": "yuikonnu & ayaponzu* - Okochama Sensou [Frobe's Insane]",
+          "mapper": "Len",
+          "stars": 6.04547,
+          "bpm": 262.5,
+          "drainSeconds": 130.0,
+          "cs": 4.0,
+          "ar": 10.1,
+          "od": 9.1
+        },
+        {
+          "slot": "DT4",
+          "source": "SF Mappool!D25:S25",
+          "beatmapId": 3312899,
+          "title": "Harumaki Gohan - Saikai [Fujirin's Insane]",
+          "mapper": "AirinCat",
+          "stars": 5.70339,
+          "bpm": 205.5,
+          "drainSeconds": 130.0,
+          "cs": 4.0,
+          "ar": 10.1,
+          "od": 9.1
+        },
+        {
+          "slot": "TB1",
+          "source": "SF Mappool!D26:S26",
+          "beatmapId": 2774775,
+          "title": "B-Complex - Acid Trip [Sepsis]",
+          "mapper": "Zetera",
+          "stars": 6.21642,
+          "bpm": 174.0,
+          "drainSeconds": 300.0,
+          "cs": 4.6,
+          "ar": 9.3,
+          "od": 9.0
+        }
+      ]
+    },
+    {
+      "id": "f",
+      "name": "FINALS",
+      "source": "F Mappool!D7:S26",
+      "maps": [
+        {
+          "slot": "NM1",
+          "source": "F Mappool!D8:S8",
+          "beatmapId": 4278199,
+          "title": "Feryquitous feat. Bretta Crossrain - eclosion [Metamorphosis]",
+          "mapper": "knowledgeking",
+          "stars": 6.30209,
+          "bpm": 191.0,
+          "drainSeconds": 204.0,
+          "cs": 4.0,
+          "ar": 9.5,
+          "od": 9.0
+        },
+        {
+          "slot": "NM2",
+          "source": "F Mappool!D9:S9",
+          "beatmapId": 3736027,
+          "title": "cosMo@BousouP - Oceanus [Expert]",
+          "mapper": "MahoroKano",
+          "stars": 6.36152,
+          "bpm": 196.0,
+          "drainSeconds": 208.0,
+          "cs": 4.0,
+          "ar": 9.2,
+          "od": 9.0
+        },
+        {
+          "slot": "NM3",
+          "source": "F Mappool!D10:S10",
+          "beatmapId": 3736058,
+          "title": "PinocchioP - Magical Girl and Chocolate feat. Hatsune Miku [Magic]",
+          "mapper": "iRedi",
+          "stars": 5.65049,
+          "bpm": 150.0,
+          "drainSeconds": 182.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 9.0
+        },
+        {
+          "slot": "NM4",
+          "source": "F Mappool!D11:S11",
+          "beatmapId": 3162711,
+          "title": "M2U feat. NICODE - Breach [Krimek's Extra]",
+          "mapper": "Okoratu",
+          "stars": 5.96145,
+          "bpm": 160.0,
+          "drainSeconds": 109.0,
+          "cs": 4.2,
+          "ar": 9.4,
+          "od": 8.3
+        },
+        {
+          "slot": "NM5",
+          "source": "F Mappool!D12:S12",
+          "beatmapId": 893916,
+          "title": "The Ghost of 3.13 - Daydream [Pittig]",
+          "mapper": "Pittigbaasje",
+          "stars": 6.00579,
+          "bpm": 235.0,
+          "drainSeconds": 107.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 8.5
+        },
+        {
+          "slot": "NM6",
+          "source": "F Mappool!D13:S13",
+          "beatmapId": 3355817,
+          "title": "Crimsona - Hyper Fiber World Spectrum [Down's Extra]",
+          "mapper": "Icekalt",
+          "stars": 6.18364,
+          "bpm": 170.0,
+          "drainSeconds": 169.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.6
+        },
+        {
+          "slot": "HD1",
+          "source": "F Mappool!D14:S14",
+          "beatmapId": 3582592,
+          "title": "Snail's House - Biscuit Funk [Expert]",
+          "mapper": "VoiceCore",
+          "stars": 5.89604,
+          "bpm": 110.0,
+          "drainSeconds": 219.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.8
+        },
+        {
+          "slot": "HD2",
+          "source": "F Mappool!D15:S15",
+          "beatmapId": 2335572,
+          "title": "8284 vs. wa. - Adularescence [gowww's Another]",
+          "mapper": "soulfear",
+          "stars": 5.65835,
+          "bpm": 190.0,
+          "drainSeconds": 97.0,
+          "cs": 5.0,
+          "ar": 8.7,
+          "od": 8.0
+        },
+        {
+          "slot": "HD3",
+          "source": "F Mappool!D16:S16",
+          "beatmapId": 2442178,
+          "title": "KNOWER - Overtime [Ecstasy]",
+          "mapper": "Mir",
+          "stars": 5.38544,
+          "bpm": 138.0,
+          "drainSeconds": 172.0,
+          "cs": 3.8,
+          "ar": 9.4,
+          "od": 8.0
+        },
+        {
+          "slot": "HD4",
+          "source": "F Mappool!D17:S17",
+          "beatmapId": 2665225,
+          "title": "kiraku - connection [networking]",
+          "mapper": "- ascended -",
+          "stars": 5.8819,
+          "bpm": 175.0,
+          "drainSeconds": 99.0,
+          "cs": 4.2,
+          "ar": 9.3,
+          "od": 8.5
+        },
+        {
+          "slot": "HR1",
+          "source": "F Mappool!D18:S18",
+          "beatmapId": 4187638,
+          "title": "DECO*27 - Mannequin feat. Hatsune Miku [Extra]",
+          "mapper": "gazimal",
+          "stars": 6.19866,
+          "bpm": 192.0,
+          "drainSeconds": 154.0,
+          "cs": 4.9,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR2",
+          "source": "F Mappool!D19:S19",
+          "beatmapId": 3146245,
+          "title": "25-ji, Nightcord de. - Bitter Choco Decoration [Picky Habits]",
+          "mapper": "Mononymous",
+          "stars": 5.64221,
+          "bpm": 174.0,
+          "drainSeconds": 125.0,
+          "cs": 6.5,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR3",
+          "source": "F Mappool!D20:S20",
+          "beatmapId": 2602180,
+          "title": "Memme - China Dress [DeviousPanda's Expert]",
+          "mapper": "Mir",
+          "stars": 6.00915,
+          "bpm": 175.0,
+          "drainSeconds": 118.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR4",
+          "source": "F Mappool!D21:S21",
+          "beatmapId": 3156885,
+          "title": "Zekk - Freefall [Extra]",
+          "mapper": "Fursum",
+          "stars": 5.78159,
+          "bpm": 180.0,
+          "drainSeconds": 128.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT1",
+          "source": "F Mappool!D22:S22",
+          "beatmapId": 1949246,
+          "title": "Primary - Kokoro no Yakusoku [Affection]",
+          "mapper": "Lasse",
+          "stars": 6.25106,
+          "bpm": 112.5,
+          "drainSeconds": 177.333333,
+          "cs": 4.3,
+          "ar": 9.9,
+          "od": 9.8
+        },
+        {
+          "slot": "DT2",
+          "source": "F Mappool!D23:S23",
+          "beatmapId": 3224532,
+          "title": "Yonekura Chihiro - DEAR MY WAKER [Insane]",
+          "mapper": "Skystar",
+          "stars": 6.35038,
+          "bpm": 210.0,
+          "drainSeconds": 128.666667,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.1
+        },
+        {
+          "slot": "DT3",
+          "source": "F Mappool!D24:S24",
+          "beatmapId": 3604872,
+          "title": "Silver Forest feat. Nano - (9) destiny ~ Zutto Cirno no Turn [Yokes' Light Lunatic]",
+          "mapper": "Bloxi",
+          "stars": 5.94743,
+          "bpm": 258.0,
+          "drainSeconds": 96.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.8
+        },
+        {
+          "slot": "DT4",
+          "source": "F Mappool!D25:S25",
+          "beatmapId": 4276140,
+          "title": "Aitsuki Nakuru - Hatsukoi Nikki [Shijie's Insane]",
+          "mapper": "Patchouli-R",
+          "stars": 5.97795,
+          "bpm": 210.0,
+          "drainSeconds": 114.0,
+          "cs": 4.0,
+          "ar": 10.3,
+          "od": 9.8
+        },
+        {
+          "slot": "TB1",
+          "source": "F Mappool!D26:S26",
+          "beatmapId": 1875674,
+          "title": "Demetori - Retrospective Kyoto ~ Japanese Beautiful Barrage [Illusionary Dominance]",
+          "mapper": "Crissa",
+          "stars": 6.25756,
+          "bpm": 185.0,
+          "drainSeconds": 302.0,
+          "cs": 4.5,
+          "ar": 9.4,
+          "od": 9.0
+        }
+      ]
+    },
+    {
+      "id": "gf",
+      "name": "GRAND FINALS",
+      "source": "GF Mappool!D7:S26",
+      "maps": [
+        {
+          "slot": "NM1",
+          "source": "GF Mappool!D8:S8; All Mappools!D86:S86",
+          "beatmapId": 4392271,
+          "title": "Rin'ca - Koisuru MODE [NO MODIFICATION ONE]",
+          "mapper": "Megumin914",
+          "stars": null,
+          "bpm": 196.0,
+          "drainSeconds": 235.0,
+          "cs": 4.0,
+          "ar": 9.5,
+          "od": 9.0
+        },
+        {
+          "slot": "NM2",
+          "source": "GF Mappool!D9:S9",
+          "beatmapId": 3170501,
+          "title": "technoplanet - Inscape [why should we be in the dirty hands of our desires]",
+          "mapper": "Alvearia",
+          "stars": 6.52892,
+          "bpm": 200.0,
+          "drainSeconds": 112.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.0
+        },
+        {
+          "slot": "NM3",
+          "source": "GF Mappool!D10:S10",
+          "beatmapId": 3221274,
+          "title": "Moe Shop feat. TORIENA - GHOST FOOD [Expert]",
+          "mapper": "Mir",
+          "stars": 5.92414,
+          "bpm": 135.0,
+          "drainSeconds": 172.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.5
+        },
+        {
+          "slot": "NM4",
+          "source": "GF Mappool!D11:S11",
+          "beatmapId": 3079723,
+          "title": "nora2r - Memory Of Sunrise [ayaya]",
+          "mapper": "Heilia",
+          "stars": 6.19627,
+          "bpm": 180.0,
+          "drainSeconds": 118.0,
+          "cs": 4.5,
+          "ar": 9.6,
+          "od": 9.0
+        },
+        {
+          "slot": "NM5",
+          "source": "GF Mappool!D12:S12",
+          "beatmapId": 4400095,
+          "title": "katagiri - Scattered Pancakes [CS4]",
+          "mapper": "Saika0k1",
+          "stars": 6.22402,
+          "bpm": 240.0,
+          "drainSeconds": 128.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.6
+        },
+        {
+          "slot": "NM6",
+          "source": "GF Mappool!D13:S13",
+          "beatmapId": 3323488,
+          "title": "NIWASHI - Model of Earth [Kentucky Fried Chicken]",
+          "mapper": "Down",
+          "stars": 5.87809,
+          "bpm": 118.5,
+          "drainSeconds": 180.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.5
+        },
+        {
+          "slot": "HD1",
+          "source": "GF Mappool!D14:S14",
+          "beatmapId": 3963797,
+          "title": "Yorushika - Deep Indigo [alevi's Extra]",
+          "mapper": "Livermorium",
+          "stars": 6.00814,
+          "bpm": 210.0,
+          "drainSeconds": 205.0,
+          "cs": 4.3,
+          "ar": 9.5,
+          "od": 9.2
+        },
+        {
+          "slot": "HD2",
+          "source": "GF Mappool!D15:S15",
+          "beatmapId": 3493389,
+          "title": "DJ Totoriott - Chloe [Mystery (edit ver.)]",
+          "mapper": "DeviousPanda",
+          "stars": 5.91501,
+          "bpm": 176.0,
+          "drainSeconds": 111.0,
+          "cs": 5.3,
+          "ar": 8.7,
+          "od": 8.0
+        },
+        {
+          "slot": "HD3",
+          "source": "GF Mappool!D16:S16",
+          "beatmapId": 3195652,
+          "title": "M2U - Dual Fractal [Necho's Functional]",
+          "mapper": "Hynix",
+          "stars": 5.97203,
+          "bpm": 160.0,
+          "drainSeconds": 112.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 8.0
+        },
+        {
+          "slot": "HD4",
+          "source": "GF Mappool!D17:S17",
+          "beatmapId": 2687032,
+          "title": "Snail's House - waiting for you, in snowing city. [i'm still here, waiting.]",
+          "mapper": "Azuelle",
+          "stars": 6.06119,
+          "bpm": 87.33,
+          "drainSeconds": 151.0,
+          "cs": 4.6,
+          "ar": 9.4,
+          "od": 8.9
+        },
+        {
+          "slot": "HR1",
+          "source": "GF Mappool!D18:S18",
+          "beatmapId": 3283012,
+          "title": "EGOIST - BANG!!! [MIRACLE]",
+          "mapper": "Yumerios",
+          "stars": 6.03394,
+          "bpm": 137.0,
+          "drainSeconds": 176.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR2",
+          "source": "GF Mappool!D19:S19",
+          "beatmapId": 437202,
+          "title": "ginkiha - Oriens [Expert]",
+          "mapper": "Kloyd",
+          "stars": 6.0802,
+          "bpm": 185.0,
+          "drainSeconds": 112.0,
+          "cs": 6.5,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR3",
+          "source": "GF Mappool!D20:S20",
+          "beatmapId": 2424582,
+          "title": "Feryquitous - Dstorv [Diceistab]",
+          "mapper": "Muya",
+          "stars": 6.27906,
+          "bpm": 191.0,
+          "drainSeconds": 121.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR4",
+          "source": "GF Mappool!D21:S21",
+          "beatmapId": 2615144,
+          "title": "Yu-dachi - Hoshi no Tooru Natsuzora ni Negau [VVD]",
+          "mapper": "nika mika",
+          "stars": 5.84929,
+          "bpm": 210.0,
+          "drainSeconds": 113.0,
+          "cs": 5.5,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT1",
+          "source": "GF Mappool!D22:S22",
+          "beatmapId": 470990,
+          "title": "Nanjou Yoshino - Arifureta Kanashimi no Hate [Sorrow]",
+          "mapper": "Hinsvar",
+          "stars": 6.37962,
+          "bpm": 123.0,
+          "drainSeconds": 140.0,
+          "cs": 4.0,
+          "ar": 10.0,
+          "od": 9.3
+        },
+        {
+          "slot": "DT2",
+          "source": "GF Mappool!D23:S23",
+          "beatmapId": 405955,
+          "title": "Nightwish - Planet Hell [Insane]",
+          "mapper": "Sieg",
+          "stars": 6.58603,
+          "bpm": 219.0,
+          "drainSeconds": 89.333333,
+          "cs": 4.3,
+          "ar": 9.9,
+          "od": 9.3
+        },
+        {
+          "slot": "DT3",
+          "source": "GF Mappool!D24:S24",
+          "beatmapId": 4261871,
+          "title": "-45 - Dogra Magra [Insane]",
+          "mapper": "Luscent",
+          "stars": 6.55212,
+          "bpm": 250.5,
+          "drainSeconds": 99.333333,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.8
+        },
+        {
+          "slot": "DT4",
+          "source": "GF Mappool!D25:S25",
+          "beatmapId": 2730823,
+          "title": "YOASOBI - Gunjou [Insane]",
+          "mapper": "Battle",
+          "stars": 6.29629,
+          "bpm": 202.5,
+          "drainSeconds": 156.0,
+          "cs": 3.8,
+          "ar": 10.3,
+          "od": 9.4
+        },
+        {
+          "slot": "TB1",
+          "source": "GF Mappool!D26:S26",
+          "beatmapId": 1512608,
+          "title": "Akira Complex - Odyssey (Au5 Remix) [Pilgrimage]",
+          "mapper": "C00L",
+          "stars": 6.51521,
+          "bpm": 175.0,
+          "drainSeconds": 381.0,
+          "cs": 4.0,
+          "ar": 9.6,
+          "od": 8.8
+        }
+      ]
+    }
+  ]
+}

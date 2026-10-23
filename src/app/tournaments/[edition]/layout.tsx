@@ -16,6 +16,17 @@ export default async function EditionLayout({
   const { edition: slug } = await params;
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
+  if (edition.archive)
+    return (
+      <TournamentShell
+        slug={slug}
+        name={edition.name}
+        liveDraft={false}
+        archived
+      >
+        {children}
+      </TournamentShell>
+    );
   const [draftResult] = await Promise.allSettled([publicDraft(slug)]);
   const draft = draftResult.status === "fulfilled" ? draftResult.value : null;
   const liveUnavailable = draftResult.status === "rejected";
