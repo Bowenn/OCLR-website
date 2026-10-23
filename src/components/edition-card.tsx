@@ -36,9 +36,7 @@ export async function EditionCard({ edition }: { edition: Edition }) {
           </Action>
         </div>
       </div>
-      {historical ? (
-        <p className="muted">{edition.season ?? edition.name}</p>
-      ) : (
+      {!historical && (
         <dl className="edition-facts">
           <div>
             <dt>{tr("Registration opens")}</dt>

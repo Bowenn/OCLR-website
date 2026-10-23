@@ -456,6 +456,9 @@ button:hover {
   border: 1px solid #2c2d45;
   border-radius: 0.8rem;
 }
+.edition-card > .edition-copy:last-child {
+  grid-column: 2 / -1;
+}
 .edition-art {
   aspect-ratio: 1;
   min-height: 128px;
