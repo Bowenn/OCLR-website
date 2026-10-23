@@ -1,6 +1,8 @@
 import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { resolve } from "node:path";
+import { writeFileSync } from "node:fs";
+import sharp from "sharp";
 import { sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { seedEditions } from "../fixtures/editions";
@@ -13,7 +15,7 @@ const hero = {
   summary: "osu! Chinese League Rookie — Season 11.",
   branding: { ...edition.branding, keyVisual: "/oclr-s11-key-visual.webp" },
 };
-const asset = "**/oclr-s11-key-visual.webp";
+const asset = /\/oclr-s11-key-visual-enhanced-\d+\.webp$/;
 async function preferences(
   context: BrowserContext,
   locale: string,
@@ -27,6 +29,13 @@ async function preferences(
   );
 }
 async function geometry(page: Page) {
+  await expect
+    .poll(() =>
+      page
+        .locator(".event-artwork img")
+        .evaluate((img: HTMLImageElement) => img.naturalWidth),
+    )
+    .toBeGreaterThan(0);
   return page.evaluate(() => {
     const rect = (selector: string) =>
       document.querySelector(selector)!.getBoundingClientRect().toJSON();
@@ -89,7 +98,15 @@ test.describe("full-height season hero media", () => {
             await page.goto("/tournaments/test-cup");
             await expect(page.locator(".event-artwork img")).toBeVisible();
             const g = await geometry(page);
-            expect(g.natural.width).toBe(1672);
+            expect(g.natural.width).toBeGreaterThan(0);
+            await expect(page.locator(".event-artwork img")).toHaveAttribute(
+              "width",
+              "3840",
+            );
+            await expect(page.locator(".event-artwork img")).toHaveAttribute(
+              "height",
+              "2161",
+            );
             expect(g.scrollWidth).toBeLessThanOrEqual(width);
             expect(
               await page.locator(".event-artwork img").getAttribute("alt"),
@@ -113,14 +130,22 @@ test.describe("full-height season hero media", () => {
                 { left: 128, top: 250, right: 905, bottom: 432 },
                 { left: 1070, top: 80, right: 1320, bottom: 345 },
               ]) {
-                expect(visible.left).toBeLessThanOrEqual(landmark.left);
-                expect(visible.top).toBeLessThanOrEqual(landmark.top);
+                expect(visible.left).toBeLessThanOrEqual(
+                  (landmark.left / 1672) * g.natural.width,
+                );
+                expect(visible.top).toBeLessThanOrEqual(
+                  (landmark.top / 941) * g.natural.height,
+                );
                 expect(
                   visible.left + g.image.width / scale,
-                ).toBeGreaterThanOrEqual(landmark.right);
+                ).toBeGreaterThanOrEqual(
+                  (landmark.right / 1672) * g.natural.width,
+                );
                 expect(
                   visible.top + g.image.height / scale,
-                ).toBeGreaterThanOrEqual(landmark.bottom);
+                ).toBeGreaterThanOrEqual(
+                  (landmark.bottom / 941) * g.natural.height,
+                );
               }
             } else {
               expect(g.media.top).toBeGreaterThanOrEqual(g.intro.bottom);
@@ -151,6 +176,94 @@ test.describe("full-height season hero media", () => {
     }
     expect(errors).toEqual([]);
   });
+  test("selects bounded responsive assets at standard and Retina pixel densities", async ({
+    browser,
+    isMobile,
+  }, info) => {
+    test.skip(
+      isMobile,
+      "This case creates its own DPR 1/2/3 contexts; the mobile project also covers DPR 3.",
+    );
+    test.setTimeout(90000);
+    const records = [];
+    for (const dpr of [1, 2, 3]) {
+      const context = await browser.newContext({
+        deviceScaleFactor: dpr,
+        baseURL: "http://127.0.0.1:3100",
+      });
+      const page = await context.newPage();
+      for (const width of [390, 1280, 1920]) {
+        await page.setViewportSize({ width, height: 1080 });
+        if (dpr === 2 && width === 1920) {
+          // Hold layout constant and render the original file for the before comparison.
+          await context.route(asset, (route) =>
+            route.fulfill({
+              path: resolve("public/oclr-s11-key-visual.webp"),
+              contentType: "image/webp",
+            }),
+          );
+          await page.goto("/tournaments/test-cup");
+          await page.locator(".event-artwork img").scrollIntoViewIfNeeded();
+          await expect
+            .poll(() =>
+              page
+                .locator(".event-artwork img")
+                .evaluate((img: HTMLImageElement) => img.naturalWidth),
+            )
+            .toBeGreaterThan(0);
+          await page.screenshot({
+            path: info.outputPath("before-original-1920-dpr2.png"),
+            fullPage: true,
+          });
+          await context.unroute(asset);
+        }
+        await page.goto("/tournaments/test-cup");
+        const image = page.locator(".event-artwork img");
+        await image.scrollIntoViewIfNeeded();
+        await expect
+          .poll(() =>
+            image.evaluate((img: HTMLImageElement) => img.naturalWidth),
+          )
+          .toBeGreaterThan(0);
+        const current = await image.evaluate((img: HTMLImageElement) => ({
+          src: img.currentSrc,
+          width: img.getBoundingClientRect().width,
+        }));
+        const selected = Number(/enhanced-(\d+)\.webp/.exec(current.src)?.[1]);
+        expect([640, 960, 1280, 1920, 2560, 3840]).toContain(selected);
+        expect(selected).toBeGreaterThanOrEqual(
+          Math.min(3840, Math.floor(current.width * dpr)),
+        );
+        if (width === 390) expect(selected).toBeLessThan(3840);
+        if (width === 1280 && dpr === 2) expect(selected).toBeGreaterThan(1672);
+        const response = await context.request.get(current.src);
+        expect(response.ok()).toBe(true);
+        const body = await response.body();
+        expect((await sharp(body).metadata()).width).toBe(selected);
+        records.push({
+          viewport: width,
+          dpr,
+          displayWidth: current.width,
+          selectedWidth: selected,
+          bytes: body.length,
+        });
+        if (dpr === 2 && width === 1920)
+          await page.screenshot({
+            path: info.outputPath("after-enhanced-1920-dpr2.png"),
+            fullPage: true,
+          });
+      }
+      await context.close();
+    }
+    writeFileSync(
+      info.outputPath("responsive-delivery.json"),
+      JSON.stringify(records, null, 2),
+    );
+    await info.attach("responsive-delivery", {
+      contentType: "application/json",
+      body: Buffer.from(JSON.stringify(records, null, 2)),
+    });
+  });
   test("handles landscape, square and portrait sources, a broken image and no artwork", async ({
     page,
     context,
@@ -171,7 +284,7 @@ test.describe("full-height season hero media", () => {
       );
       await page.goto("/tournaments/test-cup");
       const g = await geometry(page);
-      expect(g.natural).toEqual({ width: w, height: h });
+      expect(g.natural.width / g.natural.height).toBeCloseTo(w / h, 2);
       if (isMobile)
         expect(g.image.width / g.image.height).toBeCloseTo(w / h, 2);
       else filled(g);
@@ -240,7 +353,7 @@ test.describe("full-height season hero media", () => {
             .locator(".event-artwork img")
             .evaluate((img: HTMLImageElement) => img.naturalWidth),
         )
-        .toBe(1672);
+        .toBeGreaterThan(0);
       const after = (await page.locator(".season-registration").boundingBox())!;
       expect(after.y).toBeCloseTo(before.y, 0);
     } finally {

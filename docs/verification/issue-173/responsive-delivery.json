@@ -1,0 +1,65 @@
+[
+  {
+    "viewport": 390,
+    "dpr": 1,
+    "displayWidth": 356,
+    "selectedWidth": 640,
+    "bytes": 76454
+  },
+  {
+    "viewport": 1280,
+    "dpr": 1,
+    "displayWidth": 1188.390625,
+    "selectedWidth": 1280,
+    "bytes": 224838
+  },
+  {
+    "viewport": 1920,
+    "dpr": 1,
+    "displayWidth": 768.90625,
+    "selectedWidth": 1280,
+    "bytes": 224838
+  },
+  {
+    "viewport": 390,
+    "dpr": 2,
+    "displayWidth": 356,
+    "selectedWidth": 960,
+    "bytes": 149372
+  },
+  {
+    "viewport": 1280,
+    "dpr": 2,
+    "displayWidth": 1188.390625,
+    "selectedWidth": 2560,
+    "bytes": 504320
+  },
+  {
+    "viewport": 1920,
+    "dpr": 2,
+    "displayWidth": 768.90625,
+    "selectedWidth": 1920,
+    "bytes": 375458
+  },
+  {
+    "viewport": 390,
+    "dpr": 3,
+    "displayWidth": 356,
+    "selectedWidth": 1280,
+    "bytes": 224838
+  },
+  {
+    "viewport": 1280,
+    "dpr": 3,
+    "displayWidth": 1188.390625,
+    "selectedWidth": 3840,
+    "bytes": 1142224
+  },
+  {
+    "viewport": 1920,
+    "dpr": 3,
+    "displayWidth": 768.90625,
+    "selectedWidth": 2560,
+    "bytes": 504320
+  }
+]

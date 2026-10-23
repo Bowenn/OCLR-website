@@ -264,7 +264,7 @@ test.describe("MainSheet Light public experience", () => {
         await context.request.get("/api/tournaments/private-test-cup/mappools")
       ).json(),
     ).toEqual([]);
-    await context.route("**/oclr-s11-key-visual.webp", (route) =>
+    await context.route(/\/oclr-s11-key-visual-enhanced-\d+\.webp$/, (route) =>
       route.abort(),
     );
     await page.goto(base);

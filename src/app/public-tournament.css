@@ -381,6 +381,9 @@ html[data-theme="dark"] .themed-site {
   min-width: 0;
   background: var(--site-border);
 }
+.event-artwork picture {
+  display: contents;
+}
 .event-artwork img {
   display: block;
   width: 100%;

@@ -1,6 +1,6 @@
 # S11 artwork resolution investigation (#173)
 
-Checked on 2026-10-24. This investigation does **not** establish that the requested visual improvement has passed.
+Checked on 2026-10-24. The initial source investigation is retained below. The organizer subsequently authorized AI enhancement and applying the selected poster; see the application record at the end.
 
 | Surface                        | Approved source                           | Pixels    | File bytes | Delivery                                                              |
 | ------------------------------ | ----------------------------------------- | --------- | ---------- | --------------------------------------------------------------------- |
@@ -37,4 +37,10 @@ The selected AI-restored result was then enlarged with Lanczos3 to **3840×2161*
 
 The exact prompts and observed output limits are recorded in `output/imagegen/oclr-s11-key-visual-enhancement-prompts.txt`. This is **AI detail restoration followed by interpolation**, not a native-4K super-resolution result or recovery of verifiable original detail. AI-estimated texture may differ from the original. Visual checks retain the composition, character, palette, “OCLR S11” and “OSU! CHINESE LEAGUE ROOKIE”; pixel identity is not claimed. Both exports decode at the stated dimensions. The original source hash remains unchanged.
 
-This follow-up delivers the requested larger image as sibling artifacts. It does not change the selected website artwork, the text-free homepage background, branding configuration, responsive layout or production service. The application's #173 visual/performance acceptance remains open; this artifact-generation step does not establish that the deployed hero is sharper. No application code or dependency changed, so the application suite was not repeated for these exports.
+The artifact-generation step delivered the requested larger image as sibling artifacts without changing the selected website artwork, text-free homepage background, branding configuration, responsive layout or production service. No application code or dependency changed at that step, so the application suite was not repeated for the exports.
+
+## Applied to the tournament key visual
+
+The organizer explicitly requested applying the selected enhancement on 2026-10-24. `EventArtwork` now maps the existing approved S11 key-visual value to the enhanced image and supplies six static responsive widths. Existing published editions and previews receive the new artwork without changing stored configuration, permission checks or branding allowlists. The separate text-free home background retains its original illustration; this poster is not substituted into that different composition.
+
+The 640/960/1280/1920/2560px derivatives use WebP q90 and the existing 3840px master remains q95. The source picture preserves the existing image fallback, alt text, layout, crop and theme behavior. [Measured delivery, local before/after screenshots and verification](verification/issue-173/README.md) document the application step. Production deployment has not been performed.
