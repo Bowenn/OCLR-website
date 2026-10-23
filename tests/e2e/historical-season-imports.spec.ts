@@ -10,6 +10,9 @@ import { edition } from "../fixtures/edition";
 const samples = [
   {
     key: "s8",
+    thumbnail: "/archive/s8/thumbnail.jpg",
+    thumbnailWidth: 1920,
+    thumbnailRatio: 16 / 9,
     season: "8",
     results: 38,
     players: 128,
@@ -24,6 +27,9 @@ const samples = [
   },
   {
     key: "s10",
+    thumbnail: "/archive/s10/thumbnail.png",
+    thumbnailWidth: 1024,
+    thumbnailRatio: 1,
     season: "10",
     results: 30,
     players: 80,
@@ -105,11 +111,11 @@ test.describe("historical season import handoff", () => {
         sample.ruleText,
       );
       await page.goto(`/admin/tournaments/${slug}/settings?tab=publication`);
-      if (sample.key === "s10") {
+      {
         await page.getByRole("tab", { name: "General", exact: true }).click();
         await page
           .getByRole("combobox", { name: "Square logo", exact: true })
-          .selectOption("/archive/s10/thumbnail.png");
+          .selectOption(sample.thumbnail);
         await page
           .getByRole("button", { name: "Save general settings", exact: true })
           .click();
@@ -117,7 +123,7 @@ test.describe("historical season import handoff", () => {
         await page.reload();
         await expect(
           page.getByRole("combobox", { name: "Square logo", exact: true }),
-        ).toHaveValue("/archive/s10/thumbnail.png");
+        ).toHaveValue(sample.thumbnail);
       }
       await page.getByRole("tab", { name: "Publication", exact: true }).click();
       await page
@@ -142,25 +148,25 @@ test.describe("historical season import handoff", () => {
         width: isMobile ? 390 : 1440,
         height: 1000,
       });
-      if (sample.key === "s10") {
+      {
         await page.goto("/tournaments");
         const card = page.locator(".edition-card").filter({
           has: page.locator(`a[href="/tournaments/${slug}"]`),
         });
         const thumbnail = card.locator(".edition-art img");
-        await expect(thumbnail).toHaveAttribute(
-          "src",
-          "/archive/s10/thumbnail.png",
-        );
+        await expect(thumbnail).toHaveAttribute("src", sample.thumbnail);
         await expect
           .poll(() =>
             thumbnail.evaluate(
               (image) => (image as HTMLImageElement).naturalWidth,
             ),
           )
-          .toBe(1024);
+          .toBe(sample.thumbnailWidth);
         const bounds = await thumbnail.boundingBox();
-        expect(bounds!.width / bounds!.height).toBeCloseTo(1, 2);
+        expect(bounds!.width / bounds!.height).toBeCloseTo(
+          sample.thumbnailRatio,
+          2,
+        );
         for (const theme of ["light", "dark"]) {
           await context.addCookies([
             {
@@ -173,7 +179,7 @@ test.describe("historical season import handoff", () => {
           await page.reload();
           await expect(thumbnail).toBeVisible();
           await card.screenshot({
-            path: info.outputPath(`s10-thumbnail-${theme}.png`),
+            path: info.outputPath(`${sample.key}-thumbnail-${theme}.png`),
           });
         }
       }

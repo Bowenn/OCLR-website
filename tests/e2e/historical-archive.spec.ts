@@ -374,6 +374,7 @@ test.describe("historical archive browser workflow", () => {
         ...edition,
         slug,
         name: "S9 archive design verification",
+        branding: { ...edition.branding, logo: "/archive/s9/thumbnail.png" },
         season: "9",
         published: true,
         status: "completed",
@@ -393,6 +394,25 @@ test.describe("historical archive browser workflow", () => {
           },
           { name: "oclr-theme", value: theme, domain: "127.0.0.1", path: "/" },
         ]);
+        await page.goto("/tournaments");
+        const card = page
+          .locator(".edition-card")
+          .filter({ has: page.locator(`a[href="/tournaments/${slug}"]`) });
+        const thumbnail = card.locator(".edition-art img");
+        await expect(thumbnail).toHaveAttribute(
+          "src",
+          "/archive/s9/thumbnail.png",
+        );
+        await expect
+          .poll(() =>
+            thumbnail.evaluate((img) => (img as HTMLImageElement).naturalWidth),
+          )
+          .toBe(1920);
+        const bounds = await thumbnail.boundingBox();
+        expect(bounds!.width / bounds!.height).toBeCloseTo(16 / 9, 2);
+        await card.screenshot({
+          path: info.outputPath(`s9-thumbnail-${appearance}-${theme}.png`),
+        });
         for (const path of [
           "schedule",
           "players",

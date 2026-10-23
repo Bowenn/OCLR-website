@@ -62,7 +62,12 @@ export const editionSchema = z
     branding: z
       .object({
         logo: z
-          .enum(["/oclr-s11-square-logo.webp", "/archive/s10/thumbnail.png"])
+          .enum([
+            "/oclr-s11-square-logo.webp",
+            "/archive/s10/thumbnail.png",
+            "/archive/s9/thumbnail.png",
+            "/archive/s8/thumbnail.jpg",
+          ])
           .nullable(),
         background: z.enum(["/oclr-s11-website-background.webp"]).nullable(),
         keyVisual: z.enum(["/oclr-s11-key-visual.webp"]).nullable(),

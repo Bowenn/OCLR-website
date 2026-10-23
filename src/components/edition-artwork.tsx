@@ -12,6 +12,9 @@ export function EditionArtwork({
 
   const image =
     logo === undefined && slug === "s11" ? "/oclr-s11-square-logo.webp" : logo;
+  const landscape =
+    image === "/archive/s9/thumbnail.png" ||
+    image === "/archive/s8/thumbnail.jpg";
   return (
     <div
       className={`edition-art${image ? " edition-art-branded" : ""}`}
@@ -22,8 +25,8 @@ export function EditionArtwork({
           src={image}
           unoptimized
           alt=""
-          width={1200}
-          height={1200}
+          width={landscape ? 1920 : 1200}
+          height={landscape ? 1080 : 1200}
           sizes="(max-width: 760px) 240px, 220px"
         />
       ) : (
