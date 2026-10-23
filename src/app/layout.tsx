@@ -26,24 +26,24 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: [
         {
-          url: "/branding/oclr-mark.svg?v=2",
+          url: "/branding/oclr-mark.svg?v=3",
           type: "image/svg+xml",
           sizes: "any",
         },
         ...[16, 32, 48].map((size) => ({
-          url: `/branding/oclr-${size}.png?v=2`,
+          url: `/branding/oclr-${size}.png?v=3`,
           type: "image/png",
           sizes: `${size}x${size}`,
         })),
       ],
       apple: [
         {
-          url: "/branding/oclr-180.png?v=2",
+          url: "/branding/oclr-180.png?v=3",
           sizes: "180x180",
           type: "image/png",
         },
       ],
-      shortcut: "/branding/oclr-32.png?v=2",
+      shortcut: "/branding/oclr-32.png?v=3",
     },
     title: {
       default: "OCLR — osu! Chinese League Rookie",
