@@ -96,7 +96,7 @@ export function BracketView({
         </p>
       )}
       <div
-        className="bracket-scroll"
+        className={`bracket-scroll${flat ? " bracket-group-scroll" : ""}`}
         role="region"
         aria-label={
           flat

@@ -4772,6 +4772,10 @@ body:has([data-broadcast]) .site-shell {
 }
 
 /* Independent group fixtures fill the available width; advancement paths stay columnar. */
+.bracket-group-scroll {
+  background: var(--site-surface);
+  border-color: var(--site-border);
+}
 .bracket-frame.bracket-group-grid {
   display: block;
   width: 100%;

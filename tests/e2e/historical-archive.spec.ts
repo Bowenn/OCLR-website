@@ -467,6 +467,9 @@ test.describe("historical archive browser workflow", () => {
                 .click();
               const cards = page.locator(".bracket-group-grid .match-card");
               await expect(cards).toHaveCount(6);
+              expect(
+                (await new AxeBuilder({ page }).analyze()).violations,
+              ).toEqual([]);
               await expect(page.locator(".bracket-connectors")).toHaveCount(0);
               const first = await cards.nth(0).boundingBox();
               const second = await cards.nth(1).boundingBox();
