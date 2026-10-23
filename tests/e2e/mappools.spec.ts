@@ -413,12 +413,12 @@ test.describe("published mappools and restricted editing", () => {
     await expect(
       page.getByRole("combobox", { name: "FM policy", exact: true }),
     ).toBeVisible();
-    await expect(page.getByLabel("Map rows", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Map rows", { exact: true })).toBeHidden();
     await page.keyboard.press("Home");
     await expect(maps).toBeFocused();
     await expect(
       page.getByRole("combobox", { name: "FM policy", exact: true }),
-    ).toHaveCount(0);
+    ).toBeHidden();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
       path: info.outputPath("mappool-workspace.png"),
@@ -432,7 +432,7 @@ test.describe("published mappools and restricted editing", () => {
 
     await expect(
       page.getByRole("combobox", { name: "FM policy", exact: true }),
-    ).toHaveCount(0);
+    ).toBeHidden();
     await page
       .getByRole("group", { name: "Mappools", exact: true })
       .getByRole("button", { name: /Reserve Pool/ })

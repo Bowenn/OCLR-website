@@ -1010,11 +1010,14 @@ export async function previewFixtureMatch(
       .map((t) => t.id),
   }));
   const matched = [...new Set(attribution.flatMap((p) => p.teamIds))];
+  const currentFixture = refreshed.fixtures.find((f) => f.id === fixtureId)!;
   const unique =
     attribution.length > 0 &&
     attribution.every((p) => p.teamIds.length === 1) &&
-    matched.length === 2;
-  const currentFixture = refreshed.fixtures.find((f) => f.id === fixtureId)!;
+    matched.length === 2 &&
+    (!currentFixture.homeTeamId ||
+      matched.includes(currentFixture.homeTeamId)) &&
+    (!currentFixture.awayTeamId || matched.includes(currentFixture.awayTeamId));
   const home =
     currentFixture.homeTeamId ??
     (unique

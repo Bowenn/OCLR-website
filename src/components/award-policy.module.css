@@ -6,7 +6,19 @@
   border-block: 1px solid var(--site-border);
   overflow-wrap: anywhere;
 }
-.policy h2 { grid-column: 1 / -1; margin: 0; }
-.policy p { margin: 0; line-height: 1.8; }
-.policy p:last-child { grid-column: 1 / -1; }
-@media (max-width: 760px) { .policy { grid-template-columns: minmax(0, 1fr); } }
+.policy h2 {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.policy p {
+  margin: 0;
+  line-height: 1.8;
+}
+.policy p:last-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 760px) {
+  .policy {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

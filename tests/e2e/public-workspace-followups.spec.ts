@@ -623,7 +623,7 @@ test.describe("public and operational follow-ups", () => {
       await page.screenshot({
         path: info.outputPath(`mappool-inline-${locale}.png`),
       });
-      await page.locator(".mappool-inline-heading button").click();
+      await page.locator(".mappool-inline-heading button:visible").click();
       await expect(page.locator(".mappool-inline-editor")).toHaveCount(0);
       await accessible(page);
     }
@@ -663,12 +663,12 @@ test.describe("public and operational follow-ups", () => {
       .click();
     await first.locator("dialog[open] .actions button").first().click();
     await expect(page.locator(".mappool-entry-controls")).toHaveCount(18);
-    await page.getByRole("button", { name: /^DT \(0\)$/ }).click();
+    await page.getByRole("tab", { name: /^DT \(0\)$/ }).click();
     await page
       .getByRole("button", { name: "Add a DT beatmap", exact: true })
       .click();
-    await expect(page.locator(".mappool-inline-editor")).toBeVisible();
-    await page.locator(".mappool-inline-heading button").click();
+    await expect(page.locator(".mappool-inline-editor:visible")).toBeVisible();
+    await page.locator(".mappool-inline-heading button:visible").click();
     await page
       .getByRole("link", { name: "Manage rounds", exact: true })
       .click();

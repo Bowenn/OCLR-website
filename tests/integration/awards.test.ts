@@ -103,13 +103,58 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       status: 409,
     });
     await db()
+      .update(draftSessions)
+      .set({
+        publishedRevision: 1,
+        publicSnapshot: {
+          sessionId: session.id,
+          version: 1,
+          state: "live",
+          turnIndex: 1,
+          turnCount: sequence.length,
+          activeTeam: null,
+          picks: [
+            {
+              id: pick.id,
+              turnIndex: 0,
+              team: {
+                id: seeded.home.teamId,
+                name: "Synthetic home",
+                captain: {
+                  osuId: seeded.home.captainId,
+                  username: "Synthetic captain",
+                },
+              },
+              player: {
+                osuId: seeded.home.memberId,
+                username: "Synthetic member",
+              },
+            },
+          ],
+          rosters: [],
+          pool: null,
+        },
+      })
+      .where(eq(draftSessions.id, session.id));
+    data = await awardWorkspace(admin, "test-cup");
+    await publish(data.reports[0].fingerprint);
+    expect(
+      (await publicAwards("test-cup"))![0].candidates.find(
+        (c) => c.userId === seeded.home.memberId,
+      )?.tier,
+    ).toBe(1);
+    await db()
       .update(draftPicks)
       .set({ voidedAt: new Date() })
       .where(eq(draftPicks.id, pick.id));
     data = await awardWorkspace(admin, "test-cup");
     expect(data.tiers).toEqual([]);
     expect(data.reports[0].rookie).toEqual([]);
-    expect(await publicAwards("test-cup")).toEqual([]);
+    expect((await publicAwards("test-cup"))![0]).toMatchObject({
+      stale: true,
+      candidates: [],
+      rookie: [],
+    });
     await expect(
       awardCommand(admin, "test-cup", {
         action: "configure",
@@ -162,7 +207,7 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
     expect(await publicAwards("test-cup")).toEqual([]);
   });
   it("enforces role scope, concurrent configuration versions and publication privacy", async () => {
-    const { data } = await configure();
+    await configure();
     await expect(awardWorkspace(referee, "test-cup")).rejects.toMatchObject({
       status: 403,
     });

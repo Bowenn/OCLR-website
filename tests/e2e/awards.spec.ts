@@ -27,7 +27,7 @@ test.describe("weekly awards review", () => {
     await context.addCookies(
       [await seedSession(adminId), await seedSession(60101)].slice(0, 1),
     );
-    await seedAwardReview(adminId, 60101);
+    const seeded = await seedAwardReview(adminId, 60101);
     await context.setExtraHTTPHeaders({ Origin: "http://127.0.0.1:3100" });
     const endpoint = "/api/admin/tournaments/test-cup/awards";
     expect(

@@ -24,6 +24,7 @@ import { assertTestDatabase } from "../database";
 import { fixtureCommand } from "../../src/lib/fixtures";
 import { previewFixtureMatch, importFixtureMatch } from "../../src/lib/results";
 import { fetchMatchSource } from "../../src/lib/osu-matches";
+import { HttpError } from "../../src/lib/http";
 import type { MatchSource } from "../../src/lib/match-model";
 vi.mock("../../src/lib/osu-matches", async (original) => ({
   ...(await original<typeof import("../../src/lib/osu-matches")>()),
@@ -191,6 +192,33 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
           .from(matchImports)
           .where(eq(matchImports.fixtureId, fixtureId)),
       ).toHaveLength(0);
+    });
+    it("handles provider failures and concurrent completion without duplicate writes", async () => {
+      vi.mocked(fetchMatchSource).mockRejectedValueOnce(
+        new HttpError(503, "Synthetic provider unavailable"),
+      );
+      await expect(
+        previewFixtureMatch(admin, "test-cup", fixtureId, {
+          match: String(source.match.id),
+        }),
+      ).rejects.toMatchObject({ status: 503 });
+      expect(
+        await db()
+          .select()
+          .from(matchImports)
+          .where(eq(matchImports.fixtureId, fixtureId)),
+      ).toEqual([]);
+      const attempts = await Promise.allSettled([
+        importFixtureMatch(admin, "test-cup", fixtureId, command()),
+        importFixtureMatch(admin, "test-cup", fixtureId, command()),
+      ]);
+      expect(attempts.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      expect(
+        await db()
+          .select()
+          .from(matchImports)
+          .where(eq(matchImports.fixtureId, fixtureId)),
+      ).toHaveLength(1);
     });
     it("rolls back team completion and its audit if storing the import fails", async () => {
       await db().execute(

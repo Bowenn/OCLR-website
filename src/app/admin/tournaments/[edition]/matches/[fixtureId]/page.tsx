@@ -46,7 +46,7 @@ export default async function FixturePage({
             {fixtureSlot(workspace, fixture, "home").label} {tr(" vs")}{" "}
             {fixtureSlot(workspace, fixture, "away").label}
           </PageHeading>
-          <div className="panel form-stack">
+          <div className="panel form-stack planned-match-panel">
             <p>
               {fixture.scheduledAt
                 ? tr(

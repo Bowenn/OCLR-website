@@ -772,7 +772,15 @@ export function FixtureManager({
             <h3 id={`match-${f.id}`}>{f.label}</h3>
             <p className="small muted">{round?.round.name}</p>
           </div>
-          <span className="badge">{tr(f.status)}</span>
+          <span className="badge">
+            {
+              {
+                scheduled: tr("Scheduled"),
+                in_progress: tr("In progress"),
+                cancelled: tr("Cancelled"),
+              }[f.status]
+            }
+          </span>
         </header>
         <div className="fixture-matchup">
           {(["home", "away"] as const).map((side) => {
@@ -812,9 +820,22 @@ export function FixtureManager({
                 : tr("Unpublished fixture")}
             </span>{" "}
             ·{" "}
-            {f.result
-              ? tr("{value0} report", { value0: f.result.state })
-              : tr("No result submitted")}
+            {f.result ? (
+              <>
+                {
+                  {
+                    draft: tr("Draft result"),
+                    submitted: tr("Submitted result"),
+                    approved: tr("Approved result"),
+                  }[f.result.state]
+                }
+                {f.result.publishedRevision !== null && (
+                  <> · {tr("Published result")}</>
+                )}
+              </>
+            ) : (
+              tr("No result submitted")
+            )}
           </p>
           <p className="small muted">
             {tr("Assigned referees:")}{" "}
@@ -897,6 +918,17 @@ export function FixtureManager({
           </button>
         )}
       </div>
+      {data.canManage && !data.rounds.length && (
+        <p className="muted small">
+          {tr("No rounds configured")} ·{" "}
+          <Link
+            className="context-link"
+            href={`/admin/tournaments/${slug}/rounds`}
+          >
+            {tr("Manage rounds")}
+          </Link>
+        </p>
+      )}
       <div
         id="fixture-views-panel"
         role="tabpanel"
@@ -961,13 +993,6 @@ export function FixtureManager({
           >
             <h2>{tr("Competition configuration")}</h2>
             <div className="form-stack">
-              {!data.rounds.length && (
-                <p className="muted">
-                  {tr(
-                    "Create competition rounds in Mappools before scheduling.",
-                  )}
-                </p>
-              )}
               {data.stages
                 .filter((s) => s.kind === "group")
                 .map((s) => (

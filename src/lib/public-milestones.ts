@@ -104,11 +104,18 @@ export function nextPlannedMilestone(
 }
 
 /** Translate only semantic system events, never organizer-authored labels. */
-export function milestoneLabel(event: { kind?: string; label: string }, tr: (message: string) => string) {
+export function milestoneLabel(
+  event: { kind?: string; label: string },
+  tr: (message: string) => string,
+) {
   switch (event.kind) {
-    case "registration_opens": return tr("Registration window begins");
-    case "registration_closes": return tr("Registration window ends");
-    case "withdrawal_deadline": return tr("Withdrawal deadline");
-    default: return event.label;
+    case "registration_opens":
+      return tr("Registration window begins");
+    case "registration_closes":
+      return tr("Registration window ends");
+    case "withdrawal_deadline":
+      return tr("Withdrawal deadline");
+    default:
+      return event.label;
   }
 }

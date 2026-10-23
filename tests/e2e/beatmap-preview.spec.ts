@@ -157,7 +157,7 @@ test.describe("automatic beatmap preview boundaries", () => {
     ).toBe(true);
     await add.click();
     await expect(
-      page.getByRole("button", { name: "NM (1)", exact: true }),
+      page.getByRole("tab", { name: "NM (1)", exact: true }),
     ).toBeVisible();
     await expect(page.locator(".mappool-inline-editor")).toHaveCount(0);
     await page

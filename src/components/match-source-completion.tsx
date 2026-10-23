@@ -56,7 +56,10 @@ export function MatchSourceCompletion({
     }
   }
   return (
-    <section className="form-stack" aria-label={tr("MP source preview")}>
+    <section
+      className="form-stack match-source-completion"
+      aria-label={tr("MP source preview")}
+    >
       <p className="muted small">
         {tr(
           "MP data is a completion preview only. Confirm teams, then submit for review and Admin approval before publication.",
@@ -118,30 +121,36 @@ export function MatchSourceCompletion({
             <div>
               <dt>{tr("Scheduled date and time")}</dt>
               <dd>
-                {formatDate(
-                  data.fixture.scheduledAt,
-                  data.fixture.timeZone,
-                  tr.locale,
+                {tr(
+                  formatDate(
+                    data.fixture.scheduledAt,
+                    data.fixture.timeZone,
+                    tr.locale,
+                  ),
                 )}
               </dd>
             </div>
             <div>
               <dt>{tr("Actual match starts")}</dt>
               <dd>
-                {formatDate(
-                  data.source.match.startTime,
-                  data.fixture.timeZone,
-                  tr.locale,
+                {tr(
+                  formatDate(
+                    data.source.match.startTime,
+                    data.fixture.timeZone,
+                    tr.locale,
+                  ),
                 )}
               </dd>
             </div>
             <div>
               <dt>{tr("Actual match ends")}</dt>
               <dd>
-                {formatDate(
-                  data.source.match.endTime,
-                  data.fixture.timeZone,
-                  tr.locale,
+                {tr(
+                  formatDate(
+                    data.source.match.endTime,
+                    data.fixture.timeZone,
+                    tr.locale,
+                  ),
                 )}
               </dd>
             </div>
@@ -168,6 +177,9 @@ export function MatchSourceCompletion({
                   {side === "home" ? tr("Home team") : tr("Away team")}
                 </span>
                 <select
+                  aria-label={
+                    side === "home" ? tr("Home team") : tr("Away team")
+                  }
                   value={side === "home" ? home : away}
                   disabled={
                     !canManage ||
@@ -191,9 +203,7 @@ export function MatchSourceCompletion({
               </label>
             ))}
           </div>
-          <p className="muted small">
-            {tr("Reporting needs two finalized, published teams.")}
-          </p>
+
           <details>
             <summary>{tr("Players and game scores")}</summary>
             <div className="table-scroll">

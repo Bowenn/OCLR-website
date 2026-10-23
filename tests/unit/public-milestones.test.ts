@@ -151,9 +151,30 @@ describe("registration countdown presentation", () => {
 });
 
 it("localizes system semantics without translating authored matching labels", () => {
- const translate = (s: string) => ({ "Registration window begins": "報名開放", "Registration window ends": "報名截止", "Withdrawal deadline": "退出截止時間" })[s] ?? s;
- expect(milestoneLabel({ kind: "registration_closes", label: "Registration window ends" }, translate)).toBe("報名截止");
- expect(milestoneLabel({ label: "Registration window ends" }, translate)).toBe("Registration window ends");
- expect(milestoneLabel({kind: "registration_opens", label: "ignored"}, translate)).toBe("報名開放");
- expect(milestoneLabel({kind: "withdrawal_deadline", label: "ignored"}, translate)).toBe("退出截止時間");
+  const translate = (s: string) =>
+    (
+      ({
+        "Registration window begins": "報名開放",
+        "Registration window ends": "報名截止",
+        "Withdrawal deadline": "退出截止時間",
+      }) as Record<string, string>
+    )[s] ?? s;
+  expect(
+    milestoneLabel(
+      { kind: "registration_closes", label: "Registration window ends" },
+      translate,
+    ),
+  ).toBe("報名截止");
+  expect(milestoneLabel({ label: "Registration window ends" }, translate)).toBe(
+    "Registration window ends",
+  );
+  expect(
+    milestoneLabel({ kind: "registration_opens", label: "ignored" }, translate),
+  ).toBe("報名開放");
+  expect(
+    milestoneLabel(
+      { kind: "withdrawal_deadline", label: "ignored" },
+      translate,
+    ),
+  ).toBe("退出截止時間");
 });

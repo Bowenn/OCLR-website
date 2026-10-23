@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "@playwright/test";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
@@ -73,6 +74,19 @@ test.describe("historical MP completion", () => {
         .from(matchImports)
         .where(eq(matchImports.fixtureId, fixture.id)),
     ).toHaveLength(0);
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
       path: info.outputPath("private-completion-preview.png"),
       fullPage: true,

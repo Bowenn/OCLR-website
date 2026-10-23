@@ -99,7 +99,7 @@ test.describe("bulk mappool operations", () => {
     ).toBe(true);
 
     await page.getByRole("tab", { name: "Maps", exact: true }).click();
-    await page.getByRole("button", { name: /^DT \(2\)$/ }).click();
+    await page.getByRole("tab", { name: /^DT \(2\)$/ }).click();
     await page
       .getByRole("button", { name: "Edit or replace DT1", exact: true })
       .click();

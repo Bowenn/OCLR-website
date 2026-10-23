@@ -63,7 +63,7 @@ async function calculation(slug: string, reader: Reader) {
   const captainTeams = await reader
     .select({ id: teams.captainId })
     .from(teams)
-    .where(eq(teams.editionSlug, slug));
+    .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
   const captainIds = [...appointed, ...captainTeams].map((c) => c.id);
   const picks =
     session && session.state !== "aborted"
