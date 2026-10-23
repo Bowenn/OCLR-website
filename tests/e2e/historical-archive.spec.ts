@@ -93,7 +93,7 @@ test.describe("historical archive browser workflow", () => {
     await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=mappools`,
     );
-    await expect(page.locator(".archive-map-list > li")).toHaveCount(2);
+    await expect(page.locator(".archive-map-item")).toHaveCount(2);
     await page
       .getByRole("navigation", { name: "Mappool stages" })
       .getByRole("link")
@@ -103,7 +103,7 @@ test.describe("historical archive browser workflow", () => {
         `/admin/tournaments/${slug}/archive/preview\\?section=mappools&id=final`,
       ),
     );
-    await expect(page.locator(".archive-map-list > li")).toHaveCount(2);
+    await expect(page.locator(".archive-map-item")).toHaveCount(2);
     await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=schedule`,
     );
@@ -293,7 +293,7 @@ test.describe("historical archive browser workflow", () => {
       "2:03",
     );
     await page.getByRole("tab", { name: "TB", exact: true }).click();
-    await expect(page.locator(".archive-map-list > li")).toHaveCount(1);
+    await expect(page.locator(".archive-map-item")).toHaveCount(1);
     await expect(
       page
         .locator(".archive-map-stats")
@@ -415,9 +415,7 @@ test.describe("historical archive browser workflow", () => {
               );
             }
           } else if (path === "mappools") {
-            await expect(page.locator(".archive-map-list > li")).toHaveCount(
-              19,
-            );
+            await expect(page.locator(".archive-map-item")).toHaveCount(19);
             await expect(
               page
                 .getByRole("navigation", { name: "Mappool stages" })
@@ -456,6 +454,23 @@ test.describe("historical archive browser workflow", () => {
     }
     await page.goto(`/tournaments/${slug}/mappools`);
     const stageNav = page.getByRole("navigation", { name: "Mappool stages" });
+    await expect(
+      page.locator(".archive-map-cards .map-browse-card"),
+    ).toHaveCount(19);
+    const opener = page.locator(".map-open-button").first();
+    await opener.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByRole("dialog").getByRole("heading")).toHaveText(
+      archive.pools[0].maps[0].title,
+    );
+    await page.getByRole("button", { name: "Next map", exact: true }).click();
+    await expect(page.getByRole("dialog").getByRole("heading")).toHaveText(
+      archive.pools[0].maps[1].title,
+    );
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(opener).toBeFocused();
+
     for (const pool of archive.pools) {
       await stageNav
         .getByRole("link", {
@@ -464,7 +479,22 @@ test.describe("historical archive browser workflow", () => {
         })
         .click();
       await expect(page).toHaveURL(new RegExp(`/mappools/${pool.id}$`));
-      await expect(page.locator(".archive-map-list > li")).toHaveCount(19);
+      await page
+        .getByRole("button", { name: "Compact table", exact: true })
+        .click();
+      await page
+        .getByLabel(`Sort ${pool.name}`, { exact: true })
+        .selectOption("title");
+      const titleOrder = [...pool.maps].sort((a, b) =>
+        a.title.localeCompare(b.title),
+      );
+      await expect(page.locator(".archive-map-identity h3").first()).toHaveText(
+        titleOrder[0].title,
+      );
+      await page
+        .getByLabel(`Sort ${pool.name}`, { exact: true })
+        .selectOption("slot");
+      await expect(page.locator(".archive-map-item")).toHaveCount(19);
       await expect(stageNav.locator('[aria-current="page"]')).toContainText(
         pool.name,
       );
@@ -479,7 +509,7 @@ test.describe("historical archive browser workflow", () => {
         .toBe(true);
       await page.getByRole("tab", { name: "TB", exact: true }).click();
       const tb = pool.maps.find((m) => m.slot === "TB1")!;
-      await expect(page.locator(".archive-map-list > li")).toHaveCount(1);
+      await expect(page.locator(".archive-map-item")).toHaveCount(1);
       await expect(page.locator(".archive-map-identity a")).toHaveAttribute(
         "href",
         `https://osu.ppy.sh/beatmaps/${tb.beatmapId}`,
@@ -488,7 +518,7 @@ test.describe("historical archive browser workflow", () => {
       await expect(
         page.getByRole("tab", { name: "All mods", exact: true }),
       ).toBeFocused();
-      await expect(page.locator(".archive-map-list > li")).toHaveCount(19);
+      await expect(page.locator(".archive-map-item")).toHaveCount(19);
       await page
         .getByRole("tab", { name: "All mods", exact: true })
         .press("ArrowRight");
@@ -499,7 +529,7 @@ test.describe("historical archive browser workflow", () => {
       await page
         .getByRole("searchbox", { name: "Search maps", exact: true })
         .fill(String(first.beatmapId));
-      await expect(page.locator(".archive-map-list > li")).toHaveCount(1);
+      await expect(page.locator(".archive-map-item")).toHaveCount(1);
       await expect(page.locator(".archive-map-identity h3")).toHaveText(
         first.title,
       );
@@ -539,7 +569,7 @@ test.describe("historical archive browser workflow", () => {
       await expect(
         page.getByRole("searchbox", { name: searchLabel, exact: true }),
       ).toBeVisible();
-      await expect(page.locator(".archive-map-list > li")).toHaveCount(19);
+      await expect(page.locator(".archive-map-item")).toHaveCount(19);
       await expect(page.locator(".archive-map-identity h3").first()).toHaveText(
         archive.pools[3].maps[0].title,
       );

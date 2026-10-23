@@ -4725,3 +4725,39 @@ body:has([data-broadcast]) .site-shell {
 .archive-pool-page > .page-heading {
   margin-bottom: 0;
 }
+
+/* Historical pools reuse the current-edition cards without inventing live metadata. */
+.archive-map-cards {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+.archive-map-compact-copy {
+  display: contents;
+}
+.archive-map-cards .map-card-copy {
+  display: block;
+}
+.archive-map-cards .archive-map-stats {
+  margin-top: 0.75rem;
+}
+.archive-pools .pool-summary p {
+  margin: 0;
+}
+@media (min-width: 1100px) {
+  .archive-map-cards .map-card-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    gap: 1rem;
+    align-items: center;
+  }
+  .archive-map-cards .archive-map-stats {
+    margin: 0;
+  }
+}
+@media (max-width: 480px) {
+  .archive-map-cards .archive-map-stats,
+  .map-dialog .archive-map-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
