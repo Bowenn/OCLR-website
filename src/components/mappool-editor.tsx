@@ -553,24 +553,12 @@ export function MappoolEditor({
         <section className="mappool-active" aria-label={tr("Selected mappool")}>
           <div className="mappool-toolbar mappool-pool-heading">
             <div>
-              <p className="muted small">
-                {round?.name} · {poolEntries.length}{" "}
-                {poolEntries.length === 1 ? tr("map") : tr("maps")}
-              </p>
               <h2>
+                {round?.name !== pool.name && <span className="muted small">{round?.name} / </span>}
                 {pool.name}{" "}
-                <span className="badge">
-                  {pool.publishedAt ? tr("Published") : tr("Draft")}
-                </span>
+                <span className="badge">{pool.publishedAt ? tr("Published") : tr("Draft")}</span>{" "}
+                <span className="muted small">{poolEntries.length} {poolEntries.length === 1 ? tr("map") : tr("maps")}</span>
               </h2>
-              <p className="mappool-policy small muted">
-                {pool.fmMode === "free_mod"
-                  ? fmModeNames.free_mod
-                  : pool.fmMode === "force_mod"
-                    ? fmModeNames.force_mod
-                    : tr("FM disabled")}
-                {pool.fmRestrictions ? ` · ${pool.fmRestrictions}` : ""}
-              </p>
             </div>
             <div className="actions mappool-pool-actions">
               {!pool.lockedAt && (
