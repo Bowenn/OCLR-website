@@ -1,9 +1,9 @@
-/** Transparent, original OCLR wordmark: pink-purple O + theme-aware CLR. */
+/** Transparent OCLR wordmark with cap-height-matched O and theme-aware CLR. */
 export function OclrLogo() {
   return (
     <svg
       className="oclr-wordmark"
-      viewBox="0 0 296 92"
+      viewBox="0 0 260 92"
       width="106"
       height="33"
       aria-hidden="true"
@@ -16,8 +16,8 @@ export function OclrLogo() {
           <stop offset="100%" stopColor="#975cf4" />
         </linearGradient>
       </defs>
-      <circle cx="45" cy="46" r="33.5" fill="none" stroke="url(#oclr-wordmark-gradient)" strokeWidth="19" />
-      <g fill="var(--site-foreground, currentColor)">
+      <circle cx="32" cy="46" r="20.5" fill="none" stroke="url(#oclr-wordmark-gradient)" strokeWidth="17" />
+      <g transform="translate(-28 0)" fill="var(--site-foreground, currentColor)">
         <path d="M153 18 H131 C109 18 94 30 94 46 C94 63 109 75 131 75 H153 V57 H132 C120 57 113 53 113 46 C113 39 120 36 132 36 H153 Z" />
         <path d="M160 18 H180 V56 H203 V74 H160 Z" />
         <path fillRule="evenodd" d="M211 18 H244 C266 18 277 28 277 42 C277 53 271 59 262 63 L281 75 H254 L238 60 H231 V75 H211 Z M231 34 V46 H244 C252 46 257 44 257 40 C257 36 253 34 245 34 Z" />
