@@ -140,50 +140,63 @@ function FixtureForm({
     );
   }
   return (
-    <div className="form-stack">
-      <label className="field">
-        <span>{tr("Fixture label")}</span>
-        <input
-          value={label}
-          maxLength={100}
-          onChange={(e) => setLabel(e.target.value)}
-        />
-      </label>
-      <label className="field">
-        <span>{tr("Competition round")}</span>
-        <select
-          value={roundId}
-          onChange={(e) => {
-            setRound(e.target.value);
-            setPool("");
-            if (!fixture) setPosition(nextPosition(e.target.value));
-          }}
-        >
-          {!data.rounds.length && (
-            <option value="">{tr("No rounds configured")}</option>
-          )}
-          {data.rounds.map((r) => (
-            <option key={r.round.id} value={r.round.id}>
-              {r.stage === "group" ? tr("Group") : tr("Knockout")} /{" "}
-              {r.round.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="field">
-        <span>{tr("Home team")}</span>
-        <select value={homeTeamId} onChange={(e) => setHome(e.target.value)}>
-          <option value="">{tr("Team TBD")}</option>
-          {teamOptions}
-        </select>
-      </label>
-      <label className="field">
-        <span>{tr("Away team")}</span>
-        <select value={awayTeamId} onChange={(e) => setAway(e.target.value)}>
-          <option value="">{tr("Team TBD")}</option>
-          {teamOptions}
-        </select>
-      </label>
+    <div className="form-stack fixture-form">
+      <div className="form-grid">
+        <label className="field">
+          <span>{tr("Fixture label")}</span>
+          <input
+            value={label}
+            maxLength={100}
+            onChange={(e) => setLabel(e.target.value)}
+          />
+        </label>
+        <label className="field">
+          <span>{tr("Competition round")}</span>
+          <select
+            value={roundId}
+            onChange={(e) => {
+              setRound(e.target.value);
+              setPool("");
+              if (!fixture) setPosition(nextPosition(e.target.value));
+            }}
+          >
+            {!data.rounds.length && (
+              <option value="">{tr("No rounds configured")}</option>
+            )}
+            {data.rounds.map((r) => (
+              <option key={r.round.id} value={r.round.id}>
+                {r.stage === "group" ? tr("Group") : tr("Knockout")} /{" "}
+                {r.round.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <fieldset className="fixture-form-section">
+        <legend>{tr("Teams")}</legend>
+        <div className="form-grid">
+          <label className="field">
+            <span>{tr("Home team")}</span>
+            <select
+              value={homeTeamId}
+              onChange={(e) => setHome(e.target.value)}
+            >
+              <option value="">{tr("Team TBD")}</option>
+              {teamOptions}
+            </select>
+          </label>
+          <label className="field">
+            <span>{tr("Away team")}</span>
+            <select
+              value={awayTeamId}
+              onChange={(e) => setAway(e.target.value)}
+            >
+              <option value="">{tr("Team TBD")}</option>
+              {teamOptions}
+            </select>
+          </label>
+        </div>
+      </fieldset>
       {(!homeTeamId || !awayTeamId) && (
         <p className="muted small">
           {tr("Reporting needs two finalized, published teams.")}
@@ -197,9 +210,9 @@ function FixtureForm({
         onValidityChange={setTimeValid}
         optional
       />
-      <fieldset className="settings-card form-stack">
+      <fieldset className="fixture-form-section">
         <legend>{tr("Match options")}</legend>
-        <div className="form-stack">
+        <div className="form-grid">
           <label className="field">
             <span>{tr("Fixture order within round")}</span>
             <input
@@ -259,6 +272,13 @@ function FixtureForm({
         requireConfirmation={false}
         onSuccess={onSaved}
         disabled={!timeValid}
+        canConfirm={
+          Boolean(label.trim() && roundId) &&
+          (!homeTeamId || !awayTeamId || homeTeamId !== awayTeamId) &&
+          Number.isInteger(Number(position)) &&
+          Number(position) >= 1 &&
+          Number(position) <= 999
+        }
         label={fixture ? tr("Save fixture amendment") : tr("Create fixture")}
         title={fixture ? tr("Amend fixture?") : tr("Create fixture?")}
         url={`/api/admin/tournaments/${slug}/matches`}
@@ -747,50 +767,63 @@ export function FixtureManager({
     const round = data.rounds.find((r) => r.round.id === f.roundId);
     return (
       <>
-        <div className="match-meta">
-          <h3 id={`match-${f.id}`}>{f.label}</h3>
-          <span>{tr(f.status)}</span>
+        <header className="fixture-match-heading">
+          <div>
+            <h3 id={`match-${f.id}`}>{f.label}</h3>
+            <p className="small muted">{round?.round.name}</p>
+          </div>
+          <span className="badge">{tr(f.status)}</span>
+        </header>
+        <div className="fixture-matchup">
+          {(["home", "away"] as const).map((side) => {
+            const slot = fixtureSlot(data, f, side);
+            const source = data.fixtures.find(
+              (s) => s.id === slot.sourceMatchId,
+            );
+            return (
+              <div className="fixture-team" data-bracket-slot key={side}>
+                {side === "away" && (
+                  <span className="fixture-versus muted">{tr(" vs")}</span>
+                )}
+                <div>
+                  <strong>{slot.label}</strong>
+                  {source && slot.teamId && (
+                    <small className="muted">
+                      {slot.kind === "loser" ? tr("Loser") : tr("Winner")}{" "}
+                      {tr(" of ")}
+                      {source.label}
+                    </small>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-        <p className="small muted">{round?.round.name}</p>
-        {(["home", "away"] as const).map((side) => {
-          const slot = fixtureSlot(data, f, side);
-          const source = data.fixtures.find((s) => s.id === slot.sourceMatchId);
-          return (
-            <div className="match-slot" data-bracket-slot key={side}>
-              <span>{slot.label}</span>
-              {source && slot.teamId && (
-                <small className="muted">
-                  {slot.kind === "loser" ? tr("Loser") : tr("Winner")}{" "}
-                  {tr(" of ")}
-                  {source.label}
-                </small>
-              )}
-            </div>
-          );
-        })}
-        <p className="small muted">
-          {f.scheduledAt
-            ? tr(formatDate(f.scheduledAt, f.timeZone, tr.locale))
-            : tr("Time TBA")}
-        </p>
-        <p className="small">
-          <span className="badge">
-            {f.publishedAt
-              ? tr("Published fixture")
-              : tr("Unpublished fixture")}
-          </span>{" "}
-          ·{" "}
-          {f.result
-            ? tr("{value0} report", { value0: f.result.state })
-            : tr("No result submitted")}
-        </p>
-        <p className="small muted">
-          {tr("Assigned referees:")}{" "}
-          {f.referees.map((r) => r.username).join(", ") || tr("None")}
-        </p>
+        <div className="fixture-summary">
+          <p className="small muted">
+            {f.scheduledAt
+              ? tr(formatDate(f.scheduledAt, f.timeZone, tr.locale))
+              : tr("Time TBA")}
+          </p>
+          <p className="small">
+            <span className="badge">
+              {f.publishedAt
+                ? tr("Published fixture")
+                : tr("Unpublished fixture")}
+            </span>{" "}
+            ·{" "}
+            {f.result
+              ? tr("{value0} report", { value0: f.result.state })
+              : tr("No result submitted")}
+          </p>
+          <p className="small muted">
+            {tr("Assigned referees:")}{" "}
+            {f.referees.map((r) => r.username).join(", ") || tr("None")}
+          </p>
+        </div>
         <div className="actions fixture-actions">
           <Link
-            className="button secondary"
+            className="button"
             href={`/admin/tournaments/${slug}/matches/${f.id}`}
           >
             {tr("Open match")}

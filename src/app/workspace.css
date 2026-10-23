@@ -457,3 +457,102 @@
 .themed-site.private-site .mappool-workbench [hidden] {
   display: none !important;
 }
+/* Fixture rows: identity, matchup and operational context remain distinct. */
+.themed-site.private-site .fixture-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.themed-site.private-site .fixture-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+.fixture-match-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.fixture-match-heading h3 {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+.fixture-match-heading p {
+  margin: 0.2rem 0 0;
+}
+.fixture-matchup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.fixture-team {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fixture-team small {
+  display: block;
+}
+.fixture-versus {
+  font-size: 0.75rem;
+  flex: 0 0 auto;
+}
+.fixture-summary p {
+  margin: 0;
+}
+.fixture-summary {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.themed-site.private-site .fixture-card .fixture-actions {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--site-border);
+  gap: 0.5rem;
+}
+.themed-site.private-site .fixture-card .fixture-actions > button {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--site-accent);
+}
+.themed-site.private-site .fixture-card .fixture-actions > button:hover {
+  background: var(--site-tint);
+}
+.themed-site.private-site .fixture-editor-dialog {
+  width: min(54rem, calc(100vw - 2rem));
+}
+.fixture-form-section {
+  border: 0;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--site-border);
+  min-width: 0;
+}
+.fixture-form-section legend {
+  padding-inline-end: 0.5rem;
+  font-weight: 650;
+}
+.fixture-form-section .form-grid > .small,
+.fixture-form-section .form-grid > fieldset {
+  grid-column: 1 / -1;
+}
+@media (min-width: 1100px) {
+  .themed-site.private-site .fixture-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+@media (max-width: 420px) {
+  .fixture-matchup {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
