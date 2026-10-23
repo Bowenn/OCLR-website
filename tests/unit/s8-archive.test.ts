@@ -90,9 +90,9 @@ describe("S8 public competition package", () => {
         .filter((g) => g.layout === "grid")
         .map((g) => [g.label, g.rounds.flatMap((r) => r.matches).length]),
     ).toEqual([
-      ["C", 6],
-      ["B", 6],
       ["A", 6],
+      ["B", 6],
+      ["C", 6],
       ["D", 6],
     ]);
     expect(
