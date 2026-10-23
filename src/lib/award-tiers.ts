@@ -7,7 +7,11 @@ export function draftAwardTiers(
   captainIds: number[],
 ): AwardTier[] {
   const teamIds = new Set(sequence);
-  if (!teamIds.size) return [];
+  const captainTiers = [...new Set(captainIds)].map((userId) => ({
+    userId,
+    tier: 0,
+  }));
+  if (!teamIds.size) return captainTiers;
   const validRounds = new Set<number>();
   for (let start = 0; start < sequence.length; start += teamIds.size) {
     const pass = sequence.slice(start, start + teamIds.size);
@@ -25,7 +29,7 @@ export function draftAwardTiers(
       )
       .map((p) => p.playerId),
   );
-  return picks
+  const drafted = picks
     .flatMap((p) => {
       const tier = Math.floor(p.turnIndex / teamIds.size) + 1;
       return !captainIds.includes(p.playerId) &&
@@ -37,4 +41,9 @@ export function draftAwardTiers(
         : [];
     })
     .sort((a, b) => a.userId - b.userId);
+  return [...captainTiers, ...drafted].sort((a, b) => a.userId - b.userId);
+}
+
+export function awardTierLabel(tier: number | null | undefined) {
+  return tier === 0 ? "Captain" : tier == null ? "—" : `T${tier}`;
 }

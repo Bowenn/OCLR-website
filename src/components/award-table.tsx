@@ -1,5 +1,6 @@
 "use client";
 import { useAppTranslations } from "@/i18n/shared";
+import { awardTierLabel } from "@/lib/award-tiers";
 import { awardPercentage, type AwardCandidate } from "@/lib/award-model";
 export function AwardTable({
   candidates,
@@ -42,7 +43,7 @@ export function AwardTable({
                   {row.username}
                 </a>
               </th>
-              <td>{row.tier === null ? "—" : `T${row.tier}`}</td>
+              <td>{awardTierLabel(row.tier)}</td>
               <td>{row.appearances}</td>
               <td>{awardPercentage(row.performance)}</td>
               <td>

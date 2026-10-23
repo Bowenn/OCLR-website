@@ -57,7 +57,7 @@ async function calculation(slug: string, reader: Reader) {
     .from(draftSessions)
     .where(eq(draftSessions.editionSlug, slug));
   const appointed = await reader
-    .select({ id: captains.userId })
+    .select({ id: captains.userId, published: captains.published })
     .from(captains)
     .where(eq(captains.editionSlug, slug));
   const captainTeams = await reader
@@ -90,7 +90,7 @@ async function calculation(slug: string, reader: Reader) {
           r.team.id === p.teamId,
       ),
     ),
-    captainIds,
+    appointed.filter((c) => c.published).map((c) => c.id),
   );
   const participants = await reader
     .select({

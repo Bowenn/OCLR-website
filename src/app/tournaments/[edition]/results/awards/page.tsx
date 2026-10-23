@@ -1,3 +1,4 @@
+import { awardTierLabel } from "@/lib/award-tiers";
 import { Avatar } from "@/components/avatar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -101,7 +102,7 @@ export default async function Awards({
                                   value0: player.appearances,
                                 })}
                                 {player.tier !== null
-                                  ? ` · T${player.tier}`
+                                  ? ` · ${awardTierLabel(player.tier)}`
                                   : ""}
                                 {kind === "mip" && (
                                   <>

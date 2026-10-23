@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
+import { awardTierLabel } from "@/lib/award-tiers";
 import type { awardWorkspace } from "@/lib/awards";
 import type { AwardWeek } from "@/lib/award-model";
 import { ZonedDateInput } from "./zoned-date-input";
@@ -125,7 +126,7 @@ export function AwardManager({ initial }: { initial: Data }) {
           </div>
           <p className="muted small">
             {tr(
-              "Tiers come from valid draft rounds. Round N means Tier N; captains have no Tier.",
+              "Captains display as Captain (internal Tier 0). Other players receive Tiers from valid draft rounds.",
             )}
           </p>
           <label className="field">
@@ -154,9 +155,9 @@ export function AwardManager({ initial }: { initial: Data }) {
                         <span className="muted small">{p.userId}</span>
                       </th>
                       <td>
-                        {data.tiers.find((t) => t.userId === p.userId)?.tier
-                          ? `T${data.tiers.find((t) => t.userId === p.userId)!.tier}`
-                          : "—"}
+                        {awardTierLabel(
+                          data.tiers.find((t) => t.userId === p.userId)?.tier,
+                        )}
                       </td>
                     </tr>
                   ))}

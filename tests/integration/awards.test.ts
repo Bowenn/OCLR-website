@@ -19,6 +19,7 @@ import {
   editionEvents,
   weeklyAwardReleases,
   awardSettings,
+  captains,
   draftSessions,
   draftPicks,
 } from "../../src/db/schema";
@@ -94,11 +95,12 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       })
       .returning();
     let data = await awardWorkspace(admin, "test-cup");
-    expect(data.tiers).toEqual([{ userId: seeded.home.memberId, tier: 1 }]);
+    expect(data.tiers).toContainEqual({ userId: seeded.home.memberId, tier: 1 });
+    expect(data.tiers.find(t => t.userId === seeded.home.captainId)?.tier).toBe(0);
     expect(
       data.reports[0].candidates.find((c) => c.userId === seeded.home.captainId)
         ?.tier,
-    ).toBeNull();
+    ).toBe(0);
     await expect(publish(data.reports[0].fingerprint)).rejects.toMatchObject({
       status: 409,
     });
@@ -148,7 +150,7 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       .set({ voidedAt: new Date() })
       .where(eq(draftPicks.id, pick.id));
     data = await awardWorkspace(admin, "test-cup");
-    expect(data.tiers).toEqual([]);
+    expect(data.tiers.filter(t => t.tier > 0)).toEqual([]);
     expect(data.reports[0].rookie).toEqual([]);
     expect((await publicAwards("test-cup"))![0]).toMatchObject({
       stale: true,
@@ -164,6 +166,14 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
         tiers: [{ userId: seeded.home.captainId, tier: 4 }],
       }),
     ).rejects.toMatchObject({ status: 400 });
+  });
+  it("does not disclose an unpublished captain through Tier 0 awards", async () => {
+    const {seeded} = await configure();
+    await db().update(captains).set({published:false}).where(eq(captains.userId, seeded.home.captainId));
+    const data = await awardWorkspace(admin, "test-cup");
+    expect(data.tiers.find(t => t.userId === seeded.home.captainId)?.tier).toBe(0);
+    await expect(publish(data.reports[0].fingerprint)).rejects.toMatchObject({status:409});
+    expect(await publicAwards("test-cup")).toEqual([]);
   });
   it("uses only included published approved games, keeps repeated publication idempotent, and preserves release history", async () => {
     const { data, seeded } = await configure();
@@ -260,7 +270,7 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       .update(awardSettings)
       .set({ tiers: [{ userId: seeded.home.captainId, tier: 4 }] })
       .where(eq(awardSettings.editionSlug, "test-cup"));
-    expect((await awardWorkspace(admin, "test-cup")).tiers).toEqual([]);
+    expect((await awardWorkspace(admin, "test-cup")).tiers.every(t => t.tier === 0)).toBe(true);
     expect((await publicAwards("test-cup"))![0].stale).toBe(false);
     await db()
       .update(matchResults)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { draftAwardTiers } from "../../src/lib/award-tiers";
+import { draftAwardTiers, awardTierLabel } from "../../src/lib/award-tiers";
 import { generateTurnSequence } from "../../src/lib/draft-order";
 describe("authoritative draft award tiers", () => {
   it.each(["snake", "forward"] as const)(
@@ -12,12 +12,7 @@ describe("authoritative draft award tiers", () => {
         playerId: turnIndex + 1,
       }));
       expect(draftAwardTiers(sequence, picks, [1])).toEqual(
-        picks
-          .slice(1)
-          .map((p) => ({
-            userId: p.playerId,
-            tier: Math.floor(p.turnIndex / 3) + 1,
-          })),
+        picks.map((p) => ({ userId: p.playerId, tier: p.playerId === 1 ? 0 : Math.floor(p.turnIndex / 3) + 1 })),
       );
       expect(
         draftAwardTiers(
@@ -55,4 +50,9 @@ describe("authoritative draft award tiers", () => {
       ),
     ).toEqual([]);
   });
+});
+
+it("uses Captain only for authoritative captain identities, including before drafting", () => {
+ expect(draftAwardTiers([], [], [7,7])).toEqual([{userId:7,tier:0}]);
+ expect(awardTierLabel(0)).toBe("Captain");expect(awardTierLabel(null)).toBe("—");expect(awardTierLabel(undefined)).toBe("—");expect(awardTierLabel(4)).toBe("T4");
 });

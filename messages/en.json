@@ -1910,7 +1910,6 @@
     "m0ee9a1a89bf9": "Best Rookie",
     "m8f70115d39ec": "Calculation sources",
     "m76f4062170b3": "Revision {value0}",
-    "mf883632da1b4": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and Admin-assigned Tier of T4, T5 or below. Awards are independent; ties remain tied.",
     "mb7d610eb51a9": "{value0} percentage points",
     "m14c7e4b3aae2": "Registration opens in",
     "m386b6b91fc63": "Registration closes in",
@@ -1954,7 +1953,6 @@
     "ma3befc385ec2": "Create rounds in Round management before adding mappools.",
     "m543774f93c24": "Round management",
     "m4910d28a0764": "COMPETITION STRUCTURE",
-    "ma6086834ef27": "Tiers come from valid draft rounds. Round N means Tier N; captains have no Tier.",
     "me9328b8e8386": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and draft-derived Tier of T4, T5 or below. Awards are independent; ties remain tied.",
     "ma8d13fe45242": "Configure consecutive, non-overlapping weeks.",
     "mecc0b5cdb7fa": "Release draft Tier sources before publishing awards.",
@@ -1981,6 +1979,7 @@
     "m374c2d10ab46": "MVP: at least 6 appearances.",
     "m0dd0ec414d67": "MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement.",
     "m999840c1cbca": "Rookie: at least 5 appearances and draft-derived Tier of T4, T5 or below.",
-    "m3bdabc69b8ef": "Awards are independent; ties remain tied."
+    "m3bdabc69b8ef": "Awards are independent; ties remain tied.",
+    "mc6e40991e4f2": "Captains display as Captain (internal Tier 0). Other players receive Tiers from valid draft rounds."
   }
 }
