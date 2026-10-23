@@ -18,6 +18,9 @@ import {
   registrations,
   editionEvents,
   weeklyAwardReleases,
+  awardSettings,
+  draftSessions,
+  draftPicks,
 } from "../../src/db/schema";
 import {
   awardCommand,
@@ -47,17 +50,11 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
   });
   async function configure() {
     const seeded = await seedAwardReview(admin.osuId, referee.osuId);
-    const workspace = await awardWorkspace(admin, "test-cup");
-    const tiers = workspace.participants.map((p) => ({
-      userId: p.userId,
-      tier: 4,
-    }));
     const data = await awardCommand(admin, "test-cup", {
       action: "configure",
       confirmed: true,
       expectedVersion: 0,
       weeks: awardWeeks,
-      tiers,
     });
     return { seeded, data };
   }
@@ -69,6 +66,60 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       week: 1,
       fingerprint,
     });
+  it("derives current tiers, excludes captains, blocks unreleased tier sources and follows undo", async () => {
+    const { seeded } = await configure();
+    const sequence = [seeded.home.teamId, seeded.away.teamId];
+    const [session] = await db()
+      .insert(draftSessions)
+      .values({
+        editionSlug: "test-cup",
+        state: "live",
+        turnIndex: 1,
+        turnSequence: sequence,
+      })
+      .returning();
+    const [pick] = await db()
+      .insert(draftPicks)
+      .values({
+        sessionId: session.id,
+        playerId: seeded.home.memberId,
+        teamId: seeded.home.teamId,
+        captainId: seeded.home.captainId,
+        actorId: admin.osuId,
+        turnIndex: 0,
+        mode: "staff_on_behalf",
+        requestKey: crypto.randomUUID(),
+        requestHash: "synthetic",
+        revision: 1,
+      })
+      .returning();
+    let data = await awardWorkspace(admin, "test-cup");
+    expect(data.tiers).toEqual([{ userId: seeded.home.memberId, tier: 1 }]);
+    expect(
+      data.reports[0].candidates.find((c) => c.userId === seeded.home.captainId)
+        ?.tier,
+    ).toBeNull();
+    await expect(publish(data.reports[0].fingerprint)).rejects.toMatchObject({
+      status: 409,
+    });
+    await db()
+      .update(draftPicks)
+      .set({ voidedAt: new Date() })
+      .where(eq(draftPicks.id, pick.id));
+    data = await awardWorkspace(admin, "test-cup");
+    expect(data.tiers).toEqual([]);
+    expect(data.reports[0].rookie).toEqual([]);
+    expect(await publicAwards("test-cup")).toEqual([]);
+    await expect(
+      awardCommand(admin, "test-cup", {
+        action: "configure",
+        confirmed: true,
+        expectedVersion: 1,
+        weeks: awardWeeks,
+        tiers: [{ userId: seeded.home.captainId, tier: 4 }],
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
   it("uses only included published approved games, keeps repeated publication idempotent, and preserves release history", async () => {
     const { data, seeded } = await configure();
     expect(data.reports[0].issues).toEqual([]);
@@ -130,7 +181,6 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       confirmed: true,
       expectedVersion: 1,
       weeks: awardWeeks,
-      tiers: data.tiers,
     };
     const attempts = await Promise.allSettled([
       awardCommand(admin, "test-cup", command),
@@ -158,17 +208,15 @@ describe.skipIf(!url)("edition weekly award review and publication", () => {
       ),
     ).toHaveLength(0);
   });
-  it("invalidates published reports after Tier changes or source retraction", async () => {
+  it("ignores legacy manual Tiers and invalidates releases after source retraction", async () => {
     const { data, seeded } = await configure();
     await publish(data.reports[0].fingerprint);
-    await awardCommand(admin, "test-cup", {
-      action: "configure",
-      confirmed: true,
-      expectedVersion: 1,
-      weeks: awardWeeks,
-      tiers: data.tiers.map((t) => ({ ...t, tier: 3 })),
-    });
-    expect((await publicAwards("test-cup"))![0].stale).toBe(true);
+    await db()
+      .update(awardSettings)
+      .set({ tiers: [{ userId: seeded.home.captainId, tier: 4 }] })
+      .where(eq(awardSettings.editionSlug, "test-cup"));
+    expect((await awardWorkspace(admin, "test-cup")).tiers).toEqual([]);
+    expect((await publicAwards("test-cup"))![0].stale).toBe(false);
     await db()
       .update(matchResults)
       .set({ publishedRevision: null, publishedAt: null })

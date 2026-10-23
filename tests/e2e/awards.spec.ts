@@ -27,7 +27,7 @@ test.describe("weekly awards review", () => {
     await context.addCookies(
       [await seedSession(adminId), await seedSession(60101)].slice(0, 1),
     );
-    const seeded = await seedAwardReview(adminId, 60101);
+    await seedAwardReview(adminId, 60101);
     await context.setExtraHTTPHeaders({ Origin: "http://127.0.0.1:3100" });
     const endpoint = "/api/admin/tournaments/test-cup/awards";
     expect(
@@ -38,7 +38,6 @@ test.describe("weekly awards review", () => {
             confirmed: true,
             expectedVersion: 0,
             weeks: awardWeeks,
-            tiers: [{ userId: seeded.home.captainId, tier: 4 }],
           },
         })
       ).status(),
@@ -47,6 +46,9 @@ test.describe("weekly awards review", () => {
     await expect(
       page.getByRole("heading", { name: "Weekly awards", exact: true }),
     ).toBeVisible();
+    await expect(page.getByRole("spinbutton", { name: /Tier:/ })).toHaveCount(
+      0,
+    );
     await expect(page.getByRole("table").last()).toContainText("6");
     page.once("dialog", (dialog) => dialog.accept());
     await page

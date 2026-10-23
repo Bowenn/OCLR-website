@@ -14,19 +14,9 @@ export const awardWeekSchema = z
 export const awardConfigurationSchema = z
   .object({
     weeks: z.array(awardWeekSchema).max(52),
-    tiers: z
-      .array(
-        z
-          .object({
-            userId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-            tier: z.number().int().min(1).max(99),
-          })
-          .strict(),
-      )
-      .max(10000),
   })
   .strict()
-  .superRefine(({ weeks, tiers }, context) => {
+  .superRefine(({ weeks }, context) => {
     weeks.forEach((week, index) => {
       if (
         week.number !== index + 1 ||
@@ -39,17 +29,9 @@ export const awardConfigurationSchema = z
           message: "Weeks must be numbered consecutively and must not overlap.",
         });
     });
-    if (new Set(tiers.map((tier) => tier.userId)).size !== tiers.length)
-      context.addIssue({
-        code: "custom",
-        path: ["tiers"],
-        message: "Assign each player's Tier once.",
-      });
   });
 export type AwardWeek = z.infer<typeof awardWeekSchema>;
-export type AwardTier = z.infer<
-  typeof awardConfigurationSchema
->["tiers"][number];
+export type AwardTier = { userId: number; tier: number };
 export type AwardGame = {
   gameId: number;
   fixtureId: string;

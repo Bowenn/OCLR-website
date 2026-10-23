@@ -126,18 +126,14 @@ describe("approved weekly award policy", () => {
         .candidates,
     ).toEqual([]);
   });
-  it("validates explicit consecutive nonoverlapping weeks and unique tier assignments", () => {
+  it("validates explicit consecutive nonoverlapping weeks and rejects manual Tier commands", () => {
+    expect(awardConfigurationSchema.safeParse({ weeks }).success).toBe(true);
     expect(
-      awardConfigurationSchema.safeParse({ weeks, tiers: [] }).success,
-    ).toBe(true);
-    expect(
-      awardConfigurationSchema.safeParse({ weeks: [weeks[1]], tiers: [] })
-        .success,
+      awardConfigurationSchema.safeParse({ weeks: [weeks[1]] }).success,
     ).toBe(false);
     expect(
       awardConfigurationSchema.safeParse({
         weeks: [{ ...weeks[0], endsAt: weeks[0].startsAt }],
-        tiers: [],
       }).success,
     ).toBe(false);
     expect(

@@ -1953,6 +1953,10 @@
     "m66ba9e44fd5f": "No rounds in this stage.",
     "ma3befc385ec2": "Create rounds in Round management before adding mappools.",
     "m543774f93c24": "Round management",
-    "m4910d28a0764": "COMPETITION STRUCTURE"
+    "m4910d28a0764": "COMPETITION STRUCTURE",
+    "ma6086834ef27": "Tiers come from valid draft rounds. Round N means Tier N; captains have no Tier.",
+    "me9328b8e8386": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and draft-derived Tier of T4, T5 or below. Awards are independent; ties remain tied.",
+    "ma8d13fe45242": "Configure consecutive, non-overlapping weeks.",
+    "mecc0b5cdb7fa": "Release draft Tier sources before publishing awards."
   }
 }

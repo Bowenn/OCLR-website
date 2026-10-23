@@ -1,0 +1,40 @@
+import type { AwardTier } from "./award-model";
+/** Only complete, explicit passes over the same teams establish draft rounds.
+ * Irregular custom orders have no inferred round: never guess a Tier. */
+export function draftAwardTiers(
+  sequence: string[],
+  picks: { playerId: number; teamId: string; turnIndex: number }[],
+  captainIds: number[],
+): AwardTier[] {
+  const teamIds = new Set(sequence);
+  if (!teamIds.size) return [];
+  const validRounds = new Set<number>();
+  for (let start = 0; start < sequence.length; start += teamIds.size) {
+    const pass = sequence.slice(start, start + teamIds.size);
+    if (pass.length === teamIds.size && new Set(pass).size === teamIds.size)
+      validRounds.add(Math.floor(start / teamIds.size) + 1);
+  }
+  const duplicates = new Set(
+    picks
+      .filter((p, i) =>
+        picks.some(
+          (other, j) =>
+            j !== i &&
+            (other.playerId === p.playerId || other.turnIndex === p.turnIndex),
+        ),
+      )
+      .map((p) => p.playerId),
+  );
+  return picks
+    .flatMap((p) => {
+      const tier = Math.floor(p.turnIndex / teamIds.size) + 1;
+      return !captainIds.includes(p.playerId) &&
+        !duplicates.has(p.playerId) &&
+        p.turnIndex >= 0 &&
+        sequence[p.turnIndex] === p.teamId &&
+        validRounds.has(tier)
+        ? [{ userId: p.playerId, tier }]
+        : [];
+    })
+    .sort((a, b) => a.userId - b.userId);
+}

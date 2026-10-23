@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { awardWorkspace } from "@/lib/awards";
-import type { AwardWeek, AwardTier } from "@/lib/award-model";
+import type { AwardWeek } from "@/lib/award-model";
 import { ZonedDateInput } from "./zoned-date-input";
 import { AwardPolicy } from "./award-policy";
 import { AwardTable } from "./award-table";
@@ -10,17 +10,14 @@ type Data = Awaited<ReturnType<typeof awardWorkspace>>;
 export function AwardManager({ initial }: { initial: Data }) {
   const tr = useAppTranslations();
   const [data, setData] = useState(initial),
-    [weeks, setWeeks] = useState<AwardWeek[]>(initial.weeks),
-    [tiers, setTiers] = useState<AwardTier[]>(initial.tiers);
+    [weeks, setWeeks] = useState<AwardWeek[]>(initial.weeks);
   const [selected, setSelected] = useState(1),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   const [validity, setValidity] = useState<Record<string, boolean>>({});
   const [query, setQuery] = useState("");
-  const dirty =
-    JSON.stringify(weeks) !== JSON.stringify(data.weeks) ||
-    JSON.stringify(tiers) !== JSON.stringify(data.tiers);
+  const dirty = JSON.stringify(weeks) !== JSON.stringify(data.weeks);
   async function send(command: Record<string, unknown>) {
     setBusy(true);
     setError("");
@@ -43,7 +40,6 @@ export function AwardManager({ initial }: { initial: Data }) {
         throw new Error(result.error ?? "Unable to save changes.");
       setData(result);
       setWeeks(result.weeks);
-      setTiers(result.tiers);
       setNotice("Saved.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to save changes.");
@@ -68,7 +64,7 @@ export function AwardManager({ initial }: { initial: Data }) {
           className="form-stack"
           onSubmit={(e) => {
             e.preventDefault();
-            void send({ action: "configure", weeks, tiers });
+            void send({ action: "configure", weeks });
           }}
         >
           <p className="muted small">{data.edition.timeZone}</p>
@@ -127,6 +123,11 @@ export function AwardManager({ initial }: { initial: Data }) {
               {tr("Remove last week")}
             </button>
           </div>
+          <p className="muted small">
+            {tr(
+              "Tiers come from valid draft rounds. Round N means Tier N; captains have no Tier.",
+            )}
+          </p>
           <label className="field">
             {tr("Search players")}
             <input value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -153,30 +154,9 @@ export function AwardManager({ initial }: { initial: Data }) {
                         <span className="muted small">{p.userId}</span>
                       </th>
                       <td>
-                        <input
-                          aria-label={`Tier: ${p.username}`}
-                          type="number"
-                          min={1}
-                          max={99}
-                          value={
-                            tiers.find((t) => t.userId === p.userId)?.tier ?? ""
-                          }
-                          onChange={(e) =>
-                            setTiers(
-                              [
-                                ...tiers.filter((t) => t.userId !== p.userId),
-                                ...(e.target.value
-                                  ? [
-                                      {
-                                        userId: p.userId,
-                                        tier: Number(e.target.value),
-                                      },
-                                    ]
-                                  : []),
-                              ].sort((a, b) => a.userId - b.userId),
-                            )
-                          }
-                        />
+                        {data.tiers.find((t) => t.userId === p.userId)?.tier
+                          ? `T${data.tiers.find((t) => t.userId === p.userId)!.tier}`
+                          : "—"}
                       </td>
                     </tr>
                   ))}
@@ -215,7 +195,7 @@ export function AwardManager({ initial }: { initial: Data }) {
             </p>
             {report.issues.map((issue) => (
               <p role="alert" key={issue}>
-                {issue}
+                {tr(issue)}
               </p>
             ))}
             <details>

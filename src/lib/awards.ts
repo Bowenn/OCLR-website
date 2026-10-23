@@ -1,9 +1,13 @@
 import { createHash } from "node:crypto";
-import { and, desc, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
   awardSettings,
+  captains,
+  teams,
+  draftSessions,
+  draftPicks,
   weeklyAwardReleases,
   editionState,
   editionEvents,
@@ -29,6 +33,7 @@ import {
   type AwardWeek,
   type AwardStanding,
 } from "./award-model";
+import { draftAwardTiers } from "./award-tiers";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 export type AwardReport = AwardWeek &
   AwardStanding & {
@@ -46,8 +51,47 @@ async function calculation(slug: string, reader: Reader) {
     .where(eq(awardSettings.editionSlug, slug));
   const configuration = awardConfigurationSchema.parse({
     weeks: stored?.weeks ?? [],
-    tiers: stored?.tiers ?? [],
   });
+  const [session] = await reader
+    .select()
+    .from(draftSessions)
+    .where(eq(draftSessions.editionSlug, slug));
+  const appointed = await reader
+    .select({ id: captains.userId })
+    .from(captains)
+    .where(eq(captains.editionSlug, slug));
+  const captainTeams = await reader
+    .select({ id: teams.captainId })
+    .from(teams)
+    .where(eq(teams.editionSlug, slug));
+  const captainIds = [...appointed, ...captainTeams].map((c) => c.id);
+  const picks =
+    session && session.state !== "aborted"
+      ? await reader
+          .select()
+          .from(draftPicks)
+          .where(
+            and(
+              eq(draftPicks.sessionId, session.id),
+              isNull(draftPicks.voidedAt),
+            ),
+          )
+      : [];
+  const tiers = draftAwardTiers(session?.turnSequence ?? [], picks, captainIds);
+  const released = session?.publicSnapshot?.picks ?? [];
+  const releasedTiers = draftAwardTiers(
+    session?.turnSequence ?? [],
+    picks.filter((p) =>
+      released.some(
+        (r) =>
+          r.id === p.id &&
+          r.turnIndex === p.turnIndex &&
+          r.player.osuId === p.playerId &&
+          r.team.id === p.teamId,
+      ),
+    ),
+    captainIds,
+  );
   const participants = await reader
     .select({
       userId: registrations.userId,
@@ -198,32 +242,42 @@ async function calculation(slug: string, reader: Reader) {
       });
     }
   }
-  const reports = weeklyStandings(
-    configuration.weeks,
-    configuration.tiers,
-    games,
-  ).map((standing): AwardReport => {
-    const identities = standing.candidates.map((c) => {
-      const participant = participants.find((p) => p.userId === c.userId);
-      return {
-        userId: c.userId,
-        username: participant?.username ?? String(c.userId),
-        public: participant?.status === "accepted",
+  const reports = weeklyStandings(configuration.weeks, tiers, games).map(
+    (standing): AwardReport => {
+      const identities = standing.candidates.map((c) => {
+        const participant = participants.find((p) => p.userId === c.userId);
+        return {
+          userId: c.userId,
+          username: participant?.username ?? String(c.userId),
+          public: participant?.status === "accepted",
+        };
+      });
+      const report = {
+        ...standing,
+        policy: AWARD_POLICY,
+        timeZone: tournament.edition.timeZone,
+        identities,
+        issues: [
+          ...standing.issues,
+          ...(standing.candidates.some(
+            (c) =>
+              c.tier !== null &&
+              !releasedTiers.some(
+                (t) => t.userId === c.userId && t.tier === c.tier,
+              ),
+          )
+            ? ["Release draft Tier sources before publishing awards."]
+            : []),
+        ],
       };
-    });
-    const report = {
-      ...standing,
-      policy: AWARD_POLICY,
-      timeZone: tournament.edition.timeZone,
-      identities,
-    };
-    return {
-      ...report,
-      fingerprint: createHash("sha256")
-        .update(JSON.stringify(report))
-        .digest("hex"),
-    };
-  });
+      return {
+        ...report,
+        fingerprint: createHash("sha256")
+          .update(JSON.stringify(report))
+          .digest("hex"),
+      };
+    },
+  );
   const releases = await reader
     .select()
     .from(weeklyAwardReleases)
@@ -241,6 +295,7 @@ async function calculation(slug: string, reader: Reader) {
     },
     version: stored?.version ?? 0,
     ...configuration,
+    tiers,
     participants,
     reports,
     releases,
@@ -314,21 +369,14 @@ export async function awardCommand(actor: User, slug: string, input: unknown) {
     if (c.action === "configure") {
       const config = awardConfigurationSchema.safeParse({
         weeks: c.weeks,
-        tiers: c.tiers,
       });
-      if (
-        !config.success ||
-        c.tiers.some(
-          (tier) => !current.participants.some((p) => p.userId === tier.userId),
-        )
-      )
+      if (!config.success)
         throw new HttpError(
           400,
-          "Configure consecutive, non-overlapping weeks and Tiers for this tournament's players.",
+          "Configure consecutive, non-overlapping weeks.",
         );
       before = {
         weeks: current.weeks,
-        tiers: current.tiers,
         version: current.version,
       };
       after = { ...config.data, version: current.version + 1 };
@@ -367,6 +415,15 @@ export async function awardCommand(actor: User, slug: string, input: unknown) {
           throw new HttpError(
             409,
             "Award source data changed. Review the refreshed calculation.",
+          );
+        if (
+          report.issues.includes(
+            "Release draft Tier sources before publishing awards.",
+          )
+        )
+          throw new HttpError(
+            409,
+            "Release draft Tier sources before publishing awards.",
           );
         const winners = new Set([
           ...report.mvp,
