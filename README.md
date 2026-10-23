@@ -43,4 +43,6 @@ Database-backed tests require an explicitly configured, **isolated** `TEST_DATAB
 
 Use the reviewed [production deployment runbook](docs/deployment.md) before deploying or updating a live site. On the documented Rocky Linux host, the entry points are `sudo bash scripts/oclr.sh deploy` for first installation and `sudo oclr update` for subsequent releases. Production upgrades must follow the runbook's **backup → pending migrations → release activation → health check** sequence; never use development schema push or test fixtures against production.
 
+Use `sudo oclr cleanup` to preview old release cleanup, then `sudo oclr cleanup --apply` to remove eligible versions. The newest 3 releases and the `current`/`previous` targets are retained. See the runbook for retention options and upgrading the installed command.
+
 Artwork and tournament dates shown in [design references](docs/design/) are examples, not approved competition data.

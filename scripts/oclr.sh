@@ -162,13 +162,34 @@ install_command() {
 }
 
 main() {
+  if [[ ${1-} == cleanup ]]; then
+    shift
+    [[ $EUID -eq 0 ]] || fail 'Run with sudo: sudo oclr cleanup [--dry-run|--apply] [--keep N]'
+    # No provisioning, command installation, Git fetch or runtime.env reads.
+    # App-owned cleanup code always runs unprivileged.
+    export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+    [[ ! -L /run/oclr-deploy && ! -L /run/oclr-deploy/lock ]] || fail 'The root deployment lock must not be a symlink.'
+    # /run may be empty after reboot. Do not create files during a preview;
+    # the persistent application update lock is always required by the engine.
+    if [[ -e /run/oclr-deploy/lock ]]; then
+      [[ -f /run/oclr-deploy/lock ]] || fail 'The root deployment lock must be a regular file.'
+      exec 8</run/oclr-deploy/lock
+      flock -n 8 || fail 'Another OCLR deployment or cleanup is running.'
+    fi
+    local oclr_home
+    oclr_home=$(getent passwd oclr | cut -d: -f6)
+    [[ -n "$oclr_home" && $(id -u oclr) -ne 0 ]] || fail 'An existing unprivileged oclr account is required.'
+    [[ -f /opt/oclr/repository/scripts/cleanup-releases.sh ]] || fail 'Update the operator checkout to a reviewed release containing cleanup-releases.sh first.'
+    as_oclr bash /opt/oclr/repository/scripts/cleanup-releases.sh "$@"
+    return
+  fi
   if [[ ${1-} == --worker ]]; then
     [[ $# == 5 ]] || fail 'Invalid worker invocation.'
     worker "$2" "$3" "$4" "$5"
     return
   fi
   local action=${1-} option=${2-} sha server_major dump_version restore_version architecture working_tree origin
-  [[ $# -ge 1 && $# -le 2 && ( "$action" == deploy || "$action" == update || "$action" == install-command ) && ( -z "$option" || "$option" == --dry-run ) ]] || fail 'Usage: sudo bash scripts/oclr.sh deploy|update|install-command [--dry-run]'
+  [[ $# -ge 1 && $# -le 2 && ( "$action" == deploy || "$action" == update || "$action" == install-command ) && ( -z "$option" || "$option" == --dry-run ) ]] || fail 'Usage: sudo bash scripts/oclr.sh deploy|update|install-command [--dry-run], or cleanup [--dry-run|--apply] [--keep N]'
   if [[ "$option" == --dry-run ]]; then
     if [[ "$action" == install-command ]]; then
       printf '%s\n' 'Install command preview only; no commands or files changed.' 'Install this reviewed script as /usr/local/bin/oclr without changing the application, service or database.'

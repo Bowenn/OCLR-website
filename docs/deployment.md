@@ -46,6 +46,25 @@ The root-owned shortcut and fixed service definition come from the trusted insta
 
 Preview either action safely with `sudo bash scripts/oclr.sh deploy --dry-run` or `sudo oclr update --dry-run`; previews perform no configuration reads, downloads or writes. `deploy` refuses to overwrite an installed release. `update` refuses to restart a stopped installation from an uncertain previous failure. On errors, read the reported private log and follow [recovery](#routine-whole-site-updates); no automatic database restore/down migration is attempted. Local simulated service tests and isolated DB fixtures do not verify your real Rocky host, package installation, TLS/proxy, OAuth or organizer rehearsal. #10 remains open until those release gates are met.
 
+## Clean up old release instances
+
+After a successful update, run cleanup separately when disk space needs reclaiming:
+
+```bash
+sudo oclr cleanup                         # preview only (default)
+sudo oclr cleanup --apply                 # delete eligible old releases
+sudo oclr cleanup --keep 5 --dry-run       # preview a different retention count
+sudo oclr cleanup --keep 5 --apply
+```
+
+For installations with an older root-owned shortcut, review this installer version and run `sudo bash scripts/oclr.sh install-command` from the trusted installer checkout first. The operator checkout at `/opt/oclr/repository` must also contain this release's cleanup scripts (normally obtained by `sudo oclr update`). Cleanup itself never fetches code or updates the application.
+
+The default keeps the newest **3 managed release directories by their UTC timestamped names**, plus the `current` and optional `previous` targets even if those are older. `--keep N` accepts 2–9999; protected targets can make the retained total larger than N. Only direct, real directories with the updater's timestamp/SHA/random name and a matching regular `.oclr-release` marker are eligible. Unknown entries, symlinks, missing/invalid markers and legacy manual releases are preserved and reported. Incomplete builds with a valid marker may be eligible after recovery; keep any needed diagnostic files before applying cleanup. Existing private backup/log directories are retained.
+
+Cleanup runs as `oclr`, uses the same `.update.lock` as the updater and refuses concurrent updates/cleanup, stopped services, mismatched service account/working directory, unsafe release links or nested filesystems. A preview reads installation/service metadata but creates or deletes no files. Neither mode reads `runtime.env`, requests migration credentials, changes systemd state, deletes database/media backups, touches durable upload storage nor removes accounts/services. Cleanup is never automatic during deployment or recovery. Removing an old directory does not establish that the retained previous release is compatible with the current database; follow the recovery procedure before switching releases.
+
+Advanced installations can run `OCLR_INSTALL_DIR=/absolute/install OCLR_SERVICE=your.service npm run production:cleanup -- --dry-run` as the configured deployment account, then repeat with `--apply`. Use an installation previously managed by `update.sh`, with its existing lock file. Never run the cleanup engine as root.
+
 ## Required configuration
 
 See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` prefix to credentials, database URLs or the bootstrap Admin IDs.

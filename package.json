@@ -26,6 +26,7 @@
     "production:setup": "bash scripts/production.sh setup",
     "production:start": "bash scripts/production.sh start",
     "production:update": "bash scripts/update.sh",
+    "production:cleanup": "bash scripts/cleanup-releases.sh",
     "media:cleanup": "tsx scripts/cleanup-media.ts"
   },
   "dependencies": {
