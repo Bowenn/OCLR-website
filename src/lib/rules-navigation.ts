@@ -24,3 +24,10 @@ export function rulesContentsLabel(heading: string, archiveSeason?: string) {
     ? heading.replace(/[:：]+\s*$/u, "")
     : heading;
 }
+
+/** Normalize rendered S8 fragments after matching the unchanged figure anchors. */
+export function rulesBodyText(text: string, archiveSeason?: string) {
+  return archiveSeason === "8"
+    ? text.replace(/\n(?:[ \t]*\n){2,}/g, "\n\n").trim()
+    : text.trim();
+}

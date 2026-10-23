@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  rulesBodyText,
   rulesContentsLabel,
   rulesSectionIds,
 } from "../../src/lib/rules-navigation";
@@ -45,5 +46,25 @@ describe("historical contents labels", () => {
     expect(rulesContentsLabel(headings[0], "11")).toBe(headings[0]);
     expect(rulesContentsLabel(headings[0])).toBe(headings[0]);
     expect(rulesSectionIds(headings)).toEqual(rulesSectionIds([...headings]));
+  });
+});
+
+describe("S8 rendered body whitespace", () => {
+  it("preserves text, meaningful breaks and figure anchors without reformatting other seasons", async () => {
+    const s8 = (await import("../../src/content/s8-rulebook.json")).default;
+    for (const section of s8.sections) {
+      const normalized = rulesBodyText(section.body, "8");
+      expect(normalized).not.toMatch(/\n{3,}/);
+      expect(normalized.replace(/\s/g, "")).toBe(
+        section.body.replace(/\s/g, ""),
+      );
+      expect(rulesBodyText(section.body, "9")).toBe(section.body.trim());
+      for (const figure of "figures" in section ? section.figures : []) {
+        expect(section.body).toContain(figure.after);
+      }
+    }
+    expect(rulesBodyText("one\n\n\n\nfive\nnext", "8")).toBe(
+      "one\n\nfive\nnext",
+    );
   });
 });

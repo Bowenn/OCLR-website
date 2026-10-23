@@ -3,7 +3,11 @@ import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { rulesContentsLabel, rulesSectionIds } from "@/lib/rules-navigation";
+import {
+  rulesBodyText,
+  rulesContentsLabel,
+  rulesSectionIds,
+} from "@/lib/rules-navigation";
 type RuleFigure = {
   after: string;
   src: string;
@@ -29,7 +33,13 @@ function RuleIllustration({ figure }: { figure: Omit<RuleFigure, "after"> }) {
     </figure>
   );
 }
-function RuleBody({ section }: { section: RuleSection }) {
+function RuleBody({
+  section,
+  archiveSeason,
+}: {
+  section: RuleSection;
+  archiveSeason?: string;
+}) {
   let offset = 0;
   return (
     <>
@@ -41,13 +51,17 @@ function RuleBody({ section }: { section: RuleSection }) {
         offset = end;
         return (
           <div key={figure.src}>
-            <p className="preserve-lines">{text.trim()}</p>
+            <p className="preserve-lines">
+              {rulesBodyText(text, archiveSeason)}
+            </p>
             <RuleIllustration figure={figure} />
           </div>
         );
       })}
       {section.body.slice(offset).trim() && (
-        <p className="preserve-lines">{section.body.slice(offset).trim()}</p>
+        <p className="preserve-lines">
+          {rulesBodyText(section.body.slice(offset), archiveSeason)}
+        </p>
       )}
     </>
   );
@@ -126,7 +140,7 @@ export function RulesHandbook({
                 <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                 {s.heading}
               </h2>
-              <RuleBody section={s} />
+              <RuleBody section={s} archiveSeason={archiveSeason} />
             </section>
           ))}
         </article>
