@@ -36,6 +36,7 @@ function Navigation({
     ["players", "Players"],
     ...(liveDraft ? [["draft", "Live draft"]] : []),
     ...(archived ? [["draft", "Draft results"]] : []),
+    ...(archived ? [["staff", "Staff"]] : []),
   ];
   const active = publicTournamentSection(pathname, base);
   return (

@@ -19,6 +19,7 @@ const sections = new Set<ArchiveSection>([
   "pool",
   "bracket",
   "draft",
+  "staff",
   "rules",
   "awards",
 ]);

@@ -27,6 +27,7 @@ export type ArchiveSection =
   | "pool"
   | "bracket"
   | "draft"
+  | "staff"
   | "rules"
   | "awards";
 export async function historicalPage(
@@ -216,29 +217,51 @@ export async function HistoricalArchiveView({
             ["schedule", tr("Schedule")],
             ["mappools", tr("Mappools")],
             ["draft", tr("Draft results")],
+            ["staff", tr("Staff")],
           ].map(([path, label]) => (
             <Link key={path} href={href(path)}>
               {label}
             </Link>
           ))}
         </nav>
-        <section>
-          <h2>{tr("Historical staff")}</h2>
-          <ul className="archive-roster">
-            {a.staff.map((s, i) => (
-              <li key={i}>
-                <a
-                  href={`https://osu.ppy.sh/users/${s.osuId}`}
-                  rel="noreferrer"
-                >
-                  {s.username}
-                </a>
-                <span>{s.position}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
       </>
+    );
+  } else if (section === "staff") {
+    title = tr("Staff");
+    const groups = new Map<string, HistoricalArchive["staff"]>();
+    for (const person of a.staff) {
+      const members = groups.get(person.position) ?? [];
+      members.push(person);
+      groups.set(person.position, members);
+    }
+    content = groups.size ? (
+      <div className="archive-staff stack">
+        {Array.from(groups, ([position, members]) => (
+          <section key={position}>
+            <h2>{position}</h2>
+            <ul className="public-staff-list">
+              {members.map((person, index) => (
+                <li key={`${person.osuId}-${index}`}>
+                  <Avatar osuId={person.osuId} username={person.username} />
+                  <div>
+                    <h3>
+                      <a
+                        className="context-link"
+                        href={`https://osu.ppy.sh/users/${person.osuId}`}
+                        rel="noreferrer"
+                      >
+                        {person.username}
+                      </a>
+                    </h3>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    ) : (
+      <p className="muted">{tr("Not recorded")}</p>
     );
   } else if (section === "teams" || section === "team") {
     const teams =

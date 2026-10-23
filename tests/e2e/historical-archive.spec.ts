@@ -68,6 +68,15 @@ test.describe("historical archive browser workflow", () => {
     await expect(
       page.locator(`.historical-archive a[href="${archive.sourceUrl}"]`),
     ).toHaveCount(0);
+    await page.getByRole("link", { name: "Staff", exact: true }).click();
+    await expect(page).toHaveURL(/archive\/preview\?section=staff$/);
+    await expect(page.locator(".archive-staff")).toContainText(
+      "Historical Host",
+    );
+    await expect(page.locator(".archive-staff")).not.toContainText("Staff!A2");
+    await page
+      .getByRole("link", { name: "Archive overview", exact: true })
+      .click();
     await page.getByRole("link", { name: "Teams", exact: true }).last().click();
     await page
       .getByRole("link", { name: "Synthetic Alpha", exact: true })
@@ -96,6 +105,13 @@ test.describe("historical archive browser workflow", () => {
     );
     await expect(page.locator(".archive-map-list > li")).toHaveCount(2);
     const guest = await context.browser()!.newContext();
+    expect(
+      (
+        await guest.request.get(
+          `http://127.0.0.1:3100/tournaments/${slug}/staff`,
+        )
+      ).status(),
+    ).toBe(404);
     expect(
       (
         await guest.request.get(`http://127.0.0.1:3100/tournaments/${slug}`)
@@ -146,6 +162,29 @@ test.describe("historical archive browser workflow", () => {
     await expect(
       page.getByRole("heading", { name: "Current tournaments" }),
     ).toBeVisible();
+    await page.goto(`/tournaments/${slug}`);
+    await page
+      .locator(".historical-archive")
+      .getByRole("link", { name: "Staff", exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/tournaments/${slug}/staff$`));
+    await expect(
+      page.getByRole("heading", { name: "Staff", exact: true }),
+    ).toBeVisible();
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Tournament navigation" })
+        .getByRole("link", { name: "Staff", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(page.locator(".archive-staff a")).toHaveAttribute(
+      "href",
+      "https://osu.ppy.sh/users/91005",
+    );
+    expect(
+      (await context.request.get("/tournaments/test-cup/staff")).status(),
+    ).toBe(404);
     for (const appearance of ["default", "cute-pastel", "swiss-minimal"]) {
       for (const theme of ["light", "dark"]) {
         await context.addCookies([
@@ -282,6 +321,16 @@ test.describe("historical archive browser workflow", () => {
         }),
       ).toBeVisible();
       await expect(page.getByText("Captain", { exact: true })).toHaveCount(2);
+      await page.goto(`/tournaments/${slug}/staff`);
+      await expect(
+        page.getByRole("heading", {
+          name: locale === "zh-Hant" ? "工作人員" : "工作人员",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(page.locator(".archive-staff")).toContainText(
+        "Historical Host",
+      );
     }
   });
   test("renders the complete S9 archive across appearances without inventing results", async ({
@@ -324,6 +373,7 @@ test.describe("historical archive browser workflow", () => {
           "draft",
           "bracket",
           "mappools",
+          "staff",
         ]) {
           await page.goto(`/tournaments/${slug}/${path}`);
           if (path === "schedule") {
@@ -340,6 +390,24 @@ test.describe("historical archive browser workflow", () => {
             await expect(page.locator(".archive-draft-picks li")).toHaveCount(
               56,
             );
+          } else if (path === "staff") {
+            await expect(page.locator(".archive-staff section")).toHaveCount(8);
+            await expect(
+              page.locator(".archive-staff .public-staff-list > li"),
+            ).toHaveCount(19);
+            for (const person of archive.staff) {
+              await expect(
+                page
+                  .locator(".archive-staff")
+                  .getByRole("link", { name: person.username, exact: true }),
+              ).toHaveAttribute(
+                "href",
+                `https://osu.ppy.sh/users/${person.osuId}`,
+              );
+              await expect(page.locator(".archive-staff")).not.toContainText(
+                person.source,
+              );
+            }
           } else if (path === "mappools") {
             await expect(page.locator(".archive-map-list > li")).toHaveCount(
               19,
