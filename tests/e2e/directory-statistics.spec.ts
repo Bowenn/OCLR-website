@@ -191,7 +191,11 @@ test.describe("compact public player statistics", () => {
       const card = cards.filter({
         has: page.locator(`a[href="https://osu.ppy.sh/users/${id}"]`),
       });
-      await expect(card).toContainText("SAVED SNAPSHOT");
+      await expect(card).not.toContainText("SAVED SNAPSHOT");
+      await expect(card.locator("time")).toHaveAttribute(
+        "datetime",
+        "2026-10-23T00:00:00Z",
+      );
       await expect(card).toContainText("#12,345");
     }
     expect(await page.content()).not.toMatch(
