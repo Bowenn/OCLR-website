@@ -7,8 +7,14 @@ import { Header } from "@/components/header";
 import "./globals.css";
 import "./public-tournament.css";
 import "./workspace.css";
+import "./pastel-theme.css";
 import { cookies } from "next/headers";
-import { readTheme, themeCookie } from "@/lib/preferences";
+import {
+  readTheme,
+  themeCookie,
+  readAppearance,
+  appearanceCookie,
+} from "@/lib/preferences";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 export const dynamic = "force-dynamic";
@@ -67,7 +73,9 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const tr = await getAppTranslations();
 
-  const theme = readTheme((await cookies()).get(themeCookie)?.value);
+  const preferences = await cookies();
+  const theme = readTheme(preferences.get(themeCookie)?.value);
+  const appearance = readAppearance(preferences.get(appearanceCookie)?.value);
   const locale = await getLocale();
   let user: Awaited<ReturnType<typeof currentUser>> = null;
   let authUnavailable = false;
@@ -79,7 +87,7 @@ export default async function RootLayout({
     authUnavailable = true;
   }
   return (
-    <html lang={locale} data-theme={theme}>
+    <html lang={locale} data-theme={theme} data-appearance={appearance}>
       <body>
         <NextIntlClientProvider>
           <SiteFrame>
@@ -88,6 +96,7 @@ export default async function RootLayout({
             </a>
             <Header
               theme={theme}
+              appearance={appearance}
               user={
                 user
                   ? { osuId: user.osuId, username: user.username, staff }

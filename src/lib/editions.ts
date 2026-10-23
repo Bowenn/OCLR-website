@@ -208,5 +208,14 @@ export function formatDate(
   locale = "en-GB",
 ): string {
   if (!value) return "To be announced";
-  return `${new Intl.DateTimeFormat(locale, { timeZone, dateStyle: "medium", timeStyle: "short", hourCycle: "h23" }).format(new Date(value))} (${timeZone})`;
+  // ICU versions can choose thin/nonbreaking spaces differently during hydration.
+  const formatted = new Intl.DateTimeFormat(locale, {
+    timeZone,
+    dateStyle: "medium",
+    timeStyle: "short",
+    hourCycle: "h23",
+  })
+    .format(new Date(value))
+    .replace(/\s+/g, " ");
+  return `${formatted} (${timeZone})`;
 }

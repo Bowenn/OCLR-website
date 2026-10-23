@@ -10,6 +10,25 @@ import {
 } from "../../src/lib/editions";
 import { edition } from "../fixtures/edition";
 describe("edition configuration", () => {
+  it("normalizes ICU date spacing consistently between server and browser", () => {
+    const formatter = Object.getOwnPropertyDescriptor(
+      Intl.DateTimeFormat.prototype,
+      "format",
+    )!;
+    try {
+      for (const space of [" ", "\u2009", "\u00a0", "\u202f"]) {
+        Object.defineProperty(Intl.DateTimeFormat.prototype, "format", {
+          configurable: true,
+          get: () => () => `2026/10/23${space}11:45`,
+        });
+        expect(
+          formatDate("2026-10-23T03:45:00Z", "Asia/Taipei", "zh-Hans"),
+        ).toBe("2026/10/23 11:45 (Asia/Taipei)");
+      }
+    } finally {
+      Object.defineProperty(Intl.DateTimeFormat.prototype, "format", formatter);
+    }
+  });
   it("omits only known bootstrap copy without hiding approved custom summaries", () => {
     expect(
       publicEditionSummary(

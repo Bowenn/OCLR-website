@@ -8,7 +8,8 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar } from "./avatar";
 import { OclrLogo } from "./oclr-logo";
 import { ThemeControl } from "./theme-control";
-import type { Theme } from "@/lib/preferences";
+import type { Theme, Appearance } from "@/lib/preferences";
+import { AppearanceControl } from "./appearance-control";
 import { LanguageControl } from "./language-control";
 type Account = { osuId: number; username: string; staff?: boolean };
 function AccountControl({
@@ -206,9 +207,11 @@ const links = [
 export function Header({
   user,
   theme,
+  appearance = "default",
 }: {
   user: Account | null;
   theme: Theme;
+  appearance?: Appearance;
 }) {
   const tr = useAppTranslations();
 
@@ -253,6 +256,7 @@ export function Header({
           ))}
         </nav>
         <div className="site-preferences">
+          <AppearanceControl initialAppearance={appearance} />
           <ThemeControl initialTheme={theme} />
           <LanguageControl />
         </div>
