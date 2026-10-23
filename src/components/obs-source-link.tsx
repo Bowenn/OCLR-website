@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import { draftOverlayUrl } from "@/lib/overlay-url";
+const subscribe = () => () => {};
+const browserOrigin = () => location.origin;
+const serverOrigin = () => "";
 export function ObsSourceLink({
   slug,
   origin,
@@ -10,14 +13,15 @@ export function ObsSourceLink({
   origin?: string;
 }) {
   const tr = useAppTranslations();
-  const [url, setUrl] = useState(() =>
-    origin ? draftOverlayUrl(origin, slug) : "",
+  const localOrigin = useSyncExternalStore(
+    subscribe,
+    browserOrigin,
+    serverOrigin,
   );
+  const resolvedOrigin = origin || localOrigin;
+  const url = resolvedOrigin ? draftOverlayUrl(resolvedOrigin, slug) : "";
   const [feedback, setFeedback] = useState("");
   const field = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
-    if (!origin) setUrl(draftOverlayUrl(location.origin, slug));
-  }, [origin, slug]);
   async function copy() {
     try {
       await navigator.clipboard.writeText(url);

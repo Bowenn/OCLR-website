@@ -82,6 +82,43 @@ test.describe("isolated multi-captain rehearsal", () => {
     await a.page.goto(`/tournaments/${slug}/draft/captain`);
     await b.page.goto(`/tournaments/${slug}/draft/captain`);
     await staff.page.goto(`/admin/tournaments/${slug}/draft`);
+    const source = staff.page.getByRole("textbox", {
+      name: "OBS Browser Source / Overlay URL",
+      exact: true,
+    });
+    await expect(source).toHaveValue(
+      `http://127.0.0.1:3100/tournaments/${slug}/draft/overlay`,
+    );
+    // Denied clipboard access keeps a focusable manual-copy fallback.
+    await staff.page.evaluate(() =>
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: () => Promise.reject(new Error("denied")) },
+      }),
+    );
+    await staff.page
+      .getByRole("button", { name: "Copy URL", exact: true })
+      .click();
+    await expect(
+      staff.page.getByRole("status").filter({ hasText: "Copy failed." }),
+    ).toBeVisible();
+    await expect(source).toBeFocused();
+    await staff.page.evaluate(() =>
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text: string) => {
+            (window as unknown as { copied: string }).copied = text;
+          },
+        },
+      }),
+    );
+    await staff.page
+      .getByRole("button", { name: "Copy URL", exact: true })
+      .click();
+    await expect(
+      staff.page.getByRole("status").filter({ hasText: "URL copied." }),
+    ).toBeVisible();
     await spectator.page.goto(`/tournaments/${slug}/draft`);
     const closedRegistration = await spectator.context.newPage();
     await closedRegistration.goto(`/tournaments/${slug}/register`);

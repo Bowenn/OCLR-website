@@ -3403,8 +3403,14 @@ body:has(.presenter-view) .site-footer,
   border-color: var(--color-accent);
 }
 .public-staff-list h3 {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.2rem;
   font-size: 1rem;
+  line-height: 1.35;
+}
+.public-staff-list h3 .context-link {
+  display: inline;
+  min-height: 0;
+  padding: 0;
 }
 .public-staff-list ul {
   list-style: none;

@@ -50,6 +50,16 @@ test.describe("weekly awards review", () => {
       0,
     );
     await expect(page.getByRole("table").last()).toContainText("6");
+    const policy = page.getByRole("region", {
+      name: "Award policy and calculation",
+      exact: true,
+    });
+    await expect(policy.getByRole("listitem")).toHaveCount(3);
+    await expect(policy.getByRole("listitem").nth(0)).toHaveText(
+      "MVP: at least 6 appearances.",
+    );
+    await expect(policy.getByRole("listitem").nth(1)).toContainText("MIP:");
+    await expect(policy.getByRole("listitem").nth(2)).toContainText("Rookie:");
     page.once("dialog", (dialog) => dialog.accept());
     await page
       .getByRole("button", { name: "Approve & publish", exact: true })

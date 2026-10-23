@@ -44,6 +44,14 @@ describe("approved weekly award policy", () => {
     expect(six.mvp).toEqual([2]);
     expect(six.rookie).toEqual([2]);
     expect(weeklyStandings(weeks, [], set(1, 6))[0].rookie).toEqual([]);
+    const captain = weeklyStandings(
+      weeks,
+      [{ userId: 2, tier: 0 }],
+      set(1, 6),
+    )[0];
+    expect(captain.candidates.find((p) => p.userId === 2)?.tier).toBe(0);
+    expect(captain.mvp).toEqual([2]);
+    expect(captain.rookie).toEqual([]);
   });
   it("compares the immediately preceding week with five appearances each and positive absolute gain", () => {
     const results = weeklyStandings(

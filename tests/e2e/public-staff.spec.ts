@@ -1,6 +1,9 @@
 import { englishStorage } from "../fixtures/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { userProfileCache } from "../../src/db/schema";
+import { profileResponse } from "../fixtures/osu-profile";
+import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
 import { sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { assertTestDatabase } from "../database";
@@ -61,6 +64,20 @@ test.describe("approved public About roster", () => {
       expectedPublished: false,
       confirmed: true,
     };
+    await db()
+      .insert(userProfileCache)
+      .values({
+        osuId: targetId,
+        mode: "osu",
+        profile: normalizeOsuProfile(
+          { ...profileResponse, id: targetId },
+          targetId,
+          "osu",
+        ),
+        attemptedAt: new Date(),
+        retryAt: new Date(),
+      })
+      .onConflictDoNothing();
     const headers = { origin: "http://127.0.0.1:3100" };
     try {
       expect(
@@ -103,11 +120,16 @@ test.describe("approved public About roster", () => {
       await page.reload();
       await expect(
         page.getByRole("link", {
-          name: `Synthetic Player ${targetId} ↗`,
+          name: `Synthetic Player ${targetId}`,
           exact: true,
         }),
       ).toBeVisible();
       await expect(page.locator(".public-staff-list > li")).toHaveCount(1);
+      await expect(
+        page
+          .locator(".public-staff-list")
+          .getByRole("img", { name: "Taiwan flag", exact: true }),
+      ).toBeVisible();
       await expect(
         page.locator(".public-staff-list .staff-role-name"),
       ).toHaveText("mappooler");

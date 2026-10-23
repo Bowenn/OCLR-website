@@ -70,6 +70,18 @@ test.describe("assisted registration from the edition workspace", () => {
           { name: "oclr-locale", value: locale, url: "http://127.0.0.1:3100" },
         ]);
         await page.goto("/admin/tournaments/test-cup/registrations");
+        const actions = page.locator(".registration-review-actions");
+        await expect(actions.getByRole("button").first()).toHaveText(add);
+        if (await actions.locator("a").count())
+          await expect(actions.locator("a").last()).toHaveAttribute(
+            "href",
+            /export/,
+          );
+        expect(
+          await actions.evaluate(
+            (el) => el.getBoundingClientRect().right <= innerWidth,
+          ),
+        ).toBe(true);
         await page.getByRole("button", { name: add, exact: true }).click();
         await expect(page.getByRole("dialog")).toContainText(
           "Synthetic test edition",

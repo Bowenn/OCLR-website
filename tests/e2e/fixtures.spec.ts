@@ -170,6 +170,11 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
           exact: false,
         }),
       ).toBeVisible();
+      const tabs = page
+        .getByRole("tab", { name: "Groups", exact: true })
+        .locator("..");
+      await expect(tabs).toHaveAttribute("data-appearance", "line");
+      await expect(tabs).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       await page.getByRole("tab", { name: "Groups", exact: true }).click();
       await expect(
         page.getByRole("heading", { name: "Unassigned group", exact: true }),

@@ -1844,13 +1844,6 @@ html[data-theme="dark"] .brand .oclr-wordmark {
   }
 }
 
-.public-staff-list > li {
-  align-items: flex-start;
-}
-.public-staff-list h3 {
-  margin: 0 0 0.2rem;
-  line-height: 1.35;
-}
 .country-flag {
   display: inline-block;
   vertical-align: middle;

@@ -17,6 +17,7 @@ import {
   tournamentList,
   readTournament,
   readTournaments,
+  tournamentAppearanceScopes,
 } from "../../src/lib/tournaments";
 import {
   users,
@@ -88,6 +89,91 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
   afterAll(async () => {
     await closeDb();
     vi.unstubAllEnvs();
+  });
+  it("stores optional appearance defaults with scoped authorization, revisions and audit", async () => {
+    const created = await create();
+    expect(created.edition.defaultAppearance).toBeUndefined();
+    const command = {
+      action: "general",
+      ...fields,
+      status: "upcoming",
+      defaultAppearance: "cute-pastel",
+      expectedRevision: 0,
+      confirmed: true,
+    };
+    for (const actor of [mapper, referee, player])
+      await expect(
+        tournamentCommand(actor, "s12", command),
+      ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      tournamentCommand(admin, "s12", {
+        ...command,
+        defaultAppearance: "arbitrary",
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    const saved = await tournamentCommand(admin, "s12", command);
+    expect(saved.edition.defaultAppearance).toBe("cute-pastel");
+    expect(saved.revision).toBe(1);
+    await expect(
+      tournamentCommand(admin, "s12", command),
+    ).rejects.toMatchObject({ status: 409 });
+    const events = await auditEvents();
+    expect(events).toHaveLength(2);
+    expect(events[1]).toMatchObject({
+      actorId: admin.osuId,
+      detail: {
+        after: {
+          configuration: { defaultAppearance: "cute-pastel" },
+          revision: 1,
+        },
+      },
+    });
+    expect((await tournamentAppearanceScopes(null)).map((s) => s.slug)).toEqual(
+      ["test-cup"],
+    );
+    expect(
+      (await tournamentAppearanceScopes(mapper)).some((s) => s.slug === "s12"),
+    ).toBe(false);
+    expect(
+      (await tournamentAppearanceScopes(admin)).find((s) => s.slug === "s12"),
+    ).toEqual({
+      slug: "s12",
+      defaultAppearance: "cute-pastel",
+      published: false,
+      staff: true,
+    });
+    await tournamentCommand(admin, "s12", {
+      ...command,
+      expectedRevision: 1,
+      defaultAppearance: null,
+    });
+    expect((await readTournament("s12"))?.edition.defaultAppearance).toBeNull();
+  });
+  it("allows a scoped Admin to change only their tournament default", async () => {
+    await create();
+    await db()
+      .insert(staffRoles)
+      .values({
+        userId: player.osuId,
+        role: "admin",
+        editionSlug: "s12",
+        grantedBy: admin.osuId,
+      });
+    const command = {
+      ...fields,
+      action: "general",
+      status: "upcoming",
+      expectedRevision: 0,
+      confirmed: true,
+      defaultAppearance: "cute-pastel",
+    };
+    await tournamentCommand(player, "s12", command);
+    await expect(
+      tournamentCommand(player, "test-cup", command),
+    ).rejects.toMatchObject({ status: 403 });
+    const scopes = await tournamentAppearanceScopes(player);
+    expect(scopes.some((s) => s.slug === "s12" && s.staff)).toBe(true);
+    expect(scopes.some((s) => s.slug === "private-test-cup")).toBe(false);
   });
   it("filters unpublished configurations in the database and ignores legacy state without inventing content", async () => {
     await db().execute(

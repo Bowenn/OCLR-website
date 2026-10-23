@@ -554,10 +554,17 @@ export function MappoolEditor({
           <div className="mappool-toolbar mappool-pool-heading">
             <div>
               <h2>
-                {round?.name !== pool.name && <span className="muted small">{round?.name} / </span>}
+                {round?.name !== pool.name && (
+                  <span className="muted small">{round?.name} / </span>
+                )}
                 {pool.name}{" "}
-                <span className="badge">{pool.publishedAt ? tr("Published") : tr("Draft")}</span>{" "}
-                <span className="muted small">{poolEntries.length} {poolEntries.length === 1 ? tr("map") : tr("maps")}</span>
+                <span className="badge">
+                  {pool.publishedAt ? tr("Published") : tr("Draft")}
+                </span>{" "}
+                <span className="muted small">
+                  {poolEntries.length}{" "}
+                  {poolEntries.length === 1 ? tr("map") : tr("maps")}
+                </span>
               </h2>
             </div>
             <div className="actions mappool-pool-actions">

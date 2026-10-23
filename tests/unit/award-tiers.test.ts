@@ -12,7 +12,10 @@ describe("authoritative draft award tiers", () => {
         playerId: turnIndex + 1,
       }));
       expect(draftAwardTiers(sequence, picks, [1])).toEqual(
-        picks.map((p) => ({ userId: p.playerId, tier: p.playerId === 1 ? 0 : Math.floor(p.turnIndex / 3) + 1 })),
+        picks.map((p) => ({
+          userId: p.playerId,
+          tier: p.playerId === 1 ? 0 : Math.floor(p.turnIndex / 3) + 1,
+        })),
       );
       expect(
         draftAwardTiers(
@@ -53,6 +56,9 @@ describe("authoritative draft award tiers", () => {
 });
 
 it("uses Captain only for authoritative captain identities, including before drafting", () => {
- expect(draftAwardTiers([], [], [7,7])).toEqual([{userId:7,tier:0}]);
- expect(awardTierLabel(0)).toBe("Captain");expect(awardTierLabel(null)).toBe("—");expect(awardTierLabel(undefined)).toBe("—");expect(awardTierLabel(4)).toBe("T4");
+  expect(draftAwardTiers([], [], [7, 7])).toEqual([{ userId: 7, tier: 0 }]);
+  expect(awardTierLabel(0)).toBe("Captain");
+  expect(awardTierLabel(null)).toBe("—");
+  expect(awardTierLabel(undefined)).toBe("—");
+  expect(awardTierLabel(4)).toBe("T4");
 });

@@ -83,20 +83,28 @@ test.describe("dense Admin mappool workspace", () => {
       );
     await page.goto("/admin/tournaments/test-cup/mappools");
     await expect(page.getByLabel("Selected mappool")).toContainText("18 maps");
-    await expect(page.getByLabel("Selected mappool")).toContainText("Free Mod");
-    await expect(
-      page.getByRole("button", { name: "NM (12)", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
-    await expect(page.locator(".mappool-order > li")).toHaveCount(12);
-    await expect(page.locator(".mappool-order > li").first()).toContainText(
-      "6.25 ★ base",
+    await expect(page.locator(".mappool-pool-heading")).not.toContainText(
+      "Free Mod",
     );
+    await expect(page.locator(".mappool-pool-heading")).toContainText(
+      "Synthetic Group Round / Synthetic Eighteen Map Pool",
+    );
+    await page.getByRole("tab", { name: "Pool settings", exact: true }).click();
+    await expect(page.getByLabel("Selected mappool")).toContainText("Free Mod");
+    await page.getByRole("tab", { name: "Maps", exact: true }).click();
+    await expect(
+      page.getByRole("tab", { name: "NM (12)", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator(".mappool-order > li:visible")).toHaveCount(12);
+    await expect(
+      page.locator(".mappool-order > li:visible").first(),
+    ).toContainText("6.25 ★ base");
     await captureResponsiveLayout(page, info, "dense-admin-mappool");
-    await page.getByRole("button", { name: "HR (0)", exact: true }).click();
+    await page.getByRole("tab", { name: "HR (0)", exact: true }).click();
     await expect(
       page.getByText("No HR slots configured.", { exact: true }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "NM (12)", exact: true }).click();
+    await page.getByRole("tab", { name: "NM (12)", exact: true }).click();
     await expect(page).toHaveTitle(/Manage mappools/);
     expect(
       (

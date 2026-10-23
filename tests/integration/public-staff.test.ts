@@ -1,7 +1,7 @@
 import { beforeEach, afterAll, describe, expect, it, vi } from "vitest";
 import { sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { users, staffRoleEvents } from "../../src/db/schema";
+import { users, staffRoleEvents, userProfileCache } from "../../src/db/schema";
 import { assertTestDatabase } from "../database";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
@@ -70,6 +70,7 @@ describe.skipIf(!url)("explicit public Staff visibility", () => {
     expect(await publicStaff()).toEqual([
       {
         ...member,
+        countryCode: null,
         roles: [
           {
             role: "mappooler",
@@ -92,6 +93,28 @@ describe.skipIf(!url)("explicit public Staff visibility", () => {
     expect((await publicStaff())[0].roles).toHaveLength(1);
     await changeStaffRole(admin, visibility(map.id, false));
     expect(await publicStaff()).toEqual([]);
+  });
+  it("reads only the cached official country for approved staff, without provider calls", async () => {
+    const profile = {
+      countryCode: "TW",
+      privateContact: "NEVER_PUBLIC",
+    } as unknown as import("../../src/lib/osu-profile-model").OsuUserProfile;
+    await db()
+      .insert(userProfileCache)
+      .values({
+        osuId: member.osuId,
+        mode: "osu",
+        profile,
+        attemptedAt: new Date(),
+        retryAt: new Date(),
+      });
+    const map = await grant(member.osuId, "mappooler");
+    expect(await publicStaff()).toEqual([]);
+    await changeStaffRole(admin, visibility(map.id, true));
+    expect((await publicStaff())[0].countryCode).toBe("TW");
+    expect(JSON.stringify(await publicStaff())).not.toContain("NEVER_PUBLIC");
+    await db().execute(sql`UPDATE user_profile_cache SET error_status=404`);
+    expect((await publicStaff())[0].countryCode).toBeNull();
   });
   it("enforces permission scope, conflicts and atomic server-derived audit events", async () => {
     await grant(scoped.osuId, "admin", "private-cup");
