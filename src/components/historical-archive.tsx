@@ -1,4 +1,5 @@
 import { archiveArtworkSetIds } from "@/lib/archive-artwork";
+import { deriveS8Standings } from "@/lib/s8-standings";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArchivePlayerSearch } from "./archive-player-search";
@@ -382,6 +383,18 @@ export async function HistoricalArchiveView({
   } else if (section === "bracket") {
     title = tr("Bracket");
     const bracket = archiveBracket(a, (id) => href("matches", id));
+    const rules = historicalRulebook(a);
+    const derived =
+      rules && historicalRulebookSeason(rules) === "8"
+        ? deriveS8Standings(a)
+        : null;
+    const standings =
+      derived ??
+      [...a.standings].sort(
+        (x, y) =>
+          x.group.localeCompare(y.group) ||
+          (x.rank ?? Infinity) - (y.rank ?? Infinity),
+      );
     if (bracket)
       for (const group of bracket.groups)
         if (group.id === "match-path") group.label = tr("Match path");
@@ -403,6 +416,13 @@ export async function HistoricalArchiveView({
           <p>{tr("No recorded matches.")}</p>
         )}
         <h2>{tr("Group standings")}</h2>
+        {derived && (
+          <p className="muted small">
+            {tr(
+              "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
+            )}
+          </p>
+        )}
         <div
           className="table-scroll"
           tabIndex={0}
@@ -416,34 +436,39 @@ export async function HistoricalArchiveView({
                   tr("Group"),
                   tr("Rank"),
                   tr("Team"),
+                  ...(derived ? [tr("Played")] : []),
                   tr("Wins"),
                   tr("Losses"),
                   tr("Maps won"),
                   tr("Maps lost"),
+                  ...(derived ? [tr("Map difference")] : []),
                 ].map((h) => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {[...a.standings]
-                .sort(
-                  (x, y) =>
-                    x.group.localeCompare(y.group) ||
-                    (x.rank ?? Number.MAX_SAFE_INTEGER) -
-                      (y.rank ?? Number.MAX_SAFE_INTEGER),
-                )
-                .map((s) => (
-                  <tr key={s.teamId}>
-                    <td>{s.group}</td>
-                    <td>{s.rank ?? tr("Not recorded")}</td>
-                    <td>{teamLink(s.teamId)}</td>
-                    <td>{s.wins}</td>
-                    <td>{s.losses}</td>
-                    <td>{s.mapsWon}</td>
-                    <td>{s.mapsLost}</td>
-                  </tr>
-                ))}
+              {standings.map((s) => (
+                <tr key={s.teamId}>
+                  <td>{s.group}</td>
+                  <td>
+                    {s.rank ??
+                      ("status" in s
+                        ? s.status === "review"
+                          ? tr("Awaiting review")
+                          : tr("Incomplete results")
+                        : tr("Not recorded"))}
+                    {"tied" in s && s.tied ? ` · ${tr("Tied")}` : ""}
+                  </td>
+                  <td>{teamLink(s.teamId)}</td>
+                  {"played" in s && <td>{s.played}</td>}
+                  <td>{s.wins}</td>
+                  <td>{s.losses}</td>
+                  <td>{s.mapsWon}</td>
+                  <td>{s.mapsLost}</td>
+                  {"mapDifference" in s && <td>{s.mapDifference}</td>}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

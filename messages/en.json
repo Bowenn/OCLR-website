@@ -2066,6 +2066,10 @@
     "mcae88f2dbf3f": "OCLR Season 10 — ",
     "m08b27dfe7701": "OCLR Season 9 — ",
     "m10bc27b61d65": "OCLR Season 8 — ",
-    "mfaaf9936cac0": "Scroll across rounds."
+    "mfaaf9936cac0": "Scroll across rounds.",
+    "m5acf795bb3cf": "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
+    "mba592a2eab8f": "Map difference",
+    "m4848885e3fc4": "Awaiting review",
+    "mbb994ca86b0a": "Incomplete results"
   }
 }

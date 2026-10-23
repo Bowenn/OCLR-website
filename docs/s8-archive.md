@@ -65,3 +65,7 @@ Original BWS, coaches, no-FM/allowed-NM-Mod rules, EX rules, duplicate numbering
 5. Publish through the separate Publication action. Verify anonymously on desktop/mobile, directory order S10/S9/S8, search, generated bracket, no provenance display and correct edition links. Record actual evidence on #164 and close only after production import acceptance.
 
 No database migration is needed. **Deploy support for nullable historical ranks before importing this S8 package.** Earlier builds that require numeric archive ranks cannot parse this edition after import; rollback must retain compatible archive support rather than erasing archive revisions or audit history. Publication, Admin scoping, revision locks, idempotency and transactional audit behavior remain unchanged.
+
+## Derived group standings (#171)
+
+The immutable import still records `rank: null`. The public page and private preview derive played/wins/losses/maps won/maps lost from the 24 recorded group fixtures, ordered by wins and then map difference. The archived rulebook and GroupScore provide no verified official tiebreak priority, so the UI explicitly labels this as a calculated order, not an official historical ranking. Group B's three 1–2 teams have map differences +1, −1 and −9. Equal wins and map difference share competition ranks; team IDs only stabilize display within an explicitly tied rank. Missing, unscored, duplicate, drawn or ambiguous fixtures withhold the entire group's ranks pending review. Other seasons retain their recorded rankings.
