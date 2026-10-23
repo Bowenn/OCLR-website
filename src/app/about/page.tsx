@@ -22,7 +22,7 @@ export default async function About() {
         title={"osu! Chinese League Rookie"}
       >
         {tr(
-          "Founded in 2018, OCLR is part of the OCL tournament series, whose history dates back to 2014. Players register individually and compete in captain-drafted teams.",
+          "Founded in 2018, OCLR is part of the OCL tournament series, whose history dates back to 2014.",
         )}
       </PageHeading>
       <div className="about-layout">
