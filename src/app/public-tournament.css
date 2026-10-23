@@ -1164,13 +1164,7 @@ body:has(dialog[open].map-dialog) {
   color: var(--site-muted);
 }
 .public-tournament
-  :is(
-    .match-slot + .match-slot,
-    .match-meta,
-    .match-note,
-    .match-alternative,
-    .table-scroll
-  ) {
+  :is(.match-slot + .match-slot, .match-meta, .match-note, .table-scroll) {
   border-color: var(--site-border);
 }
 .public-tournament .match-winner {
@@ -1222,9 +1216,6 @@ body:has(dialog[open].map-dialog) {
   font-size: 1rem;
 }
 
-.public-tournament .match-alternative summary {
-  color: var(--site-accent);
-}
 .public-tournament .mappool-category-heading > span {
   color: var(--site-muted);
 }

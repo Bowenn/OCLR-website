@@ -377,14 +377,11 @@ test.describe("isolated multi-captain rehearsal", () => {
     await expect(bracketPage.locator(".match-card").last()).toContainText(
       "Pending",
     );
-    await bracketPage
-      .getByText("Accessible match list — all sections and rounds", {
-        exact: true,
-      })
-      .click();
+    await expect(bracketPage.locator(".match-alternative")).toHaveCount(0);
+    await expect(bracketPage.locator(".match-card h3").first()).toBeVisible();
     await expect(
-      bracketPage.getByRole("heading", { level: 4 }).first(),
-    ).toBeVisible();
+      bracketPage.locator(".match-card .sr-only").first(),
+    ).toHaveText(" (winner)");
     expect(
       (
         await new AxeBuilder({ page: bracketPage })
@@ -392,11 +389,6 @@ test.describe("isolated multi-captain rehearsal", () => {
           .analyze()
       ).violations,
     ).toEqual([]);
-    await bracketPage
-      .getByText("Accessible match list — all sections and rounds", {
-        exact: true,
-      })
-      .click();
     if (isMobile) {
       const region = bracketPage.getByRole("region", {
         name: /bracket; scroll horizontally/,

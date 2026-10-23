@@ -90,9 +90,7 @@ export function BracketView({
             ? tr(
                 "Scroll across rounds. Switch to Schedule for a chronological list.",
               )
-            : tr(
-                "Scroll across rounds. A complete match list is available below.",
-              )}
+            : tr("Scroll across rounds.")}
         </p>
       )}
       <div
@@ -211,48 +209,6 @@ export function BracketView({
           ))}
         </div>
       </div>
-      {!renderMatch && (
-        <details className="section-space match-alternative">
-          <summary>
-            {tr("Accessible match list — all sections and rounds")}
-          </summary>
-          {bracket.groups.map((g) => (
-            <section key={g.id}>
-              <h2>{g.label}</h2>
-              {g.rounds.map((r) => (
-                <section key={r.id}>
-                  <h3>{r.label}</h3>
-                  <ul className="schedule-list">
-                    {r.matches.map((m) => (
-                      <li key={m.id}>
-                        <div>
-                          <h4>
-                            {m.label} · {tr(m.status)}
-                          </h4>
-                          <p>
-                            {m.slots.map((s) => s.label).join(" vs ")}
-                            {tr(". Scores:")}{" "}
-                            {m.scores.map((s) => s ?? "unreported").join(" – ")}
-                            .
-                          </p>
-                          <p className="muted small">
-                            {m.winnerSlot !== null
-                              ? tr("Winner: {value0}.", {
-                                  value0: m.slots[m.winnerSlot].label,
-                                })
-                              : tr("Winner not announced.")}
-                            {m.note && ` ${m.note}`}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              ))}
-            </section>
-          ))}
-        </details>
-      )}
     </>
   );
 }

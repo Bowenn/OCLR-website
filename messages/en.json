@@ -30,7 +30,6 @@
     "m9b1c6e40b733": " BPM",
     "m3b1af2419cbd": "Beatmap preview",
     "m94a6d673d9ee": "Scroll across rounds. Switch to Schedule for a chronological list.",
-    "mb802df85a274": "Scroll across rounds. A complete match list is available below.",
     "mb73ef646658b": "{value0} bracket; scroll horizontally",
     "m108cb6348007": "Captains",
     "mb4292fb422d0": "Captain setup is locked. Publication controls remain available below.",
@@ -922,7 +921,6 @@
     "m331551b0de41": "Pending",
     "mc4d50a3839c7": " (winner)",
     "ma7dea8eabb46": "Score {value0}",
-    "m00743423c456": "Accessible match list — all sections and rounds",
     "m84bccbbce566": ". Scores:",
     "m5b697c4ae7f6": "Winner: {value0}.",
     "m92309067fb08": "Winner not announced.",
@@ -2067,6 +2065,7 @@
     "m7212c4b31be0": "Username, osu! ID or team",
     "mcae88f2dbf3f": "OCLR Season 10 — ",
     "m08b27dfe7701": "OCLR Season 9 — ",
-    "m10bc27b61d65": "OCLR Season 8 — "
+    "m10bc27b61d65": "OCLR Season 8 — ",
+    "mfaaf9936cac0": "Scroll across rounds."
   }
 }

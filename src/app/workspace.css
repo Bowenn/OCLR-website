@@ -298,15 +298,13 @@
 .themed-site .registration-cover {
   color: var(--site-on-primary);
 }
-.themed-site.private-site
-  :is(.match-slot + .match-slot, .match-note, .match-alternative) {
+.themed-site.private-site :is(.match-slot + .match-slot, .match-note) {
   border-color: var(--site-border);
 }
 .themed-site.private-site :is(.match-slot strong, .match-loser) {
   color: var(--site-muted);
 }
-.themed-site.private-site
-  :is(.match-winner, .match-winner strong, .match-alternative summary) {
+.themed-site.private-site :is(.match-winner, .match-winner strong) {
   color: var(--site-accent);
 }
 .themed-site.private-site .match-winner {

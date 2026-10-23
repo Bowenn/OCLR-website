@@ -1517,26 +1517,6 @@ body:has(.presenter-view) .site-footer,
   fill: none;
   opacity: 0.9;
 }
-.match-alternative {
-  border: 1px solid #363348;
-  border-radius: 0.5rem;
-  padding: 0.8rem 1rem;
-}
-.match-alternative summary {
-  cursor: pointer;
-  color: #dfb2f7;
-}
-.match-alternative h2 {
-  margin-top: 2rem;
-  font-size: 1.4rem;
-}
-.match-alternative h3 {
-  margin-top: 1.5rem;
-}
-.match-alternative h4 {
-  font-size: 0.95rem;
-  margin: 0 0 0.5rem;
-}
 @media (max-width: 760px) {
   .bracket-scroll {
     padding: 1rem;
