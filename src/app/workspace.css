@@ -291,7 +291,10 @@
 .themed-site.private-site .captain-drop-zone {
   border-color: var(--site-control-border);
 }
-.themed-site .avatar,
+.themed-site .avatar {
+  color: var(--site-foreground);
+  background: var(--site-tint);
+}
 .themed-site .registration-cover {
   color: var(--site-on-primary);
 }

@@ -197,6 +197,13 @@
       "when": 1792749440303,
       "tag": "0027_swiss_minimal_appearance",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792760459610,
+      "tag": "0028_team_coaches",
+      "breakpoints": true
     }
   ]
 }

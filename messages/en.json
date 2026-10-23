@@ -2055,6 +2055,13 @@
     "m55b588615b2b": "Generated from recorded matches. Lines connect each team's previous recorded appearance; they do not establish qualification rules. Unconfirmed alternatives are excluded.",
     "mdfb5f5988d63": "No recorded matches.",
     "maba67020529e": "Round {round}",
-    "m6fe790556119": "Pick {pick}"
+    "m6fe790556119": "Pick {pick}",
+    "mb93eac495a74": "Coaches",
+    "maf587a4dd5fc": "Coaches do not occupy player slots or receive staff permissions. Coach identities follow roster publication; changes to a published roster are public immediately.",
+    "m6432663aa95e": "Remove coach {name}",
+    "m2314c335cabf": "Remove coach",
+    "m3e92eebd5ff7": "Coach osu! ID",
+    "mffdd0704fce1": "Add coach",
+    "m5c25d3faf47e": "This releases the finalized players’ and coaches’ osu! IDs and display names. Verify organizer approval."
   }
 }

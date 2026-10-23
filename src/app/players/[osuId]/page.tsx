@@ -116,22 +116,36 @@ export default async function Profile({
                 </Link>
               </h3>
               <p>
-                {p.captain
-                  ? tr("Captain")
-                  : p.participation === "finalized_roster"
-                    ? tr("Finalized roster player")
-                    : tr("Accepted player")}
+                {p.participation === "coach"
+                  ? tr("Coach")
+                  : p.captain
+                    ? tr("Captain")
+                    : p.participation === "finalized_roster"
+                      ? tr("Finalized roster player")
+                      : tr("Accepted player")}
               </p>
-              {p.team ? (
-                <Link
-                  href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
-                  className="context-link"
-                >
-                  {p.team.name}
-                </Link>
-              ) : (
-                <p className="muted">{tr("Team awaiting publication")}</p>
-              )}
+              {p.coachedTeams?.map((t) => (
+                <p key={t.id}>
+                  <span className="badge">{tr("Coach")}</span>{" "}
+                  <Link
+                    className="context-link"
+                    href={`/tournaments/${p.editionSlug}/teams/${t.id}`}
+                  >
+                    {t.name}
+                  </Link>
+                </p>
+              ))}
+              {p.participation !== "coach" &&
+                (p.team ? (
+                  <Link
+                    href={`/tournaments/${p.editionSlug}/teams/${p.team.id}`}
+                    className="context-link"
+                  >
+                    {p.team.name}
+                  </Link>
+                ) : (
+                  <p className="muted">{tr("Team awaiting publication")}</p>
+                ))}
             </li>
           ))}
         </ul>

@@ -18,6 +18,9 @@ import {
   users,
   memberships,
   teams,
+  teamCoaches,
+  staffRoles,
+  editionEvents,
 } from "../../src/db/schema";
 import { captainSetup, updateCaptains } from "../../src/lib/captains";
 import {
@@ -27,6 +30,10 @@ import {
   publishedTeams,
 } from "../../src/lib/teams";
 import { edition } from "../fixtures/edition";
+import { publicPlayers } from "../../src/lib/players";
+import { getOsuUserProfile } from "../../src/lib/osu-profiles";
+vi.mock("../../src/lib/osu-profiles", () => ({ getOsuUserProfile: vi.fn() }));
+const coach = { osuId: 90101, username: "Synthetic Coach" };
 const url = process.env.TEST_DATABASE_URL;
 const staff = { osuId: 90001, username: "Synthetic Staff" };
 const a = { osuId: 90002, username: "Synthetic Captain A" };
@@ -48,6 +55,11 @@ describe.skipIf(!url)(
       vi.stubEnv("ADMIN_OSU_IDS", String(staff.osuId));
     });
     beforeEach(async () => {
+      vi.mocked(getOsuUserProfile).mockReset();
+      vi.mocked(getOsuUserProfile).mockResolvedValue({
+        profile: coach,
+        stale: false,
+      } as Awaited<ReturnType<typeof getOsuUserProfile>>);
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
       await seedEditions(fixtureEditions);
       await db().insert(users).values([staff, a, b, player]);
@@ -191,6 +203,216 @@ describe.skipIf(!url)(
         }),
       );
       expect((await publishedTeams(edition.slug))[0].members).toHaveLength(1);
+    });
+    it("assigns verified coaches without adding players, capacity usage, registration or staff grants", async () => {
+      const configured = await configure(),
+        team = configured.teams[0];
+      const data = await updateTeams(
+        staff,
+        edition.slug,
+        command(3, {
+          action: "add_coach",
+          teamId: team.id,
+          userId: coach.osuId,
+        }),
+      );
+      expect(data.teams[0].coaches).toEqual([expect.objectContaining(coach)]);
+      expect(data.teams[0].members).toHaveLength(1);
+      expect((await captainSetup(staff, edition.slug)).pool).toHaveLength(1);
+      expect(
+        await db()
+          .select()
+          .from(registrations)
+          .where(eq(registrations.userId, coach.osuId)),
+      ).toHaveLength(0);
+      expect(
+        await db()
+          .select()
+          .from(staffRoles)
+          .where(eq(staffRoles.userId, coach.osuId)),
+      ).toHaveLength(0);
+      expect(await ownTeam(coach.osuId, edition.slug)).toBeNull();
+      await expect(
+        updateTeams(
+          coach,
+          edition.slug,
+          command(4, {
+            action: "remove_coach",
+            teamId: team.id,
+            userId: coach.osuId,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 403 });
+      // A duplicate cannot create a second assignment; a stale retry conflicts.
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(4, {
+          action: "add_coach",
+          teamId: team.id,
+          userId: coach.osuId,
+        }),
+      );
+      expect(await db().select().from(teamCoaches)).toHaveLength(1);
+      await expect(
+        updateTeams(
+          staff,
+          edition.slug,
+          command(4, {
+            action: "remove_coach",
+            teamId: team.id,
+            userId: coach.osuId,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 409 });
+      const [audit] = await db()
+        .select()
+        .from(editionEvents)
+        .where(eq(editionEvents.kind, "team_add_coach"));
+      expect(audit.detail).toMatchObject({
+        coachesBefore: [],
+        coachesAfter: [expect.objectContaining({ userId: coach.osuId })],
+      });
+    });
+    it("releases coach identities only with finalized public rosters and removes them immediately", async () => {
+      const configured = await configure(),
+        team = configured.teams[0];
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(3, {
+          action: "add_coach",
+          teamId: team.id,
+          userId: coach.osuId,
+        }),
+      );
+      expect(
+        (await publicPlayers({ edition: edition.slug }, coach.osuId)).rows,
+      ).toEqual([]);
+      await updateCaptains(
+        staff,
+        edition.slug,
+        command(4, {
+          action: "publish",
+          published: true,
+          poolPublished: false,
+        }),
+      );
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(5, {
+          action: "publish",
+          teamId: team.id,
+          identityPublished: true,
+          rosterPublished: false,
+        }),
+      );
+      expect((await publishedTeams(edition.slug))[0].coaches).toEqual([]);
+      await db()
+        .update(teams)
+        .set({ finalizedAt: new Date() })
+        .where(eq(teams.id, team.id));
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(6, {
+          action: "publish",
+          teamId: team.id,
+          identityPublished: true,
+          rosterPublished: true,
+        }),
+      );
+      expect((await publishedTeams(edition.slug))[0].coaches).toEqual([coach]);
+      expect(
+        (await publicPlayers({ edition: edition.slug }, coach.osuId)).rows[0],
+      ).toMatchObject({
+        participation: "coach",
+        coachedTeams: [{ id: team.id, name: team.name }],
+      });
+      await updateTeams(
+        staff,
+        edition.slug,
+        command(7, {
+          action: "remove_coach",
+          teamId: team.id,
+          userId: coach.osuId,
+        }),
+      );
+      expect((await publishedTeams(edition.slug))[0].members).toHaveLength(1);
+      expect(
+        (await publicPlayers({ edition: edition.slug }, coach.osuId)).rows,
+      ).toEqual([]);
+    });
+    it("rejects invalid, unknown, archived and cross-edition teams without leaking writes", async () => {
+      const configured = await configure(),
+        team = configured.teams[0];
+      await expect(
+        updateTeams(
+          staff,
+          edition.slug,
+          command(3, { action: "add_coach", teamId: team.id, userId: 0 }),
+        ),
+      ).rejects.toMatchObject({ status: 400 });
+      await db()
+        .update(teams)
+        .set({ archivedAt: new Date() })
+        .where(eq(teams.id, team.id));
+      await expect(
+        updateTeams(
+          staff,
+          edition.slug,
+          command(3, {
+            action: "add_coach",
+            teamId: team.id,
+            userId: coach.osuId,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 404 });
+      expect(getOsuUserProfile).not.toHaveBeenCalled();
+      await db().insert(users).values(coach);
+      await expect(
+        db().insert(teamCoaches).values({
+          teamId: configured.teams[1].id,
+          editionSlug: "wrong-edition",
+          userId: coach.osuId,
+        }),
+      ).rejects.toThrow();
+      expect(await db().select().from(teamCoaches)).toHaveLength(0);
+    });
+    it("serializes competing coach updates and rejects unavailable identity data", async () => {
+      const configured = await configure(),
+        team = configured.teams[0];
+      vi.mocked(getOsuUserProfile).mockResolvedValueOnce({
+        profile: coach,
+        stale: true,
+      } as Awaited<ReturnType<typeof getOsuUserProfile>>);
+      await expect(
+        updateTeams(
+          staff,
+          edition.slug,
+          command(3, {
+            action: "add_coach",
+            teamId: team.id,
+            userId: coach.osuId,
+          }),
+        ),
+      ).rejects.toMatchObject({ status: 503 });
+      const results = await Promise.allSettled(
+        [1, 2].map(() =>
+          updateTeams(
+            staff,
+            edition.slug,
+            command(3, {
+              action: "add_coach",
+              teamId: team.id,
+              userId: coach.osuId,
+            }),
+          ),
+        ),
+      );
+      expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      expect(await db().select().from(teamCoaches)).toHaveLength(1);
     });
     it("archives a revoked captain team and preserves historical membership", async () => {
       await configure();

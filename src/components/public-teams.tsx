@@ -31,6 +31,7 @@ export function PublicTeams({
           t.name,
           t.captainName,
           t.captainId,
+          ...t.coaches.flatMap((c) => [c.username, c.osuId]),
           ...(t.members ?? []).flatMap((m) => [m.username, m.osuId]),
         ]
           .join(" ")

@@ -8,6 +8,7 @@ import {
   editionState,
   memberships,
   teams,
+  teamCoaches,
   users,
   userProfileCache,
   draftSessions,
@@ -18,6 +19,7 @@ import { getEdition, getPublicEdition } from "./content";
 import { draftSetupProtection } from "./draft-setup";
 import { refreshDraftSnapshot } from "./draft";
 import { HttpError } from "./http";
+import { getOsuUserProfile } from "./osu-profiles";
 const teamInput = z
   .object({
     captainId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
@@ -30,6 +32,20 @@ const commandSchema = z
     expectedVersion: z.number().int().nonnegative(),
     confirmed: z.literal(true),
     command: z.discriminatedUnion("action", [
+      z
+        .object({
+          action: z.literal("add_coach"),
+          teamId: z.uuid(),
+          userId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+        })
+        .strict(),
+      z
+        .object({
+          action: z.literal("remove_coach"),
+          teamId: z.uuid(),
+          userId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+        })
+        .strict(),
       z
         .object({
           action: z.literal("configure"),
@@ -83,12 +99,23 @@ export async function staffTeams(actor: User, slug: string) {
           and(eq(memberships.editionSlug, slug), isNull(memberships.leftAt)),
         )
         .orderBy(memberships.joinedAt);
+      const coaches = await tx
+        .select({
+          teamId: teamCoaches.teamId,
+          osuId: users.osuId,
+          username: users.username,
+        })
+        .from(teamCoaches)
+        .innerJoin(users, eq(users.osuId, teamCoaches.userId))
+        .where(eq(teamCoaches.editionSlug, slug))
+        .orderBy(users.username);
       const protection = await draftSetupProtection(tx, slug);
       return {
         version: state?.setupVersion ?? 0,
         locked: protection.locked,
         teams: rows.map((team) => ({
           ...team,
+          coaches: coaches.filter((c) => c.teamId === team.id),
           members: members.filter((m) => m.teamId === team.id),
         })),
       };
@@ -108,6 +135,27 @@ export async function updateTeams(
   if (!parsed.success)
     throw new HttpError(400, "Confirm valid team configuration.");
   const { command, expectedVersion } = parsed.data;
+  const coachAction =
+    command.action === "add_coach" || command.action === "remove_coach";
+  // Validate target/version before contacting the provider; recheck under the edition lock.
+  let coachProfile: { osuId: number; username: string } | undefined;
+  if (command.action === "add_coach") {
+    const current = await staffTeams(actor, slug);
+    if (current.version !== expectedVersion)
+      throw new HttpError(409, "Setup changed. Refresh before continuing.");
+    if (!current.teams.some((t) => t.id === command.teamId))
+      throw new HttpError(404, "Team not found.");
+    const snapshot = await getOsuUserProfile(command.userId, "osu");
+    if (snapshot.stale || snapshot.notice)
+      throw new HttpError(
+        503,
+        "A current verified osu! profile is required. Retry when the provider is available.",
+      );
+    coachProfile = {
+      osuId: snapshot.profile.osuId,
+      username: snapshot.profile.username,
+    };
+  }
   await db().transaction(async (tx) => {
     const [state] = await tx
       .select()
@@ -123,7 +171,38 @@ export async function updateTeams(
       .select()
       .from(teams)
       .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
-    if (command.action === "configure") {
+    const coachesBefore = coachAction
+      ? await tx
+          .select()
+          .from(teamCoaches)
+          .where(eq(teamCoaches.editionSlug, slug))
+      : [];
+    if (command.action === "add_coach" || command.action === "remove_coach") {
+      const team = before.find((t) => t.id === command.teamId);
+      if (!team) throw new HttpError(404, "Team not found.");
+      if (command.action === "add_coach") {
+        if (!coachProfile || coachProfile.osuId !== command.userId)
+          throw new HttpError(400, "Confirm valid team configuration.");
+        await tx.insert(users).values(coachProfile).onConflictDoNothing();
+        await tx
+          .insert(teamCoaches)
+          .values({
+            editionSlug: slug,
+            teamId: team.id,
+            userId: command.userId,
+          })
+          .onConflictDoNothing();
+      } else {
+        await tx
+          .delete(teamCoaches)
+          .where(
+            and(
+              eq(teamCoaches.teamId, team.id),
+              eq(teamCoaches.userId, command.userId),
+            ),
+          );
+      }
+    } else if (command.action === "configure") {
       if (protection.locked)
         throw new HttpError(
           409,
@@ -260,15 +339,26 @@ export async function updateTeams(
       .select()
       .from(teams)
       .where(and(eq(teams.editionSlug, slug), isNull(teams.archivedAt)));
-    const draftRevision = await refreshDraftSnapshot(tx, slug);
+    const draftRevision = coachAction
+      ? null
+      : await refreshDraftSnapshot(tx, slug);
     await tx.insert(editionEvents).values({
       editionSlug: slug,
       actorId: actor.osuId,
       kind: `team_${command.action}`,
       detail: {
         draftRevision,
+        ...(coachAction
+          ? {
+              coachesBefore,
+              coachesAfter: await tx
+                .select()
+                .from(teamCoaches)
+                .where(eq(teamCoaches.editionSlug, slug)),
+            }
+          : {}),
         entity:
-          command.action === "edit"
+          "teamId" in command
             ? { type: "team", id: command.teamId }
             : { type: "team_setup", id: slug },
         before:
@@ -393,7 +483,17 @@ export async function publishedTeams(slug: string) {
                 )
                 .orderBy(memberships.joinedAt)
             : null;
+        const coaches =
+          team.finalizedAt && team.rosterPublished
+            ? await tx
+                .select({ osuId: users.osuId, username: users.username })
+                .from(teamCoaches)
+                .innerJoin(users, eq(users.osuId, teamCoaches.userId))
+                .where(eq(teamCoaches.teamId, team.id))
+                .orderBy(users.username)
+            : [];
         published.push({
+          coaches,
           id: team.id,
           name: team.name,
           avatarKey: team.avatarKey,

@@ -990,11 +990,12 @@ body:has(dialog[open].map-dialog) {
   margin-bottom: 0.75rem;
   min-width: 0;
 }
-.public-player-identity .avatar {
+.themed-site .public-player-identity .avatar {
   width: 52px;
   height: 52px;
   border-radius: 1rem;
   background: var(--site-tint);
+  color: var(--site-foreground);
   flex-shrink: 0;
   overflow: clip;
 }

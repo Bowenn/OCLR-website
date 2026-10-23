@@ -388,6 +388,25 @@ export const teams = pgTable(
       .where(sql`${table.archivedAt} IS NULL`),
   ],
 );
+// Team support roles are separate from playing memberships and staff capabilities.
+export const teamCoaches = pgTable(
+  "team_coaches",
+  {
+    teamId: uuid("team_id").notNull(),
+    editionSlug: text("edition_slug").notNull(),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+  },
+  (t) => [
+    primaryKey({ columns: [t.teamId, t.userId] }),
+    foreignKey({
+      columns: [t.teamId, t.editionSlug],
+      foreignColumns: [teams.id, teams.editionSlug],
+    }),
+  ],
+);
+
 export const memberships = pgTable(
   "memberships",
   {

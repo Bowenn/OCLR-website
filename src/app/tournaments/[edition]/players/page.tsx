@@ -243,12 +243,17 @@ export default async function Players({
                   <div className={styles.footer}>
                     <span className={styles.status}>
                       <span className="badge">
-                        {p.participation === "finalized_roster"
-                          ? tr("Finalized roster")
-                          : p.captain
-                            ? tr("Captain")
-                            : tr("Accepted player")}
+                        {p.participation === "coach"
+                          ? tr("Coach")
+                          : p.participation === "finalized_roster"
+                            ? tr("Finalized roster")
+                            : p.captain
+                              ? tr("Captain")
+                              : tr("Accepted player")}
                       </span>
+                      {p.coachedTeams?.length && p.participation !== "coach" ? (
+                        <span className="badge">{tr("Coach")}</span>
+                      ) : null}
                       {p.captain && p.participation === "finalized_roster" && (
                         <span className="badge">{tr("Captain")}</span>
                       )}

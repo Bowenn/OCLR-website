@@ -14,6 +14,10 @@ Staff configure exactly one approved team identity per captain at `/admin/tourna
 
 Captains view only their own team at `/tournaments/[edition]/team`; no self-service team creation, invitations, roster edits or unapproved branding edits exist. Public `/teams` routes project approved identities only. Rosters require finalization by the draft engine and separate staff publication. Private memberships, capacity, internal operations and unpublished identities are excluded. The bracket consumes these finalized, published team IDs directly.
 
+Administrators can add or remove coaches by verified osu! UID in the same team workspace. Coach assignments use `team_coaches` (migration `0028`), separate from playing memberships, captain appointments and staff permissions. They do not create registrations, consume player capacity, enter the draft or assign an award Tier. The same person may retain an independently earned player/captain role; coaching never changes that role. Team-scoped assignments, setup version checks and transactional audit events protect updates. Unknown/unavailable provider identities cannot be added.
+
+Coach cards and edition-bound profiles become public only when the edition, captain, team identity and finalized roster are published. Changes to an already published roster's coaches take effect immediately; hiding the roster, captain, team or edition hides those assignments. The public participant count still counts accepted player registrations only. Archived teams retain assignment history but do not expose coaches publicly. Coach administration remains available after draft finalization because it does not alter the playing roster or draft snapshots.
+
 ## Authoritative draft engine
 
 Both the active captain and authorized staff use **the same** `pickPlayer` command and `/api/tournaments/[edition]/draft/picks` endpoint. A request contains only session ID, expected revision, turn index, candidate ID and idempotency key. Actor, action mode and receiving captain/team are derived on the server. One transaction locks edition/session, validates the frozen pool and current turn/capacity, inserts the uniquely constrained pick and membership, advances the turn/revision and records the actual actor/mode in the private audit. Captain status never grants staff control.
@@ -65,6 +69,7 @@ Submitting creates a numbered immutable revision containing source, roster, pool
 Automated validation uses synthetic official-shaped API responses, real PostgreSQL transactions and isolated desktop/mobile browser sessions. Browser tests seed stored synthetic snapshots directly into the test database; there is no production mock provider or authentication bypass. The organizer's real match and a hosted deployment still require live credentials and supervised verification.
 
 ### Saving and starting a private draft (#101)
+
 Save draft configuration, then choose Start draft. No separate Lock, Ready, Freeze or public release is required. Starting snapshots the currently accepted, available unassigned candidates and internally locks captain/team structure. Unset capacity and candidate shortages are warnings; each actual pick still checks eligibility, current team, capacity if configured, concurrency and uniqueness. With two turns and one player, that player can be picked once; the remaining turn waits for candidates. Pause for review, undo the last pick, or explicitly abort/reopen setup; abort voids draft picks and removes their roster assignments, preserving audit history. No automatic completion or invented picks occur.
 
 Captain access uses an authenticated private snapshot. Public draft release remains an explicit separate action requiring released captain/team identities. Starting or selecting privately never grants anonymous access. Once released, committed picks and transitions refresh the public snapshot atomically as before.
@@ -74,6 +79,7 @@ Captain publication controls are visible and load their saved values independent
 The organizer approved the corrected Chinese abort warning on 2026-10-22: abort voids the current draft's picks and removes corresponding active roster assignments while preserving historical picks/audit records. This documents the existing abort behavior; it does not introduce silent roster deletion or change the separate pause action.
 
 ### Editing after Start and rehearsal recovery (#104)
+
 Tournament General, Registration, Rules & eligibility and Milestones remain Admin-editable while drafting or after finalization. Each Save uses the current configuration revision, preserves historical rules/question/eligibility acknowledgments and writes an automatic audit event. An old rules release cannot be silently rewritten.
 
 Draft setup and enrollment now have separate persisted protection. Lock/Start pauses enrollment, but Unlock, Pause and edit, Reset and legacy recovery never clear that pause, enable registration, change its dates or publish private picks. In Tournament Settings → Registration, **Resume registration** deliberately removes the operational pause; explicit enablement, publication, privacy, completion and opening/closing times still apply. A disabled or future registration window does not open merely because its operational pause was removed. Assigned players/captains still cannot withdraw through self-service.

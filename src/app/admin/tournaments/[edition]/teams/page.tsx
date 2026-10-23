@@ -1,3 +1,4 @@
+import { TeamCoachManager } from "@/components/team-coach-manager";
 import { TeamEditor } from "@/components/team-editor";
 import { TeamAvatar } from "@/components/team-avatar";
 import { getAppTranslations } from "@/i18n/server";
@@ -131,7 +132,7 @@ export default async function Teams({
                     }
                     title={tr("Change public roster visibility?")}
                     description={tr(
-                      "This releases only the finalized players’ osu! IDs and display names. Verify organizer approval.",
+                      "This releases the finalized players’ and coaches’ osu! IDs and display names. Verify organizer approval.",
                     )}
                     url={`/api/admin/tournaments/${edition}/teams`}
                     payload={{
@@ -148,6 +149,13 @@ export default async function Teams({
                   />
                 )}
               </div>
+              <TeamCoachManager
+                key={`coaches:${t.id}:${data.version}`}
+                slug={edition}
+                version={data.version}
+                teamId={t.id}
+                coaches={t.coaches}
+              />
             </article>
           ))}
         </div>

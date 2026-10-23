@@ -46,6 +46,19 @@ export default async function Team({
           )}
         </EmptyState>
       )}
+      {team.coaches.length > 0 && (
+        <section className="spaced" aria-labelledby="coach-heading">
+          <h2 id="coach-heading">{tr("Coaches")}</h2>
+          <ul className="public-roster-grid">
+            {team.coaches.map((c) => (
+              <li className="panel" key={c.osuId}>
+                <PublicPlayerIdentity {...c} edition={edition} />
+                <span className="badge">{tr("Coach")}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }

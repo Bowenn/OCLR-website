@@ -7,6 +7,7 @@ import {
   memberships,
   registrations,
   teams,
+  teamCoaches,
   users,
 } from "@/db/schema";
 import { getPublicEditions } from "./content";
@@ -30,7 +31,8 @@ type PublishedPlayer = {
   editionName: string;
   team: { id: string; name: string } | null;
   captain: boolean;
-  participation: "accepted" | "captain" | "finalized_roster";
+  participation: "accepted" | "captain" | "finalized_roster" | "coach";
+  coachedTeams?: { id: string; name: string }[];
 };
 export async function publicPlayers(input: unknown, exactOsuId?: number) {
   const parsed = filtersSchema.safeParse(input);
@@ -159,6 +161,51 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
           team: { id: p.teamId, name: p.teamName },
           captain: p.osuId === p.captainId,
           participation: "finalized_roster",
+        });
+      }
+      const coaches = await tx
+        .select({
+          osuId: users.osuId,
+          username: users.username,
+          editionSlug: teams.editionSlug,
+          teamId: teams.id,
+          teamName: teams.name,
+        })
+        .from(teamCoaches)
+        .innerJoin(users, eq(users.osuId, teamCoaches.userId))
+        .innerJoin(teams, eq(teams.id, teamCoaches.teamId))
+        .innerJoin(
+          captains,
+          and(
+            eq(captains.editionSlug, teams.editionSlug),
+            eq(captains.userId, teams.captainId),
+            eq(captains.published, true),
+          ),
+        )
+        .where(
+          and(
+            inArray(teams.editionSlug, slugs),
+            eq(teams.identityPublished, true),
+            eq(teams.rosterPublished, true),
+            isNotNull(teams.finalizedAt),
+            isNull(teams.archivedAt),
+          ),
+        );
+      for (const c of coaches) {
+        const key = `${c.editionSlug}:${c.osuId}`,
+          previous = byIdentity.get(key);
+        const team = { id: c.teamId, name: c.teamName };
+        byIdentity.set(key, {
+          ...(previous ?? {
+            osuId: c.osuId,
+            username: c.username,
+            editionSlug: c.editionSlug,
+            editionName: editions.find((e) => e.slug === c.editionSlug)!.name,
+            team,
+            captain: false,
+            participation: "coach" as const,
+          }),
+          coachedTeams: [...(previous?.coachedTeams ?? []), team],
         });
       }
       const q = filters.q.toLowerCase();
