@@ -88,11 +88,6 @@ export async function HistoricalArchiveView({
           : p.tier === null
             ? tr("Not recorded")
             : `Tier ${p.tier}`;
-  const source = (ref: string) => (
-    <p className="muted small">
-      {tr("Source")}: {ref}
-    </p>
-  );
   const roster = (members: HistoricalArchive["players"]) => (
     <ul className="archive-player-grid">
       {members.map((p) => (
@@ -155,7 +150,7 @@ export async function HistoricalArchiveView({
         <span className="small muted">
           {m.score ? tr("Recorded results") : tr("Unconfirmed records")}
         </span>
-        <div className="archive-source-links">
+        <div className="archive-match-links">
           {m.mpUrls.map((url, i) => (
             <a className="text-link" key={url} href={url} rel="noreferrer">
               MP {i + 1}
@@ -189,7 +184,6 @@ export async function HistoricalArchiveView({
               </div>
             ))}
           </dl>
-          {source(m.source)}
         </>
       )}
     </article>
@@ -228,29 +222,6 @@ export async function HistoricalArchiveView({
             </Link>
           ))}
         </nav>
-        <section className="stack">
-          <h2>{tr("Sources and coverage")}</h2>
-          <a href={a.sourceUrl} rel="noreferrer">
-            {tr("Original archive spreadsheet")}
-          </a>
-          <p>
-            {tr("Source snapshot date")}: {a.capturedOn}
-          </p>
-          <ul>
-            {a.notes.map((note, i) => (
-              <li key={i}>{note}</li>
-            ))}
-          </ul>
-          <ul>
-            {a.links.map((link, i) => (
-              <li key={i}>
-                <a href={link.url} rel="noreferrer">
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
         <section>
           <h2>{tr("Historical staff")}</h2>
           <ul className="archive-roster">
@@ -280,7 +251,6 @@ export async function HistoricalArchiveView({
           <section className="archive-team-section" key={t.id}>
             {section === "teams" && <h2>{teamLink(t.id)}</h2>}
             {roster(a.players.filter((p) => p.teamId === t.id))}
-            {source(t.source)}
           </section>
         ))}
       </div>
@@ -303,7 +273,6 @@ export async function HistoricalArchiveView({
             >
               {tr("osu! profile")}
             </a>
-            {source(players[0].source)}
           </>
         )}
       </>
@@ -463,36 +432,13 @@ export async function HistoricalArchiveView({
     );
   } else {
     title = section === "rules" ? tr("Rules") : tr("Historical statistics");
-    content = (
-      <>
-        <p>
-          {tr(
-            "Consult the historical sources. Current-season rules and award calculations are not applied to this archive.",
-          )}
-        </p>
-        <ul>
-          {a.links.map((link, i) => (
-            <li key={i}>
-              <a href={link.url} rel="noreferrer">
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </>
-    );
+    content = <p className="muted">{tr("Not recorded")}</p>;
   }
   return (
     <div
       className={`historical-archive stack${section === "mappools" || section === "pool" ? " archive-pool-page" : ""}`}
     >
-      <PageHeading eyebrow={tr("Historical archive")} title={title}>
-        <span>
-          {tr(
-            "Historical source records; missing information remains unconfirmed.",
-          )}
-        </span>
-      </PageHeading>
+      <PageHeading eyebrow={tr("Historical archive")} title={title} />
       {preview && <p className="notice">{tr("Private archive preview")}</p>}
       {section !== "overview" && preview && (
         <Link className="text-link" href={base}>

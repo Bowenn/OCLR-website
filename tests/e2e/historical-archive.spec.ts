@@ -62,6 +62,12 @@ test.describe("historical archive browser workflow", () => {
     await expect(
       page.getByText("Private archive preview", { exact: true }),
     ).toBeVisible();
+    await expect(page.locator(".historical-archive")).not.toContainText(
+      "Sources and coverage",
+    );
+    await expect(
+      page.locator(`.historical-archive a[href="${archive.sourceUrl}"]`),
+    ).toHaveCount(0);
     await page.getByRole("link", { name: "Teams", exact: true }).last().click();
     await page
       .getByRole("link", { name: "Synthetic Alpha", exact: true })
@@ -158,6 +164,12 @@ test.describe("historical archive browser workflow", () => {
             exact: true,
           }),
         ).toBeVisible();
+        await expect(
+          page.locator(`.historical-archive a[href="${archive.sourceUrl}"]`),
+        ).toHaveCount(0);
+        await expect(page.locator(".historical-archive")).not.toContainText(
+          "Sources and coverage",
+        );
         expect((await new AxeBuilder({ page }).analyze()).violations).toEqual(
           [],
         );
@@ -165,6 +177,9 @@ test.describe("historical archive browser workflow", () => {
     }
     await captureResponsiveLayout(page, info, "archive-overview");
     await page.goto(`/tournaments/${slug}/teams/alpha`);
+    await expect(page.locator(".historical-archive")).not.toContainText(
+      archive.teams[0].source,
+    );
     await page
       .getByRole("link", { name: "Historical Player", exact: true })
       .click();
@@ -172,6 +187,9 @@ test.describe("historical archive browser workflow", () => {
       new RegExp(`/tournaments/${slug}/players/91003$`),
     );
     await expect(page.getByText("Tier 1", { exact: true })).toBeVisible();
+    await expect(page.locator(".historical-archive")).not.toContainText(
+      archive.players.find((p) => p.osuId === 91003)!.source,
+    );
     await page.goto(`/tournaments/${slug}/players`);
     await expect(
       page.locator('.archive-player-card[data-role="coach"]'),
@@ -331,9 +349,7 @@ test.describe("historical archive browser workflow", () => {
                 .getByRole("navigation", { name: "Mappool stages" })
                 .getByRole("link"),
             ).toHaveCount(4);
-            await expect(
-              page.locator(".archive-pool-source"),
-            ).not.toHaveAttribute("open", "");
+            await expect(page.locator(".archive-pool-source")).toHaveCount(0);
           } else {
             await expect(page.locator(".bracket-round")).toHaveCount(5);
             await expect(
@@ -417,8 +433,7 @@ test.describe("historical archive browser workflow", () => {
         .getByRole("searchbox", { name: "Search maps", exact: true })
         .fill("");
       await page.getByRole("tab", { name: "All mods", exact: true }).click();
-      await page.getByText("Source", { exact: true }).click();
-      await expect(page.locator(".archive-pool-source")).toContainText(
+      await expect(page.locator(".historical-archive")).not.toContainText(
         pool.source,
       );
     }

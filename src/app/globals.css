@@ -4463,7 +4463,7 @@ body:has([data-broadcast]) .site-shell {
   padding-top: 0.7rem;
   margin-top: 0.85rem;
 }
-.archive-source-links {
+.archive-match-links {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
@@ -4683,18 +4683,6 @@ body:has([data-broadcast]) .site-shell {
   font-weight: 600;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-}
-.archive-pool-source {
-  font-size: 0.8rem;
-  margin: 0;
-}
-.archive-pool-source summary {
-  cursor: pointer;
-  color: var(--site-muted);
-}
-.archive-pool-source p {
-  margin: 0.5rem 0;
-  overflow-wrap: anywhere;
 }
 @media (max-width: 1000px) {
   .archive-map-list > li {

@@ -181,10 +181,6 @@ export function ArchiveMappools({
           <p className="notice">{tr("No maps match these filters.")}</p>
         )}
       </div>
-      <details className="archive-pool-source">
-        <summary>{tr("Source")}</summary>
-        <p className="muted small">{pool.source}</p>
-      </details>
     </div>
   );
 }

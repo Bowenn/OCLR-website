@@ -157,7 +157,7 @@ test.describe("anonymous tournament competition center", () => {
       ]);
       await expect(
         page.getByRole("link", {
-          name: "Match details & source",
+          name: "Match details",
           exact: true,
         }),
       ).toBeVisible();

@@ -186,7 +186,7 @@ export function BracketView({
                         {match.detailsUrl && (
                           <p className="match-note">
                             <Link className="text-link" href={match.detailsUrl}>
-                              {tr("Match details & source")}
+                              {tr("Match details")}
                             </Link>
                           </p>
                         )}
