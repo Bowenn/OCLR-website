@@ -305,6 +305,9 @@ function General({ data, saved }: EditorProps) {
     branding: data.edition.branding,
   });
   const [status, setStatus] = useState(data.edition.status);
+  const [appearance, setAppearance] = useState(
+    data.edition.defaultAppearance ?? "site",
+  );
   return (
     <section className="general-settings form-stack">
       <IdentityFields
@@ -330,11 +333,33 @@ function General({ data, saved }: EditorProps) {
           </select>
         </label>
       </IdentityFields>
+      <label className="field">
+        <span>{tr("Default tournament appearance")}</span>
+        <select
+          value={appearance}
+          onChange={(e) =>
+            setAppearance(e.target.value as "site" | "default" | "cute-pastel")
+          }
+        >
+          <option value="site">{tr("Use site default")}</option>
+          <option value="default">{tr("Original design")}</option>
+          <option value="cute-pastel">{tr("Cute pastel")}</option>
+        </select>
+      </label>
+      <p className="muted small">
+        {tr(
+          "Use tournament/site defaults: the current tournament takes priority, otherwise use the site default. Explicit visitor preferences take priority over both.",
+        )}
+      </p>
       <Save
         data={data}
         saved={saved}
         action="general"
-        fields={{ ...value, status }}
+        fields={{
+          ...value,
+          status,
+          defaultAppearance: appearance === "site" ? null : appearance,
+        }}
         label={tr("Save general settings")}
         confirmation={
           status === "completed" && data.edition.status !== "completed"
@@ -990,6 +1015,7 @@ export function TournamentEditor({ data }: { data: Workspace }) {
               season: data.edition.season,
               timeZone: data.edition.timeZone,
               branding: data.edition.branding,
+              defaultAppearance: data.edition.defaultAppearance,
             })}
             {...props}
           />

@@ -37,6 +37,9 @@ export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set("Content-Security-Policy", policy);
   headers.set("x-nonce", nonce);
+  // Overwrite inbound values; layouts never trust caller-supplied route context.
+  headers.set("x-oclr-pathname", request.nextUrl.pathname);
+  headers.set("x-oclr-search", request.nextUrl.search);
   const response = NextResponse.next({ request: { headers } });
   if (!request.nextUrl.pathname.startsWith("/api/")) {
     response.headers.set(

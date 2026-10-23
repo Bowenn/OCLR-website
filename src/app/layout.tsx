@@ -8,7 +8,10 @@ import "./globals.css";
 import "./public-tournament.css";
 import "./workspace.css";
 import "./pastel-theme.css";
-import { cookies } from "next/headers";
+import { AppearanceProvider } from "@/components/appearance-provider";
+import { inheritedAppearance } from "@/lib/appearance-scope";
+import { tournamentAppearanceScopes } from "@/lib/tournaments";
+import { cookies, headers } from "next/headers";
 import {
   readTheme,
   themeCookie,
@@ -82,7 +85,6 @@ export default async function RootLayout({
   const appearancePreference = isAppearance(appearanceValue)
     ? appearanceValue
     : undefined;
-  const appearance = readAppearance(appearanceValue, defaultAppearance);
   const locale = await getLocale();
   let user: Awaited<ReturnType<typeof currentUser>> = null;
   let authUnavailable = false;
@@ -93,53 +95,68 @@ export default async function RootLayout({
   } catch {
     authUnavailable = true;
   }
+  const scopes = await tournamentAppearanceScopes(user);
+  const route = await headers();
+  const inherited = inheritedAppearance(
+    route.get("x-oclr-pathname") ?? "/",
+    new URLSearchParams(route.get("x-oclr-search") ?? ""),
+    scopes,
+    defaultAppearance,
+  );
+  const appearance = readAppearance(appearanceValue, inherited.appearance);
   return (
     <html lang={locale} data-theme={theme} data-appearance={appearance}>
       <body>
         <NextIntlClientProvider>
-          <SiteFrame>
-            <a className="skip-link" href="#main">
-              {tr("Skip to content")}
-            </a>
-            <Header
-              theme={theme}
-              appearance={appearance}
-              defaultAppearance={defaultAppearance}
-              appearancePreference={appearancePreference}
-              user={
-                user
-                  ? { osuId: user.osuId, username: user.username, staff }
-                  : null
-              }
-            />
-            {authUnavailable && (
-              <div className="container">
-                <p className="notice" role="status">
-                  {tr(
-                    "Sign-in is temporarily unavailable. Public tournament information remains accessible.",
-                  )}
+          <AppearanceProvider
+            siteDefault={defaultAppearance}
+            scopes={scopes}
+            initialPreference={appearancePreference}
+          >
+            <SiteFrame>
+              <a className="skip-link" href="#main">
+                {tr("Skip to content")}
+              </a>
+              <Header
+                theme={theme}
+                appearance={appearance}
+                defaultAppearance={defaultAppearance}
+                appearancePreference={appearancePreference}
+                user={
+                  user
+                    ? { osuId: user.osuId, username: user.username, staff }
+                    : null
+                }
+              />
+              {authUnavailable && (
+                <div className="container">
+                  <p className="notice" role="status">
+                    {tr(
+                      "Sign-in is temporarily unavailable. Public tournament information remains accessible.",
+                    )}
+                  </p>
+                </div>
+              )}
+              <main id="main">{children}</main>
+              <footer className="site-footer">
+                <p>
+                  © {new Date().getUTCFullYear()}{" "}
+                  <a
+                    className="footer-credit"
+                    href="https://osu.ppy.sh/users/1176704"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {"Lapis"}
+                  </a>{" "}
+                  {"· OCLR — osu! Chinese League Rookie"}
                 </p>
-              </div>
-            )}
-            <main id="main">{children}</main>
-            <footer className="site-footer">
-              <p>
-                © {new Date().getUTCFullYear()}{" "}
-                <a
-                  className="footer-credit"
-                  href="https://osu.ppy.sh/users/1176704"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {"Lapis"}
-                </a>{" "}
-                {"· OCLR — osu! Chinese League Rookie"}
-              </p>
-              <p className="muted">
-                {tr("Not affiliated with or endorsed by osu!.")}
-              </p>
-            </footer>
-          </SiteFrame>
+                <p className="muted">
+                  {tr("Not affiliated with or endorsed by osu!.")}
+                </p>
+              </footer>
+            </SiteFrame>
+          </AppearanceProvider>
         </NextIntlClientProvider>
       </body>
     </html>

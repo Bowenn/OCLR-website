@@ -56,7 +56,7 @@ export function SiteAppearanceForm({
         <legend>{tr("Default website appearance")}</legend>
         <p className="muted" id="site-appearance-description">
           {tr(
-            "Used for visitors who follow the site default. Personal appearance and light/dark preferences remain unchanged.",
+            "Used when no tournament default is configured. Explicit visitor appearance and light/dark preferences remain independent.",
           )}
         </p>
         <label className="field">

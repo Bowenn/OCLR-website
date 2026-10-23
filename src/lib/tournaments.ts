@@ -77,6 +77,7 @@ const identity = {
   summary: shape.summary,
   timeZone: shape.timeZone,
   branding: shape.branding,
+  defaultAppearance: shape.defaultAppearance,
 };
 const version = {
   expectedRevision: z.number().int().nonnegative(),
@@ -352,6 +353,9 @@ export async function tournamentCommand(
         status: c.status,
         timeZone: c.timeZone,
         branding: c.branding,
+        ...(c.defaultAppearance !== undefined
+          ? { defaultAppearance: c.defaultAppearance }
+          : {}),
         registration:
           e.registration && c.status === "completed"
             ? { ...e.registration, enabled: false }
@@ -467,4 +471,32 @@ export function publicEditionSummary(
         }
       : null,
   };
+}
+
+/** Only public or actor-authorized cosmetic defaults leave the server. */
+export async function tournamentAppearanceScopes(actor: User | null) {
+  if (!process.env.DATABASE_URL) return [];
+  try {
+    const grants = actor ? await staffAccess(actor) : [];
+    return (await readTournaments()).flatMap(({ edition }) => {
+      const staff = grants.some(
+        (g) => !g.editionSlug || g.editionSlug === edition.slug,
+      );
+      return edition.published || staff
+        ? [
+            {
+              slug: edition.slug,
+              defaultAppearance: edition.defaultAppearance ?? null,
+              published: edition.published,
+              staff,
+            },
+          ]
+        : [];
+    });
+  } catch {
+    console.error(
+      "Tournament appearance defaults are temporarily unavailable.",
+    );
+    return [];
+  }
 }

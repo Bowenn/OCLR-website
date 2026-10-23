@@ -5,6 +5,7 @@ import {
   appearances,
   type Appearance,
 } from "@/lib/preferences";
+import { useAppearanceScope } from "./appearance-provider";
 import { useAppTranslations } from "@/i18n/shared";
 // Preference menus share geometry and focus styling.
 import styles from "./language-control.module.css";
@@ -19,10 +20,14 @@ export function AppearanceControl({
   initialPreference?: Appearance;
 }) {
   const tr = useAppTranslations();
-  const [appearance, setAppearance] = useState(initialAppearance);
-  const [preference, setPreference] = useState<Appearance | "site">(
+  const scope = useAppearanceScope();
+  const [localAppearance, setAppearance] = useState(initialAppearance);
+  const [localPreference, setPreference] = useState<Appearance | "site">(
     initialPreference ?? "site",
   );
+  const appearance = scope?.appearance ?? localAppearance;
+  const preference = scope ? (scope.preference ?? "site") : localPreference;
+  const inheritedDefault = scope?.inheritedDefault ?? defaultAppearance;
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null),
     trigger = useRef<HTMLButtonElement>(null);
@@ -30,7 +35,9 @@ export function AppearanceControl({
     id = useId();
   const name = (value: Appearance | "site") =>
     value === "site"
-      ? tr("Use site default")
+      ? scope?.edition
+        ? tr("Use tournament/site default")
+        : tr("Use site default")
       : tr(value === "cute-pastel" ? "Cute pastel" : "Original design");
   useEffect(() => {
     if (!open) return;
@@ -138,7 +145,8 @@ export function AppearanceControl({
               tabIndex={-1}
               data-appearance-option={value}
               onClick={() => {
-                const effective = value === "site" ? defaultAppearance : value;
+                const effective = value === "site" ? inheritedDefault : value;
+                scope?.choose(value === "site" ? undefined : value);
                 document.documentElement.dataset.appearance = effective;
                 document.cookie = `${appearanceCookie}=${value === "site" ? "" : value}; Path=/; Max-Age=${value === "site" ? 0 : 31536000}; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
                 setPreference(value);

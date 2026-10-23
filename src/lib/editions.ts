@@ -1,3 +1,4 @@
+import { appearances } from "./preferences";
 import { eligibilityLimitsSchema } from "./eligibility-model";
 import { z } from "zod";
 const instant = z.iso.datetime({ offset: true });
@@ -65,6 +66,7 @@ export const editionSchema = z
       })
       .strict()
       .default({ logo: null, background: null, keyVisual: null }),
+    defaultAppearance: z.enum(appearances).nullable().optional(),
     published: z.boolean(),
     status: z.enum(["upcoming", "live", "completed"]),
     summary: z.string().trim().max(2000),

@@ -481,3 +481,7 @@ automatic rollback. Review compatibility before switching releases.
 ### Site default appearance
 
 Migration `0026_site_appearance.sql` adds a single site default and its automatic audit events, preserving the original design until a global Admin changes `/admin/settings`. The normal deployment/update script applies it; no new environment variables are required. Visitor appearance cookies override the site default. Rollback to the previous application can leave these additive tables in place; do not drop them or lose settings/history during recovery.
+
+## Tournament appearance defaults (#143)
+
+Tournament Admins can select Original design, Cute pastel or Use site default in General settings, using the existing versioned tournament configuration and automatic audit. Explicit visitor `oclr-appearance` cookies take priority over tournament and site defaults. Route inheritance never writes a visitor cookie; other pages return to the site default. Light/dark and broadcast output remain independent. The optional `defaultAppearance` JSON field defaults to inheritance when absent, so no schema migration or legacy backfill is required. Older strict tournament parsers may reject a newly saved field; retain a compatible reviewed application during recovery rather than silently discarding edition configuration.
