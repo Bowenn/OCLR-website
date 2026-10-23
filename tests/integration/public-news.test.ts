@@ -22,7 +22,6 @@ describe.skipIf(!url)("published News sources and retraction", () => {
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic test policy");
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
     await db().insert(users).values([admin, referee]);
   });

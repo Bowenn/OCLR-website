@@ -52,7 +52,6 @@ describe.skipIf(!url)(
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", "110001");
       vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "110001");
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
     });
     beforeEach(async () => {
       await db().execute(sql`TRUNCATE edition_state,users CASCADE`);

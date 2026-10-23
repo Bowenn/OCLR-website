@@ -28,7 +28,6 @@ describe.skipIf(!testUrl)(
       vi.stubEnv("OSU_CLIENT_ID", "123");
       vi.stubEnv("OSU_CLIENT_SECRET", "synthetic-provider-secret");
       vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic fixture policy.");
     });
     beforeEach(async () => {
       await db().delete(sessions);

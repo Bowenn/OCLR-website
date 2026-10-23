@@ -39,7 +39,6 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
     assertTestDatabase(testUrl);
     vi.stubEnv("DATABASE_URL", testUrl!);
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
   });
   beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
@@ -73,24 +72,18 @@ describe.skipIf(!testUrl)("individual registration transactions", () => {
     await submitRegistration(a, edition.slug, valid);
     const saved = await ownRegistrations(a.osuId);
     try {
-      for (const contact of ["", "invalid", "60001,70001"]) {
+      for (const contact of [undefined, "", "invalid", "60001,70001"]) {
         vi.stubEnv("PRIVACY_CONTACT_OSU_ID", contact);
         expect(await registrationAvailability(edition)).toBe("unavailable");
         await expect(
           submitRegistration(b, edition.slug, valid),
         ).rejects.toMatchObject({ status: 503 });
       }
-      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", " \n ");
-      await expect(
-        submitRegistration(b, edition.slug, valid),
-      ).rejects.toMatchObject({ status: 503 });
       expect(await ownRegistrations(a.osuId)).toEqual(saved);
       expect(await ownRegistrations(b.osuId)).toHaveLength(0);
       expect(await db().select().from(registrationEvents)).toHaveLength(1);
     } finally {
       vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
     }
     expect(await registrationAvailability(edition)).toBe("open");
     expect((await submitRegistration(b, edition.slug, valid)).status).toBe(

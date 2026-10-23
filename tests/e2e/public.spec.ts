@@ -125,10 +125,7 @@ test("Privacy and About share one explicit osu! contact without publishing the a
   await expect(
     page.getByText("the designated osu! contact", { exact: true }),
   ).toHaveCount(0);
-  await page.getByText("Data retention policy", { exact: true }).click();
-  await expect(
-    page.getByText("Synthetic isolated browser-test policy.", { exact: true }),
-  ).toBeVisible();
+  await expect(page.locator("main details")).toHaveCount(0);
   await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
   const html = await page.content();
   for (const hidden of [

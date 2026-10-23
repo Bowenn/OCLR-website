@@ -219,55 +219,51 @@ test.describe("public presentation follow-ups", () => {
           animations: "disabled",
         });
       }
-    for (const locale of ["en", "zh-Hans", "zh-Hant"]) {
-      await preferences(context, locale, "light");
-      for (const width of isMobile ? [320, 390] : [1440]) {
-        await page.setViewportSize({ width, height: 1000 });
-        await page.goto("/privacy");
-        const contact = page.locator(
-          'a[href="https://osu.ppy.sh/users/60001"]',
-        );
-        await expect(contact).toHaveCSS("text-decoration-line", "underline");
-        await expect(contact).not.toHaveClass(/button/);
-        await expect(contact).toHaveCount(1);
-        await expect(page.getByRole("heading", { level: 2 })).toHaveCount(3);
-        expect(
-          (await page.content()).includes("private-contact@example.test"),
-        ).toBe(false);
-        await expect(page.locator("main")).not.toContainText(
-          "the designated osu! contact",
-        );
-        const policy = page.locator("main details");
-        await policy.locator("summary").click();
-        await expect(policy).toContainText(
-          "Synthetic isolated browser-test policy.",
-        );
-        await policy.locator("summary").click();
-        await noOverflow(page);
-        expect(
-          (
-            await new AxeBuilder({ page })
-              .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-              .analyze()
-          ).violations,
-        ).toEqual([]);
-        await page.screenshot({
-          path: info.outputPath(`privacy-${locale}-${width}.png`),
-          fullPage: true,
-        });
-        await page.goto("/about");
-        const aboutContact = page.locator(
-          '.about-aside a[href="https://osu.ppy.sh/users/60001"]',
-        );
-        await expect(aboutContact).toHaveText(
-          locale === "en"
-            ? "Contact OCLR Admin on osu!"
-            : locale === "zh-Hans"
-              ? "通过 osu! 联系 OCLR 管理员"
-              : "透過 osu! 聯絡 OCLR 管理員",
-        );
+    for (const locale of ["en", "zh-Hans", "zh-Hant"])
+      for (const theme of ["light", "dark"]) {
+        await preferences(context, locale, theme);
+        for (const width of isMobile ? [320, 390] : [1440]) {
+          await page.setViewportSize({ width, height: 1000 });
+          await page.goto("/privacy");
+          const contact = page.locator(
+            'a[href="https://osu.ppy.sh/users/60001"]',
+          );
+          await expect(contact).toHaveCSS("text-decoration-line", "underline");
+          await expect(contact).not.toHaveClass(/button/);
+          await expect(contact).toHaveCount(1);
+          await expect(page.getByRole("heading", { level: 2 })).toHaveCount(3);
+          expect(
+            (await page.content()).includes("private-contact@example.test"),
+          ).toBe(false);
+          await expect(page.locator("main")).not.toContainText(
+            "the designated osu! contact",
+          );
+          await expect(page.locator("main details")).toHaveCount(0);
+          await noOverflow(page);
+          expect(
+            (
+              await new AxeBuilder({ page })
+                .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+                .analyze()
+            ).violations,
+          ).toEqual([]);
+          await page.screenshot({
+            path: info.outputPath(`privacy-${locale}-${theme}-${width}.png`),
+            fullPage: true,
+          });
+          await page.goto("/about");
+          const aboutContact = page.locator(
+            '.about-aside a[href="https://osu.ppy.sh/users/60001"]',
+          );
+          await expect(aboutContact).toHaveText(
+            locale === "en"
+              ? "Contact OCLR Admin on osu!"
+              : locale === "zh-Hans"
+                ? "通过 osu! 联系 OCLR 管理员"
+                : "透過 osu! 聯絡 OCLR 管理員",
+          );
+        }
       }
-    }
   });
 
   test("localizes all News kinds and generated copy without changing source names", async ({

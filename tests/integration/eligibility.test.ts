@@ -39,7 +39,6 @@ describe.skipIf(!url)("authoritative registration eligibility", () => {
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(user.osuId));
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy");
   });
   beforeEach(async () => {
     await db().execute(

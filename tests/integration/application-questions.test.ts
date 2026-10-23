@@ -44,7 +44,6 @@ describe.skipIf(!url)("single-choice application integrity", () => {
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", String(admin.osuId));
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
   });
   beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);

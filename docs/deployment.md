@@ -51,7 +51,6 @@ See `.env.example`. All variables are server-only; never add a `NEXT_PUBLIC_` pr
 | `OSU_CLIENT_ID`, `OSU_CLIENT_SECRET` | Organizer-owned OAuth application, exact callback `APP_URL/auth/osu/callback`                                                         |
 | `ADMIN_OSU_IDS`                      | Explicitly verified bootstrap global Admin IDs; legacy STAFF_OSU_IDS grants no access. Persistent grants are managed at /admin/staff  |
 | `PRIVACY_CONTACT_OSU_ID`             | Explicit single approved public osu! Admin ID (positive safe integer)                                                                 |
-| `PRIVACY_RETENTION_NOTICE`           | Approved public retention/deletion policy; a written policy must be operationally enforced                                            |
 | `OCLR_BRACKETS_FILE`                 | Optional absolute path to legacy bracket JSON (ignored for editions with DB fixtures); default is bundled `src/content/brackets.json` |
 | `OCLR_ANNOUNCEMENTS_FILE`            | Optional absolute path to approved announcement JSON; default is bundled `src/content/announcements.json`                             |
 | `PORT`                               | Optional listening port (Next.js default 3000)                                                                                        |
@@ -90,9 +89,9 @@ Migration `0014` makes registration rule versions nullable and adds a nullable e
 
 Set `PRIVACY_CONTACT_OSU_ID` to one explicitly approved Admin's positive numeric osu! user ID in private `.env.local` (or the hosting secret/environment configuration). Do not use a comma-separated list, derive the first `ADMIN_OSU_IDS` entry, or publish other bootstrap IDs. About and Privacy share the canonical `https://osu.ppy.sh/users/{id}` contact; no direct-message URL is invented. The public link does not grant any staff permissions.
 
-Verify the designated account is a global Admin, either explicitly provisioned through `ADMIN_OSU_IDS` or an active persistent global Admin grant. `release:check` checks this against the configured allowlist/database; ordinary privacy readiness validates the single ID and retention text without exposing or querying role assignments. Organizers must confirm the profile is reachable and the account can actually receive and handle privacy inquiries. A profile link alone does not establish legal compliance.
+Verify the designated account is a global Admin, either explicitly provisioned through `ADMIN_OSU_IDS` or an active persistent global Admin grant. `release:check` checks this against the configured allowlist/database; ordinary privacy readiness validates the single ID without exposing or querying role assignments. Organizers must confirm the profile is reachable and the account can actually receive and handle privacy inquiries. A profile link alone does not establish legal compliance.
 
-When upgrading, replace the old email contact setting with `PRIVACY_CONTACT_OSU_ID`, remove the unused email variable, and restart the application. Review your **private** `PRIVACY_RETENTION_NOTICE` so it contains the approved retention/deletion terms rather than an old contact list. The public Privacy page keeps approved terms in the compact “Data retention policy” disclosure and uses one inline osu! contact for requests. Email addresses and redundant email-only contact fragments are omitted from the display; the stored notice and its retention terms are preserved. A notice containing only contact information shows a truthful missing-terms message, not an invented retention period. No private environment values belong in commits or issue comments. Without a valid new contact and nonblank retention notice, new sign-in and registration remain unavailable; existing users, sessions and registration records are not deleted or disabled by this configuration change.
+When upgrading, configure `PRIVACY_CONTACT_OSU_ID`, remove obsolete privacy settings from the private runtime environment, and restart the application. The public Privacy page uses one inline osu! contact for access, correction and deletion requests; no separate free-form retention field is required. Without a valid designated contact, new sign-in and registration remain unavailable. Existing users, sessions and registration records are preserved. Never include private environment values in commits or issue comments.
 
 ## Backups, rollback and privacy operations
 
@@ -102,7 +101,7 @@ Rollback application code to the last verified commit/release directory and rest
 
 Run `npm run db:cleanup` daily to remove expired OAuth state and session records. Signing out revokes the current session. Revoking a persistent role at `/admin/staff` applies on the next server authorization check, including existing sessions. Removing a bootstrap Admin ID from the environment requires an application restart. For account compromise, an operator may revoke all of a player's session hashes using a parameterized database query against `sessions.user_id`.
 
-The approved `PRIVACY_RETENTION_NOTICE` must define application/identity/audit and backup retention, access/correction/deletion requests and any necessary tournament-integrity exceptions. Handle requests through the configured contact after verifying identity. Delete private answers/identities only through a reviewed transaction that respects active tournament obligations and foreign keys; do not promise an unimplemented automatic retention schedule. Store exported CSV only where authorized and remove it per the same policy. Applications are never public by default.
+Organizers remain responsible for factual retention/deletion procedures covering identities, private answers, audit records and backups, including any tournament-integrity exceptions. Handle requests through the designated contact after verifying identity. Use reviewed transactions that respect active tournament obligations and foreign keys; do not promise an unimplemented automatic deletion schedule. Restrict exported CSV access and remove exports according to the actual policy. If the deployment requires a more specific public notice, obtain approved factual wording before collecting data; removing a configuration field does not establish legal compliance.
 
 ## Outstanding release gates
 
@@ -217,7 +216,6 @@ OSU_CLIENT_ID='YOUR_OSU_CLIENT_ID'
 OSU_CLIENT_SECRET='YOUR_OSU_CLIENT_SECRET'
 ADMIN_OSU_IDS='YOUR_VERIFIED_ADMIN_OSU_ID'
 PRIVACY_CONTACT_OSU_ID='YOUR_APPROVED_PUBLIC_CONTACT_OSU_ID'
-PRIVACY_RETENTION_NOTICE='YOUR_APPROVED_RETENTION_AND_DELETION_NOTICE'
 OCLR_BIND_HOST='APP_PRIVATE_IP'
 PORT=3000
 ```

@@ -55,7 +55,6 @@ describe.skipIf(!url)("staff-assisted registration integrity", () => {
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", String(admin.osuId));
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
   });
   beforeEach(async () => {
     await db().execute(
@@ -352,11 +351,11 @@ describe.skipIf(!url)("staff-assisted registration integrity", () => {
     await expect(
       addManualRegistration(admin, edition.slug, command),
     ).rejects.toMatchObject({ status: 502 });
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "");
+    vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "");
     await expect(
       addManualRegistration(admin, edition.slug, command),
     ).rejects.toMatchObject({ status: 503 });
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
+    vi.stubEnv("PRIVACY_CONTACT_OSU_ID", String(admin.osuId));
     expect(await db().select().from(registrations)).toEqual([]);
   });
   it("refuses stale fallback identity after a provider failure without erasing the cached profile", async () => {

@@ -59,7 +59,6 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
     vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic test policy.");
   });
   beforeEach(async () => {
     await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
@@ -295,13 +294,13 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       published: true,
     });
     expect(current.edition.registration?.enabled).toBe(false);
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "");
+    vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "");
     await expect(
       change(current.revision, "registration", {
         registration: { ...registration, enabled: true },
       }),
     ).rejects.toMatchObject({ status: 409 });
-    vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic test policy.");
+    vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "60001");
     current = await change(current.revision, "registration", {
       registration: { ...registration, enabled: true },
     });

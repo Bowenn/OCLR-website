@@ -1,11 +1,7 @@
 import { getAppTranslations } from "@/i18n/server";
 import { useAppTranslations } from "@/i18n/shared";
 import { PageHeading } from "@/components/ui";
-import {
-  privacyContact,
-  privacyReady,
-  privacyPolicyText,
-} from "@/lib/auth/config";
+import { privacyContact } from "@/lib/auth/config";
 import styles from "./privacy.module.css";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
@@ -15,7 +11,6 @@ export async function generateMetadata() {
 export default function Privacy() {
   const tr = useAppTranslations();
   const contact = privacyContact();
-  const policy = privacyPolicyText(process.env.PRIVACY_RETENTION_NOTICE);
   return (
     <div className={`container page prose ${styles.page}`}>
       <PageHeading title={tr("Privacy at OCLR")} />
@@ -42,32 +37,16 @@ export default function Privacy() {
           "Essential sign-in sessions expire after seven days. Language and appearance preferences last up to one year. Avatars and beatmap covers load from osu! image services. We use no advertising or analytics cookies.",
         )}
       </p>
-      {privacyReady() && contact ? (
-        <>
-          <p>
-            {tr("For access, correction or deletion requests:")}{" "}
-            <a className="text-link" href={contact.url}>
-              {tr("Contact OCLR Admin on osu!")}
-            </a>
-          </p>
-          {policy ? (
-            <details className={styles.policy}>
-              <summary>{tr("Data retention policy")}</summary>
-              <p>{policy}</p>
-            </details>
-          ) : (
-            <p className="muted small">
-              {tr(
-                "Detailed retention terms have not been published. Please contact the organizer before submitting personal information.",
-              )}
-            </p>
-          )}
-        </>
+      {contact ? (
+        <p>
+          {tr("For access, correction or deletion requests:")}{" "}
+          <a className="text-link" href={contact.url}>
+            {tr("Contact OCLR Admin on osu!")}
+          </a>
+        </p>
       ) : (
         <p className="notice">
-          {tr(
-            "Privacy contact and retention terms are not configured. Sign-in and registration are unavailable.",
-          )}
+          {tr("Public contact details have not been announced.")}
         </p>
       )}
     </div>

@@ -64,7 +64,6 @@ describe.skipIf(!url)(
       vi.stubEnv("DATABASE_URL", url!);
       vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
       vi.stubEnv("PRIVACY_CONTACT_OSU_ID", String(admin.osuId));
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
     });
     beforeEach(async () => {
       await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
@@ -268,13 +267,11 @@ describe.skipIf(!url)(
       await expect(
         submitRegistration(player, edition.slug, reapply(old)),
       ).rejects.toMatchObject({ status: 409 });
-      await db()
-        .insert(captains)
-        .values({
-          editionSlug: edition.slug,
-          userId: player.osuId,
-          position: 1,
-        });
+      await db().insert(captains).values({
+        editionSlug: edition.slug,
+        userId: player.osuId,
+        position: 1,
+      });
       await expect(
         submitRegistration(
           player,
@@ -282,7 +279,7 @@ describe.skipIf(!url)(
           reapply(old, { configurationVersion: updated.revision }),
         ),
       ).rejects.toMatchObject({ status: 409 });
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "");
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", "");
       await expect(
         submitRegistration(
           player,
@@ -290,7 +287,7 @@ describe.skipIf(!url)(
           reapply(old, { configurationVersion: updated.revision }),
         ),
       ).rejects.toMatchObject({ status: 503 });
-      vi.stubEnv("PRIVACY_RETENTION_NOTICE", "Synthetic policy.");
+      vi.stubEnv("PRIVACY_CONTACT_OSU_ID", String(admin.osuId));
       expect(await db().select().from(registrationAttempts)).toEqual([]);
     });
   },
