@@ -98,14 +98,6 @@
 .stats {
   margin-bottom: 0.5rem;
 }
-.mode {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.25rem 0.5rem;
-  font-size: 0.65rem;
-  color: var(--site-muted);
-}
 .stats dl {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -148,9 +140,6 @@
 }
 .status {
   display: contents;
-}
-.listMode {
-  margin-block: 1rem 0.5rem;
 }
 .list {
   margin: 0;
@@ -231,9 +220,6 @@
 }
 .row .stats dd {
   font-size: 0.95rem;
-}
-.snapshot {
-  display: inline-flex;
 }
 .row .footer {
   grid-column: 3;

@@ -148,18 +148,7 @@ export default async function Players({
       )}
       {rows.length ? (
         <>
-          {view === "list" && (
-            <p
-              id="player-statistics"
-              className={`muted small ${styles.listMode}`}
-            >
-              {"osu!standard"} · {tr("Cached statistics")}
-            </p>
-          )}
-          <ul
-            className={view === "list" ? styles.list : styles.grid}
-            aria-describedby={view === "list" ? "player-statistics" : undefined}
-          >
+          <ul className={view === "list" ? styles.list : styles.grid}>
             {rows.map((p) => {
               const stats = statistics.get(p.osuId);
               const updated = stats
@@ -189,43 +178,14 @@ export default async function Players({
                     </Link>
                   </div>
                   <div className={styles.stats} title={updated}>
-                    <div
-                      className={`${styles.mode}${view === "list" ? " sr-only" : ""}`}
-                    >
-                      {view === "cards" && <span>{"osu!standard"}</span>}
-                      {stats?.stale && <span>{tr("SAVED SNAPSHOT")}</span>}
-                      {stats && (
-                        <time className="sr-only" dateTime={stats.fetchedAt}>
-                          {updated}
-                        </time>
-                      )}
-                    </div>
+                    {stats && (
+                      <time className="sr-only" dateTime={stats.fetchedAt}>
+                        {updated}
+                      </time>
+                    )}
                     <dl>
                       <div>
-                        <dt>
-                          {tr("Global rank")}
-                          {view === "list" && stats?.stale && (
-                            <span
-                              className={styles.snapshot}
-                              role="img"
-                              aria-label={tr("SAVED SNAPSHOT")}
-                              title={`${tr("SAVED SNAPSHOT")} · ${updated}`}
-                            >
-                              <svg
-                                aria-hidden="true"
-                                width="12"
-                                height="12"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.4"
-                              >
-                                <circle cx="8" cy="8" r="6" />
-                                <path d="M8 4v4l2 1" />
-                              </svg>
-                            </span>
-                          )}
-                        </dt>
+                        <dt>{tr("Global rank")}</dt>
                         <dd>
                           {stats?.globalRank != null && stats.globalRank > 0
                             ? `#${number.format(stats.globalRank)}`

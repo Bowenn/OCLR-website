@@ -110,7 +110,16 @@ test.describe("compact public player statistics", () => {
           });
           await expect(captain).toContainText("#12,345");
           await expect(captain).toContainText("7,890.45");
-          await expect(captain).toContainText("osu!standard");
+          await expect(captain).not.toContainText("osu!standard");
+          await expect(captain).not.toContainText("SAVED SNAPSHOT");
+          if (locale === "zh-Hant") {
+            await expect(page.locator(".edition-players")).toContainText(
+              "已通過選手",
+            );
+            await expect(page.locator(".edition-players")).not.toContainText(
+              "已透過選手",
+            );
+          }
           await expect(captain.locator("time")).toHaveAttribute(
             "datetime",
             "2026-10-23T00:00:00Z",
@@ -227,19 +236,12 @@ test.describe("compact public player statistics", () => {
     expect(await records()).toEqual(cards);
     const rows = page.locator(".edition-players > ul > li");
     await expect(rows).toHaveCount(8);
-    await expect(page.locator(".edition-players > ul")).toHaveAttribute(
-      "aria-describedby",
-      "player-statistics",
-    );
-    await expect(page.locator(".edition-players")).toContainText(
+    await expect(page.locator(".edition-players")).not.toContainText(
       "Cached statistics",
     );
-    // The mode is named once for the collection, not repeated in every row.
-    expect(
-      (await page.locator(".edition-players").textContent())!.match(
-        /osu!standard/g,
-      ),
-    ).toHaveLength(1);
+    await expect(page.locator(".edition-players")).not.toContainText(
+      "osu!standard",
+    );
     for (const locale of ["en", "zh-Hans", "zh-Hant"])
       for (const theme of ["light", "dark"])
         for (const appearance of ["default", "cute-pastel"]) {
