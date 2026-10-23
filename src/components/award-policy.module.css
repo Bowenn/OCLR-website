@@ -1,0 +1,12 @@
+.policy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 2rem;
+  padding-block: 1.25rem;
+  border-block: 1px solid var(--site-border);
+  overflow-wrap: anywhere;
+}
+.policy h2 { grid-column: 1 / -1; margin: 0; }
+.policy p { margin: 0; line-height: 1.8; }
+.policy p:last-child { grid-column: 1 / -1; }
+@media (max-width: 760px) { .policy { grid-template-columns: minmax(0, 1fr); } }
