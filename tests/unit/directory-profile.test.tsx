@@ -82,12 +82,12 @@ describe("cache-first edition player cards", () => {
     vi.resetAllMocks();
     vi.unstubAllGlobals();
   });
-  it("renders minimal standard stats, dated stale cue and separate canonical links before any refresh", async () => {
+  it("renders minimal cached stats and separate canonical links before any refresh", async () => {
     const page = await html();
     expect(page).toContain("#12,345");
     expect(page).toContain("7,890.45");
-    expect(page).toContain("osu!standard");
-    expect(page).toContain("SAVED SNAPSHOT");
+    expect(page).not.toContain("osu!standard");
+    expect(page).not.toContain("SAVED SNAPSHOT");
     expect(page).toContain('dateTime="2026-10-23T00:00:00Z"');
     expect(page).toContain('href="https://osu.ppy.sh/users/1220001"');
     expect(page).toContain('href="/players/1220001?edition=test-cup"');
