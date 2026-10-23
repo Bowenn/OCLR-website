@@ -59,7 +59,8 @@ describe("S8 rendered body whitespace", () => {
         section.body.replace(/\s/g, ""),
       );
       expect(rulesBodyText(section.body, "9")).toBe(section.body.trim());
-      for (const figure of "figures" in section ? section.figures : []) {
+      for (const figure of ("figures" in section ? section.figures : []) ??
+        []) {
         expect(section.body).toContain(figure.after);
       }
     }
