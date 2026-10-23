@@ -1090,6 +1090,8 @@ body:has(dialog[open].map-dialog) {
   color: var(--site-muted);
 }
 .rules-handbook nav a span {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 0.7rem;
   color: var(--site-accent);
 }

@@ -4761,3 +4761,12 @@ body:has([data-broadcast]) .site-shell {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+.rules-illustration {
+  margin: 1rem 0;
+}
+.rules-illustration img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

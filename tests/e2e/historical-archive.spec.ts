@@ -381,6 +381,7 @@ test.describe("historical archive browser workflow", () => {
           "bracket",
           "mappools",
           "staff",
+          "rules",
         ]) {
           await page.goto(`/tournaments/${slug}/${path}`);
           if (path === "schedule") {
@@ -388,6 +389,36 @@ test.describe("historical archive browser workflow", () => {
             await expect(
               page.getByRole("button", { name: /Unconfirmed records/ }),
             ).toHaveCount(0);
+          } else if (path === "rules") {
+            await expect(page.locator(".rules-article > section")).toHaveCount(
+              8,
+            );
+            await expect(page.locator(".rules-illustration img")).toHaveCount(
+              2,
+            );
+            await expect(page.locator(".rules-version")).toContainText("v1.2");
+            await expect(page.locator(".rules-article")).toContainText(
+              "没有总决赛reset！",
+            );
+            await expect(page.locator(".rules-article")).not.toContainText(
+              "Synthetic rules",
+            );
+            for (const image of await page
+              .locator(".rules-illustration img")
+              .all()) {
+              await image.scrollIntoViewIfNeeded();
+              await expect
+                .poll(() =>
+                  image.evaluate(
+                    (img) => (img as HTMLImageElement).naturalWidth,
+                  ),
+                )
+                .toBeGreaterThan(0);
+            }
+            await page
+              .locator(".rules-article h2")
+              .first()
+              .scrollIntoViewIfNeeded();
           } else if (path === "players") {
             await expect(page.locator(".archive-player-card")).toHaveCount(76);
             await expect(page.locator('[data-role="coach"]')).toHaveCount(8);
@@ -443,6 +474,18 @@ test.describe("historical archive browser workflow", () => {
           });
         }
       }
+    await page.goto(`/tournaments/${slug}/rules`);
+    if (isMobile) await page.locator(".rules-mobile-contents summary").click();
+    const contents = page.locator(
+      isMobile ? ".rules-mobile-contents nav" : ".rules-desktop-contents nav",
+    );
+    await contents.getByRole("link", { name: "EX模式：", exact: true }).click();
+    await expect(page.locator(".rules-article h2").last()).toBeInViewport();
+    if (isMobile)
+      await expect(page.locator(".rules-mobile-contents")).not.toHaveAttribute(
+        "open",
+        "",
+      );
     for (const unplayed of archive.matches.filter((m) => m.score === null)) {
       expect(
         (

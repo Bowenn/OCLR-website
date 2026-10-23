@@ -2,12 +2,51 @@
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { rulesSectionIds } from "@/lib/rules-navigation";
-export function RulesHandbook({
-  sections,
-}: {
-  sections: { heading: string; body: string }[];
-}) {
+type RuleSection = {
+  heading: string;
+  body: string;
+  figures?: {
+    after: string;
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+  }[];
+};
+function RuleBody({ section }: { section: RuleSection }) {
+  let offset = 0;
+  return (
+    <>
+      {section.figures?.map((figure) => {
+        const start = section.body.indexOf(figure.after, offset);
+        if (start < 0) return null;
+        const end = start + figure.after.length;
+        const text = section.body.slice(offset, end);
+        offset = end;
+        return (
+          <div key={figure.src}>
+            <p className="preserve-lines">{text.trim()}</p>
+            <figure className="rules-illustration">
+              <Image
+                src={figure.src}
+                alt={figure.alt}
+                width={figure.width}
+                height={figure.height}
+                unoptimized
+              />
+            </figure>
+          </div>
+        );
+      })}
+      {section.body.slice(offset).trim() && (
+        <p className="preserve-lines">{section.body.slice(offset).trim()}</p>
+      )}
+    </>
+  );
+}
+export function RulesHandbook({ sections }: { sections: RuleSection[] }) {
   const tr = useAppTranslations();
 
   const ids = useMemo(
@@ -72,7 +111,7 @@ export function RulesHandbook({
                 <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                 {s.heading}
               </h2>
-              <p className="preserve-lines">{s.body}</p>
+              <RuleBody section={s} />
             </section>
           ))}
         </article>

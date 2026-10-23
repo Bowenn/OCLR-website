@@ -13,6 +13,8 @@ import {
   type HistoricalArchive,
 } from "@/lib/historical-archive";
 import { PageHeading, Badge } from "./ui";
+import { RulesHandbook } from "./rules-handbook";
+import { historicalRulebook } from "@/lib/historical-rulebooks";
 
 export type ArchiveSection =
   | "overview"
@@ -274,7 +276,10 @@ export async function HistoricalArchiveView({
         {teams.map((t) => (
           <section className="archive-team-section" key={t.id}>
             {section === "teams" && <h2>{teamLink(t.id)}</h2>}
-            {roster(a.players.filter((p) => p.teamId === t.id), false)}
+            {roster(
+              a.players.filter((p) => p.teamId === t.id),
+              false,
+            )}
           </section>
         ))}
       </div>
@@ -456,8 +461,22 @@ export async function HistoricalArchiveView({
           ))}
       </div>
     );
+  } else if (section === "rules") {
+    title = tr("Rules");
+    const rules = historicalRulebook(a);
+    content = rules ? (
+      <>
+        <p className="rules-version muted small">
+          {tr("Version ")}
+          {rules.version} · {rules.sections.length} {tr("sections")}
+        </p>
+        <RulesHandbook sections={rules.sections} />
+      </>
+    ) : (
+      <p className="muted">{tr("Not recorded")}</p>
+    );
   } else {
-    title = section === "rules" ? tr("Rules") : tr("Historical statistics");
+    title = tr("Historical statistics");
     content = <p className="muted">{tr("Not recorded")}</p>;
   }
   return (
