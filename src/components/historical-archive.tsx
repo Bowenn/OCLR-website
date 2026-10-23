@@ -89,7 +89,7 @@ export async function HistoricalArchiveView({
           : p.tier === null
             ? tr("Not recorded")
             : `Tier ${p.tier}`;
-  const roster = (members: HistoricalArchive["players"]) => (
+  const roster = (members: HistoricalArchive["players"], showTeam = true) => (
     <ul className="archive-player-grid">
       {members.map((p) => (
         <li className="archive-player-card" key={p.osuId} data-role={p.role}>
@@ -108,7 +108,7 @@ export async function HistoricalArchiveView({
               {tr("osu! ID ")}
               {p.osuId}
             </span>
-            {p.teamId && (
+            {showTeam && p.teamId && (
               <span className="archive-player-team">{teamLink(p.teamId)}</span>
             )}
           </div>
@@ -274,7 +274,7 @@ export async function HistoricalArchiveView({
         {teams.map((t) => (
           <section className="archive-team-section" key={t.id}>
             {section === "teams" && <h2>{teamLink(t.id)}</h2>}
-            {roster(a.players.filter((p) => p.teamId === t.id))}
+            {roster(a.players.filter((p) => p.teamId === t.id), false)}
           </section>
         ))}
       </div>
