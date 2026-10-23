@@ -2237,6 +2237,12 @@ body:has(.presenter-view) .site-footer,
   width: 100%;
   height: auto;
 }
+/* The approved S11 export has four pale source rows at its top edge.
+   Crop only this asset, retaining its aspect ratio and the original file. */
+.edition-art-s11 img {
+  transform: scale(1.0034);
+  transform-origin: center bottom;
+}
 .edition-key-visual {
   display: block;
   width: 100%;

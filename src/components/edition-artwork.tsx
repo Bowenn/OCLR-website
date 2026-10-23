@@ -17,7 +17,7 @@ export function EditionArtwork({
     image === "/archive/s8/thumbnail.jpg";
   return (
     <div
-      className={`edition-art${image ? " edition-art-branded" : ""}`}
+      className={`edition-art${image ? " edition-art-branded" : ""}${image === "/oclr-s11-square-logo.webp" ? " edition-art-s11" : ""}`}
       aria-hidden="true"
     >
       {image ? (
