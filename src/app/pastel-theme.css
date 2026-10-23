@@ -526,9 +526,25 @@ html[data-appearance="cute-pastel"] .themed-site .notice {
 }
 
 html[data-appearance="cute-pastel"] .themed-site .empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  text-align: left;
   border: 1.5px dashed var(--site-control-border);
   border-radius: 1.5rem;
   background: var(--site-surface);
+}
+
+html[data-appearance="cute-pastel"] .themed-site .empty-state > .empty-mark {
+  display: none;
+}
+
+html[data-appearance="cute-pastel"] .themed-site .empty-state > :is(h2, p) {
+  max-inline-size: 65ch;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Rules handbook: compact index + soft cards per chapter. */
