@@ -161,6 +161,10 @@ test.describe("season overview composition", () => {
             );
           if (width > 760) {
             expect(measured.cards[0].top).toBeCloseTo(measured.cards[1].top, 0);
+            expect(measured.cards[0].height).toBeCloseTo(
+              measured.cards[1].height,
+              1,
+            );
             expect(
               measured.cards[0].width / measured.cards[1].width,
             ).toBeCloseTo(1, 1);
@@ -190,6 +194,49 @@ test.describe("season overview composition", () => {
       path: info.outputPath("season-overview.png"),
       fullPage: true,
     });
+  });
+
+  test("matches registration card heights only while side by side", async ({
+    page,
+    context,
+    isMobile,
+  }) => {
+    for (const eligibility of [
+      null,
+      "Short policy",
+      "Rank 15000 / PP 8810 · 參賽資格说明。\n".repeat(35),
+    ])
+      for (const theme of ["light", "dark"]) {
+        await seedEditions([{ ...edition, eligibility }]);
+        await preferences(context, "en", theme);
+        for (const width of isMobile ? [320, 390] : [768, 1024, 1440, 2048]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto("/tournaments/test-cup");
+          const left = (await page
+            .locator(".season-entry-summary")
+            .boundingBox())!;
+          const right = (await page
+            .locator(".season-registration-facts")
+            .boundingBox())!;
+          if (width > 760) {
+            expect(left.height).toBeCloseTo(right.height, 1);
+            expect(left.y + left.height).toBeCloseTo(right.y + right.height, 1);
+          } else {
+            expect(right.y).toBeGreaterThan(left.y + left.height);
+            if (eligibility && eligibility.length > 100)
+              expect(left.height).toBeGreaterThan(right.height);
+          }
+          for (const row of await page
+            .locator(".season-registration-facts .detail-list > div")
+            .all())
+            expect((await row.boundingBox())!.height).toBeLessThan(120);
+          expect(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth <= innerWidth,
+            ),
+          ).toBe(true);
+        }
+      }
   });
 
   test("counts only public accepted players and adapts to zero, one and three published teams", async ({

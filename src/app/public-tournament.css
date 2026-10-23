@@ -1635,7 +1635,7 @@ html[data-theme="dark"] .themed-site {
 .season-registration-grid.has-registration-dates {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   max-width: none;
-  align-items: start;
+  align-items: stretch;
 }
 .season-registration-grid .panel {
   padding: clamp(1.25rem, 2.5vw, 2rem);
