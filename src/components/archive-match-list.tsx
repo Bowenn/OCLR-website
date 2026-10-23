@@ -6,6 +6,7 @@ import { useAppTranslations } from "@/i18n/shared";
 export function ArchiveMatchList({
   matches,
   recordedOnly = false,
+  reviewMode = false,
 }: {
   matches: {
     id: string;
@@ -14,6 +15,7 @@ export function ArchiveMatchList({
     content: ReactNode;
   }[];
   recordedOnly?: boolean;
+  reviewMode?: boolean;
 }) {
   const tr = useAppTranslations();
   const query = useSearchParams();
@@ -29,36 +31,42 @@ export function ArchiveMatchList({
   return (
     <div className="archive-fixtures">
       <div className="archive-fixture-toolbar">
-        <div
-          className="archive-status-tabs"
-          role="group"
-          aria-label={tr("Match status")}
-        >
-          {[
-            ["all", tr("All matches")],
-            ["recorded", tr("Recorded results")],
-            ["unconfirmed", tr("Unconfirmed records")],
-          ].map(([value, label]) => (
-            <button
-              type="button"
-              key={value}
-              aria-pressed={status === value}
-              onClick={() => setStatus(value)}
-            >
-              {label}{" "}
-              <span>
-                {
-                  matches.filter(
-                    (m) =>
-                      (!stage || m.stage === stage) &&
-                      (value === "all" ||
-                        m.recorded === (value === "recorded")),
-                  ).length
-                }
-              </span>
-            </button>
-          ))}
-        </div>
+        {reviewMode ? (
+          <div
+            className="archive-status-tabs"
+            role="group"
+            aria-label={tr("Match status")}
+          >
+            {[
+              ["all", tr("All matches")],
+              ["recorded", tr("Recorded results")],
+              ["unconfirmed", tr("Unconfirmed records")],
+            ].map(([value, label]) => (
+              <button
+                type="button"
+                key={value}
+                aria-pressed={status === value}
+                onClick={() => setStatus(value)}
+              >
+                {label}{" "}
+                <span>
+                  {
+                    matches.filter(
+                      (m) =>
+                        (!stage || m.stage === stage) &&
+                        (value === "all" ||
+                          m.recorded === (value === "recorded")),
+                    ).length
+                  }
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="muted small">
+            {tr("Recorded results")} {matches.length}
+          </p>
+        )}
         <label className="archive-stage-filter">
           {tr("Stage")}
           <select

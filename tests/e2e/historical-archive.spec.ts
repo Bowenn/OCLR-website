@@ -104,6 +104,14 @@ test.describe("historical archive browser workflow", () => {
       ),
     );
     await expect(page.locator(".archive-map-list > li")).toHaveCount(2);
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=schedule`,
+    );
+    await page.getByRole("button", { name: /Unconfirmed records/ }).click();
+    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await expect(
+      page.getByText("Unconfirmed alternative", { exact: true }),
+    ).toBeVisible();
     const guest = await context.browser()!.newContext();
     expect(
       (
@@ -252,19 +260,15 @@ test.describe("historical archive browser workflow", () => {
       "https://osu.ppy.sh/community/matches/123456",
     );
     await page.goto(`/tournaments/${slug}/schedule`);
-    await expect(
-      page.getByText(
-        "Schedule record only; completion and result are not confirmed.",
-      ),
-    ).toBeVisible();
-    await page.getByRole("button", { name: /Unconfirmed records/ }).click();
     await expect(page.locator(".archive-match")).toHaveCount(1);
     await expect(
+      page.getByRole("button", { name: /Unconfirmed records/ }),
+    ).toHaveCount(0);
+    await expect(
       page.getByText("Unconfirmed alternative", { exact: true }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: /All matches/ }).click();
+    ).toHaveCount(0);
     await page.getByLabel("Stage", { exact: true }).selectOption("Final");
-    await expect(page.locator(".archive-match")).toHaveCount(2);
+    await expect(page.locator(".archive-match")).toHaveCount(1);
     await captureResponsiveLayout(page, info, "archive-matches");
     await page.goto(`/tournaments/${slug}/draft`);
     await expect(
@@ -307,6 +311,7 @@ test.describe("historical archive browser workflow", () => {
       "players/9999",
       "mappools/missing",
       "matches/missing",
+      "matches/alternative",
     ]) {
       expect((await page.goto(`/tournaments/${slug}/${path}`))?.status()).toBe(
         404,
@@ -379,11 +384,10 @@ test.describe("historical archive browser workflow", () => {
         ]) {
           await page.goto(`/tournaments/${slug}/${path}`);
           if (path === "schedule") {
-            await expect(page.locator(".archive-match")).toHaveCount(28);
-            await page
-              .getByRole("button", { name: /Recorded results/ })
-              .click();
             await expect(page.locator(".archive-match")).toHaveCount(22);
+            await expect(
+              page.getByRole("button", { name: /Unconfirmed records/ }),
+            ).toHaveCount(0);
           } else if (path === "players") {
             await expect(page.locator(".archive-player-card")).toHaveCount(76);
             await expect(page.locator('[data-role="coach"]')).toHaveCount(8);
@@ -441,6 +445,15 @@ test.describe("historical archive browser workflow", () => {
           });
         }
       }
+    for (const unplayed of archive.matches.filter((m) => m.score === null)) {
+      expect(
+        (
+          await context.request.get(
+            `/tournaments/${slug}/matches/${unplayed.id}`,
+          )
+        ).status(),
+      ).toBe(404);
+    }
     await page.goto(`/tournaments/${slug}/mappools`);
     const stageNav = page.getByRole("navigation", { name: "Mappool stages" });
     for (const pool of archive.pools) {

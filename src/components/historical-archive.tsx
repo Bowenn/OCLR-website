@@ -303,6 +303,7 @@ export async function HistoricalArchiveView({
     );
   } else if (["schedule", "results", "match"].includes(section)) {
     const matches = a.matches
+      .filter((m) => preview || m.score !== null)
       .filter((m) =>
         section === "match"
           ? m.id === id
@@ -318,6 +319,7 @@ export async function HistoricalArchiveView({
         match(matches[0])
       ) : (
         <ArchiveMatchList
+          reviewMode={preview}
           recordedOnly={section === "results"}
           matches={matches.map((m) => ({
             id: m.id,
