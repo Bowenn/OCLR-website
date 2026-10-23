@@ -28,7 +28,9 @@ export default async function Tournament({
       : null;
     const primary = data
       ? row.links.find((link) => link.label === "Settings")
-      : row.links.find((link) => link.group === "Competition");
+      : (row.links.find((link) => link.label === "Mappools") ??
+        row.links.find((link) => link.label === "Fixtures & results") ??
+        row.links.find((link) => link.group === "Competition"));
     return (
       <>
         <header className="tournament-dashboard-heading">
