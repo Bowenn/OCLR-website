@@ -1,0 +1,209 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { eq, sql } from "drizzle-orm";
+import { db, closeDb } from "../../src/db";
+import { users, staffRoles } from "../../src/db/schema";
+import { seedEditions } from "../fixtures/editions";
+import { edition } from "../fixtures/edition";
+import { assertTestDatabase } from "../database";
+import { seedBrowserEditions } from "./setup";
+const base = 982000;
+async function roster(count: number) {
+  await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+  await seedEditions([
+    edition,
+    {
+      ...edition,
+      slug: "private-cup",
+      name: "PRIVATE_EDITION",
+      published: false,
+    },
+  ]);
+  await db()
+    .insert(users)
+    .values(
+      Array.from({ length: count + 1 }, (_, i) => ({
+        osuId: base + i,
+        username:
+          i === count
+            ? "PRIVATE_STAFF"
+            : i === 0
+              ? "LongMixed主辦人員Username"
+              : "Organizer " + (i + 1),
+      })),
+    );
+  if (count)
+    await db()
+      .insert(staffRoles)
+      .values(
+        Array.from({ length: count }, (_, i) => ({
+          userId: base + i,
+          role: "admin" as const,
+          editionSlug: null,
+          grantedBy: base,
+          aboutPublished: true,
+        })),
+      );
+  await db()
+    .insert(staffRoles)
+    .values({
+      userId: base + count,
+      role: "referee",
+      editionSlug: "private-cup",
+      grantedBy: base,
+      aboutPublished: true,
+    });
+  if (count)
+    await db()
+      .insert(staffRoles)
+      .values([
+        {
+          userId: base,
+          role: "mappooler",
+          editionSlug: "test-cup",
+          grantedBy: base,
+          aboutPublished: true,
+        },
+        {
+          userId: base,
+          role: "referee",
+          editionSlug: "test-cup",
+          grantedBy: base,
+          aboutPublished: true,
+        },
+      ]);
+}
+test.describe("compact About organizer cards", () => {
+  test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
+  test.beforeEach(async ({ context }) => {
+    assertTestDatabase(process.env.TEST_DATABASE_URL);
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+    await context.route("https://a.ppy.sh/**", (route) =>
+      route.request().url().endsWith(String(base))
+        ? route.abort()
+        : route.fulfill({
+            contentType: "image/svg+xml",
+            body: '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="#704594"/></svg>',
+          }),
+    );
+  });
+  test.afterEach(async () => {
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await seedBrowserEditions();
+  });
+  test.afterAll(closeDb);
+  test("handles empty, one, three and many people without disclosing private grants", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    test.setTimeout(120000);
+    for (const count of [0, 1, 3, 24]) {
+      await roster(count);
+      await page.goto("/about");
+      await expect(page.locator(".public-staff-list > li")).toHaveCount(count);
+      await expect(page.locator("main")).not.toContainText(
+        /PRIVATE_STAFF|PRIVATE_EDITION/,
+      );
+      await expect(page.locator(".about-aside")).toBeVisible();
+      if (count) {
+        await expect(
+          page.locator(".public-staff-list .avatar span"),
+        ).toHaveCount(1);
+        await expect(
+          page
+            .locator(".public-staff-list > li")
+            .first()
+            .locator(".staff-role-name"),
+        ).toHaveCount(3);
+        const link = page.locator(".public-staff-list h3 a").first();
+        await link.focus();
+        await expect(link).toBeFocused();
+        expect(
+          (await page.locator(".public-staff-list > li").first().boundingBox())!
+            .width,
+        ).toBeLessThanOrEqual(400);
+      }
+      if (count === 3)
+        await page.screenshot({
+          path: info.outputPath("three-organizers.png"),
+          fullPage: true,
+          animations: "disabled",
+        });
+    }
+    for (const locale of ["en", "zh-Hans", "zh-Hant"])
+      for (const theme of ["light", "dark"]) {
+        await context.addCookies(
+          [
+            ["oclr-locale", locale],
+            ["oclr-theme", theme],
+          ].map(([name, value]) => ({
+            name,
+            value,
+            url: "http://127.0.0.1:3100",
+          })),
+        );
+        for (const width of isMobile ? [320, 390] : [768, 1024, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto("/about");
+          const g = await page.evaluate(() => {
+            const rect = (selector: string) =>
+              document
+                .querySelector(selector)!
+                .getBoundingClientRect()
+                .toJSON();
+            return {
+              document: document.documentElement.scrollWidth,
+              staff: rect(".about-staff"),
+              contact: rect(".about-aside"),
+              cards: [
+                ...document.querySelectorAll(".public-staff-list > li"),
+              ].map((el) => el.getBoundingClientRect().toJSON()),
+            };
+          });
+          expect(g.document).toBeLessThanOrEqual(width);
+          if (width > 900) {
+            expect(g.contact.top).toBeCloseTo(g.staff.top, 0);
+            expect(g.contact.left).toBeGreaterThan(g.staff.right);
+          } else expect(g.contact.top).toBeGreaterThan(g.staff.bottom);
+          if (width >= 768)
+            expect(g.cards[0].top).toBeCloseTo(g.cards[1].top, 0);
+          for (const card of g.cards) {
+            expect(card.left).toBeGreaterThanOrEqual(g.staff.left);
+            expect(card.right).toBeLessThanOrEqual(g.staff.right + 1);
+          }
+          await expect(page.locator(".about-aside")).toHaveCSS(
+            "border-top-style",
+            "solid",
+          );
+          await expect(page.locator(".about-aside")).toHaveCSS(
+            "border-right-width",
+            "1px",
+          );
+          await expect(page.locator(".about-contact-link")).toHaveAttribute(
+            "href",
+            "https://osu.ppy.sh/users/60001",
+          );
+          if ([390, 1440].includes(width))
+            await page.screenshot({
+              path: info.outputPath(`about-${locale}-${theme}-${width}.png`),
+              fullPage: true,
+              animations: "disabled",
+            });
+        }
+        expect(
+          (
+            await new AxeBuilder({ page })
+              .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+              .analyze()
+          ).violations,
+        ).toEqual([]);
+      }
+    await db()
+      .update(staffRoles)
+      .set({ revokedAt: new Date() })
+      .where(eq(staffRoles.userId, base));
+    await page.reload();
+    await expect(page.locator(".public-staff-list > li")).toHaveCount(23);
+  });
+});

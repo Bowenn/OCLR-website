@@ -26,7 +26,7 @@ export default async function About() {
         )}
       </PageHeading>
       <div className="about-layout">
-        <section aria-labelledby="staff-heading">
+        <section className="about-staff" aria-labelledby="staff-heading">
           <h2 id="staff-heading">{tr("Staff & organizers")}</h2>
           {staff.length ? (
             <ul className="public-staff-list">
@@ -36,7 +36,7 @@ export default async function About() {
                   <div>
                     <h3>
                       <a
-                        className="text-link"
+                        className="context-link"
                         href={`https://osu.ppy.sh/users/${person.osuId}`}
                       >
                         {person.username} ↗
@@ -66,11 +66,14 @@ export default async function About() {
             </p>
           )}
         </section>
-        <aside className="about-aside">
-          <h2>{tr("Contact")}</h2>
+        <aside className="about-aside" aria-labelledby="contact-heading">
+          <h2 id="contact-heading">{tr("Contact")}</h2>
           {contact ? (
             <p>
-              <a href={contact.url} className="text-link">
+              <a
+                href={contact.url}
+                className="button secondary about-contact-link"
+              >
                 {tr("Contact OCLR Admin on osu!")}
               </a>
             </p>

@@ -1563,25 +1563,49 @@ body:has(.presenter-view) .site-footer,
 }
 .about-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
-  gap: 3rem;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
+  align-items: start;
+  gap: 2rem;
+}
+.about-staff {
+  min-width: 0;
+}
+.about-staff > h2 {
+  margin-bottom: 1rem;
+  font-size: 1.35rem;
 }
 .about-aside {
-  align-self: start;
-  border-top: 2px solid #b16bd3;
-  padding: 1.25rem 0 0;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  padding: 1.5rem;
 }
 .about-aside h2 {
-  font-size: 1.4rem;
+  font-size: 1.15rem;
+  margin: 0 0 1rem;
+}
+.about-contact-link {
+  width: 100%;
+  justify-content: center;
+  white-space: normal;
+  text-align: center;
+}
+.about-aside > p:last-child {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+  margin-bottom: 0;
+}
+@media (max-width: 900px) {
+  .about-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
 }
 @media (max-width: 760px) {
   .news-list article {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.7rem;
-  }
-  .about-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 3rem;
   }
 }
 @media (max-width: 380px) {
@@ -3355,25 +3379,39 @@ body:has(.presenter-view) .site-footer,
   }
 }
 .public-staff-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  align-items: start;
+  gap: 1rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .public-staff-list > li {
   display: flex;
-  gap: 1rem;
+  min-width: 0;
+  gap: 0.75rem;
   align-items: flex-start;
-  padding-block: 1rem;
-  border-top: 1px solid var(--color-border);
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  transition: border-color 0.2s;
+}
+.public-staff-list > li:hover,
+.public-staff-list > li:focus-within {
+  border-color: var(--color-accent);
 }
 .public-staff-list h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
 }
 .public-staff-list ul {
   list-style: none;
+  margin: 0;
   padding: 0;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
   color: var(--color-muted);
 }
 .public-staff-list .avatar {
