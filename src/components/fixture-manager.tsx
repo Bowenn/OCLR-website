@@ -889,6 +889,7 @@ export function FixtureManager({
       )}
       <div className="fixture-toolbar">
         <WorkspaceTabs
+          appearance="line"
           id="fixture-views"
           label={tr("Fixture views")}
           value={view}
