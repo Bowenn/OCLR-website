@@ -415,7 +415,8 @@ test.describe("quick paste and mappool ordering", () => {
       });
       expect(published.status()).toBe(200);
       await page.reload();
-      await expect(page.locator(".mappool-drag-handle")).toHaveCount(5);
+      await expect(list.locator(".mappool-drag-handle")).toHaveCount(5);
+      await expect(page.locator(".mappool-drag-handle")).toHaveCount(6);
       await expect(save).toBeVisible();
       await expect(save).toBeDisabled();
       const publicData = await (

@@ -168,7 +168,7 @@ test.describe("operational UI follow-ups", () => {
       await page
         .getByRole("button", { name: /Terminology draft pool/ })
         .click();
-      await page.locator(".mappool-add-map > button").click();
+      await page.locator(".mappool-add-map > button:visible").click();
       const names = await page
         .locator(".mappool-task select option")
         .allTextContents();

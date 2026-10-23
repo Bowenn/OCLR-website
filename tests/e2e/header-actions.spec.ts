@@ -53,10 +53,30 @@ test.describe("role-aware header actions and compact tournament context", () => 
         exact: true,
       });
       await expect(control.locator(".avatar img")).toHaveCount(0);
-      await expect(control.locator(".avatar")).toHaveCSS(
-        "color",
-        "rgb(255, 255, 255)",
-      );
+      // Initials use the shared light/dark foreground and tint, not a fixed white.
+      const contrast = await control.locator(".avatar").evaluate((node) => {
+        const style = getComputedStyle(node);
+        const luminance = (color: string) => {
+          const values = color
+            .match(/\d+(?:\.\d+)?/g)!
+            .slice(0, 3)
+            .map(Number)
+            .map((channel) => {
+              const value = channel / 255;
+              return value <= 0.04045
+                ? value / 12.92
+                : ((value + 0.055) / 1.055) ** 2.4;
+            });
+          return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
+        };
+        const foreground = luminance(style.color),
+          background = luminance(style.backgroundColor);
+        return (
+          (Math.max(foreground, background) + 0.05) /
+          (Math.min(foreground, background) + 0.05)
+        );
+      });
+      expect(contrast).toBeGreaterThanOrEqual(4.5);
       for (const width of [320, 390, 768, 1024, 1440]) {
         await target.setViewportSize({ width, height: 900 });
         await target.evaluate(() => window.scrollTo(0, 0));
