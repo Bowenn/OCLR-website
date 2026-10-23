@@ -85,6 +85,8 @@ test.describe("derived public content", () => {
       await expect(page.locator(".hero-kicker")).not.toContainText("11");
       await page.goto("/news");
       await expect(page.locator(".news-list")).not.toContainText(/[→↗]/);
+      await expect(page.locator(".news-list")).toContainText("(UTC+8)");
+      await expect(page.locator(".news-list")).not.toContainText("Asia/Taipei");
       await captureResponsiveLayout(page, info, "news-headlines-list");
       await page
         .getByRole("link", {

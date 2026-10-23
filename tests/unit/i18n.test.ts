@@ -141,7 +141,7 @@ describe("localized interface catalogs", () => {
       formatDate("2026-01-01T00:00:00Z", "Asia/Taipei", "zh-Hans"),
     ).toContain("08:00");
     expect(formatDate("2026-01-01T00:00:00Z", "Asia/Taipei", "en")).toContain(
-      "Asia/Taipei",
+      "UTC+8",
     );
   });
 });

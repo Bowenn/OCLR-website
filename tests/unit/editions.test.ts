@@ -23,7 +23,7 @@ describe("edition configuration", () => {
         });
         expect(
           formatDate("2026-10-23T03:45:00Z", "Asia/Taipei", "zh-Hans"),
-        ).toBe("2026/10/23 11:45 (Asia/Taipei)");
+        ).toBe("2026/10/23 11:45 (UTC+8)");
       }
     } finally {
       Object.defineProperty(Intl.DateTimeFormat.prototype, "format", formatter);
@@ -145,7 +145,22 @@ describe("edition configuration", () => {
   it("shows an explicit configured timezone and TBA", () => {
     expect(formatDate(null, "Asia/Taipei")).toBe("To be announced");
     expect(formatDate("2026-01-01T00:00:00Z", "Asia/Taipei")).toContain(
-      "08:00 (Asia/Taipei)",
+      "08:00 (UTC+8)",
     );
+  });
+  it.each([
+    ["Asia/Hong_Kong", "2026-01-01T00:00:00Z", "UTC+8"],
+    ["Etc/GMT-8", "2026-01-01T00:00:00Z", "UTC+8"],
+    ["Asia/Kolkata", "2026-01-01T00:00:00Z", "UTC+5:30"],
+    ["Asia/Kathmandu", "2026-01-01T00:00:00Z", "UTC+5:45"],
+    ["America/New_York", "2026-01-01T00:00:00Z", "UTC-5"],
+    ["America/New_York", "2026-07-01T00:00:00Z", "UTC-4"],
+    ["UTC", "2026-01-01T00:00:00Z", "UTC"],
+  ])("shows the instant's offset for %s at %s", (zone, instant, offset) => {
+    for (const locale of ["en", "zh-Hans", "zh-Hant"]) {
+      expect(formatDate(instant, zone, locale)).toContain(`(${offset})`);
+      if (zone.includes("/"))
+        expect(formatDate(instant, zone, locale)).not.toContain(zone);
+    }
   });
 });

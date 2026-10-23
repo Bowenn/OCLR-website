@@ -69,8 +69,7 @@ export function MatchCard({
           </time>
         ) : (
           tr("Match time TBA")
-        )}{" "}
-        · {f.timeZone}
+        )}
       </p>
       <details className="match-public-details">
         <summary>{tr("Match details")}</summary>

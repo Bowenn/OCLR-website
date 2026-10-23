@@ -67,7 +67,7 @@ describe("read-only deterministic public News", () => {
     expect(past.title).toBe(item.title);
     expect(past.future).toBe(false);
     expect(past.summary).toContain("plan, not confirmation");
-    expect(item.summary).toContain("Asia/Taipei");
+    expect(item.summary).toContain("UTC+8");
   });
   it("claims open registration only within its enabled window with privacy, active state and no lock", () => {
     const title = (r = record, privacy = true, time = now) =>

@@ -77,8 +77,7 @@ export default async function MatchPage({
         <p>
           {f.scheduledAt
             ? tr(formatDate(f.scheduledAt, f.timeZone, tr.locale))
-            : tr("Match time TBA")}{" "}
-          · {f.timeZone}
+            : tr("Match time TBA")}
         </p>
         {f.pool && (
           <Link

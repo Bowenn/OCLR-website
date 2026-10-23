@@ -232,5 +232,14 @@ export function formatDate(
   })
     .format(new Date(value))
     .replace(/\s+/g, " ");
-  return `${formatted} (${timeZone})`;
+  // Use the event instant so zones with daylight saving show the correct offset.
+  const offset = new Intl.DateTimeFormat("en", {
+    timeZone,
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(new Date(value))
+    .find((part) => part.type === "timeZoneName")!
+    .value.replace(/^GMT/, "UTC")
+    .replace(/^UTC[+-]0(?::00)?$/, "UTC");
+  return `${formatted} (${offset})`;
 }
