@@ -61,7 +61,9 @@ export const editionSchema = z
     season: z.string().trim().min(1).max(40).nullable().default(null),
     branding: z
       .object({
-        logo: z.enum(["/oclr-s11-square-logo.webp"]).nullable(),
+        logo: z
+          .enum(["/oclr-s11-square-logo.webp", "/archive/s10/thumbnail.png"])
+          .nullable(),
         background: z.enum(["/oclr-s11-website-background.webp"]).nullable(),
         keyVisual: z.enum(["/oclr-s11-key-visual.webp"]).nullable(),
       })

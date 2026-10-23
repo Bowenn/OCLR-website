@@ -105,6 +105,20 @@ test.describe("historical season import handoff", () => {
         sample.ruleText,
       );
       await page.goto(`/admin/tournaments/${slug}/settings?tab=publication`);
+      if (sample.key === "s10") {
+        await page.getByRole("tab", { name: "General", exact: true }).click();
+        await page
+          .getByRole("combobox", { name: "Square logo", exact: true })
+          .selectOption("/archive/s10/thumbnail.png");
+        await page
+          .getByRole("button", { name: "Save general settings", exact: true })
+          .click();
+        await expect(page.getByRole("status")).toContainText("saved");
+        await page.reload();
+        await expect(
+          page.getByRole("combobox", { name: "Square logo", exact: true }),
+        ).toHaveValue("/archive/s10/thumbnail.png");
+      }
       await page.getByRole("tab", { name: "Publication", exact: true }).click();
       await page
         .getByRole("button", { name: "Publish tournament", exact: true })
@@ -128,6 +142,41 @@ test.describe("historical season import handoff", () => {
         width: isMobile ? 390 : 1440,
         height: 1000,
       });
+      if (sample.key === "s10") {
+        await page.goto("/tournaments");
+        const card = page.locator(".edition-card").filter({
+          has: page.locator(`a[href="/tournaments/${slug}"]`),
+        });
+        const thumbnail = card.locator(".edition-art img");
+        await expect(thumbnail).toHaveAttribute(
+          "src",
+          "/archive/s10/thumbnail.png",
+        );
+        await expect
+          .poll(() =>
+            thumbnail.evaluate(
+              (image) => (image as HTMLImageElement).naturalWidth,
+            ),
+          )
+          .toBe(1024);
+        const bounds = await thumbnail.boundingBox();
+        expect(bounds!.width / bounds!.height).toBeCloseTo(1, 2);
+        for (const theme of ["light", "dark"]) {
+          await context.addCookies([
+            {
+              name: "oclr-theme",
+              value: theme,
+              domain: "127.0.0.1",
+              path: "/",
+            },
+          ]);
+          await page.reload();
+          await expect(thumbnail).toBeVisible();
+          await card.screenshot({
+            path: info.outputPath(`s10-thumbnail-${theme}.png`),
+          });
+        }
+      }
       for (const appearance of ["default", "cute-pastel", "swiss-minimal"])
         for (const theme of ["light", "dark"]) {
           await context.addCookies([

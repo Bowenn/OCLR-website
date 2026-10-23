@@ -49,6 +49,12 @@ Apply the organizer's existing instruction **「以各階段獨立圖池表為�
 
 The script reports every override. Independent titles include mapper names in parentheses; preserve them verbatim. The explicit combined mapper field is used only after verifying that it matches the independent title suffix. No source stats are overwritten with live osu! API values. Drain fractions become seconds. Source set links are not mistaken for beatmap IDs. Existing S9-style archive cards, filters, sorting and detail dialogs are reused; without imported beatmapset IDs they retain the existing unavailable-cover fallback.
 
+## Original S10 thumbnail (#166)
+
+`public/archive/s10/thumbnail.png` is the unchanged 1024×1024 transparent PNG embedded at Landing!C3 (gid=11421858), extracted from the captured XLSX's `xl/media/image1.png` through Landing's drawing relationship. SHA-256: `6a9fb71945c4b38e1d76c5e62292b85e4206b191970a9c0617e85b2a53db5f4d`. It retains the complete artwork and transparency; the spreadsheet's blue cell background is not part of the image.
+
+After deployment, select **OCLR Season 10 — Square logo** in S10's General settings and save. This uses the existing revision-checked branding setting and public directory card. Background and key visual remain unchanged. Deployment does not overwrite existing edition configuration or select the asset automatically. No database migration is required; a rollback must keep support for the selected logo path, or clear that choice through the UI before rolling back.
+
 ## Original rules and public rendering
 
 `src/content/s10-rulebook.json` contains seven literal chapters; `public/archive/s10/rules-{1,2}.png` contains the two original embedded diagrams (732×255 and 561×279). Both appear at their original paragraph anchors through the shared S11 `RulesHandbook` UI, with desktop/mobile contents.
