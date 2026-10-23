@@ -3,9 +3,79 @@ import { readFileSync } from "node:fs";
 import {
   historicalArchiveSchema,
   archiveCounts,
+  archiveWinner,
+  recordedArchiveMatch,
 } from "../../src/lib/historical-archive";
 import { historicalArchive } from "../fixtures/historical-archive";
 describe("historical evidence validation", () => {
+  it("keeps final Tier evidence without inventing chronological draft selections", () => {
+    const a = historicalArchiveSchema.parse({
+      ...historicalArchive,
+      draftMode: "final-tiers",
+      picks: [],
+    });
+    expect(a.players[1].tier).toBe(historicalArchive.players[1].tier);
+    expect(a.picks).toEqual([]);
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...a,
+        picks: historicalArchive.picks,
+      }).success,
+    ).toBe(false);
+    expect(
+      historicalArchiveSchema.safeParse({ ...a, draftMode: undefined }).success,
+    ).toBe(false);
+  });
+  it("records a forfeit winner without synthesizing a score or losing the result", () => {
+    const a = historicalArchiveSchema.parse({
+      ...historicalArchive,
+      matches: [
+        {
+          ...historicalArchive.matches[0],
+          score: null,
+          mpUrls: [],
+          forfeitWinner: 0,
+        },
+      ],
+    });
+    expect(recordedArchiveMatch(a.matches[0])).toBe(true);
+    expect(archiveWinner(a.matches[0])).toBe(0);
+    expect(archiveCounts(a)).toMatchObject({ results: 1, incomplete: 0 });
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...a,
+        matches: [{ ...a.matches[0], score: [6, 0] }],
+      }).success,
+    ).toBe(false);
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...a,
+        matches: [{ ...a.matches[0], forfeitWinner: 2 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...a,
+        matches: [{ ...a.matches[0], score: [0, -1] }],
+      }).success,
+    ).toBe(false);
+    expect(archiveWinner(historicalArchive.matches[1])).toBeNull();
+  });
+  it("accepts literal ACE slots and staff names whose UID was not recorded", () => {
+    const a = structuredClone(historicalArchive);
+    a.pools[0].maps[0].slot = "ACE1";
+    a.staff = [
+      {
+        osuId: null,
+        username: "Historical signature",
+        position: "Referee",
+        source: "Staff!A1",
+      },
+    ];
+    expect(historicalArchiveSchema.parse(a).staff[0].osuId).toBeNull();
+    a.pools[0].maps[0].slot = "ACE0";
+    expect(historicalArchiveSchema.safeParse(a).success).toBe(false);
+  });
   it("preserves missing results, conflict fields and captain identity", () => {
     const a = historicalArchiveSchema.parse(historicalArchive);
     expect(archiveCounts(a)).toMatchObject({

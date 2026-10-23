@@ -5,6 +5,25 @@ import { historicalArchiveSchema } from "../../src/lib/historical-archive";
 import { historicalArchive } from "../fixtures/historical-archive";
 const href = (id: string) => `/private-preview?section=matches&id=${id}`;
 describe("historical schedule bracket", () => {
+  it("includes forfeits and preserves the winner without invented played scores", () => {
+    const a = historicalArchiveSchema.parse({
+      ...historicalArchive,
+      matches: [
+        {
+          ...historicalArchive.matches[0],
+          score: null,
+          mpUrls: [],
+          forfeitWinner: 1,
+        },
+      ],
+    });
+    const m = archiveBracket(a, href)!.groups[0].rounds[0].matches[0];
+    expect(m).toMatchObject({
+      status: "completed",
+      winnerSlot: 1,
+      scores: [null, null],
+    });
+  });
   it("includes only recorded matches and preserves private detail URLs", () => {
     const b = archiveBracket(historicalArchive, href)!;
     expect(

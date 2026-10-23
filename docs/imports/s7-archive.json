@@ -1,0 +1,1779 @@
+{
+  "formatVersion": 1,
+  "editionSlug": "s7",
+  "sourceUrl": "https://docs.google.com/spreadsheets/d/1vZ7JN6ePxDqjdVZ1527fvyeoV1m5rbHzSvXObDUuf7I/edit",
+  "capturedOn": "2026-10-24",
+  "draftMode": "final-tiers",
+  "notes": [
+    "S7 共 8 隊，56 名隊員（含 8 名 Captain）及 8 名教練。隊員 UID 取自 Team List 頭像公式引用的原始測試表；教練 UID 取自原始頭像公式。保留原表姓名，僅移除尾端空白。",
+    "原表只有最終 Tier 1–6 名單，沒有逐手選人或隊長選人順序；不製造選秀 pick，按最終 Tier 呈現。Captain 為 Tier 0；教練無 Tier。",
+    "小組由原表 A/C/E/G 與 B/D/F/H 的各六場對局分組，對照 Team List A–H 隊伍順序及勝負欄核對。名次未記錄，保留為空。",
+    "A7/A8/A9/A10 原始年份為 2021 年 1 月；匯入日期處理：corrected-2022。其餘保留來源時間，按 UTC+8 呈現。",
+    "A8 原值為 C 對 G 0:-1、無 MP；處理：forfeit。棄權不換算為一般得圖數。所有其他 21 場均保留原比分及 MP。",
+    "淘汰賽在第 997–1006 列，不因中間空白列遺漏；有 2 個重播連結。僅有標籤而沒有對手或結果的模板行不匯入。",
+    "三個有實際譜面的圖池共 47 張，保留 ACE1 原始槽位與歷史屬性；GS 空白 NM6/HD4/HR4/DT4 不視為已選譜面。Grand Finals 及其餘空白模板不建立虛構圖池。",
+    "Staff 的裁判／直播名單與逐場欄核對。可在本表隊員／教練資料對應的 UID 才建立頭像和個人檔案連結；其餘保留原始署名、不猜 UID。這些署名不授予現行職權。",
+    "Cover 為空，未提供 S7 規則書或縮略圖，不挪用其他賽季內容。選手／教練申請表、聯絡方式、評語、Damage 評分及 Chess 均不匯入。"
+  ],
+  "links": [],
+  "teams": [
+    {
+      "id": "team-a",
+      "name": "∀ W∀∃⊥",
+      "source": "Team List!E3:U3"
+    },
+    {
+      "id": "team-b",
+      "name": "B",
+      "source": "Team List!E4:U4"
+    },
+    {
+      "id": "team-c",
+      "name": "C",
+      "source": "Team List!E5:U5"
+    },
+    {
+      "id": "team-d",
+      "name": "D",
+      "source": "Team List!E6:U6"
+    },
+    {
+      "id": "team-e",
+      "name": "牢龙",
+      "source": "Team List!E7:U7"
+    },
+    {
+      "id": "team-f",
+      "name": "Cute honey",
+      "source": "Team List!E8:U8"
+    },
+    {
+      "id": "team-g",
+      "name": "卧龙",
+      "source": "Team List!E9:U9"
+    },
+    {
+      "id": "team-h",
+      "name": "挑衅",
+      "source": "Team List!E10:U10"
+    }
+  ],
+  "players": [
+    {
+      "osuId": 15174317,
+      "username": "TTTtraitor",
+      "teamId": "team-a",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 2351439,
+      "username": "Kotor1",
+      "teamId": "team-a",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I3; Team List!H3"
+    },
+    {
+      "osuId": 13509041,
+      "username": "WeLuvBlueZenith",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 11237954,
+      "username": "Pink Rio",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 13324376,
+      "username": "Pomelox",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 6149313,
+      "username": "Pata-Mon",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 4995682,
+      "username": "oweel",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 11310283,
+      "username": "Aetrsyna",
+      "teamId": "team-a",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U3; 测试表!C1:D57"
+    },
+    {
+      "osuId": 9755808,
+      "username": "Sonoaoi",
+      "teamId": "team-b",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 5242158,
+      "username": "[Crz]Makii",
+      "teamId": "team-b",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I4; Team List!H4"
+    },
+    {
+      "osuId": 12117924,
+      "username": "Rairakkuhana",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 10040597,
+      "username": "SqcOc-",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8692802,
+      "username": "Guozi on osu",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 1221468,
+      "username": "eat tutu",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 12938898,
+      "username": "liunian1551",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 6909701,
+      "username": "Asaotome",
+      "teamId": "team-b",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U4; 测试表!C1:D57"
+    },
+    {
+      "osuId": 12624507,
+      "username": "Reecho",
+      "teamId": "team-c",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 6397367,
+      "username": "Hunxin",
+      "teamId": "team-c",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I5; Team List!H5"
+    },
+    {
+      "osuId": 13960915,
+      "username": "LittleStone",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 5185609,
+      "username": "Dura",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 11841499,
+      "username": "Lemon tea",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 2676427,
+      "username": "_Miyuu",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 2053450,
+      "username": "konge",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8120040,
+      "username": "feschen",
+      "teamId": "team-c",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U5; 测试表!C1:D57"
+    },
+    {
+      "osuId": 2927918,
+      "username": "[-buki-]",
+      "teamId": "team-d",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 9887164,
+      "username": "Aurora_fang",
+      "teamId": "team-d",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I6; Team List!H6"
+    },
+    {
+      "osuId": 3407743,
+      "username": "Seira-Nanamori",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 19171701,
+      "username": "Sand-star",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 9218431,
+      "username": "Lifcoach",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 983616,
+      "username": "[ Gujiu ]",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 2428732,
+      "username": "huoyaoyuan",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8642028,
+      "username": "crazyingblack",
+      "teamId": "team-d",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U6; 测试表!C1:D57"
+    },
+    {
+      "osuId": 16191222,
+      "username": "[paw]zeidad",
+      "teamId": "team-e",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 15030466,
+      "username": "UselessPlayer",
+      "teamId": "team-e",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I7; Team List!H7"
+    },
+    {
+      "osuId": 2992539,
+      "username": "ye__ow",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 15715264,
+      "username": "lica75",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 16940516,
+      "username": "G_fox",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 11139464,
+      "username": "Toxice-w-",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8883892,
+      "username": "NaimuTongzi",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 17074316,
+      "username": "itsushini",
+      "teamId": "team-e",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U7; 测试表!C1:D57"
+    },
+    {
+      "osuId": 1405856,
+      "username": "Takagi San",
+      "teamId": "team-f",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 4714943,
+      "username": "Kaname Madoka",
+      "teamId": "team-f",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I8; Team List!H8"
+    },
+    {
+      "osuId": 5355421,
+      "username": "Moyv",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 1371409,
+      "username": "Banana skin",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 13288760,
+      "username": "Xiangezuibang",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 4087427,
+      "username": "moe nyannyan",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 3350714,
+      "username": "CooGic",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8425774,
+      "username": "Name-Less-",
+      "teamId": "team-f",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U8; 测试表!C1:D57"
+    },
+    {
+      "osuId": 4733339,
+      "username": "Hikawa rina",
+      "teamId": "team-g",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 829779,
+      "username": "Svein",
+      "teamId": "team-g",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I9; Team List!H9"
+    },
+    {
+      "osuId": 15997508,
+      "username": "getenrou",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 9164037,
+      "username": "Firia",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 888521,
+      "username": "luffyty",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8208288,
+      "username": "[1552828]",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 6409989,
+      "username": "SunshineYn",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 16544305,
+      "username": "m u s e",
+      "teamId": "team-g",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U9; 测试表!C1:D57"
+    },
+    {
+      "osuId": 9314367,
+      "username": "yuiko122",
+      "teamId": "team-h",
+      "role": "captain",
+      "tier": 0,
+      "source": "Team List!G10; 测试表!C1:D57"
+    },
+    {
+      "osuId": 6433183,
+      "username": "silly me",
+      "teamId": "team-h",
+      "role": "coach",
+      "tier": null,
+      "source": "Team List!I10; Team List!H10"
+    },
+    {
+      "osuId": 3753204,
+      "username": "Lumina-",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 1,
+      "source": "Team List!K10; 测试表!C1:D57"
+    },
+    {
+      "osuId": 13858681,
+      "username": "CassiazZ",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 2,
+      "source": "Team List!M10; 测试表!C1:D57"
+    },
+    {
+      "osuId": 8911619,
+      "username": "KobeNanami",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 3,
+      "source": "Team List!O10; 测试表!C1:D57"
+    },
+    {
+      "osuId": 10265587,
+      "username": "OAO",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 4,
+      "source": "Team List!Q10; 测试表!C1:D57"
+    },
+    {
+      "osuId": 504138,
+      "username": "LyCheE",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 5,
+      "source": "Team List!S10; 测试表!C1:D57"
+    },
+    {
+      "osuId": 4764449,
+      "username": "[K I D]",
+      "teamId": "team-h",
+      "role": "player",
+      "tier": 6,
+      "source": "Team List!U10; 测试表!C1:D57"
+    }
+  ],
+  "picks": [],
+  "staff": [
+    {
+      "osuId": 9755808,
+      "username": "Sonoaoi",
+      "position": "Referee",
+      "source": "Staff!A1; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "osu happy",
+      "position": "Referee",
+      "source": "Staff!A2; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "Another Flower",
+      "position": "Referee",
+      "source": "Staff!A3; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "Morika",
+      "position": "Referee",
+      "source": "Staff!A4; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": 5242158,
+      "username": "[Crz]Makii",
+      "position": "Referee",
+      "source": "Staff!A5; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": 6397367,
+      "username": "Hunxin",
+      "position": "Referee",
+      "source": "Staff!A6; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "Truth your left",
+      "position": "Referee",
+      "source": "Staff!A7; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "WhiteCookies",
+      "position": "Referee",
+      "source": "Staff!A8; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "110",
+      "position": "Referee",
+      "source": "Staff!A9; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "Muziyami",
+      "position": "Streamer",
+      "source": "Staff!C1; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "Explosive",
+      "position": "Streamer",
+      "source": "Staff!C2; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": 4733339,
+      "username": "Hikawa Rina",
+      "position": "Streamer",
+      "source": "Staff!C3; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": 3407743,
+      "username": "Seira-Nanamori",
+      "position": "Streamer",
+      "source": "Staff!C4; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "FcEazy",
+      "position": "Streamer",
+      "source": "Staff!C5; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": 12624507,
+      "username": "Reecho",
+      "position": "Streamer",
+      "source": "Staff!C6; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "feifeiis",
+      "position": "Streamer",
+      "source": "Staff!C7; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": 10040597,
+      "username": "SqcOc-",
+      "position": "Streamer",
+      "source": "Staff!C8; 对阵表!H2:I1006"
+    },
+    {
+      "osuId": null,
+      "username": "Alice Mana",
+      "position": "Streamer",
+      "source": "Staff!C9; 对阵表!H2:I1006"
+    }
+  ],
+  "standings": [
+    {
+      "group": "A",
+      "teamId": "team-a",
+      "rank": null,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 11,
+      "mapsLost": 16,
+      "source": "Team List!A3:B3; 对阵表!A2:E13"
+    },
+    {
+      "group": "B",
+      "teamId": "team-b",
+      "rank": null,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 11,
+      "mapsLost": 12,
+      "source": "Team List!A4:B4; 对阵表!A2:E13"
+    },
+    {
+      "group": "A",
+      "teamId": "team-c",
+      "rank": null,
+      "wins": 2,
+      "losses": 1,
+      "mapsWon": 8,
+      "mapsLost": 10,
+      "source": "Team List!A5:B5; 对阵表!A2:E13"
+    },
+    {
+      "group": "B",
+      "teamId": "team-d",
+      "rank": null,
+      "wins": 0,
+      "losses": 3,
+      "mapsWon": 1,
+      "mapsLost": 18,
+      "source": "Team List!A6:B6; 对阵表!A2:E13"
+    },
+    {
+      "group": "A",
+      "teamId": "team-e",
+      "rank": null,
+      "wins": 2,
+      "losses": 1,
+      "mapsWon": 16,
+      "mapsLost": 9,
+      "source": "Team List!A7:B7; 对阵表!A2:E13"
+    },
+    {
+      "group": "B",
+      "teamId": "team-f",
+      "rank": null,
+      "wins": 3,
+      "losses": 0,
+      "mapsWon": 18,
+      "mapsLost": 5,
+      "source": "Team List!A8:B8; 对阵表!A2:E13"
+    },
+    {
+      "group": "A",
+      "teamId": "team-g",
+      "rank": null,
+      "wins": 1,
+      "losses": 2,
+      "mapsWon": 10,
+      "mapsLost": 10,
+      "source": "Team List!A9:B9; 对阵表!A2:E13"
+    },
+    {
+      "group": "B",
+      "teamId": "team-h",
+      "rank": null,
+      "wins": 2,
+      "losses": 1,
+      "mapsWon": 15,
+      "mapsLost": 10,
+      "source": "Team List!A10:B10; 对阵表!A2:E13"
+    }
+  ],
+  "matches": [
+    {
+      "id": "match-a1",
+      "label": "A1",
+      "stage": "Group A",
+      "teamA": "team-a",
+      "teamB": "team-c",
+      "scheduledAt": "2021-12-27T20:00:00+08:00",
+      "score": [4, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/95753733"],
+      "vodUrl": null,
+      "referee": "Hunxin",
+      "streamer": "Hikawa Rina",
+      "commentators": "Explosive",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A2:L2"
+    },
+    {
+      "id": "match-a2",
+      "label": "A2",
+      "stage": "Group A",
+      "teamA": "team-e",
+      "teamB": "team-g",
+      "scheduledAt": "2021-12-25T20:00:00+08:00",
+      "score": [4, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/95671185"],
+      "vodUrl": "https://www.bilibili.com/video/BV1Ea41167er/",
+      "referee": "osu happy",
+      "streamer": "Muziyami",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A3:L3"
+    },
+    {
+      "id": "match-a4",
+      "label": "A4",
+      "stage": "Group B",
+      "teamA": "team-b",
+      "teamB": "team-d",
+      "scheduledAt": "2021-12-26T19:00:00+08:00",
+      "score": [6, 0],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/95711157"],
+      "vodUrl": null,
+      "referee": "Morika",
+      "streamer": "Muziyami",
+      "commentators": "FcEazy",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A4:L4"
+    },
+    {
+      "id": "match-a5",
+      "label": "A5",
+      "stage": "Group B",
+      "teamA": "team-f",
+      "teamB": "team-h",
+      "scheduledAt": "2021-12-26T20:00:00+08:00",
+      "score": [6, 3],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/95712424"],
+      "vodUrl": "https://www.bilibili.com/video/BV1LL4y1E79Y/",
+      "referee": "Truth your left",
+      "streamer": "Explosive",
+      "commentators": "Explosive FcEazy",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A5:L5"
+    },
+    {
+      "id": "match-a7",
+      "label": "A7",
+      "stage": "Group A",
+      "teamA": "team-a",
+      "teamB": "team-e",
+      "scheduledAt": "2022-01-05T20:00:00+08:00",
+      "score": [1, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96131183"],
+      "vodUrl": null,
+      "referee": "ye_ow",
+      "streamer": "Seira-Nanamori",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A6:L6"
+    },
+    {
+      "id": "match-a8",
+      "label": "A8",
+      "stage": "Group A",
+      "teamA": "team-c",
+      "teamB": "team-g",
+      "scheduledAt": "2022-01-02T21:00:00+08:00",
+      "score": null,
+      "mpUrls": [],
+      "vodUrl": null,
+      "referee": "Morika",
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A7:L7",
+      "forfeitWinner": 0
+    },
+    {
+      "id": "match-a9",
+      "label": "A9",
+      "stage": "Group B",
+      "teamA": "team-b",
+      "teamB": "team-f",
+      "scheduledAt": "2022-01-03T20:00:00+08:00",
+      "score": [1, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96050727"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "Muziyami",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A8:L8"
+    },
+    {
+      "id": "match-a10",
+      "label": "A10",
+      "stage": "Group B",
+      "teamA": "team-d",
+      "teamB": "team-h",
+      "scheduledAt": "2022-01-02T21:00:00+08:00",
+      "score": [0, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96012934"],
+      "vodUrl": null,
+      "referee": "osu happy",
+      "streamer": "FcEazy",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A9:L9"
+    },
+    {
+      "id": "match-a13",
+      "label": "A13",
+      "stage": "Group A",
+      "teamA": "team-a",
+      "teamB": "team-g",
+      "scheduledAt": "2022-01-08T19:00:00+08:00",
+      "score": [6, 4],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96253606"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": null,
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A10:L10"
+    },
+    {
+      "id": "match-a14",
+      "label": "A14",
+      "stage": "Group A",
+      "teamA": "team-c",
+      "teamB": "team-e",
+      "scheduledAt": "2022-01-08T20:30:00+08:00",
+      "score": [2, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96255834"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "Explosive",
+      "commentators": "Luffyty Prophet",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A11:L11"
+    },
+    {
+      "id": "match-a15",
+      "label": "A15",
+      "stage": "Group B",
+      "teamA": "team-b",
+      "teamB": "team-h",
+      "scheduledAt": "2022-01-09T19:30:00+08:00",
+      "score": [4, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96301552"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "Muziyami",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A12:L12"
+    },
+    {
+      "id": "match-a16",
+      "label": "A16",
+      "stage": "Group B",
+      "teamA": "team-d",
+      "teamB": "team-f",
+      "scheduledAt": "2022-01-09T20:00:00+08:00",
+      "score": [1, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96302215"],
+      "vodUrl": null,
+      "referee": "Another Flower",
+      "streamer": "Explosive",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A13:L13"
+    },
+    {
+      "id": "match-w1",
+      "label": "W1",
+      "stage": "淘汰赛",
+      "teamA": "team-f",
+      "teamB": "team-c",
+      "scheduledAt": "2022-01-16T20:00:00+08:00",
+      "score": [6, 0],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96584429"],
+      "vodUrl": null,
+      "referee": "[Crz]Makii",
+      "streamer": "FcEazy",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A997:L997"
+    },
+    {
+      "id": "match-w2",
+      "label": "W2",
+      "stage": "淘汰赛",
+      "teamA": "team-e",
+      "teamB": "team-h",
+      "scheduledAt": "2022-01-15T21:00:00+08:00",
+      "score": [4, 6],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96536580"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "Reecho",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A998:L998"
+    },
+    {
+      "id": "match-l1",
+      "label": "L1",
+      "stage": "淘汰赛",
+      "teamA": "team-a",
+      "teamB": "team-d",
+      "scheduledAt": "2022-01-16T20:00:00+08:00",
+      "score": [6, 2],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96584282"],
+      "vodUrl": null,
+      "referee": "WhiteCookies",
+      "streamer": "Muziyami",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A999:L999"
+    },
+    {
+      "id": "match-l2",
+      "label": "L2",
+      "stage": "淘汰赛",
+      "teamA": "team-g",
+      "teamB": "team-b",
+      "scheduledAt": "2022-01-16T20:00:00+08:00",
+      "score": [6, 4],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96584195"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "feifeiis",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1000:L1000"
+    },
+    {
+      "id": "match-w3",
+      "label": "W3",
+      "stage": "淘汰赛",
+      "teamA": "team-f",
+      "teamB": "team-h",
+      "scheduledAt": "2022-01-23T20:00:00+08:00",
+      "score": [7, 3],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96884892"],
+      "vodUrl": null,
+      "referee": "WhiteCookies",
+      "streamer": "Alice Mana",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1001:L1001"
+    },
+    {
+      "id": "match-l3",
+      "label": "L3",
+      "stage": "淘汰赛",
+      "teamA": "team-e",
+      "teamB": "team-a",
+      "scheduledAt": "2022-01-22T20:00:00+08:00",
+      "score": [6, 4],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96831860"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "SqcOc-",
+      "commentators": "Sonoaoi、SqcOc-、Prophet",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1002:L1002"
+    },
+    {
+      "id": "match-l4",
+      "label": "L4",
+      "stage": "淘汰赛",
+      "teamA": "team-c",
+      "teamB": "team-g",
+      "scheduledAt": "2022-01-22T22:00:00+08:00",
+      "score": [6, 0],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96836473"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "SqcOc-",
+      "commentators": "Sonoaoi、SqcOc-、Prophet",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1003:L1003"
+    },
+    {
+      "id": "match-l5",
+      "label": "L5",
+      "stage": "淘汰赛",
+      "teamA": "team-e",
+      "teamB": "team-c",
+      "scheduledAt": "2022-01-23T20:00:00+08:00",
+      "score": [7, 3],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/96884895"],
+      "vodUrl": null,
+      "referee": "110",
+      "streamer": "Seira-Nanamori",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1004:L1004"
+    },
+    {
+      "id": "match-lf",
+      "label": "LF",
+      "stage": "LF",
+      "teamA": "team-h",
+      "teamB": "team-e",
+      "scheduledAt": "2022-02-05T20:00:00+08:00",
+      "score": [7, 1],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/97418084"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "Muziyami",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1005:L1005"
+    },
+    {
+      "id": "match-gf",
+      "label": "GF",
+      "stage": "GF",
+      "teamA": "team-f",
+      "teamB": "team-h",
+      "scheduledAt": "2022-03-05T20:30:00+08:00",
+      "score": [7, 1],
+      "mpUrls": ["https://osu.ppy.sh/community/matches/98427039"],
+      "vodUrl": null,
+      "referee": "Sonoaoi",
+      "streamer": "SqcOc-",
+      "commentators": "Sonoaoi、SqcOc-、Explosive",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A1006:L1006"
+    }
+  ],
+  "pools": [
+    {
+      "id": "gs",
+      "name": "小组赛",
+      "source": "Mappools!B257:L275",
+      "maps": [
+        {
+          "slot": "NM1",
+          "title": "Sasaki Rico - Recollections [Resolve]",
+          "mapper": "Lasse",
+          "source": "Mappools!B257:L257",
+          "beatmapId": 1981240,
+          "stars": 6.39,
+          "bpm": 197.0,
+          "drainSeconds": 238.0,
+          "cs": 4.2,
+          "ar": 9.3,
+          "od": 8.7
+        },
+        {
+          "slot": "NM2",
+          "title": "DragonForce - My Heart Will Go On [Expert]",
+          "mapper": "[Karcher]",
+          "source": "Mappools!B258:L258",
+          "beatmapId": 3385965,
+          "stars": 6.37,
+          "bpm": 200.0,
+          "drainSeconds": 151.0,
+          "cs": 3.6,
+          "ar": 9.3,
+          "od": 8.7
+        },
+        {
+          "slot": "NM3",
+          "title": "Suda Keina - veil [yudragen's extra]",
+          "mapper": "Kaitjuh",
+          "source": "Mappools!B259:L259",
+          "beatmapId": 2220743,
+          "stars": 6.03,
+          "bpm": 150.0,
+          "drainSeconds": 202.0,
+          "cs": 4.2,
+          "ar": 9.4,
+          "od": 8.0
+        },
+        {
+          "slot": "NM4",
+          "title": "onoken - felys final remix [veritas]",
+          "mapper": "_Epreus",
+          "source": "Mappools!B260:L260",
+          "beatmapId": 3369327,
+          "stars": 6.39,
+          "bpm": 180.0,
+          "drainSeconds": 132.0,
+          "cs": 4.2,
+          "ar": 9.6,
+          "od": 9.0
+        },
+        {
+          "slot": "NM5",
+          "title": "UNDEAD CORPORATION - Blow [Heilia's Extreme]",
+          "mapper": "hehe",
+          "source": "Mappools!B261:L261",
+          "beatmapId": 2340905,
+          "stars": 6.44,
+          "bpm": 230.0,
+          "drainSeconds": 212.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.8
+        },
+        {
+          "slot": "HD1",
+          "title": "REOL - VIP KID [Isolophobia]",
+          "mapper": "Sparhten",
+          "source": "Mappools!B263:L263",
+          "beatmapId": 2609556,
+          "stars": 5.86,
+          "bpm": 128.0,
+          "drainSeconds": 227.0,
+          "cs": 4.5,
+          "ar": 9.6,
+          "od": 9.0
+        },
+        {
+          "slot": "HD2",
+          "title": "TOMOSUKE x Jazzin'park feat. LANA - Kiroku no Kakera (sasakure.UK Framework Remix) [August's Another]",
+          "mapper": "fartownik",
+          "source": "Mappools!B264:L264",
+          "beatmapId": 743880,
+          "stars": 5.8,
+          "bpm": 200.0,
+          "drainSeconds": 109.0,
+          "cs": 4.9,
+          "ar": 9.1,
+          "od": 8.9
+        },
+        {
+          "slot": "HD3",
+          "title": "YUC'e - Chemical Cookie [Kalidoi's Extra]",
+          "mapper": "Yusomi",
+          "source": "Mappools!B265:L265",
+          "beatmapId": 1914735,
+          "stars": 6.23,
+          "bpm": 180.0,
+          "drainSeconds": 98.0,
+          "cs": 4.2,
+          "ar": 9.3,
+          "od": 8.0
+        },
+        {
+          "slot": "HR1",
+          "title": "petit milady - azurite [kalibe's extra]",
+          "mapper": "Garden",
+          "source": "Mappools!B267:L267",
+          "beatmapId": 1697436,
+          "stars": 6.24,
+          "bpm": 183.0,
+          "drainSeconds": 222.0,
+          "cs": 5.46,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR2",
+          "title": "Tatsh - Xepher [Another]",
+          "mapper": "Gibune",
+          "source": "Mappools!B268:L268",
+          "beatmapId": 3117156,
+          "stars": 5.94,
+          "bpm": 170.0,
+          "drainSeconds": 91.0,
+          "cs": 6.5,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "HR3",
+          "title": "P*Light - Innocent Floor [ZTR's Super Hard]",
+          "mapper": "-Famous-",
+          "source": "Mappools!B269:L269",
+          "beatmapId": 896689,
+          "stars": 6.07,
+          "bpm": 199.0,
+          "drainSeconds": 109.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 9.8
+        },
+        {
+          "slot": "DT1",
+          "title": "Taylor Swift - ...Ready For It? [Kaine's Insane]",
+          "mapper": "Syph",
+          "source": "Mappools!B271:L271",
+          "beatmapId": 1488959,
+          "stars": 6.38,
+          "bpm": 240.0,
+          "drainSeconds": 126.0,
+          "cs": 4.0,
+          "ar": 10.33333333,
+          "od": 10.15
+        },
+        {
+          "slot": "DT2",
+          "title": "BlackY feat. Risa Yuzuki - Crimsonate [Insane]",
+          "mapper": "verychill",
+          "source": "Mappools!B272:L272",
+          "beatmapId": 3283618,
+          "stars": 6.55,
+          "bpm": 223.5,
+          "drainSeconds": 122.0,
+          "cs": 4.4,
+          "ar": 10.0,
+          "od": 9.75
+        },
+        {
+          "slot": "DT3",
+          "title": "Draper - Set Me Free (Cut Ver.) [Strategas' Insane]",
+          "mapper": "AJT",
+          "source": "Mappools!B273:L273",
+          "beatmapId": 3457575,
+          "stars": 6.57,
+          "bpm": 255.0,
+          "drainSeconds": 68.666667,
+          "cs": 3.8,
+          "ar": 10.0,
+          "od": 9.75
+        },
+        {
+          "slot": "ACE1",
+          "title": "Shimotsuki Haruka - Secret Liqueur [Last Order]",
+          "mapper": "PinkHeart",
+          "source": "Mappools!B275:L275",
+          "beatmapId": 1169586,
+          "stars": 6.79,
+          "bpm": 120.0,
+          "drainSeconds": 298.0,
+          "cs": 4.0,
+          "ar": 9.6,
+          "od": 9.1
+        }
+      ]
+    },
+    {
+      "id": "sf",
+      "name": "淘汰赛",
+      "source": "Mappools!B77:L91",
+      "maps": [
+        {
+          "slot": "NM1",
+          "title": "AliA - impulse [Flask's Extreme]",
+          "mapper": "SkyFlame",
+          "source": "Mappools!B77:L77",
+          "beatmapId": 2628801,
+          "stars": 6.62,
+          "bpm": 193.0,
+          "drainSeconds": 181.0,
+          "cs": 4.3,
+          "ar": 9.5,
+          "od": 9.0
+        },
+        {
+          "slot": "NM2",
+          "title": "Marmalade butcher - Amanita [Collab Extra]",
+          "mapper": "Camo",
+          "source": "Mappools!B78:L78",
+          "beatmapId": 3348077,
+          "stars": 6.46,
+          "bpm": 194.0,
+          "drainSeconds": 198.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 9.0
+        },
+        {
+          "slot": "NM3",
+          "title": "Matsushita - Hey Darling! [Toa my beloved]",
+          "mapper": "Shikibe Mayu",
+          "source": "Mappools!B79:L79",
+          "beatmapId": 3120956,
+          "stars": 6.13,
+          "bpm": 282.0,
+          "drainSeconds": 207.0,
+          "cs": 4.0,
+          "ar": 9.6,
+          "od": 9.3
+        },
+        {
+          "slot": "NM4",
+          "title": "Frums (unknown \"lambda\") - 19ZZ [D083F431190D51707475CB37EDF4F1E5]",
+          "mapper": "pocket-",
+          "source": "Mappools!B80:L80",
+          "beatmapId": 2866795,
+          "stars": 5.97,
+          "bpm": 84.0,
+          "drainSeconds": 140.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 9.0
+        },
+        {
+          "slot": "NM5",
+          "title": "Whispered - Unrestrained [Kerupt's Expert]",
+          "mapper": "ItsWinter",
+          "source": "Mappools!B81:L81",
+          "beatmapId": 3354660,
+          "stars": 6.75,
+          "bpm": 215.0,
+          "drainSeconds": 192.0,
+          "cs": 4.0,
+          "ar": 9.6,
+          "od": 9.1
+        },
+        {
+          "slot": "HD1",
+          "title": "Fukunaga Yoru - Hitohira no, Daisuki o, [I wish,]",
+          "mapper": "gazimal",
+          "source": "Mappools!B82:L82",
+          "beatmapId": 3296916,
+          "stars": 6.26,
+          "bpm": 200.0,
+          "drainSeconds": 264.0,
+          "cs": 4.0,
+          "ar": 9.4,
+          "od": 9.0
+        },
+        {
+          "slot": "HD2",
+          "title": "Yunomi - Mentai Cosmic (feat. nicamoq) [Hikan's Cosmic]",
+          "mapper": "Hokichi",
+          "source": "Mappools!B83:L83",
+          "beatmapId": 2337880,
+          "stars": 6.19,
+          "bpm": 224.0,
+          "drainSeconds": 138.0,
+          "cs": 4.0,
+          "ar": 9.0,
+          "od": 7.5
+        },
+        {
+          "slot": "HD3",
+          "title": "Alkome - Mind Disorder [toybot's Expert]",
+          "mapper": "Altai",
+          "source": "Mappools!B84:L84",
+          "beatmapId": 3124446,
+          "stars": 6.18,
+          "bpm": 175.0,
+          "drainSeconds": 129.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.5
+        },
+        {
+          "slot": "HR1",
+          "title": "CHiCO with HoneyWorks - Wolf [Extra]",
+          "mapper": "CoLouRed GlaZeE",
+          "source": "Mappools!B85:L85",
+          "beatmapId": 3536476,
+          "stars": 6.47,
+          "bpm": 190.0,
+          "drainSeconds": 225.0,
+          "cs": 4.2,
+          "ar": 9.3,
+          "od": 9.0
+        },
+        {
+          "slot": "HR2",
+          "title": "Feryquitous - Quon-Extend- [hit da quon]",
+          "mapper": "captin1",
+          "source": "Mappools!B86:L86",
+          "beatmapId": 2819029,
+          "stars": 6.46,
+          "bpm": 189.0,
+          "drainSeconds": 164.0,
+          "cs": 5.0,
+          "ar": 8.0,
+          "od": 9.0
+        },
+        {
+          "slot": "HR3",
+          "title": "Riko (CV: Tomita Miyu), Reg (CV: Mariya Ise) - Deep in Abyss [Karen's Expert]",
+          "mapper": "Yugu",
+          "source": "Mappools!B87:L87",
+          "beatmapId": 1522760,
+          "stars": 6.4,
+          "bpm": 135.0,
+          "drainSeconds": 87.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT1",
+          "title": "yanaginagi - Yukitoki [Insane]",
+          "mapper": "deetz",
+          "source": "Mappools!B88:L88",
+          "beatmapId": 2532174,
+          "stars": 6.79,
+          "bpm": 240.0,
+          "drainSeconds": 172.0,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT2",
+          "title": "Down - AJT [INSERT COIN]",
+          "mapper": "Down",
+          "source": "Mappools!B89:L89",
+          "beatmapId": 3485484,
+          "stars": 6.81,
+          "bpm": 232.5,
+          "drainSeconds": 182.666667,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT3",
+          "title": "Annabel - pedalnote [gibune's insane]",
+          "mapper": "Agatsu",
+          "source": "Mappools!B90:L90",
+          "beatmapId": 3409171,
+          "stars": 6.58,
+          "bpm": 276.0,
+          "drainSeconds": 136.666667,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "ACE1",
+          "title": "Asriel - Kegare Naki Yume [Marathon]",
+          "mapper": "Testo",
+          "source": "Mappools!B91:L91",
+          "beatmapId": 1567645,
+          "stars": 7.34,
+          "bpm": 223.0,
+          "drainSeconds": 301.0,
+          "cs": 4.0,
+          "ar": 10.8,
+          "od": 10.41666667
+        }
+      ]
+    },
+    {
+      "id": "f",
+      "name": "决赛",
+      "source": "Mappools!B41:L57",
+      "maps": [
+        {
+          "slot": "NM1",
+          "title": "Loki - Wizard's Tower [Spiritualist]",
+          "mapper": "Minorsonek",
+          "source": "Mappools!B41:L41",
+          "beatmapId": 2231703,
+          "stars": 6.7,
+          "bpm": 175.0,
+          "drainSeconds": 160.0,
+          "cs": 4.4,
+          "ar": 9.4,
+          "od": 9.4
+        },
+        {
+          "slot": "NM2",
+          "title": "Kurokotei - Chronostasis [Regou's Classic Extra]",
+          "mapper": "_Epreus",
+          "source": "Mappools!B42:L42",
+          "beatmapId": 2240948,
+          "stars": 6.84,
+          "bpm": 196.0,
+          "drainSeconds": 101.0,
+          "cs": 4.2,
+          "ar": 9.7,
+          "od": 9.0
+        },
+        {
+          "slot": "NM3",
+          "title": "john - Shun-ran [Extra]",
+          "mapper": "amanatu2",
+          "source": "Mappools!B43:L43",
+          "beatmapId": 2964073,
+          "stars": 6.42,
+          "bpm": 140.0,
+          "drainSeconds": 146.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.0
+        },
+        {
+          "slot": "NM4",
+          "title": "Sephid - Epistrofi [Extreme]",
+          "mapper": "Mattay",
+          "source": "Mappools!B44:L44",
+          "beatmapId": 3209907,
+          "stars": 7.12,
+          "bpm": 185.0,
+          "drainSeconds": 103.0,
+          "cs": 4.0,
+          "ar": 9.8,
+          "od": 9.4
+        },
+        {
+          "slot": "NM5",
+          "title": "Umeboshi Chazuke - Bison Charge [Flask's Extreme]",
+          "mapper": "Nao Tomori",
+          "source": "Mappools!B45:L45",
+          "beatmapId": 1900116,
+          "stars": 7.24,
+          "bpm": 243.0,
+          "drainSeconds": 86.0,
+          "cs": 4.0,
+          "ar": 9.6,
+          "od": 9.0
+        },
+        {
+          "slot": "NM6",
+          "title": "Tia - Deal with the devil [Shizuku's Expert]",
+          "mapper": "Bazz B",
+          "source": "Mappools!B46:L46",
+          "beatmapId": 1841365,
+          "stars": 6.48,
+          "bpm": 142.0,
+          "drainSeconds": 274.0,
+          "cs": 4.0,
+          "ar": 9.7,
+          "od": 9.0
+        },
+        {
+          "slot": "HD1",
+          "title": "Marika - Truth and Light [Salvation]",
+          "mapper": "ponbot",
+          "source": "Mappools!B47:L47",
+          "beatmapId": 3256905,
+          "stars": 6.6,
+          "bpm": 196.0,
+          "drainSeconds": 291.0,
+          "cs": 4.0,
+          "ar": 9.3,
+          "od": 8.8
+        },
+        {
+          "slot": "HD2",
+          "title": "IAHN - Transform (Original Mix) [Aspire]",
+          "mapper": "Monstrata",
+          "source": "Mappools!B48:L48",
+          "beatmapId": 1033882,
+          "stars": 6.29,
+          "bpm": 174.0,
+          "drainSeconds": 114.0,
+          "cs": 4.5,
+          "ar": 9.0,
+          "od": 8.0
+        },
+        {
+          "slot": "HD3",
+          "title": "ak+q & Redeilia - Enigma Helix [Pure Void]",
+          "mapper": "Icekalt",
+          "source": "Mappools!B49:L49",
+          "beatmapId": 1814107,
+          "stars": 6.62,
+          "bpm": 172.0,
+          "drainSeconds": 164.0,
+          "cs": 4.1,
+          "ar": 9.5,
+          "od": 9.1
+        },
+        {
+          "slot": "HR1",
+          "title": "Yousei Teikoku - Dea x Crisis [Despair]",
+          "mapper": "Lasse",
+          "source": "Mappools!B50:L50",
+          "beatmapId": 2773398,
+          "stars": 7.26,
+          "bpm": 200.0,
+          "drainSeconds": 204.0,
+          "cs": 4.2,
+          "ar": 9.3,
+          "od": 9.0
+        },
+        {
+          "slot": "HR2",
+          "title": "AKATSUKI - Hyakka Ryouran, Akatsukiyo (karaoke ver.) [yf's Extra]",
+          "mapper": "Mafumafu",
+          "source": "Mappools!B51:L51",
+          "beatmapId": 1678438,
+          "stars": 7.09,
+          "bpm": 182.04,
+          "drainSeconds": 146.0,
+          "cs": 5.0,
+          "ar": 9.0,
+          "od": 8.0
+        },
+        {
+          "slot": "HR3",
+          "title": "Co shu Nie - Yume o Kin'iro ni Somete [Expert]",
+          "mapper": "Nymphe",
+          "source": "Mappools!B52:L52",
+          "beatmapId": 3067600,
+          "stars": 6.57,
+          "bpm": 180.0,
+          "drainSeconds": 107.0,
+          "cs": 5.85,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT1",
+          "title": "Yuna (CV: Kanda Sayaka) - delete [Grief]",
+          "mapper": "Kalibe",
+          "source": "Mappools!B53:L53",
+          "beatmapId": 2033584,
+          "stars": 7.26,
+          "bpm": 235.5,
+          "drainSeconds": 173.333333,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT2",
+          "title": "kors k feat. Sunao Yoshikawa - 7 Colors [Insane]",
+          "mapper": "Yauxo",
+          "source": "Mappools!B54:L54",
+          "beatmapId": 619513,
+          "stars": 7.35,
+          "bpm": 234.0,
+          "drainSeconds": 64.0,
+          "cs": 5.72,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT3",
+          "title": "kors k - SigSig [Nisan's Insane]",
+          "mapper": "AJT",
+          "source": "Mappools!B55:L55",
+          "beatmapId": 3298595,
+          "stars": 7.27,
+          "bpm": 268.5,
+          "drainSeconds": 73.333333,
+          "cs": 5.2,
+          "ar": 10.0,
+          "od": 10.0
+        },
+        {
+          "slot": "DT4",
+          "title": "KOKOMI - Seikyou no Igreja [Insane]",
+          "mapper": "IceKalt",
+          "source": "Mappools!B56:L56",
+          "beatmapId": 1728826,
+          "stars": 6.66,
+          "bpm": 155.25,
+          "drainSeconds": 129.333333,
+          "cs": 4.0,
+          "ar": 9.933333333,
+          "od": 9.083333333
+        },
+        {
+          "slot": "ACE1",
+          "title": "SEPHID - Critical Cannonball (Extended ver.) [Limit Break]",
+          "mapper": "DeviousPanda",
+          "source": "Mappools!B57:L57",
+          "beatmapId": 2478754,
+          "stars": 7.38,
+          "bpm": 190.0,
+          "drainSeconds": 183.0,
+          "cs": 4.1,
+          "ar": 10.8,
+          "od": 10.68333333
+        }
+      ]
+    }
+  ]
+}

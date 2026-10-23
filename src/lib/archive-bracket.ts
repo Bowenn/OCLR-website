@@ -1,4 +1,8 @@
-import type { HistoricalArchive } from "./historical-archive";
+import {
+  archiveWinner,
+  recordedArchiveMatch,
+  type HistoricalArchive,
+} from "./historical-archive";
 import type { ResolvedBracket, ResolvedMatch } from "./bracket-model";
 
 /** Edges mean a team's previous recorded appearance, never an invented qualification rule. */
@@ -8,7 +12,7 @@ export function archiveBracket(
 ): ResolvedBracket | null {
   const groups = new Map(archive.standings.map((s) => [s.teamId, s.group]));
   const sorted = [...archive.matches]
-    .filter((m) => m.score)
+    .filter(recordedArchiveMatch)
     .sort(
       (a, b) =>
         (a.scheduledAt ? Date.parse(a.scheduledAt) : Infinity) -
@@ -41,8 +45,8 @@ export function archiveBracket(
       id: m.id,
       label: m.label,
       status: "completed",
-      scores: m.score!,
-      winnerSlot: m.score![0] > m.score![1] ? 0 : 1,
+      scores: m.score ?? [null, null],
+      winnerSlot: archiveWinner(m),
       note: null,
       detailsUrl: detailsHref(m.id),
       slots: [m.teamA, m.teamB].map((teamId, i) => ({

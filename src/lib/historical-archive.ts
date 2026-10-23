@@ -60,10 +60,17 @@ export const historicalArchiveSchema = z
           .strict(),
       )
       .max(2048),
+    // Some editions preserve final Tiers but no chronological selection log.
+    draftMode: z.literal("final-tiers").optional(),
     staff: z
       .array(
         z
-          .object({ osuId: id, username: text, position: text, source })
+          .object({
+            osuId: id.nullable(),
+            username: text,
+            position: text,
+            source,
+          })
           .strict(),
       )
       .max(200),
@@ -94,6 +101,7 @@ export const historicalArchiveSchema = z
             teamB: key,
             scheduledAt: z.iso.datetime({ offset: true }).nullable(),
             score: z.tuple([score, score]).nullable(),
+            forfeitWinner: z.union([z.literal(0), z.literal(1)]).optional(),
             mpUrls: z
               .array(
                 url.refine((value) =>
@@ -125,7 +133,7 @@ export const historicalArchiveSchema = z
               .array(
                 z
                   .object({
-                    slot: z.string().regex(/^(NM|HD|HR|DT|FM|TB)[1-9]\d?$/),
+                    slot: z.string().regex(/^(NM|HD|HR|DT|FM|TB|ACE)[1-9]\d?$/),
                     beatmapId: id.nullable(),
                     title: text,
                     mapper: text.nullable(),
@@ -187,6 +195,8 @@ export const historicalArchiveSchema = z
       archive.picks.map((p) => `${p.round}:${p.teamId}`),
       "team draft round",
     );
+    if (archive.draftMode === "final-tiers" && archive.picks.length)
+      issue("Final Tier allocations cannot claim chronological draft picks.");
     unique(
       archive.standings.map((s) => s.teamId),
       "standing team",
@@ -228,6 +238,7 @@ export const historicalArchiveSchema = z
       if (
         p.role === "player" &&
         p.tier !== null &&
+        archive.draftMode !== "final-tiers" &&
         !archive.picks.some((pick) => pick.osuId === p.osuId)
       )
         issue("A player Tier requires source draft evidence.");
@@ -238,6 +249,8 @@ export const historicalArchiveSchema = z
       if (m.teamA === m.teamB) issue("A match requires two different teams.");
       if (m.score && m.score[0] === m.score[1])
         issue("Completed historical matches cannot have tied scores.");
+      if (m.forfeitWinner !== undefined && m.score !== null)
+        issue("Forfeits cannot invent a played map score.");
     }
     for (const s of archive.standings) team(s.teamId);
     for (const p of archive.pools)
@@ -248,13 +261,23 @@ export const historicalArchiveSchema = z
   });
 export type HistoricalArchive = z.infer<typeof historicalArchiveSchema>;
 
+export function recordedArchiveMatch(m: HistoricalArchive["matches"][number]) {
+  return m.score !== null || m.forfeitWinner !== undefined;
+}
+
+export function archiveWinner(m: HistoricalArchive["matches"][number]) {
+  return (
+    m.forfeitWinner ?? (m.score ? (m.score[0] > m.score[1] ? 0 : 1) : null)
+  );
+}
+
 export function archiveCounts(a: HistoricalArchive) {
   return {
     teams: a.teams.length,
     players: a.players.length,
     picks: a.picks.length,
-    results: a.matches.filter((m) => m.score !== null).length,
-    incomplete: a.matches.filter((m) => m.score === null).length,
+    results: a.matches.filter(recordedArchiveMatch).length,
+    incomplete: a.matches.filter((m) => !recordedArchiveMatch(m)).length,
     pools: a.pools.length,
     maps: a.pools.reduce((n, p) => n + p.maps.length, 0),
   };

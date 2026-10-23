@@ -4436,6 +4436,13 @@ body:has([data-broadcast]) .site-shell {
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
+.archive-match[data-forfeit] .archive-score-team {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.archive-match[data-forfeit] .archive-score-team > strong {
+  font-size: 1rem;
+  white-space: nowrap;
+}
 .archive-score-team[data-winner] {
   color: var(--color-foreground);
   font-weight: 700;

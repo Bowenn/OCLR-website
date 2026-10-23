@@ -13,6 +13,8 @@ import { getPublicEdition } from "@/lib/content";
 import { formatDate, type Edition } from "@/lib/editions";
 import {
   archiveCounts,
+  archiveWinner,
+  recordedArchiveMatch,
   type HistoricalArchive,
 } from "@/lib/historical-archive";
 import { PageHeading, Badge } from "./ui";
@@ -129,7 +131,12 @@ export async function HistoricalArchiveView({
     </ul>
   );
   const match = (m: HistoricalArchive["matches"][number]) => (
-    <article className="archive-match" key={m.id} data-recorded={!!m.score}>
+    <article
+      className="archive-match"
+      key={m.id}
+      data-recorded={recordedArchiveMatch(m)}
+      data-forfeit={m.forfeitWinner !== undefined || undefined}
+    >
       <header className="archive-match-meta">
         <Link className="text-link" href={href("matches", m.id)}>
           {m.label}
@@ -143,7 +150,7 @@ export async function HistoricalArchiveView({
       </header>
       <div className="archive-scoreboard">
         {[m.teamA, m.teamB].map((teamId, i) => {
-          const won = m.score && m.score[i] > m.score[1 - i];
+          const won = archiveWinner(m) === i;
           return (
             <div
               className="archive-score-team"
@@ -154,14 +161,22 @@ export async function HistoricalArchiveView({
                 {teamLink(teamId)}
                 {won && <span className="sr-only">{tr(" (winner)")}</span>}
               </span>
-              <strong>{m.score?.[i] ?? "—"}</strong>
+              <strong>
+                {m.forfeitWinner !== undefined
+                  ? won
+                    ? tr("Winner")
+                    : tr("Forfeit")
+                  : (m.score?.[i] ?? "—")}
+              </strong>
             </div>
           );
         })}
       </div>
       <footer className="archive-match-footer">
         <span className="small muted">
-          {m.score ? tr("Recorded results") : tr("Unconfirmed records")}
+          {recordedArchiveMatch(m)
+            ? tr("Recorded results")
+            : tr("Unconfirmed records")}
         </span>
         <div className="archive-match-links">
           {m.mpUrls.map((url, i) => (
@@ -176,7 +191,7 @@ export async function HistoricalArchiveView({
           )}
         </div>
       </footer>
-      {!m.score && (
+      {!recordedArchiveMatch(m) && (
         <p className="muted small archive-unconfirmed">
           {tr("Schedule record only; completion and result are not confirmed.")}
         </p>
@@ -255,16 +270,26 @@ export async function HistoricalArchiveView({
             <ul className="public-staff-list">
               {members.map((person, index) => (
                 <li key={`${person.osuId}-${index}`}>
-                  <Avatar osuId={person.osuId} username={person.username} />
+                  {person.osuId ? (
+                    <Avatar osuId={person.osuId} username={person.username} />
+                  ) : (
+                    <div className="avatar" aria-hidden="true">
+                      <span>{person.username.slice(0, 2)}</span>
+                    </div>
+                  )}
                   <div>
                     <h3>
-                      <a
-                        className="context-link"
-                        href={`https://osu.ppy.sh/users/${person.osuId}`}
-                        rel="noreferrer"
-                      >
-                        {person.username}
-                      </a>
+                      {person.osuId ? (
+                        <a
+                          className="context-link"
+                          href={`https://osu.ppy.sh/users/${person.osuId}`}
+                          rel="noreferrer"
+                        >
+                          {person.username}
+                        </a>
+                      ) : (
+                        person.username
+                      )}
                     </h3>
                   </div>
                 </li>
@@ -332,11 +357,11 @@ export async function HistoricalArchiveView({
     );
   } else if (["schedule", "results", "match"].includes(section)) {
     const matches = a.matches
-      .filter((m) => preview || m.score !== null)
+      .filter((m) => preview || recordedArchiveMatch(m))
       .filter((m) =>
         section === "match"
           ? m.id === id
-          : section !== "results" || m.score !== null,
+          : section !== "results" || recordedArchiveMatch(m),
       )
       .sort((x, y) =>
         (x.scheduledAt ?? "9999").localeCompare(y.scheduledAt ?? "9999"),
@@ -353,7 +378,7 @@ export async function HistoricalArchiveView({
           matches={matches.map((m) => ({
             id: m.id,
             stage: m.stage,
-            recorded: !!m.score,
+            recorded: recordedArchiveMatch(m),
             content: match(m),
           }))}
         />
@@ -396,8 +421,16 @@ export async function HistoricalArchiveView({
           (x.rank ?? Infinity) - (y.rank ?? Infinity),
       );
     if (bracket)
-      for (const group of bracket.groups)
+      for (const group of bracket.groups) {
         if (group.id === "match-path") group.label = tr("Match path");
+        for (const round of group.rounds)
+          for (const match of round.matches)
+            if (
+              a.matches.find((m) => m.id === match.id)?.forfeitWinner !==
+              undefined
+            )
+              match.note = tr("Forfeit");
+      }
     content = (
       <>
         <p className="muted small">
@@ -476,45 +509,70 @@ export async function HistoricalArchiveView({
     );
   } else if (section === "draft") {
     title = tr("Draft results");
-    content = (
-      <div className="archive-draft">
-        {[...new Set(a.picks.map((p) => p.round))]
-          .sort((a, b) => a - b)
-          .map((round) => (
-            <section className="archive-draft-round" key={round}>
-              <header>
-                <h2>{tr("Round {round}", { round })}</h2>
-                <span className="muted small">{`Tier ${round}`}</span>
-              </header>
-              <ol className="archive-draft-picks">
-                {a.picks
-                  .filter((p) => p.round === round)
-                  .sort((a, b) => a.pick - b.pick)
-                  .map((pick) => {
-                    const p = player(pick.osuId);
-                    return (
-                      <li key={p.osuId} value={pick.pick}>
-                        <span
-                          className="archive-pick-number"
-                          aria-label={tr("Pick {pick}", { pick: pick.pick })}
-                        >
-                          {String(pick.pick).padStart(2, "0")}
-                        </span>
-                        <Avatar osuId={p.osuId} username={p.username} />
-                        <div>
-                          <strong>{playerLink(p)}</strong>
-                          <span className="small muted">
-                            {teamLink(pick.teamId)}
+    content =
+      a.draftMode === "final-tiers" ? (
+        <div className="archive-draft">
+          <p className="muted">
+            {tr("Final Tier allocations; selection order was not recorded.")}
+          </p>
+          {[
+            ...new Set(
+              a.players
+                .filter((p) => p.role === "player" && p.tier !== null)
+                .map((p) => p.tier!),
+            ),
+          ]
+            .sort((x, y) => x - y)
+            .map((tier) => (
+              <section key={tier} className="archive-draft-round">
+                <h2>{`Tier ${tier}`}</h2>
+                {roster(
+                  a.players.filter(
+                    (p) => p.role === "player" && p.tier === tier,
+                  ),
+                )}
+              </section>
+            ))}
+        </div>
+      ) : (
+        <div className="archive-draft">
+          {[...new Set(a.picks.map((p) => p.round))]
+            .sort((a, b) => a - b)
+            .map((round) => (
+              <section className="archive-draft-round" key={round}>
+                <header>
+                  <h2>{tr("Round {round}", { round })}</h2>
+                  <span className="muted small">{`Tier ${round}`}</span>
+                </header>
+                <ol className="archive-draft-picks">
+                  {a.picks
+                    .filter((p) => p.round === round)
+                    .sort((a, b) => a.pick - b.pick)
+                    .map((pick) => {
+                      const p = player(pick.osuId);
+                      return (
+                        <li key={p.osuId} value={pick.pick}>
+                          <span
+                            className="archive-pick-number"
+                            aria-label={tr("Pick {pick}", { pick: pick.pick })}
+                          >
+                            {String(pick.pick).padStart(2, "0")}
                           </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-              </ol>
-            </section>
-          ))}
-      </div>
-    );
+                          <Avatar osuId={p.osuId} username={p.username} />
+                          <div>
+                            <strong>{playerLink(p)}</strong>
+                            <span className="small muted">
+                              {teamLink(pick.teamId)}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                </ol>
+              </section>
+            ))}
+        </div>
+      );
   } else if (section === "rules") {
     title = tr("Rules");
     const rules = historicalRulebook(a);

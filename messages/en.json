@@ -2067,6 +2067,8 @@
     "m5acf795bb3cf": "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
     "mba592a2eab8f": "Map difference",
     "m4848885e3fc4": "Awaiting review",
-    "mbb994ca86b0a": "Incomplete results"
+    "mbb994ca86b0a": "Incomplete results",
+    "m33d9fa026b03": "Forfeit",
+    "mf19b20c199f9": "Final Tier allocations; selection order was not recorded."
   }
 }
