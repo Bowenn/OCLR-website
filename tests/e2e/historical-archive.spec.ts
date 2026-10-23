@@ -567,7 +567,7 @@ test.describe("historical archive browser workflow", () => {
     const contents = page.locator(
       isMobile ? ".rules-mobile-contents nav" : ".rules-desktop-contents nav",
     );
-    await contents.getByRole("link", { name: "EX模式：", exact: true }).click();
+    await contents.getByRole("link", { name: "EX模式", exact: true }).click();
     await expect(page.locator(".rules-article h2").last()).toBeInViewport();
     if (isMobile)
       await expect(page.locator(".rules-mobile-contents")).not.toHaveAttribute(

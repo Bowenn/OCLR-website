@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { rulesSectionIds } from "../../src/lib/rules-navigation";
+import {
+  rulesContentsLabel,
+  rulesSectionIds,
+} from "../../src/lib/rules-navigation";
 describe("rules heading anchors", () => {
   it("retains Chinese and normalizes fullwidth characters", () => {
     expect(rulesSectionIds(["比赛规则", "Ｒｕｌｅｓ & Eligibility"])).toEqual([
@@ -25,5 +28,22 @@ describe("rules heading anchors", () => {
     const ids = rulesSectionIds(["x".repeat(500), "<script>alert(1)</script>"]);
     expect(ids[0].length).toBeLessThan(90);
     expect(ids[1]).not.toContain("<");
+  });
+});
+
+describe("historical contents labels", () => {
+  it("removes only trailing colons for S8/S9/S10 without changing headings or anchors", () => {
+    const headings = ["比賽信息：", "A: B:", "EX模式：  ", "No colon"];
+    for (const season of ["8", "9", "10"]) {
+      expect(headings.map((h) => rulesContentsLabel(h, season))).toEqual([
+        "比賽信息",
+        "A: B",
+        "EX模式",
+        "No colon",
+      ]);
+    }
+    expect(rulesContentsLabel(headings[0], "11")).toBe(headings[0]);
+    expect(rulesContentsLabel(headings[0])).toBe(headings[0]);
+    expect(rulesSectionIds(headings)).toEqual(rulesSectionIds([...headings]));
   });
 });

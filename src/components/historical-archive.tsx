@@ -497,7 +497,11 @@ export async function HistoricalArchiveView({
           ) : null}
           {rules.sections.length} {tr("sections")}
         </p>
-        <RulesHandbook sections={rules.sections} cover={rules.cover} />
+        <RulesHandbook
+          sections={rules.sections}
+          cover={rules.cover}
+          archiveSeason={a.season}
+        />
       </>
     ) : (
       <p className="muted">{tr("Not recorded")}</p>

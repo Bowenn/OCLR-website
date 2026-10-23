@@ -3,7 +3,7 @@ import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { rulesSectionIds } from "@/lib/rules-navigation";
+import { rulesContentsLabel, rulesSectionIds } from "@/lib/rules-navigation";
 type RuleFigure = {
   after: string;
   src: string;
@@ -55,8 +55,10 @@ function RuleBody({ section }: { section: RuleSection }) {
 export function RulesHandbook({
   sections,
   cover,
+  archiveSeason,
 }: {
   sections: RuleSection[];
+  archiveSeason?: string;
   cover?: Omit<RuleFigure, "after">;
 }) {
   const tr = useAppTranslations();
@@ -99,7 +101,7 @@ export function RulesHandbook({
             }}
           >
             <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-            {s.heading}
+            {rulesContentsLabel(s.heading, archiveSeason)}
           </a>
         ))}
       </nav>

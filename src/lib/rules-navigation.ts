@@ -17,3 +17,10 @@ export function rulesSectionIds(headings: string[]) {
     return id;
   });
 }
+
+/** Archival punctuation stays in headings and anchors; only TOC labels are cleaned. */
+export function rulesContentsLabel(heading: string, archiveSeason?: string) {
+  return ["8", "9", "10"].includes(archiveSeason ?? "")
+    ? heading.replace(/[:：]+\s*$/u, "")
+    : heading;
+}
