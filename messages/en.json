@@ -1957,6 +1957,8 @@
     "ma6086834ef27": "Tiers come from valid draft rounds. Round N means Tier N; captains have no Tier.",
     "me9328b8e8386": "MVP: at least 6 appearances. MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement. Rookie: at least 5 appearances and draft-derived Tier of T4, T5 or below. Awards are independent; ties remain tied.",
     "ma8d13fe45242": "Configure consecutive, non-overlapping weeks.",
-    "mecc0b5cdb7fa": "Release draft Tier sources before publishing awards."
+    "mecc0b5cdb7fa": "Release draft Tier sources before publishing awards.",
+    "m624ed9e62fe4": "Registration window begins",
+    "mc24a80b499f5": "Registration window ends"
   }
 }

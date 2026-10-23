@@ -2,7 +2,7 @@ import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { Action } from "@/components/ui";
 import { publicNewsContext } from "@/lib/public-news";
-import { nextConfirmedMilestone } from "@/lib/public-milestones";
+import { nextConfirmedMilestone, milestoneLabel } from "@/lib/public-milestones";
 import { registrationAvailability } from "@/lib/registrations";
 import { formatDate, publicEditionSummary } from "@/lib/editions";
 export const dynamic = "force-dynamic";
@@ -131,7 +131,7 @@ export default async function Home() {
           {milestone ? (
             <>
               <p className="muted small">{milestone.edition}</p>
-              <h3>{milestone.label}</h3>
+              <h3>{milestoneLabel(milestone, tr)}</h3>
               <p>
                 {tr(formatDate(milestone.at, milestone.timeZone, tr.locale))}
               </p>

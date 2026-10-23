@@ -8,11 +8,13 @@ export function nextConfirmedMilestone(editions: Edition[], now = new Date()) {
         ...(e.registration
           ? [
               {
+                kind: "registration_opens" as const,
                 label: "Registration window begins",
                 at: e.registration.opensAt,
                 path: "register",
               },
               {
+                kind: "registration_closes" as const,
                 label: "Registration window ends",
                 at: e.registration.closesAt,
                 path: "register",
@@ -20,6 +22,7 @@ export function nextConfirmedMilestone(editions: Edition[], now = new Date()) {
               ...(e.registration.withdrawUntil
                 ? [
                     {
+                      kind: "withdrawal_deadline" as const,
                       label: "Withdrawal deadline",
                       at: e.registration.withdrawUntil,
                       path: "register",
@@ -30,7 +33,7 @@ export function nextConfirmedMilestone(editions: Edition[], now = new Date()) {
           : []),
         ...e.schedule
           .filter((s): s is { label: string; at: string } => Boolean(s.at))
-          .map((s) => ({ ...s, path: "schedule" })),
+          .map((s) => ({ ...s, kind: "authored" as const, path: "schedule" })),
       ].map((s) => ({
         ...s,
         edition: e.name,
@@ -98,4 +101,14 @@ export function nextPlannedMilestone(
       ? index
       : next;
   }, -1);
+}
+
+/** Translate only semantic system events, never organizer-authored labels. */
+export function milestoneLabel(event: { kind?: string; label: string }, tr: (message: string) => string) {
+  switch (event.kind) {
+    case "registration_opens": return tr("Registration window begins");
+    case "registration_closes": return tr("Registration window ends");
+    case "withdrawal_deadline": return tr("Withdrawal deadline");
+    default: return event.label;
+  }
 }
