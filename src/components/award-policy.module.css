@@ -22,3 +22,17 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.rules {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.rules li {
+  line-height: 1.8;
+}
+.shared {
+  grid-column: 1 / -1;
+}
