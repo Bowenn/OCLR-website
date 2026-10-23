@@ -63,7 +63,7 @@ test.describe("published mappools and restricted editing", () => {
           })
         ).status(),
       ).toBe(403);
-      await openTournamentTool(page, "test-cup", "Mappools", isMobile);
+      await openTournamentTool(page, "test-cup", "Rounds", isMobile);
       await page
         .getByRole("button", { name: "+ New round", exact: true })
         .click();
@@ -74,8 +74,9 @@ test.describe("published mappools and restricted editing", () => {
         .getByRole("button", { name: "Create round", exact: true })
         .click();
       await expect(
-        page.getByRole("group", { name: "Rounds", exact: true }),
+        page.getByRole("list", { name: "Rounds", exact: true }),
       ).toContainText("Synthetic Group Round");
+      await openTournamentTool(page, "test-cup", "Mappools", isMobile);
       await page
         .getByRole("button", { name: "+ New pool", exact: true })
         .click();
@@ -398,14 +399,12 @@ test.describe("published mappools and restricted editing", () => {
       page.getByLabel("Position for NM1", { exact: true }),
     ).toBeVisible();
     const maps = page.getByRole("tab", { name: "Maps", exact: true });
-    await page
-      .getByRole("button", { name: "+ New round", exact: true })
-      .click();
-    await expect(page.getByLabel("Round order", { exact: true })).toBeVisible();
-    await expect(page.getByLabel("Round order", { exact: true })).toHaveValue(
-      "3",
-    );
-    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "+ New round", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: "Manage rounds", exact: true }),
+    ).toBeVisible();
     await maps.focus();
     await page.keyboard.press("End");
     await expect(
@@ -465,13 +464,15 @@ test.describe("published mappools and restricted editing", () => {
     await expect(
       page.getByRole("button", { name: "Group Round One", exact: true }),
     ).toHaveCount(0);
-    await page.getByRole("button", { name: "Edit round", exact: true }).click();
+    await page
+      .getByRole("link", { name: "Manage rounds", exact: true })
+      .click();
     await expect(page.getByLabel("Round name", { exact: true })).toHaveValue(
       "Knockout Final",
     );
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(page.getByLabel("Round name", { exact: true })).toHaveCount(0);
-    await page.reload();
+    await page.goto("/admin/tournaments/test-cup/mappools");
     await expect(
       page.getByRole("heading", { name: "Mappool management", exact: true }),
     ).toBeVisible();

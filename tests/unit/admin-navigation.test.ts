@@ -19,6 +19,10 @@ describe("administration location", () => {
   it("selects only the most specific route with segment boundaries", () => {
     expect(activeAdminLink(base, links)?.label).toBe("Dashboard");
     expect(activeAdminLink(`${base}/mappools`, links)?.label).toBe("Mappools");
+    expect(activeAdminLink(`${base}/rounds`, links)?.label).toBe("Rounds");
+    expect(
+      adminBreadcrumbs(`${base}/rounds`, edition).map((crumb) => crumb.label),
+    ).toEqual(["Administration", "Tournaments", "OCLR Season 11", "Rounds"]);
     expect(activeAdminLink(`${base}/matches/fixture`, links)?.label).toBe(
       "Fixtures & results",
     );

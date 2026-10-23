@@ -22,7 +22,6 @@ import { MappoolBatch } from "./mappool-batch";
 import { BeatmapPreview } from "./beatmap-preview";
 type Pool = MappoolWorkspace["pools"][number];
 type Entry = MappoolWorkspace["entries"][number];
-type Round = MappoolWorkspace["rounds"][number];
 type Change = { url: string };
 function Save({
   change,
@@ -55,92 +54,6 @@ function Save({
       url={change.url}
       payload={{ ...payload, confirmed: true }}
     />
-  );
-}
-function RoundForm({
-  change,
-  stage,
-  round,
-  onSuccess,
-  nextPosition,
-}: {
-  change: Change;
-  stage: string;
-  nextPosition: number;
-  round?: Round;
-  onSuccess: (deleted?: boolean) => void;
-}) {
-  const tr = useAppTranslations();
-
-  const [name, setName] = useState(round?.name ?? "");
-  const [position, setPosition] = useState(
-    String(round?.position ?? nextPosition),
-  );
-  return (
-    <div className="form-stack">
-      <label className="field">
-        <span>{tr("Round name")}</span>
-        <input
-          value={name}
-          maxLength={80}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={tr("Approved round label")}
-        />
-      </label>
-      <div>
-        <label className="field">
-          <span>{tr("Round order")}</span>
-          <input
-            type="number"
-            min={1}
-            max={999}
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-          />
-        </label>
-      </div>
-      <div className="actions">
-        <Save
-          change={change}
-          onSuccess={onSuccess}
-          label={round ? tr("Save round") : tr("Create round")}
-          payload={
-            round
-              ? {
-                  action: "round_edit",
-                  roundId: round.id,
-                  expectedVersion: round.version,
-                  name,
-                  position: Number(position),
-                }
-              : {
-                  action: "round_create",
-                  stage,
-                  name,
-                  position: Number(position),
-                }
-          }
-        />
-        {round && (
-          <ConfirmMutation
-            label={tr("Delete round")}
-            className="secondary destructive-action"
-            title={tr("Delete round “{name}”?", { name: round.name })}
-            description={tr(
-              "Only an empty round without mappools, fixtures or protected competition history can be deleted. This cannot be undone; audit history is retained.",
-            )}
-            url={change.url}
-            payload={{
-              action: "round_delete",
-              roundId: round.id,
-              expectedVersion: round.version,
-              confirmed: true,
-            }}
-            onSuccess={() => onSuccess(true)}
-          />
-        )}
-      </div>
-    </div>
   );
 }
 function CreatePool({
@@ -459,7 +372,6 @@ function EntryEditor({
   );
 }
 type Task = "maps" | "import" | "batch" | "settings";
-type Setup = "round_create" | "round_edit" | "pool_create";
 export function MappoolEditor({
   slug,
   data,
@@ -475,7 +387,7 @@ export function MappoolEditor({
   const [poolId, setPoolId] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("NM");
   const [task, setTask] = useState<Task>("maps");
-  const [setup, setSetup] = useState<Setup | null>(null);
+  const [creatingPool, setCreatingPool] = useState(false);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const addButton = useRef<HTMLButtonElement>(null);
   const [feedback, updateFeedback] = useState("");
@@ -498,13 +410,9 @@ export function MappoolEditor({
   function resetContext() {
     setTask("maps");
     setCategory("NM");
-    setSetup(null);
+    setCreatingPool(false);
     setEditingEntry(null);
     setFeedback("");
-  }
-  function toggleSetup(value: Setup) {
-    setFeedback("");
-    setSetup(setup === value ? null : value);
   }
   return (
     <div className="mappool-workbench">
@@ -525,15 +433,12 @@ export function MappoolEditor({
               resetContext();
             }}
           />
-          <button
-            type="button"
-            className="secondary"
-            aria-expanded={setup === "round_create"}
-            aria-controls={setup ? `${id}-setup` : undefined}
-            onClick={() => toggleSetup("round_create")}
+          <Link
+            className="button secondary"
+            href={`/admin/tournaments/${slug}/rounds${round ? `?round=${round.id}` : `?stage=${stage}`}`}
           >
-            {tr("+ New round")}
-          </button>
+            {tr("Manage rounds")}
+          </Link>
         </div>
         <div
           role="tabpanel"
@@ -563,30 +468,23 @@ export function MappoolEditor({
                   </button>
                 ))}
               </div>
-              <div className="actions">
-                <button
-                  type="button"
-                  className="secondary"
-                  aria-expanded={setup === "round_edit"}
-                  aria-controls={setup ? `${id}-setup` : undefined}
-                  onClick={() => toggleSetup("round_edit")}
-                >
-                  {tr("Edit round")}
-                </button>
-                <button
-                  type="button"
-                  className="secondary"
-                  aria-expanded={setup === "pool_create"}
-                  aria-controls={setup ? `${id}-setup` : undefined}
-                  onClick={() => toggleSetup("pool_create")}
-                >
-                  {tr("+ New pool")}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="secondary"
+                aria-expanded={creatingPool}
+                aria-controls={creatingPool ? `${id}-setup` : undefined}
+                onClick={() => {
+                  setFeedback("");
+                  setCreatingPool(!creatingPool);
+                }}
+              >
+                {tr("+ New pool")}
+              </button>
             </div>
           ) : (
             <p className="muted small mappool-empty">
-              {tr("No rounds in this stage. Create a round to get started.")}
+              {tr("No rounds in this stage.")}{" "}
+              {tr("Create rounds in Round management before adding mappools.")}
             </p>
           )}
           {pools.length > 1 && (
@@ -615,57 +513,33 @@ export function MappoolEditor({
           )}
         </div>
       </div>
-      {setup && (
+      {creatingPool && round && (
         <section
           className="mappool-setup"
           id={`${id}-setup`}
           aria-labelledby={`${id}-setup-title`}
         >
           <div className="mappool-toolbar">
-            <h2 id={`${id}-setup-title`}>
-              {setup === "round_create"
-                ? tr("Create a round")
-                : setup === "round_edit"
-                  ? tr("Edit selected round")
-                  : tr("Create a mappool")}
-            </h2>
+            <h2 id={`${id}-setup-title`}>{tr("Create a mappool")}</h2>
             <button
               type="button"
               className="secondary"
-              onClick={() => setSetup(null)}
+              onClick={() => setCreatingPool(false)}
             >
               {tr("Cancel")}
             </button>
           </div>
-          {setup === "pool_create" && round ? (
-            <CreatePool
-              key={round.id}
-              change={change}
-              roundId={round.id}
-              onSuccess={() => {
-                setSetup(null);
-                setFeedback(
-                  "Pool created. Select it in this round to start editing.",
-                );
-              }}
-            />
-          ) : (
-            <RoundForm
-              key={`${setup}-${round?.id}-${round?.version}`}
-              change={change}
-              stage={stage}
-              nextPosition={Math.max(0, ...rounds.map((r) => r.position)) + 1}
-              round={setup === "round_edit" ? round : undefined}
-              onSuccess={(deleted = false) => {
-                setSetup(null);
-                if (deleted) {
-                  setRoundId("");
-                  setPoolId("");
-                }
-                setFeedback(deleted ? tr("Round deleted.") : tr("Round saved."));
-              }}
-            />
-          )}
+          <CreatePool
+            key={round.id}
+            change={change}
+            roundId={round.id}
+            onSuccess={() => {
+              setCreatingPool(false);
+              setFeedback(
+                "Pool created. Select it in this round to start editing.",
+              );
+            }}
+          />
         </section>
       )}
       {feedback && (
@@ -931,7 +805,7 @@ export function MappoolEditor({
         </section>
       ) : (
         round &&
-        !setup && (
+        !creatingPool && (
           <p className="muted small mappool-empty">
             {tr("No mappools in ")}
             {round.name}

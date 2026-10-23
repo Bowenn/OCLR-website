@@ -269,7 +269,12 @@ test.describe("tournament-centered administration", () => {
           name: "Tournament navigation",
           exact: true,
         });
-        await expect(nav.getByRole("link")).toHaveCount(2);
+        await expect(nav.getByRole("link")).toHaveCount(
+          session === mapper ? 3 : 2,
+        );
+        await expect(
+          nav.getByRole("link", { name: "Rounds", exact: true }),
+        ).toHaveCount(session === mapper ? 1 : 0);
         await expect(
           nav.getByRole("link", { name: allowed, exact: true }),
         ).toBeVisible();

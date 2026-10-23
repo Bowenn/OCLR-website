@@ -113,6 +113,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     expect(mapperRows.map((row) => row.slug)).toEqual(["test-cup"]);
     expect(mapperRows[0].links.map((link) => link.label)).toEqual([
       "Dashboard",
+      "Rounds",
       "Mappools",
     ]);
     const refereeRows = (await tournamentList(referee)).rows;

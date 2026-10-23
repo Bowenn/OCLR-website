@@ -26,6 +26,7 @@ export async function POST(
     const user = await requireUser();
     const { edition } = await context.params;
     const result = await mappoolCommand(user, edition, await readJson(request));
+    revalidatePath(`/admin/tournaments/${edition}`, "layout");
     revalidatePath(`/tournaments/${edition}`, "layout");
     return NextResponse.json(result, {
       headers: { "Cache-Control": "no-store" },

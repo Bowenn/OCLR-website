@@ -1948,6 +1948,11 @@
     "m8619c33c69e9": "This round contains mappools and cannot be deleted. Keep it or create a new round; no dependent records were removed.",
     "m082ba5865d21": "This round contains fixtures or result history. Remove only eligible unused fixtures in Fixtures & results first; protected history must be retained.",
     "m403a2dfb740c": "This round gained dependent records. Refresh and handle its dependencies before deleting.",
-    "mf8b2aa629d41": "Round deleted."
+    "mf8b2aa629d41": "Round deleted.",
+    "ma409c8e13c87": "Manage rounds",
+    "m66ba9e44fd5f": "No rounds in this stage.",
+    "ma3befc385ec2": "Create rounds in Round management before adding mappools.",
+    "m543774f93c24": "Round management",
+    "m4910d28a0764": "COMPETITION STRUCTURE"
   }
 }

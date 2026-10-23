@@ -76,6 +76,11 @@ export const tournamentNavigation: readonly {
     label: "Competition",
     items: [
       {
+        path: "rounds",
+        label: "Rounds",
+        capabilities: ["manage_mappools"],
+      },
+      {
         path: "awards",
         label: "Weekly awards",
         capabilities: ["approve_results"],

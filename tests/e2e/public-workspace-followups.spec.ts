@@ -669,9 +669,12 @@ test.describe("public and operational follow-ups", () => {
       .click();
     await expect(page.locator(".mappool-inline-editor")).toBeVisible();
     await page.locator(".mappool-inline-heading button").click();
-    await page.getByRole("button", { name: "Edit round", exact: true }).click();
+    await page
+      .getByRole("link", { name: "Manage rounds", exact: true })
+      .click();
     await expect(page.getByLabel("Round order", { exact: true })).toBeVisible();
-    await page.locator(".mappool-setup .mappool-toolbar button").click();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await page.goto("/admin/tournaments/test-cup/mappools");
     await db()
       .update(mappools)
       .set({ lockedAt: new Date() })
