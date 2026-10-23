@@ -421,12 +421,15 @@ export async function HistoricalArchiveView({
             <tbody>
               {[...a.standings]
                 .sort(
-                  (x, y) => x.group.localeCompare(y.group) || x.rank - y.rank,
+                  (x, y) =>
+                    x.group.localeCompare(y.group) ||
+                    (x.rank ?? Number.MAX_SAFE_INTEGER) -
+                      (y.rank ?? Number.MAX_SAFE_INTEGER),
                 )
                 .map((s) => (
                   <tr key={s.teamId}>
                     <td>{s.group}</td>
-                    <td>{s.rank}</td>
+                    <td>{s.rank ?? tr("Not recorded")}</td>
                     <td>{teamLink(s.teamId)}</td>
                     <td>{s.wins}</td>
                     <td>{s.losses}</td>
@@ -494,7 +497,7 @@ export async function HistoricalArchiveView({
           ) : null}
           {rules.sections.length} {tr("sections")}
         </p>
-        <RulesHandbook sections={rules.sections} />
+        <RulesHandbook sections={rules.sections} cover={rules.cover} />
       </>
     ) : (
       <p className="muted">{tr("Not recorded")}</p>

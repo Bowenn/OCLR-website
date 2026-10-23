@@ -1,8 +1,22 @@
 import s9 from "@/content/s9-rulebook.json";
 import s10 from "@/content/s10-rulebook.json";
+import s8 from "@/content/s8-rulebook.json";
 import type { HistoricalArchive } from "./historical-archive";
 
-const supplements = [
+type HistoricalRulebook = {
+  title: string;
+  version: string | null;
+  documentUrl: string;
+  cover?: typeof s8.cover;
+  sections: {
+    heading: string;
+    body: string;
+    figures?: (typeof s8.cover & { after: string })[];
+  }[];
+};
+
+const supplements: { sheetId: string; rules: HistoricalRulebook }[] = [
+  { sheetId: "16ASDCD95p3TgfjgSHCjXmRN3KJuuAD4KS0fImpcTiiM", rules: s8 },
   { sheetId: "11PwNlEsUFb6f3VCY2-sdGlPysP0ukihN8_lE4DGuzfA", rules: s9 },
   { sheetId: "12BGS8WRnl10OdeUKyvmOypFzpTYCpHgx9QY1mw-0hlw", rules: s10 },
 ];
@@ -19,7 +33,8 @@ export function historicalRulebook(archive: HistoricalArchive) {
           const document = new URL(url);
           return (
             document.hostname === "docs.google.com" &&
-            document.pathname === new URL(rules.documentUrl).pathname
+            document.pathname.replace(/^\/document\/u\/\d+\//, "/document/") ===
+              new URL(rules.documentUrl).pathname
           );
         }),
     )?.rules ?? null

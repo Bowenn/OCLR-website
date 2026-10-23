@@ -73,7 +73,7 @@ export const historicalArchiveSchema = z
           .object({
             group: text,
             teamId: key,
-            rank: id.max(128),
+            rank: id.max(128).nullable(),
             wins: score,
             losses: score,
             mapsWon: score,

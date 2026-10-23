@@ -4,17 +4,31 @@ import { useAppTranslations } from "@/i18n/shared";
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { rulesSectionIds } from "@/lib/rules-navigation";
+type RuleFigure = {
+  after: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
 type RuleSection = {
   heading: string;
   body: string;
-  figures?: {
-    after: string;
-    src: string;
-    alt: string;
-    width: number;
-    height: number;
-  }[];
+  figures?: RuleFigure[];
 };
+function RuleIllustration({ figure }: { figure: Omit<RuleFigure, "after"> }) {
+  return (
+    <figure className="rules-illustration">
+      <Image
+        src={figure.src}
+        alt={figure.alt}
+        width={figure.width}
+        height={figure.height}
+        unoptimized
+      />
+    </figure>
+  );
+}
 function RuleBody({ section }: { section: RuleSection }) {
   let offset = 0;
   return (
@@ -28,15 +42,7 @@ function RuleBody({ section }: { section: RuleSection }) {
         return (
           <div key={figure.src}>
             <p className="preserve-lines">{text.trim()}</p>
-            <figure className="rules-illustration">
-              <Image
-                src={figure.src}
-                alt={figure.alt}
-                width={figure.width}
-                height={figure.height}
-                unoptimized
-              />
-            </figure>
+            <RuleIllustration figure={figure} />
           </div>
         );
       })}
@@ -46,7 +52,13 @@ function RuleBody({ section }: { section: RuleSection }) {
     </>
   );
 }
-export function RulesHandbook({ sections }: { sections: RuleSection[] }) {
+export function RulesHandbook({
+  sections,
+  cover,
+}: {
+  sections: RuleSection[];
+  cover?: Omit<RuleFigure, "after">;
+}) {
   const tr = useAppTranslations();
 
   const ids = useMemo(
@@ -105,6 +117,7 @@ export function RulesHandbook({ sections }: { sections: RuleSection[] }) {
           {contents()}
         </details>
         <article className="rules-article">
+          {cover && <RuleIllustration figure={cover} />}
           {sections.map((s, i) => (
             <section key={ids[i]} aria-labelledby={ids[i]}>
               <h2 id={ids[i]} tabIndex={-1}>
