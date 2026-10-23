@@ -1,0 +1,3 @@
+# S11 thumbnail edge evidence
+
+Captured on 2026-10-24. The production directory screenshot shows the original pale source edge. The local thumbnail screenshots show the corrected same asset at desktop 1440px and mobile 390px/DPR 3. The source's top three rows are entirely pale, row four partly pale, and row five has no pale pixels. An S11-only scale of 1.0034 anchored at the bottom clips those four source rows while preserving aspect ratio and the original file. Other season assets receive no transform. Light/dark browser checks cover 320/390/768/1440/1920px widths. Local captures do not establish deployment acceptance.
