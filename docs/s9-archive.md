@@ -9,10 +9,12 @@ The original workbook is **not** committed: it also contains contact information
 Prepared browser-import package: [imports/s9-archive.json](imports/s9-archive.json). This is a reviewed-input candidate, not a runtime seed or migration. Nothing is automatically imported or published on deployment.
 
 ```sh
-python3 scripts/prepare-s9-archive.py /path/to/source.xlsx /path/to/s9-archive.json --captured-on 2026-10-23
+python3 scripts/prepare-s9-archive.py /path/to/source.xlsx /path/to/s9-archive.json --captured-on 2026-10-23 --pool-conflicts stages
 ```
 
 The script uses Python's standard library, makes no network/database calls, retains source references, verifies unique identities and reconciles group standings. Optional `--pool-conflicts stages|all` must only be used after an explicit organizer source decision. The default keeps conflicting fields null.
+
+On 2026-10-23, the organizer explicitly selected **each stage's individual mappool worksheet** as authoritative (「以各階段獨立圖池表為準」). The prepared package therefore uses `--pool-conflicts stages`; All Mappools remains a comparison reference, not the deciding source.
 
 ## Verified coverage
 
@@ -31,11 +33,11 @@ There are **76 unique roster/free-agent identities**: 64 players (including eigh
 
 Dates in Schedule are Excel dates from **2023-11-04 through 2023-12-10**. The column explicitly states UTC+8. They are converted to offset timestamps with that offset, retaining the scheduled instant. Landing's month/day milestones have no explicit year or exact start/end times and are not turned into invented registration timestamps. Use `Etc/GMT-8` as the edition display zone (fixed UTC+8, no inferred location).
 
-## Unresolved and excluded data
+## Source decisions, unresolved and excluded data
 
 - Schedule rows **20A, 20B, 20C, 20D, 22A, 22B** contain pairings/times without scores or MP links. These remain unconfirmed schedule alternatives; they are excluded from the results page. No cancellation, completion, winner or bracket progression is inferred.
-- **GS TB1** conflicts between GS Mappool row 26 and All Mappools row 26: ID **1751858 / 3928422**, mapper **Nathan / AJT**, and different SR/BPM/drain/CS/OD. Those conflicting fields remain null in the prepared package; the slot and common title remain visible with an unresolved-ID message. No uncertain beatmap link is emitted.
-- **SF NM6 SR** is **5.72796 / 5.66546** (SF Mappool!K13 / All Mappools!K39). **GF NM1 SR** is **6.54139 / 6.47448** (GF Mappool!K8 / All Mappools!K86). Both remain null pending source selection. Other tiny numeric serialization differences are compared with a tolerance of 1e-8; IDs/counts are exact.
+- **GS TB1** conflicts between GS Mappool row 26 and All Mappools row 26: ID **1751858 / 3928422**, mapper **Nathan / AJT**, and different SR/BPM/drain/CS/OD. Per the organizer's source decision, the package uses GS Mappool: **1751858**, **Nathan**, SR **5.60014**, BPM **200**, Drain **303 seconds**, CS **4**, OD **8.2**.
+- **SF NM6 SR** is **5.72796 / 5.66546** (SF Mappool!K13 / All Mappools!K39). **GF NM1 SR** is **6.54139 / 6.47448** (GF Mappool!K8 / All Mappools!K86). The package uses the individual stage values **5.72796** and **6.54139**, respectively. Other tiny numeric serialization differences are compared with a tolerance of 1e-8; IDs/counts are exact.
 - The pool sheets' summary averages are not imported. The 76 slot records are not counted twice from All Mappools. Attributes are historical values that may already include Mods; Drain is stored/displayed in seconds.
 - `#REF!` values occur in avatar/flag cells and Weekly Awards. They are not images, countries or award outcomes. No flags are inferred from names. Weekly Awards and current award formulas are not applied to S9.
 - Detailed game scores/MRA are not included in this source workbook's match table. Stage statistics and rules remain traceable external references. No per-game results are synthesized from aggregate scores or attributed to present-day Admin approvals.
@@ -57,7 +59,7 @@ Development and the offline package are ready independently of production data. 
 
 1. Verify the deployed build and sign in as an authorized Admin using the normal website flow.
 2. Check for an existing S9 edition before creating anything. Do not overwrite unrelated existing records. Create/select slug `s9`, name `OCLR Season 9`, season `9`, status Completed, zone `Etc/GMT-8`, no registration, no S11 artwork. Suggested factual summary for organizer review: `osu! Chinese League Rookie — Season 9. 2023 年歷史賽事歸檔。`
-3. Keep it private. Open Historical archive, choose/paste `s9-archive.json`, validate and inspect the source notes/counts. Confirm the unresolved pool-source decision or retain the explicit nulls.
+3. Keep it private. Open Historical archive, choose/paste `s9-archive.json`, validate and inspect the source notes/counts. Verify the package reflects the organizer-approved individual stage worksheets, including GS TB1 1751858, SF NM6 SR 5.72796 and GF NM1 SR 6.54139.
 4. Save draft. Inspect overview, all eight team rosters, draft, standings, the 22 scored/6 unconfirmed matches and all four pool details in the saved private preview. Confirm original names and UTC+8 dates.
 5. Use the separate tournament Publication action to publish the reviewed archive. Verify anonymously from Tournaments → Historical seasons, plus direct detail URLs and mobile navigation. Record actual imported scope, remaining gaps and production verification on #145; only then close the issue.
 

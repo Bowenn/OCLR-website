@@ -11,7 +11,7 @@
     "個人聯絡方式、報名答案、評語、選秀預測、聊天工作表及失效圖片公式均未匯入。工作人員職位只作歷史展示，不授予網站權限。",
     "MRA、逐圖統計及賽事規則保留來源連結，尚未匯入逐圖成績或重算獎項。Weekly Awards 的結果存在失效引用，未據此推定獲獎者。",
     "圖池屬性保留當年來源值，可能已包含 Mod 效果；不作目前 API 屬性或即時星數。Drain 單位為秒。",
-    "獨立圖池與總表存在衝突，GS TB1 的 ID、製圖者及相異屬性，以及 SF NM6／GF NM1 的星數暫留空，等待主辦方核對。"
+    "圖池衝突依主辦方指定採用各階段獨立表。"
   ],
   "links": [
     {
@@ -2118,15 +2118,15 @@
         {
           "slot": "TB1",
           "source": "GS Mappool!D26:S26; All Mappools!D26:S26",
-          "beatmapId": null,
+          "beatmapId": 1751858,
           "title": "TwoThirds - Bring it Back [Collab]",
-          "mapper": null,
-          "stars": null,
-          "bpm": null,
-          "drainSeconds": null,
-          "cs": null,
+          "mapper": "Nathan",
+          "stars": 5.60014,
+          "bpm": 200.0,
+          "drainSeconds": 303.0,
+          "cs": 4.0,
           "ar": 9.2,
-          "od": null
+          "od": 8.2
         }
       ]
     },
@@ -2206,7 +2206,7 @@
           "beatmapId": 4204086,
           "title": "Down - Lince Cosmico [Expert]",
           "mapper": "Pisapou",
-          "stars": null,
+          "stars": 5.72796,
           "bpm": 116.0,
           "drainSeconds": 90.0,
           "cs": 4.0,
@@ -2649,7 +2649,7 @@
           "beatmapId": 4392271,
           "title": "Rin'ca - Koisuru MODE [NO MODIFICATION ONE]",
           "mapper": "Megumin914",
-          "stars": null,
+          "stars": 6.54139,
           "bpm": 196.0,
           "drainSeconds": 235.0,
           "cs": 4.0,
