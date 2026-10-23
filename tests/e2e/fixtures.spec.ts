@@ -684,7 +684,9 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
         .getByRole("link", { name: "Open match", exact: true })
         .click();
       await expect(
-        refPage.getByText(/Participants are not confirmed/),
+        refPage.getByText("Reporting needs two finalized, published teams.", {
+          exact: true,
+        }),
       ).toBeVisible();
       await expect(
         refPage.getByRole("button", { name: /import/i }),

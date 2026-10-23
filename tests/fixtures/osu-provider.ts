@@ -1,4 +1,5 @@
 /** Test-process transport fixture only. Never imported by application code. */
+import { syntheticApiGame, syntheticEvent, syntheticPage } from "./match";
 import { profileResponse } from "./osu-profile";
 import { assertTestDatabase } from "../database";
 assertTestDatabase(process.env.TEST_DATABASE_URL);
@@ -22,6 +23,27 @@ globalThis.fetch = async (input, init) => {
       expires_in: 3600,
       token_type: "Bearer",
     });
+  if (url.pathname === "/api/v2/matches/999133") {
+    const ids = [1331000, 1331001, 1331010, 1331011];
+    const events = [1, 2, 3].map((id) => {
+      const game = syntheticApiGame(id);
+      game.scores = game.scores.map((score, index) => ({
+        ...score,
+        user_id: ids[index],
+      }));
+      return syntheticEvent(id, game);
+    });
+    return Response.json(
+      syntheticPage(events, {
+        match: {
+          id: 999133,
+          name: "Synthetic historical lobby",
+          start_time: "2020-01-01T00:00:00Z",
+          end_time: "2020-01-01T23:59:00Z",
+        },
+      }),
+    );
+  }
   if (url.pathname === "/api/v2/beatmaps") {
     const beatmaps = [];
     for (const id of new Set(url.searchParams.getAll("ids[]"))) {

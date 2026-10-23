@@ -148,7 +148,7 @@ function policyRelease<T extends { version: string }>(
       `release-${randomUUID()}`,
   } as T;
 }
-async function officialTeams(reader: Reader, slug: string) {
+export async function officialTeams(reader: Reader, slug: string) {
   const rows = await reader
     .select({ id: teams.id, name: teams.name, captainId: teams.captainId })
     .from(teams)

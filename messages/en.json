@@ -1960,6 +1960,18 @@
     "mecc0b5cdb7fa": "Release draft Tier sources before publishing awards.",
     "m624ed9e62fe4": "Registration window begins",
     "mc24a80b499f5": "Registration window ends",
-    "m3352923fdb20": "Choose an existing group or add a new group without an identifier."
+    "m3352923fdb20": "Choose an existing group or add a new group without an identifier.",
+    "mc123dcc5593a": "MP source preview",
+    "m6dee995caa40": "MP data is a completion preview only. Confirm teams, then submit for review and Admin approval before publication.",
+    "mc1c91711dc5b": "Preview MP source",
+    "mac87da545192": "Actual match starts",
+    "m7498251b3c27": "Actual match ends",
+    "m8d9106786482": "Actual match times do not overwrite the scheduled time.",
+    "m885f22ead048": "Team matching is ambiguous. Select teams explicitly and review unmatched players.",
+    "m42b31a5514a2": "Players and game scores",
+    "m03433c29cbfc": "Confirm teams & import source",
+    "ma879a9004f76": "Match source changed. Retrieve the preview again.",
+    "m98d1820d70e7": "Existing teams and bracket sources are preserved. Amend conflicting fixture settings first.",
+    "m39bc5f990a47": "Approved fixture history cannot be completed from an MP preview."
   }
 }

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import {
   editionState,
+  editionEvents,
   fixtures,
   mappoolEvents,
   mappools,
@@ -17,7 +18,12 @@ import {
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
 import { assertCapability } from "./auth/staff";
-import { fixtureForReview, type FixtureReviewContext } from "./fixtures";
+import {
+  fixtureForReview,
+  staffFixtures,
+  officialTeams,
+  type FixtureReviewContext,
+} from "./fixtures";
 import { scoringRulesSchema } from "./competition-model";
 import {
   gameDecisionSchema,
@@ -49,7 +55,18 @@ const sourceDiffSchema = z
   })
   .strict();
 const importSchema = z
-  .object({ ...common, match: z.string().trim().min(1).max(250) })
+  .object({
+    ...common,
+    match: z.string().trim().min(1).max(250),
+    completion: z
+      .object({
+        homeTeamId: z.uuid(),
+        awayTeamId: z.uuid(),
+        sourceFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+      })
+      .strict()
+      .optional(),
+  })
   .strict();
 const commandSchema = z.discriminatedUnion("action", [
   z
@@ -376,11 +393,18 @@ export async function importFixtureMatch(
   fixtureId: string,
   input: unknown,
 ) {
-  const before = await fixtureForReview(actor, slug, fixtureId);
   const parsed = importSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Confirm a valid MP link and current versions.");
   const c = parsed.data;
+  let before;
+  if (c.completion) {
+    await assertCapability(actor, "manage_fixtures", slug);
+    const workspace = await staffFixtures(actor, slug);
+    const fixture = workspace.fixtures.find((f) => f.id === fixtureId);
+    if (!fixture) throw new HttpError(404, "Fixture not found.");
+    before = { fixture, result: fixture.result };
+  } else before = await fixtureForReview(actor, slug, fixtureId);
   const hash = commandHash({ action: "import", ...c });
   if (await replay(db(), actor, fixtureId, c.requestKey, hash))
     return matchReview(actor, slug, fixtureId);
@@ -395,6 +419,11 @@ export async function importFixtureMatch(
       "Fixture or report changed. Refresh before importing.",
     );
   const source = await fetchMatchSource(parseMatchId(c.match));
+  if (c.completion && source.fingerprint !== c.completion.sourceFingerprint)
+    throw new HttpError(
+      409,
+      "Match source changed. Retrieve the preview again.",
+    );
   await db().transaction(async (tx) => {
     await tx
       .select()
@@ -406,11 +435,99 @@ export async function importFixtureMatch(
       .from(fixtures)
       .where(eq(fixtures.id, fixtureId))
       .for("update");
-    const context = await fixtureForReview(actor, slug, fixtureId, tx);
     if (await replay(tx, actor, fixtureId, c.requestKey, hash)) return;
+    let completed = false;
+    if (c.completion) {
+      await assertCapability(actor, "manage_fixtures", slug, tx);
+      const [fixture] = await tx
+        .select()
+        .from(fixtures)
+        .where(and(eq(fixtures.id, fixtureId), eq(fixtures.editionSlug, slug)));
+      const [result] = await tx
+        .select()
+        .from(matchResults)
+        .where(eq(matchResults.fixtureId, fixtureId));
+      if (
+        !fixture ||
+        fixture.version !== c.expectedFixtureVersion ||
+        (result?.version ?? 0) !== c.expectedVersion ||
+        fixture.status === "cancelled"
+      )
+        throw new HttpError(
+          409,
+          "Fixture or report changed. Refresh before importing.",
+        );
+      const selected = c.completion;
+      if (
+        selected.homeTeamId === selected.awayTeamId ||
+        (fixture.homeTeamId && fixture.homeTeamId !== selected.homeTeamId) ||
+        (fixture.awayTeamId && fixture.awayTeamId !== selected.awayTeamId) ||
+        (!fixture.homeTeamId && fixture.homeSourceId) ||
+        (!fixture.awayTeamId && fixture.awaySourceId)
+      )
+        throw new HttpError(
+          409,
+          "Existing teams and bracket sources are preserved. Amend conflicting fixture settings first.",
+        );
+      const [protectedRevision] = await tx
+        .select({ revision: resultRevisions.revision })
+        .from(resultRevisions)
+        .where(
+          and(
+            eq(resultRevisions.fixtureId, fixtureId),
+            sql`${resultRevisions.approvedAt} IS NOT NULL`,
+          ),
+        )
+        .limit(1);
+      if (protectedRevision)
+        throw new HttpError(
+          409,
+          "Approved fixture history cannot be completed from an MP preview.",
+        );
+      const eligible = await officialTeams(tx, slug);
+      if (
+        ![selected.homeTeamId, selected.awayTeamId].every((id) =>
+          eligible.some((t) => t.id === id),
+        )
+      )
+        throw new HttpError(
+          409,
+          "Both teams must have finalized published identities and rosters before reporting.",
+        );
+      completed = !fixture.homeTeamId || !fixture.awayTeamId;
+      if (completed) {
+        const [after] = await tx
+          .update(fixtures)
+          .set({
+            homeTeamId: selected.homeTeamId,
+            awayTeamId: selected.awayTeamId,
+            version: fixture.version + 1,
+          })
+          .where(eq(fixtures.id, fixtureId))
+          .returning();
+        await tx.insert(editionEvents).values({
+          editionSlug: slug,
+          actorId: actor.osuId,
+          kind: "fixture_completed_from_mp",
+          detail: {
+            entity: { type: "fixture", id: fixtureId },
+            before: fixture,
+            after,
+            source: {
+              matchId: source.match.id,
+              fingerprint: source.fingerprint,
+              startTime: source.match.startTime,
+              endTime: source.match.endTime,
+            },
+          },
+        });
+      }
+    }
+    const context = await fixtureForReview(actor, slug, fixtureId, tx);
     if (
       context.fixture.status === "cancelled" ||
-      context.fixture.version !== c.expectedFixtureVersion ||
+      context.fixture.version !==
+        c.expectedFixtureVersion + (completed ? 1 : 0) ||
       (context.result?.version ?? 0) !== c.expectedVersion
     )
       throw new HttpError(
@@ -853,3 +970,72 @@ export async function resultCommand(
   }
   return { review: await matchReview(actor, slug, fixtureId), publicChanged };
 }
+
+export async function previewFixtureMatch(
+  actor: User,
+  slug: string,
+  fixtureId: string,
+  input: unknown,
+) {
+  const workspace = await staffFixtures(actor, slug);
+  const fixture = workspace.fixtures.find((f) => f.id === fixtureId);
+  if (!fixture) throw new HttpError(404, "Fixture not found.");
+  const parsed = z
+    .object({ match: z.string().trim().min(1).max(250) })
+    .strict()
+    .safeParse(input);
+  if (!parsed.success)
+    throw new HttpError(400, "Confirm a valid MP link and current versions.");
+  if (fixture.status === "cancelled")
+    throw new HttpError(409, "Cancelled fixtures cannot import new results.");
+  const source = await fetchMatchSource(parseMatchId(parsed.data.match));
+  // Repeat authorization after the network call; revocations take effect immediately.
+  const refreshed = await staffFixtures(actor, slug);
+  if (!refreshed.fixtures.some((f) => f.id === fixtureId))
+    throw new HttpError(403, "You are not assigned to this fixture.");
+  const teams = refreshed.canManage
+    ? await officialTeams(db(), slug)
+    : refreshed.teams;
+  const playerIds = [
+    ...new Set(
+      source.games.flatMap((g) =>
+        g.scores.flatMap((s) => (s.osuId ? [s.osuId] : [])),
+      ),
+    ),
+  ];
+  const attribution = playerIds.map((osuId) => ({
+    osuId,
+    teamIds: teams
+      .filter((t) => t.members.some((m) => m.osuId === osuId))
+      .map((t) => t.id),
+  }));
+  const matched = [...new Set(attribution.flatMap((p) => p.teamIds))];
+  const unique =
+    attribution.length > 0 &&
+    attribution.every((p) => p.teamIds.length === 1) &&
+    matched.length === 2;
+  const currentFixture = refreshed.fixtures.find((f) => f.id === fixtureId)!;
+  const home =
+    currentFixture.homeTeamId ??
+    (unique
+      ? (matched.find((id) => id !== currentFixture.awayTeamId) ?? null)
+      : null);
+  const away =
+    currentFixture.awayTeamId ??
+    (unique ? (matched.find((id) => id !== home) ?? null) : null);
+  return {
+    source,
+    teams,
+    attribution,
+    fixture: currentFixture,
+    suggested: { homeTeamId: home, awayTeamId: away },
+    unique,
+    expectedFixtureVersion: refreshed.fixtures.find((f) => f.id === fixtureId)!
+      .version,
+    expectedVersion:
+      refreshed.fixtures.find((f) => f.id === fixtureId)!.result?.version ?? 0,
+  };
+}
+export type FixtureMatchPreview = Awaited<
+  ReturnType<typeof previewFixtureMatch>
+>;

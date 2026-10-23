@@ -5,6 +5,7 @@ import { staffFixtures } from "@/lib/fixtures";
 import { fixtureSlot } from "@/lib/fixture-views";
 import { HttpError } from "@/lib/http";
 import { matchReview } from "@/lib/results";
+import { MatchSourceCompletion } from "@/components/match-source-completion";
 import { MatchReviewPanel } from "@/components/match-review";
 import { formatDate } from "@/lib/editions";
 import { PageHeading } from "@/components/ui";
@@ -61,11 +62,11 @@ export default async function FixturePage({
               {tr("Assigned referees:")}{" "}
               {fixture.referees.map((r) => r.username).join(", ") || tr("None")}
             </p>
-            <p className="notice">
-              {tr(
-                "Participants are not confirmed. An Admin must select two finalized, published teams before importing or reviewing results.",
-              )}
-            </p>
+            <MatchSourceCompletion
+              slug={edition}
+              fixtureId={fixture.id}
+              canManage={workspace.canManage}
+            />
           </div>
         </>
       );
