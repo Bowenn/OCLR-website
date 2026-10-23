@@ -4794,3 +4794,20 @@ body:has([data-broadcast]) .site-shell {
   gap: 1rem;
   align-items: start;
 }
+
+.archive-player-search-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+.archive-player-search-toolbar .field {
+  flex: 1 1 18rem;
+  max-width: 32rem;
+  margin: 0;
+}
+.archive-player-search-toolbar p {
+  margin: 0;
+  padding-bottom: 0.75rem;
+}

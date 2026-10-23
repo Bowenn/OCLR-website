@@ -91,6 +91,19 @@ test.describe("historical archive browser workflow", () => {
       new RegExp(`/admin/tournaments/${slug}/archive/preview`),
     );
     await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=players`,
+    );
+    await page
+      .getByRole("searchbox", { name: "Search players", exact: true })
+      .fill("91003");
+    await expect(page.locator(".archive-player-card")).toHaveCount(1);
+    await expect(
+      page.getByRole("link", { name: "Historical Player", exact: true }),
+    ).toHaveAttribute(
+      "href",
+      `/admin/tournaments/${slug}/archive/preview?section=players&id=91003`,
+    );
+    await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=mappools`,
     );
     await expect(page.locator(".archive-map-item")).toHaveCount(2);
@@ -328,6 +341,12 @@ test.describe("historical archive browser workflow", () => {
         }),
       ).toBeVisible();
       await expect(page.getByText("Captain", { exact: true })).toHaveCount(2);
+      const search = page.getByRole("searchbox", {
+        name: locale === "zh-Hant" ? "搜尋選手" : "搜索选手",
+        exact: true,
+      });
+      await search.fill("91003");
+      await expect(page.locator(".archive-player-card")).toHaveCount(1);
       await page.goto(`/tournaments/${slug}/staff`);
       await expect(
         page.getByRole("heading", {
@@ -422,6 +441,26 @@ test.describe("historical archive browser workflow", () => {
           } else if (path === "players") {
             await expect(page.locator(".archive-player-card")).toHaveCount(76);
             await expect(page.locator('[data-role="coach"]')).toHaveCount(8);
+            const search = page.getByRole("searchbox", {
+              name: "Search players",
+              exact: true,
+            });
+            await search.fill("  VIALVISTAS  ");
+            await expect(page.locator(".archive-player-card")).toHaveCount(1);
+            await expect(page.locator(".archive-player-card")).toContainText(
+              "9697708",
+            );
+            await search.fill("9697708");
+            await expect(page.locator(".archive-player-card")).toHaveCount(1);
+            await search.fill(archive.teams[0].name);
+            await expect(page.locator(".archive-player-card")).toHaveCount(9);
+            await search.fill("missing synthetic identity");
+            await expect(page.locator(".archive-player-card")).toHaveCount(0);
+            await expect(
+              page.getByText("No players match your search.", { exact: true }),
+            ).toBeVisible();
+            await search.fill("");
+            await expect(page.locator(".archive-player-card")).toHaveCount(76);
           } else if (path === "draft") {
             await expect(page.locator(".archive-draft-round")).toHaveCount(7);
             await expect(page.locator(".archive-draft-picks li")).toHaveCount(

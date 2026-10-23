@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArchivePlayerSearch } from "./archive-player-search";
 import { ArchiveMappools } from "./archive-mappools";
 import { Avatar } from "./avatar";
 import { ArchiveMatchList } from "./archive-match-list";
@@ -91,31 +92,35 @@ export async function HistoricalArchiveView({
           : p.tier === null
             ? tr("Not recorded")
             : `Tier ${p.tier}`;
+  const rosterCard = (
+    p: HistoricalArchive["players"][number],
+    showTeam = true,
+  ) => (
+    <li className="archive-player-card" key={p.osuId} data-role={p.role}>
+      <Link
+        href={href("players", String(p.osuId))}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        <Avatar osuId={p.osuId} username={p.username} />
+      </Link>
+      <div className="archive-player-copy">
+        <div className="archive-player-name">
+          {playerLink(p)} <Badge>{role(p)}</Badge>
+        </div>
+        <span className="muted small">
+          {tr("osu! ID ")}
+          {p.osuId}
+        </span>
+        {showTeam && p.teamId && (
+          <span className="archive-player-team">{teamLink(p.teamId)}</span>
+        )}
+      </div>
+    </li>
+  );
   const roster = (members: HistoricalArchive["players"], showTeam = true) => (
     <ul className="archive-player-grid">
-      {members.map((p) => (
-        <li className="archive-player-card" key={p.osuId} data-role={p.role}>
-          <Link
-            href={href("players", String(p.osuId))}
-            tabIndex={-1}
-            aria-hidden="true"
-          >
-            <Avatar osuId={p.osuId} username={p.username} />
-          </Link>
-          <div className="archive-player-copy">
-            <div className="archive-player-name">
-              {playerLink(p)} <Badge>{role(p)}</Badge>
-            </div>
-            <span className="muted small">
-              {tr("osu! ID ")}
-              {p.osuId}
-            </span>
-            {showTeam && p.teamId && (
-              <span className="archive-player-team">{teamLink(p.teamId)}</span>
-            )}
-          </div>
-        </li>
-      ))}
+      {members.map((p) => rosterCard(p, showTeam))}
     </ul>
   );
   const match = (m: HistoricalArchive["matches"][number]) => (
@@ -293,7 +298,21 @@ export async function HistoricalArchiveView({
     title = section === "player" ? players[0].username : tr("Players");
     content = (
       <>
-        {roster(players)}
+        {section === "players" ? (
+          <ArchivePlayerSearch
+            players={players.map((p) => ({
+              id: p.osuId,
+              searchText: [
+                p.username,
+                p.osuId,
+                p.teamId ? team(p.teamId).name : "",
+              ].join(" "),
+              card: rosterCard(p),
+            }))}
+          />
+        ) : (
+          roster(players)
+        )}
         {section === "player" && (
           <>
             <a
