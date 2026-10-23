@@ -20,7 +20,7 @@ export function EventArtwork({ src, name }: { src: string; name: string }) {
           alt={tr("{value0} key visual", { value0: name })}
           width={1672}
           height={941}
-          sizes="(max-width: 760px) 100vw, 55vw"
+          sizes="(max-width: 1360px) 100vw, 55vw"
           unoptimized
           onError={() => setFailed(true)}
         />

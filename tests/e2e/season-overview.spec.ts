@@ -114,7 +114,7 @@ test.describe("season overview composition", () => {
           );
           await expect(page.locator(".event-artwork img")).toHaveCSS(
             "object-fit",
-            "contain",
+            width <= 1360 ? "contain" : "cover",
           );
           const measured = await page.evaluate(() => {
             const cards = [
@@ -145,8 +145,9 @@ test.describe("season overview composition", () => {
             };
           });
           expect(measured.documentWidth).toBeLessThanOrEqual(width);
-          expect(measured.aspect).toBeCloseTo(measured.expected, 1);
-          if (width <= 760)
+          if (width <= 1360)
+            expect(measured.aspect).toBeCloseTo(measured.expected, 1);
+          if (width <= 1360)
             expect(measured.artwork.top).toBeGreaterThanOrEqual(
               measured.intro.bottom,
             );

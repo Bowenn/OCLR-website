@@ -466,7 +466,6 @@ html[data-theme="dark"] .themed-site {
 @media (max-width: 760px) {
   .event-artwork img {
     height: auto;
-    aspect-ratio: 1672/941;
     object-fit: contain;
   }
   .event-intro h1 {
@@ -1493,8 +1492,9 @@ html[data-theme="dark"] .themed-site {
 /* Season overview: use the existing OCLR palette, with data-led composition. */
 .public-tournament .season-overview-hero.has-artwork {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: stretch;
+  min-height: 24rem;
 }
 .public-tournament .season-overview-hero:not(.has-artwork) {
   max-width: 48rem;
@@ -1506,20 +1506,42 @@ html[data-theme="dark"] .themed-site {
   margin: 0 0 1rem;
   color: var(--site-accent);
 }
+/* The intro determines row height; media fills it without intrinsic-size feedback. */
+.season-overview-hero.has-artwork .event-intro {
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+.season-overview-hero.has-artwork .event-intro h1 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+}
+.season-overview-hero.has-artwork .event-intro .actions {
+  margin-top: 1.25rem;
+}
+.season-overview-hero.has-artwork .season-countdown {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+}
+.season-overview-hero.has-artwork .countdown-days strong {
+  font-size: clamp(1.75rem, 4vw, 3rem);
+}
 .season-hero-aside {
+  position: relative;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  min-height: 0;
   background: var(--site-surface);
 }
 .season-hero-aside .event-artwork {
+  position: absolute;
+  inset: 0;
   background: transparent;
 }
 .season-hero-aside .event-artwork img {
-  height: auto;
-  aspect-ratio: 1672 / 941;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  object-position: 35% 35%;
+}
+.season-hero-aside .event-artwork-fallback {
+  height: 100%;
+  min-height: 0;
 }
 .season-countdown {
   margin-top: 2rem;
@@ -1757,8 +1779,24 @@ html[data-theme="dark"] .themed-site {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+@media (max-width: 1360px) {
+  .public-tournament .season-overview-hero.has-artwork {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .season-hero-aside .event-artwork {
+    position: static;
+  }
+  .season-hero-aside .event-artwork img {
+    height: auto;
+    object-fit: contain;
+  }
+  .season-hero-aside .event-artwork-fallback {
+    height: auto;
+    min-height: 16rem;
+  }
+}
 @media (max-width: 760px) {
-  .public-tournament .season-overview-hero.has-artwork,
   .season-registration-grid.has-registration-dates {
     grid-template-columns: minmax(0, 1fr);
   }
