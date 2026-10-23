@@ -609,7 +609,9 @@ function StageGroups({
 }) {
   const tr = useAppTranslations();
 
-  const [groups, setGroups] = useState(stage.groupConfiguration?.groups ?? []);
+  const [groups, setGroups] = useState<
+    { key?: string; name: string; teamIds: string[] }[]
+  >(stage.groupConfiguration?.groups ?? []);
   const [published, setPublished] = useState(Boolean(stage.groupsPublishedAt));
   return (
     <section className="settings-card form-stack">
@@ -625,23 +627,6 @@ function StageGroups({
             {tr("Group ")}
             {index + 1}
           </legend>
-          <label className="field">
-            <span>
-              {tr("Group identifier ")}
-              {index + 1}
-            </span>
-            <input
-              value={group.key}
-              maxLength={60}
-              onChange={(e) =>
-                setGroups((old) =>
-                  old.map((g, i) =>
-                    i === index ? { ...g, key: e.target.value } : g,
-                  ),
-                )
-              }
-            />
-          </label>
           <label className="field">
             <span>
               {tr("Group name ")}
@@ -697,9 +682,7 @@ function StageGroups({
       <button
         type="button"
         className="secondary"
-        onClick={() =>
-          setGroups((old) => [...old, { key: "", name: "", teamIds: [] }])
-        }
+        onClick={() => setGroups((old) => [...old, { name: "", teamIds: [] }])}
       >
         {tr("Add group")}
       </button>

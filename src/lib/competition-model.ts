@@ -52,6 +52,10 @@ export function validTimeZone(value: string) {
   }
 }
 
+const groupKeySchema = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9-]*$/)
+  .max(60);
 export const groupConfigurationInputSchema = z
   .object({
     version: z.string().trim().min(1).max(80).optional(),
@@ -59,10 +63,7 @@ export const groupConfigurationInputSchema = z
       .array(
         z
           .object({
-            key: z
-              .string()
-              .regex(/^[a-z0-9][a-z0-9-]*$/)
-              .max(60),
+            key: groupKeySchema.optional(),
             name: z.string().trim().min(1).max(80),
             teamIds: z
               .array(z.uuid())
@@ -78,12 +79,21 @@ export const groupConfigurationInputSchema = z
   .strict()
   .refine(
     (c) =>
-      new Set(c.groups.map((g) => g.key)).size === c.groups.length &&
+      new Set(c.groups.flatMap((g) => (g.key ? [g.key] : []))).size ===
+        c.groups.filter((g) => g.key).length &&
       new Set(c.groups.flatMap((g) => g.teamIds)).size ===
         c.groups.flatMap((g) => g.teamIds).length,
   );
 export const groupConfigurationSchema =
   groupConfigurationInputSchema.safeExtend({
     version: z.string().trim().min(1).max(80),
+    groups: z
+      .array(
+        groupConfigurationInputSchema.shape.groups.element.extend({
+          key: groupKeySchema,
+        }),
+      )
+      .min(1)
+      .max(64),
   });
 export type GroupConfiguration = z.infer<typeof groupConfigurationSchema>;

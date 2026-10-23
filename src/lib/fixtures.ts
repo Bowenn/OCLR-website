@@ -648,8 +648,19 @@ export async function fixtureCommand(
             409,
             "Group configuration changed. Refresh before continuing.",
           );
+        const groups = c.configuration?.groups.map((group) => {
+          if (
+            group.key &&
+            !stage.groupConfiguration?.groups.some((g) => g.key === group.key)
+          )
+            throw new HttpError(
+              400,
+              "Choose an existing group or add a new group without an identifier.",
+            );
+          return { ...group, key: group.key ?? `g-${randomUUID()}` };
+        });
         const configuration = policyRelease(
-          c.configuration,
+          c.configuration ? { ...c.configuration, groups: groups! } : null,
           stage.groupConfiguration,
         );
         if (c.published && !c.configuration)
@@ -879,36 +890,32 @@ export async function fixtureCommand(
           ).map((u) => u.id),
         );
         if (history.length)
-          await tx
-            .insert(editionEvents)
-            .values(
-              history.map((event) => ({
-                id: event.id,
-                editionSlug: slug,
-                actorId: knownActors.has(event.actorId) ? event.actorId : null,
-                kind: `competition_${event.action}`,
-                createdAt: event.createdAt,
-                reason: event.reason,
-                detail: {
-                  ...event.detail,
-                  historicalActorOsuId: event.actorId,
-                  entity: { type: "fixture", id: before!.id },
-                },
-              })),
-            );
-        await tx
-          .insert(editionEvents)
-          .values({
-            editionSlug: slug,
-            actorId: actor.osuId,
-            kind: "competition_fixture_delete",
-            detail: {
-              entity: { type: "fixture", id: before!.id },
-              before,
-              after: null,
-              referees,
-            },
-          });
+          await tx.insert(editionEvents).values(
+            history.map((event) => ({
+              id: event.id,
+              editionSlug: slug,
+              actorId: knownActors.has(event.actorId) ? event.actorId : null,
+              kind: `competition_${event.action}`,
+              createdAt: event.createdAt,
+              reason: event.reason,
+              detail: {
+                ...event.detail,
+                historicalActorOsuId: event.actorId,
+                entity: { type: "fixture", id: before!.id },
+              },
+            })),
+          );
+        await tx.insert(editionEvents).values({
+          editionSlug: slug,
+          actorId: actor.osuId,
+          kind: "competition_fixture_delete",
+          detail: {
+            entity: { type: "fixture", id: before!.id },
+            before,
+            after: null,
+            referees,
+          },
+        });
         await tx
           .delete(fixtureReferees)
           .where(eq(fixtureReferees.fixtureId, before!.id));

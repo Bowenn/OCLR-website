@@ -277,11 +277,10 @@ describe.skipIf(!url)(
       view = await matchReview(referee, "test-cup", fixtureId);
       expect((await publicFixture("test-cup", fixtureId))?.result).toBeNull();
       const stage = (await db().select().from(tournamentStages))[0];
-      const group = {
+      let group = {
         version: "synthetic-groups-v1",
         groups: [
           {
-            key: "synthetic-a",
             name: "Synthetic Group A",
             teamIds: view.context.teams.map((t) => t.id),
           },
@@ -321,6 +320,8 @@ describe.skipIf(!url)(
         configuration: group,
         published: false,
       });
+      group = (await db().select().from(tournamentStages))[0]
+        .groupConfiguration!;
       expect((await publicCompetition("test-cup"))?.groups).toEqual([]);
       await fixtureCommand(admin, "test-cup", {
         ...confirm,
@@ -409,6 +410,8 @@ describe.skipIf(!url)(
         .set({ rosterPublished: false })
         .where(eq(teams.id, view.context.fixture.homeTeamId));
       expect((await publicCompetition("test-cup"))?.fixtures).toEqual([]);
+      group = (await db().select().from(tournamentStages))[0]
+        .groupConfiguration!;
       expect((await publicCompetition("test-cup"))?.groups).toEqual([]);
       expect(await publicFixture("private-test-cup", fixtureId)).toBeNull();
     });

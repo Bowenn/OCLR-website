@@ -499,6 +499,39 @@ describe.skipIf(!url)(
         }),
       ).rejects.toMatchObject({ status: 400 });
     });
+    it("generates stable unique group identifiers and rejects stale concurrent additions", async () => {
+      const initial = await fixtureCommand(admin, "test-cup", body());
+      const stage = initial.stages.find((s) => s.kind === "group")!;
+      const command = {
+        ...confirm,
+        action: "stage_groups",
+        stageId: stage.id,
+        expectedVersion: stage.version,
+        configuration: {
+          groups: [{ name: "中文分組", teamIds: [homeId, awayId] }],
+        },
+        published: false,
+      };
+      const attempts = await Promise.allSettled([
+        fixtureCommand(admin, "test-cup", command),
+        fixtureCommand(admin, "test-cup", command),
+      ]);
+      expect(attempts.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      const current = await staffFixtures(admin, "test-cup");
+      const saved = current.stages.find((s) => s.id === stage.id)!;
+      const group = saved.groupConfiguration!.groups[0];
+      expect(group.key).toMatch(/^g-[a-f0-9-]+$/);
+      const renamed = await fixtureCommand(admin, "test-cup", {
+        ...command,
+        expectedVersion: saved.version,
+        configuration: { groups: [{ ...group, name: "重新命名" }] },
+      });
+      expect(
+        renamed.stages.find((s) => s.id === stage.id)!.groupConfiguration!
+          .groups[0],
+      ).toEqual({ ...group, name: "重新命名" });
+      expect(renamed.fixtures[0].id).toBe(initial.fixtures[0].id);
+    });
     it("projects the same scoped fixtures into chronological, configured group and linked knockout views", async () => {
       let data = await fixtureCommand(admin, "test-cup", {
         ...body(),
@@ -512,7 +545,7 @@ describe.skipIf(!url)(
         stageId: stage.id,
         expectedVersion: stage.version,
         configuration: {
-          groups: [{ key: "a", name: "Group A", teamIds: [homeId, awayId] }],
+          groups: [{ name: "Group A", teamIds: [homeId, awayId] }],
         },
         published: false,
       });
