@@ -93,6 +93,7 @@ export function archiveBracket(
       ...[...groupMatches].map(([g, matches], i) => ({
         id: `group-${i}`,
         label: g,
+        layout: "grid" as const,
         rounds: [
           {
             id: `group-round-${i}`,

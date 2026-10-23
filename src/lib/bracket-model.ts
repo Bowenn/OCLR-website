@@ -80,6 +80,7 @@ export type ResolvedBracket = Omit<Bracket, "groups"> & {
   groups: {
     id: string;
     label: string;
+    layout?: "grid";
     rounds: { id: string; label: string; matches: ResolvedMatch[] }[];
   }[];
 };

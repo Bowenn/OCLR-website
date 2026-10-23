@@ -26,9 +26,10 @@ export function BracketView({
   }>({ width: 0, height: 0, paths: [] });
   const group =
     bracket.groups.find((g) => g.id === groupId) ?? bracket.groups[0];
+  const flat = group.layout === "grid";
   useEffect(() => {
     const node = frame.current;
-    if (!node) return;
+    if (!node || flat) return;
     const observer = new ResizeObserver(() => {
       const origin = node.getBoundingClientRect();
       const cards = new Map(
@@ -61,7 +62,7 @@ export function BracketView({
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [group]);
+  }, [group, flat]);
   return (
     <>
       {!renderMatch && (
@@ -83,34 +84,45 @@ export function BracketView({
           ))}
         </div>
       )}
-      <p className="muted small">
-        {renderMatch
-          ? tr(
-              "Scroll across rounds. Switch to Schedule for a chronological list.",
-            )
-          : tr(
-              "Scroll across rounds. A complete match list is available below.",
-            )}
-      </p>
+      {!flat && (
+        <p className="muted small">
+          {renderMatch
+            ? tr(
+                "Scroll across rounds. Switch to Schedule for a chronological list.",
+              )
+            : tr(
+                "Scroll across rounds. A complete match list is available below.",
+              )}
+        </p>
+      )}
       <div
         className="bracket-scroll"
         role="region"
-        aria-label={tr("{value0} bracket; scroll horizontally", {
-          value0: group.label,
-        })}
+        aria-label={
+          flat
+            ? group.label
+            : tr("{value0} bracket; scroll horizontally", {
+                value0: group.label,
+              })
+        }
         tabIndex={0}
       >
-        <div className="bracket-frame" ref={frame}>
-          <svg
-            className="bracket-connectors"
-            width={lines.width}
-            height={lines.height}
-            aria-hidden="true"
-          >
-            {lines.paths.map((path, i) => (
-              <path key={i} d={path} />
-            ))}
-          </svg>
+        <div
+          className={`bracket-frame${flat ? " bracket-group-grid" : ""}`}
+          ref={frame}
+        >
+          {!flat && (
+            <svg
+              className="bracket-connectors"
+              width={lines.width}
+              height={lines.height}
+              aria-hidden="true"
+            >
+              {lines.paths.map((path, i) => (
+                <path key={i} d={path} />
+              ))}
+            </svg>
+          )}
           {group.rounds.map((round) => (
             <section
               className="bracket-round"

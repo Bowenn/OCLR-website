@@ -461,6 +461,32 @@ test.describe("historical archive browser workflow", () => {
             await expect
               .poll(() => page.locator(".bracket-connectors path").count())
               .toBeGreaterThan(0);
+            for (const label of ["A", "B"]) {
+              await page
+                .getByRole("button", { name: label, exact: true })
+                .click();
+              const cards = page.locator(".bracket-group-grid .match-card");
+              await expect(cards).toHaveCount(6);
+              await expect(page.locator(".bracket-connectors")).toHaveCount(0);
+              const first = await cards.nth(0).boundingBox();
+              const second = await cards.nth(1).boundingBox();
+              expect(first).not.toBeNull();
+              expect(second).not.toBeNull();
+              if (isMobile) expect(second!.y).toBeGreaterThan(first!.y);
+              else {
+                expect(Math.abs(first!.y - second!.y)).toBeLessThan(1);
+                expect(second!.x).toBeGreaterThan(first!.x);
+              }
+              await page.screenshot({
+                path: info.outputPath(
+                  `${appearance}-${theme}-group-${label}.png`,
+                ),
+                fullPage: false,
+              });
+            }
+            await page
+              .getByRole("button", { name: "Match path", exact: true })
+              .click();
           }
           expect((await new AxeBuilder({ page }).analyze()).violations).toEqual(
             [],

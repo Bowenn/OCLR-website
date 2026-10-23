@@ -4770,3 +4770,23 @@ body:has([data-broadcast]) .site-shell {
   max-width: 100%;
   height: auto;
 }
+
+/* Independent group fixtures fill the available width; advancement paths stay columnar. */
+.bracket-frame.bracket-group-grid {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  padding-bottom: 0;
+}
+.bracket-group-grid .bracket-round {
+  width: 100%;
+}
+.bracket-group-grid .bracket-round > h2 {
+  text-align: left;
+}
+.bracket-group-grid .round-matches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
