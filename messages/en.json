@@ -1939,6 +1939,15 @@
     "mc9049740523f": "Site settings",
     "m84d3df4b1af6": "Player view",
     "m6f202f54a7b2": "List",
-    "mc73eb4817c6d": "Cached statistics"
+    "mc73eb4817c6d": "Cached statistics",
+    "m507c150ad703": "Delete round",
+    "meb044b53d9e1": "Delete round “{name}”?",
+    "ma3dc0b11ab7b": "Only an empty round without mappools, fixtures or protected competition history can be deleted. This cannot be undone; audit history is retained.",
+    "mc8f8ed3c98fa": "The round changed. Refresh before deleting.",
+    "mfc73a06c7d69": "This round has locked competition pools. Keep it and create a new round instead.",
+    "m8619c33c69e9": "This round contains mappools and cannot be deleted. Keep it or create a new round; no dependent records were removed.",
+    "m082ba5865d21": "This round contains fixtures or result history. Remove only eligible unused fixtures in Fixtures & results first; protected history must be retained.",
+    "m403a2dfb740c": "This round gained dependent records. Refresh and handle its dependencies before deleting.",
+    "mf8b2aa629d41": "Round deleted."
   }
 }

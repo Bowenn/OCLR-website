@@ -68,7 +68,7 @@ function RoundForm({
   stage: string;
   nextPosition: number;
   round?: Round;
-  onSuccess: () => void;
+  onSuccess: (deleted?: boolean) => void;
 }) {
   const tr = useAppTranslations();
 
@@ -99,27 +99,47 @@ function RoundForm({
           />
         </label>
       </div>
-      <Save
-        change={change}
-        onSuccess={onSuccess}
-        label={round ? tr("Save round") : tr("Create round")}
-        payload={
-          round
-            ? {
-                action: "round_edit",
-                roundId: round.id,
-                expectedVersion: round.version,
-                name,
-                position: Number(position),
-              }
-            : {
-                action: "round_create",
-                stage,
-                name,
-                position: Number(position),
-              }
-        }
-      />
+      <div className="actions">
+        <Save
+          change={change}
+          onSuccess={onSuccess}
+          label={round ? tr("Save round") : tr("Create round")}
+          payload={
+            round
+              ? {
+                  action: "round_edit",
+                  roundId: round.id,
+                  expectedVersion: round.version,
+                  name,
+                  position: Number(position),
+                }
+              : {
+                  action: "round_create",
+                  stage,
+                  name,
+                  position: Number(position),
+                }
+          }
+        />
+        {round && (
+          <ConfirmMutation
+            label={tr("Delete round")}
+            className="secondary destructive-action"
+            title={tr("Delete round “{name}”?", { name: round.name })}
+            description={tr(
+              "Only an empty round without mappools, fixtures or protected competition history can be deleted. This cannot be undone; audit history is retained.",
+            )}
+            url={change.url}
+            payload={{
+              action: "round_delete",
+              roundId: round.id,
+              expectedVersion: round.version,
+              confirmed: true,
+            }}
+            onSuccess={() => onSuccess(true)}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -636,9 +656,13 @@ export function MappoolEditor({
               stage={stage}
               nextPosition={Math.max(0, ...rounds.map((r) => r.position)) + 1}
               round={setup === "round_edit" ? round : undefined}
-              onSuccess={() => {
+              onSuccess={(deleted = false) => {
                 setSetup(null);
-                setFeedback("Round saved.");
+                if (deleted) {
+                  setRoundId("");
+                  setPoolId("");
+                }
+                setFeedback(deleted ? tr("Round deleted.") : tr("Round saved."));
               }}
             />
           )}

@@ -111,6 +111,14 @@ const commandSchema = z.discriminatedUnion("action", [
   z
     .object({
       ...confirmation,
+      action: z.literal("round_delete"),
+      roundId: z.uuid(),
+      expectedVersion: z.number().int().nonnegative(),
+    })
+    .strict(),
+  z
+    .object({
+      ...confirmation,
       action: z.literal("pool_create"),
       roundId: z.uuid(),
       name,
@@ -532,6 +540,64 @@ export async function mappoolCommand(
         .where(eq(editionState.slug, slug))
         .for("update");
       await assertCapability(actor, "manage_mappools", slug, tx);
+      if (c.action === "round_delete") {
+        const [round] = await tx
+          .select()
+          .from(tournamentRounds)
+          .where(
+            and(
+              eq(tournamentRounds.id, c.roundId),
+              eq(tournamentRounds.editionSlug, slug),
+            ),
+          )
+          .for("update");
+        if (!round)
+          throw new HttpError(404, "Round not found in this edition.");
+        if (round.version !== c.expectedVersion)
+          throw new HttpError(
+            409,
+            "The round changed. Refresh before deleting.",
+          );
+        const pools = await tx
+          .select({ id: mappools.id, lockedAt: mappools.lockedAt })
+          .from(mappools)
+          .where(eq(mappools.roundId, round.id));
+        const [fixture] = await tx
+          .select({ id: fixtures.id })
+          .from(fixtures)
+          .where(eq(fixtures.roundId, round.id))
+          .limit(1);
+        if (pools.some((pool) => pool.lockedAt))
+          throw new HttpError(
+            409,
+            "This round has locked competition pools. Keep it and create a new round instead.",
+          );
+        if (pools.length)
+          throw new HttpError(
+            409,
+            "This round contains mappools and cannot be deleted. Keep it or create a new round; no dependent records were removed.",
+          );
+        if (fixture)
+          throw new HttpError(
+            409,
+            "This round contains fixtures or result history. Remove only eligible unused fixtures in Fixtures & results first; protected history must be retained.",
+          );
+        // The edition and round locks serialize this with normal pool/fixture
+        // creation. Existing restrictive FKs also protect against direct writes.
+        await tx
+          .delete(tournamentRounds)
+          .where(eq(tournamentRounds.id, round.id));
+        await tx.insert(mappoolEvents).values({
+          editionSlug: slug,
+          actorId: actor.osuId,
+          action: "round_delete",
+          before: round,
+          // This existing event store requires an after object. An explicit
+          // tombstone keeps the stable entity ID without inventing a live row.
+          after: { id: round.id, deleted: true },
+        });
+        return;
+      }
       if (c.action === "round_create" || c.action === "round_edit") {
         let before = null;
         let round;
@@ -863,6 +929,14 @@ export async function mappoolCommand(
     });
   } catch (error) {
     const cause = error instanceof Error ? error.cause : undefined;
+    if (
+      c.action === "round_delete" &&
+      (cause as { code?: string })?.code === "23503"
+    )
+      throw new HttpError(
+        409,
+        "This round gained dependent records. Refresh and handle its dependencies before deleting.",
+      );
     if ((cause as { code?: string })?.code === "23505")
       throw new HttpError(
         409,
