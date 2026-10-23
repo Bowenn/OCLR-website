@@ -8,8 +8,8 @@ import {
 } from "../../src/lib/preferences";
 
 describe("visitor appearance preference", () => {
-  it("supports only the existing default and optional cute pastel design", () => {
-    expect(appearances).toEqual(["default", "cute-pastel"]);
+  it("supports only the whitelisted original, pastel and Swiss designs", () => {
+    expect(appearances).toEqual(["default", "cute-pastel", "swiss-minimal"]);
     expect(appearanceCookie).toBe("oclr-appearance");
     expect(readAppearance("cute-pastel")).toBe("cute-pastel");
   });
@@ -40,6 +40,10 @@ describe("visitor appearance preference", () => {
     expect(readAppearance("unknown", "cute-pastel")).toBe("cute-pastel");
     expect(readAppearance("default", "cute-pastel")).toBe("default");
     expect(readAppearance("cute-pastel", "default")).toBe("cute-pastel");
+    expect(readAppearance(undefined, "swiss-minimal")).toBe("swiss-minimal");
+    expect(readAppearance("swiss-minimal", "cute-pastel")).toBe(
+      "swiss-minimal",
+    );
     expect(isAppearance("default")).toBe(true);
     expect(isAppearance(undefined)).toBe(false);
     expect(isAppearance("site")).toBe(false);

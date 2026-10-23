@@ -1,4 +1,6 @@
 "use client";
+import { appearanceLabel } from "@/i18n/appearance";
+import { appearances, type Appearance } from "@/lib/preferences";
 
 import { EligibilityLimitsSummary } from "./eligibility-summary";
 import { noEligibilityLimits } from "@/lib/eligibility-model";
@@ -337,13 +339,14 @@ function General({ data, saved }: EditorProps) {
         <span>{tr("Default tournament appearance")}</span>
         <select
           value={appearance}
-          onChange={(e) =>
-            setAppearance(e.target.value as "site" | "default" | "cute-pastel")
-          }
+          onChange={(e) => setAppearance(e.target.value as "site" | Appearance)}
         >
           <option value="site">{tr("Use site default")}</option>
-          <option value="default">{tr("Original design")}</option>
-          <option value="cute-pastel">{tr("Cute pastel")}</option>
+          {appearances.map((value) => (
+            <option key={value} value={value}>
+              {appearanceLabel(value, tr)}
+            </option>
+          ))}
         </select>
       </label>
       <p className="muted small">

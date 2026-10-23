@@ -1,4 +1,5 @@
 "use client";
+import { appearanceLabel } from "@/i18n/appearance";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import {
   appearanceCookie,
@@ -38,7 +39,7 @@ export function AppearanceControl({
       ? scope?.edition
         ? tr("Use tournament/site default")
         : tr("Use site default")
-      : tr(value === "cute-pastel" ? "Cute pastel" : "Original design");
+      : appearanceLabel(value, tr);
   useEffect(() => {
     if (!open) return;
     root.current
@@ -109,7 +110,10 @@ export function AppearanceControl({
         onKeyDown={(event) => {
           if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
           event.preventDefault();
-          focus.current = event.key === "ArrowUp" ? appearances[1] : "site";
+          focus.current =
+            event.key === "ArrowUp"
+              ? appearances[appearances.length - 1]
+              : "site";
           setOpen(true);
         }}
       >

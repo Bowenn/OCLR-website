@@ -1,0 +1,16 @@
+import type { Appearance } from "@/lib/preferences";
+
+/** Keep all appearance names registered as literal translation messages. */
+export function appearanceLabel(
+  value: Appearance,
+  tr: (message: string) => string,
+) {
+  switch (value) {
+    case "cute-pastel":
+      return tr("Cute pastel");
+    case "swiss-minimal":
+      return tr("Swiss minimal");
+    default:
+      return tr("Original design");
+  }
+}

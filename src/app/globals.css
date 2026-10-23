@@ -3527,9 +3527,18 @@ html:lang(zh-Hant) .eyebrow {
     margin-left: auto;
   }
   .site-preferences {
+    position: relative;
     order: 5;
     flex: 1 0 100%;
     justify-content: flex-end;
+  }
+  /* Anchor to the whole preferences row so longer appearance labels fit 320px. */
+  .site-preferences .appearance-control {
+    position: static;
+  }
+  .site-preferences .appearance-control [role="menu"] {
+    left: auto;
+    right: 0;
   }
 }
 /* Shared accessible labels used by navigation, match cards and review actions. */

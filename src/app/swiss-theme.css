@@ -1,0 +1,379 @@
+/* Swiss / Editorial, based on the organizer's osu! Cup style B reference.
+ * Scoped to ordinary pages: OBS and presenter output have no .themed-site.
+ * Use the existing local sans stack; no remote fonts or theme-only requests.
+ */
+html[data-appearance="swiss-minimal"]:not(:has(.broadcast-site)),
+html[data-appearance="swiss-minimal"]:not(:has(.broadcast-site)) body {
+  background: #fff;
+}
+html[data-appearance="swiss-minimal"][data-theme="dark"]:not(
+    :has(.broadcast-site)
+  ),
+html[data-appearance="swiss-minimal"][data-theme="dark"]:not(
+    :has(.broadcast-site)
+  )
+  body {
+  background: #141414;
+}
+
+html[data-appearance="swiss-minimal"] .themed-site {
+  --site-background: #fff;
+  --site-surface: #fff;
+  --site-raised: #f5f5f3;
+  --site-tint: #efefed;
+  --site-foreground: #151515;
+  --site-muted: #62625f;
+  --site-secondary-text: #434340;
+  --site-accent: #c92e24;
+  --site-accent-strong: #a8231b;
+  --site-border: #c9c9c3;
+  --site-control-border: #85857e;
+  --site-header: #fff;
+  --site-primary: #c92e24;
+  --site-primary-hover: #a8231b;
+  --site-on-primary: #fff;
+  --site-success: #246446;
+  --site-warning: #805500;
+  --site-danger: #b3231b;
+  --site-focus: #c92e24;
+  --site-selection: #f7d1cc;
+  --site-highlight: #c92e24;
+  --site-connector: #85857e;
+  --site-shadow: transparent;
+  --site-soft-shadow: transparent;
+  --site-panel-shadow: transparent;
+  --site-dialog-shadow: #0002;
+  --site-backdrop: #0008;
+  --button-radius: 0;
+  --radius-panel: 0;
+  font-family: Arial, "Helvetica Neue", var(--font-sans);
+  line-height: 1.65;
+}
+html[data-appearance="swiss-minimal"][data-theme="dark"] .themed-site {
+  --site-background: #141414;
+  --site-surface: #1b1b1b;
+  --site-raised: #222221;
+  --site-tint: #2d2d2b;
+  --site-foreground: #f4f4ef;
+  --site-muted: #b5b5ac;
+  --site-secondary-text: #d4d4cd;
+  --site-accent: #ff786b;
+  --site-accent-strong: #ff9c92;
+  --site-border: #494945;
+  --site-control-border: #82827a;
+  --site-header: #141414;
+  --site-primary: #f36b5e;
+  --site-primary-hover: #ff8c80;
+  --site-on-primary: #151515;
+  --site-success: #9acbb0;
+  --site-warning: #dfbf7d;
+  --site-danger: #ff9385;
+  --site-focus: #ff786b;
+  --site-selection: #65312d;
+  --site-highlight: #ff786b;
+  --site-connector: #82827a;
+  --site-dialog-shadow: #0006;
+  --site-backdrop: #000a;
+}
+
+/* Flat materials, crisp rules and square controls, without changing geometry. */
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(
+    .panel,
+    .edition-card,
+    .directory-details,
+    .about-aside,
+    .public-staff-list > li,
+    .settings-card,
+    .settings-save,
+    .mappool-inline-editor,
+    .mappool-context,
+    .mappool-mods,
+    .mappool-setup,
+    .mappool-entry-controls,
+    .match-card,
+    .public-match-card,
+    .map-browse-card,
+    .mappool-public-round,
+    .mappool-release,
+    .captain-player-card,
+    .captain-order > li,
+    .identity-panel,
+    .registration-card,
+    .registration-cover,
+    .table-scroll,
+    .notice,
+    .empty-state,
+    .player-card,
+    .rules-version,
+    .rules-desktop-contents,
+    .rules-mobile-contents,
+    .season-overview-hero,
+    .season-stages .event-milestones,
+    .event-pills,
+    .account-control,
+    .nav-login,
+    .account-dropdown,
+    .time-zone-search,
+    .tournament-menu,
+    .rules-handbook nav a,
+    .map-slot-badge,
+    .badge,
+    dialog,
+    button,
+    .button,
+    input,
+    select,
+    textarea
+  ) {
+  border-radius: 0;
+  box-shadow: none;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(
+    .panel,
+    .edition-card,
+    .directory-details,
+    .about-aside,
+    .public-staff-list > li,
+    .empty-state,
+    .settings-card,
+    .mappool-context,
+    .mappool-setup,
+    .match-card,
+    .public-match-card,
+    .map-browse-card,
+    .mappool-public-round,
+    .identity-panel,
+    .registration-card,
+    .rules-desktop-contents,
+    .rules-mobile-contents
+  ) {
+  border-color: var(--site-border);
+  background: var(--site-surface);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(input, select, textarea) {
+  border-color: var(--site-control-border);
+}
+html[data-appearance="swiss-minimal"] .themed-site :is(button, .button):hover {
+  transform: none;
+}
+html[data-appearance="swiss-minimal"] .themed-site :is(h1, h2, h3) {
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+html[data-appearance="swiss-minimal"] .themed-site .page-heading h1 {
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  line-height: 1.05;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site.private-site
+  .page-heading
+  h1 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+}
+html[data-appearance="swiss-minimal"] .themed-site .eyebrow {
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(.countdown-days strong, .profile-statistics dd, .pool-summary strong) {
+  color: var(--site-foreground);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+/* Navigation reads as editorial tabs, not nested pills. */
+html[data-appearance="swiss-minimal"] .themed-site .site-header {
+  border-bottom: 1px solid var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"] .themed-site .main-nav > a[aria-current] {
+  color: var(--site-foreground);
+  border-color: var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"] .themed-site .sidebar nav a {
+  border-radius: 0;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .sidebar
+  nav
+  a[aria-current] {
+  box-shadow: inset 3px 0 var(--site-accent);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(
+    .workspace-tabs,
+    .mappool-mods,
+    .mappool-rounds,
+    .mappool-pools,
+    .tournament-navigation nav
+  ) {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--site-border);
+  border-radius: 0;
+  background: transparent;
+  gap: 0.25rem 1rem;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(
+    .workspace-tabs,
+    .mappool-mods,
+    .mappool-rounds,
+    .mappool-pools,
+    .tournament-navigation nav
+  )
+  :is(button, a) {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--site-muted);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(
+    .workspace-tabs,
+    .mappool-mods,
+    .mappool-rounds,
+    .mappool-pools,
+    .tournament-navigation nav
+  )
+  :is([aria-selected="true"], [aria-pressed="true"], [aria-current="page"]) {
+  color: var(--site-foreground);
+  border-bottom-color: var(--site-foreground);
+  background: transparent;
+  font-weight: 700;
+  box-shadow: none;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .tournament-navigation
+  a[aria-current]::before {
+  content: none;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  :is(.appearance-control, .language-control)
+  [role="menu"] {
+  border-radius: 0;
+  box-shadow: 0 8px 0 -7px var(--site-foreground);
+}
+
+/* Keep tournament artwork literal; the typography supplies the visual weight. */
+html[data-appearance="swiss-minimal"] .themed-site .hero {
+  color: var(--site-foreground);
+  background: var(--site-background);
+  border-bottom: 1px solid var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"] .themed-site .hero-art {
+  left: 48%;
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+html[data-appearance="swiss-minimal"] .themed-site .hero-shade {
+  background: linear-gradient(90deg, var(--site-background) 40%, transparent);
+}
+html[data-appearance="swiss-minimal"] .themed-site .hero h1 {
+  max-width: 13ch;
+  font-size: clamp(3.25rem, 8vw, 7rem);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .hero
+  :is(.hero-copy, .hero-enrollment) {
+  color: var(--site-secondary-text);
+}
+html[data-appearance="swiss-minimal"] .themed-site .hero .eyebrow {
+  color: var(--site-accent);
+}
+html[data-appearance="swiss-minimal"] .themed-site .hero-status {
+  color: var(--site-secondary-text);
+  border-color: var(--site-control-border);
+}
+html[data-appearance="swiss-minimal"] .themed-site .hero-status::before {
+  background: var(--site-accent);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .hero-status[data-state="live"]::before {
+  background: var(--site-success);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .hero-status[data-state="completed"]::before {
+  background: var(--site-muted);
+}
+html[data-appearance="swiss-minimal"] .themed-site .event-intro {
+  background: var(--site-surface);
+}
+html[data-appearance="swiss-minimal"] .themed-site .event-intro h1 {
+  font-size: clamp(2.5rem, 5vw, 4.75rem);
+  line-height: 1;
+}
+html[data-appearance="swiss-minimal"] .themed-site .season-countdown {
+  border-top-color: var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"] .themed-site .countdown-window progress {
+  height: 4px;
+  border-radius: 0;
+  color: var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .countdown-window
+  progress::-webkit-progress-bar {
+  border-radius: 0;
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .countdown-window
+  progress::-webkit-progress-value {
+  border-radius: 0;
+  background: var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"]
+  .themed-site
+  .countdown-window
+  progress::-moz-progress-bar {
+  border-radius: 0;
+  background: var(--site-foreground);
+}
+html[data-appearance="swiss-minimal"] .themed-site .event-pool-list a,
+html[data-appearance="swiss-minimal"] .themed-site .map-browse-card {
+  border-inline: 0;
+}
+html[data-appearance="swiss-minimal"] .themed-site .map-slot-badge {
+  border-left: 3px solid var(--site-accent);
+  color: var(--site-accent);
+}
+html[data-appearance="swiss-minimal"] .themed-site :is(th, td) {
+  border-color: var(--site-border);
+  font-variant-numeric: tabular-nums;
+}
+html[data-appearance="swiss-minimal"] .themed-site th {
+  background: var(--site-raised);
+  color: var(--site-foreground);
+}
+
+@media (max-width: 640px) {
+  html[data-appearance="swiss-minimal"] .themed-site .hero-art {
+    left: 0;
+    opacity: 0.12;
+  }
+  html[data-appearance="swiss-minimal"] .themed-site .hero-shade {
+    background: linear-gradient(0deg, var(--site-background), transparent);
+  }
+}

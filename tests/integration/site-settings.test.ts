@@ -50,38 +50,41 @@ describe.skipIf(!url)("global site appearance settings", () => {
     await closeDb();
     vi.unstubAllEnvs();
   });
-  it("defaults to the original design and saves a global default with an authoritative audit event", async () => {
-    expect(await siteSettingsForAdmin(admin)).toMatchObject({
-      defaultAppearance: "default",
-      revision: 0,
-    });
-    const saved = await updateSiteSettings(admin, save());
-    expect(saved).toMatchObject({
-      id: 1,
-      defaultAppearance: "cute-pastel",
-      revision: 1,
-    });
-    expect(await defaultSiteAppearance()).toBe("cute-pastel");
-    const logs = await auditLog(admin, { module: "site" });
-    expect(logs.total).toBe(1);
-    expect(logs.rows[0]).toMatchObject({
-      actorId: admin.osuId,
-      username: admin.username,
-      edition: null,
-      entityType: "site settings",
-      entityId: "1",
-      action: "site_appearance_changed",
-      before: { defaultAppearance: "default", revision: 0 },
-      after: { defaultAppearance: "cute-pastel", revision: 1 },
-    });
-    expect(new Date(logs.rows[0].timestamp).getTime()).toBeGreaterThan(
-      Date.now() - 30000,
-    );
-    expect(await updateSiteSettings(admin, save("cute-pastel", 1))).toEqual(
-      saved,
-    );
-    expect(await db().select().from(siteSettingEvents)).toHaveLength(1);
-  });
+  it.each(["cute-pastel", "swiss-minimal"])(
+    "saves %s with an authoritative audit event",
+    async (appearance) => {
+      expect(await siteSettingsForAdmin(admin)).toMatchObject({
+        defaultAppearance: "default",
+        revision: 0,
+      });
+      const saved = await updateSiteSettings(admin, save(appearance));
+      expect(saved).toMatchObject({
+        id: 1,
+        defaultAppearance: appearance,
+        revision: 1,
+      });
+      expect(await defaultSiteAppearance()).toBe(appearance);
+      const logs = await auditLog(admin, { module: "site" });
+      expect(logs.total).toBe(1);
+      expect(logs.rows[0]).toMatchObject({
+        actorId: admin.osuId,
+        username: admin.username,
+        edition: null,
+        entityType: "site settings",
+        entityId: "1",
+        action: "site_appearance_changed",
+        before: { defaultAppearance: "default", revision: 0 },
+        after: { defaultAppearance: appearance, revision: 1 },
+      });
+      expect(new Date(logs.rows[0].timestamp).getTime()).toBeGreaterThan(
+        Date.now() - 30000,
+      );
+      expect(await updateSiteSettings(admin, save(appearance, 1))).toEqual(
+        saved,
+      );
+      expect(await db().select().from(siteSettingEvents)).toHaveLength(1);
+    },
+  );
   it.each([
     ["admin", edition.slug],
     ["mappooler", null],
@@ -89,14 +92,12 @@ describe.skipIf(!url)("global site appearance settings", () => {
   ] as const)(
     "rejects %s with scope %s on both reads and writes",
     async (role, editionSlug) => {
-      await db()
-        .insert(staffRoles)
-        .values({
-          userId: operator.osuId,
-          role,
-          editionSlug,
-          grantedBy: admin.osuId,
-        });
+      await db().insert(staffRoles).values({
+        userId: operator.osuId,
+        role,
+        editionSlug,
+        grantedBy: admin.osuId,
+      });
       await expect(siteSettingsForAdmin(operator)).rejects.toMatchObject({
         status: 403,
       });

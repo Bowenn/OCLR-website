@@ -129,7 +129,7 @@ test.describe("Admin default and visitor appearance overrides", () => {
         "dark",
       );
       // Repeated saves exercise the form's refreshed revision, without a redeploy.
-      for (const value of ["default", "cute-pastel"]) {
+      for (const value of ["swiss-minimal", "default", "cute-pastel"]) {
         await page.getByLabel("Design", { exact: true }).selectOption(value);
         await page.getByRole("button", { name: "Save", exact: true }).click();
         await expect(
@@ -196,8 +196,8 @@ test.describe("Admin default and visitor appearance overrides", () => {
     } finally {
       await guest.close();
     }
-    expect(await db().select().from(siteSettingEvents)).toHaveLength(4);
-    expect((await db().select().from(siteSettings))[0].revision).toBe(4);
+    expect(await db().select().from(siteSettingEvents)).toHaveLength(5);
+    expect((await db().select().from(siteSettings))[0].revision).toBe(5);
     expect(errors).toEqual([]);
   });
   test("enforces global Admin authorization, origin and concurrency through the API", async ({

@@ -1985,6 +1985,7 @@
     "md8e45b043587": "Use tournament/site default",
     "m846e7ad8fdd7": "Used when no tournament default is configured. Explicit visitor appearance and light/dark preferences remain independent.",
     "meb21773b58ec": "Default tournament appearance",
-    "m718535ec430c": "Use tournament/site defaults: the current tournament takes priority, otherwise use the site default. Explicit visitor preferences take priority over both."
+    "m718535ec430c": "Use tournament/site defaults: the current tournament takes priority, otherwise use the site default. Explicit visitor preferences take priority over both.",
+    "m1c54c7c89ac1": "Swiss minimal"
   }
 }

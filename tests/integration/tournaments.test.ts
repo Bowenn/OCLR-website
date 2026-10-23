@@ -97,7 +97,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       action: "general",
       ...fields,
       status: "upcoming",
-      defaultAppearance: "cute-pastel",
+      defaultAppearance: "swiss-minimal",
       expectedRevision: 0,
       confirmed: true,
     };
@@ -112,7 +112,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       }),
     ).rejects.toMatchObject({ status: 400 });
     const saved = await tournamentCommand(admin, "s12", command);
-    expect(saved.edition.defaultAppearance).toBe("cute-pastel");
+    expect(saved.edition.defaultAppearance).toBe("swiss-minimal");
     expect(saved.revision).toBe(1);
     await expect(
       tournamentCommand(admin, "s12", command),
@@ -123,7 +123,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       actorId: admin.osuId,
       detail: {
         after: {
-          configuration: { defaultAppearance: "cute-pastel" },
+          configuration: { defaultAppearance: "swiss-minimal" },
           revision: 1,
         },
       },
@@ -138,7 +138,7 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
       (await tournamentAppearanceScopes(admin)).find((s) => s.slug === "s12"),
     ).toEqual({
       slug: "s12",
-      defaultAppearance: "cute-pastel",
+      defaultAppearance: "swiss-minimal",
       published: false,
       staff: true,
     });
@@ -151,14 +151,12 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
   });
   it("allows a scoped Admin to change only their tournament default", async () => {
     await create();
-    await db()
-      .insert(staffRoles)
-      .values({
-        userId: player.osuId,
-        role: "admin",
-        editionSlug: "s12",
-        grantedBy: admin.osuId,
-      });
+    await db().insert(staffRoles).values({
+      userId: player.osuId,
+      role: "admin",
+      editionSlug: "s12",
+      grantedBy: admin.osuId,
+    });
     const command = {
       ...fields,
       action: "general",

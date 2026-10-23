@@ -1,4 +1,5 @@
 "use client";
+import { appearanceLabel } from "@/i18n/appearance";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAppTranslations } from "@/i18n/shared";
@@ -71,9 +72,7 @@ export function SiteAppearanceForm({
           >
             {appearances.map((value) => (
               <option key={value} value={value}>
-                {value === "cute-pastel"
-                  ? tr("Cute pastel")
-                  : tr("Original design")}
+                {appearanceLabel(value, tr)}
               </option>
             ))}
           </select>
