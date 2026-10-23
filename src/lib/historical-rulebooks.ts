@@ -15,10 +15,26 @@ type HistoricalRulebook = {
   }[];
 };
 
-const supplements: { sheetId: string; rules: HistoricalRulebook }[] = [
-  { sheetId: "16ASDCD95p3TgfjgSHCjXmRN3KJuuAD4KS0fImpcTiiM", rules: s8 },
-  { sheetId: "11PwNlEsUFb6f3VCY2-sdGlPysP0ukihN8_lE4DGuzfA", rules: s9 },
-  { sheetId: "12BGS8WRnl10OdeUKyvmOypFzpTYCpHgx9QY1mw-0hlw", rules: s10 },
+const supplements: {
+  sheetId: string;
+  season: string;
+  rules: HistoricalRulebook;
+}[] = [
+  {
+    sheetId: "16ASDCD95p3TgfjgSHCjXmRN3KJuuAD4KS0fImpcTiiM",
+    season: "8",
+    rules: s8,
+  },
+  {
+    sheetId: "11PwNlEsUFb6f3VCY2-sdGlPysP0ukihN8_lE4DGuzfA",
+    season: "9",
+    rules: s9,
+  },
+  {
+    sheetId: "12BGS8WRnl10OdeUKyvmOypFzpTYCpHgx9QY1mw-0hlw",
+    season: "10",
+    rules: s10,
+  },
 ];
 
 /** Organizer-provided source pairs; never fall back to another season's live rules. */
@@ -39,4 +55,9 @@ export function historicalRulebook(archive: HistoricalArchive) {
         }),
     )?.rules ?? null
   );
+}
+
+/** Identify the approved source pair independently of editable edition slugs. */
+export function historicalRulebookSeason(rules: HistoricalRulebook) {
+  return supplements.find((entry) => entry.rules === rules)?.season;
 }

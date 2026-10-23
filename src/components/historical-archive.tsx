@@ -15,7 +15,10 @@ import {
 } from "@/lib/historical-archive";
 import { PageHeading, Badge } from "./ui";
 import { RulesHandbook } from "./rules-handbook";
-import { historicalRulebook } from "@/lib/historical-rulebooks";
+import {
+  historicalRulebook,
+  historicalRulebookSeason,
+} from "@/lib/historical-rulebooks";
 
 export type ArchiveSection =
   | "overview"
@@ -500,7 +503,7 @@ export async function HistoricalArchiveView({
         <RulesHandbook
           sections={rules.sections}
           cover={rules.cover}
-          archiveSeason={a.season}
+          archiveSeason={historicalRulebookSeason(rules)}
         />
       </>
     ) : (
