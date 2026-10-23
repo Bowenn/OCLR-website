@@ -2062,6 +2062,12 @@
     "m2314c335cabf": "Remove coach",
     "m3e92eebd5ff7": "Coach osu! ID",
     "mffdd0704fce1": "Add coach",
-    "m5c25d3faf47e": "This releases the finalized players’ and coaches’ osu! IDs and display names. Verify organizer approval."
+    "m5c25d3faf47e": "This releases the finalized players’ and coaches’ osu! IDs and display names. Verify organizer approval.",
+    "mbbcebb29b9ce": "{shown} / {total} maps",
+    "m695e098a9f0e": "Search maps",
+    "mc5f2c583c867": "Title, mapper, slot or beatmap ID",
+    "mc5fbdc7c9138": "Mod filter",
+    "m38c714db904e": "No maps match these filters.",
+    "m69a6fb311fc4": "No mappools recorded."
   }
 }

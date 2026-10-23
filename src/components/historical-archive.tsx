@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArchiveMappools } from "./archive-mappools";
 import { Avatar } from "./avatar";
 import { ArchiveMatchList } from "./archive-match-list";
 import { BracketView } from "./bracket-view";
@@ -334,91 +335,23 @@ export async function HistoricalArchiveView({
         />
       );
   } else if (section === "mappools" || section === "pool") {
-    const pools =
-      section === "pool" ? a.pools.filter((p) => p.id === id) : a.pools;
-    if (section === "pool" && !pools.length) notFound();
-    title = section === "pool" ? pools[0].name : tr("Mappools");
-    content = (
-      <div className="stack">
-        {pools.map((p) => (
-          <section key={p.id}>
-            {section === "mappools" && (
-              <h2>
-                <Link href={href("mappools", p.id)}>{p.name}</Link>
-              </h2>
-            )}
-            {section === "pool" ? (
-              <div
-                className="table-scroll"
-                tabIndex={0}
-                role="region"
-                aria-label={p.name}
-              >
-                <table className="archive-pool-table">
-                  <thead>
-                    <tr>
-                      {[
-                        tr("Slot"),
-                        tr("Beatmap"),
-                        tr("Mapper"),
-                        tr("SR"),
-                        tr("BPM"),
-                        tr("Drain"),
-                        tr("CS"),
-                        tr("AR"),
-                        tr("OD"),
-                      ].map((h) => (
-                        <th key={h}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {p.maps.map((m) => (
-                      <tr key={m.slot}>
-                        <th scope="row">{m.slot}</th>
-                        <td>
-                          {m.beatmapId ? (
-                            <a
-                              href={`https://osu.ppy.sh/beatmaps/${m.beatmapId}`}
-                              rel="noreferrer"
-                            >
-                              {m.title}
-                            </a>
-                          ) : (
-                            <>
-                              {m.title}
-                              <p className="muted small">
-                                {tr("Beatmap ID unresolved")}
-                              </p>
-                            </>
-                          )}
-                        </td>
-                        <td>{m.mapper ?? tr("Not recorded")}</td>
-                        {[m.stars, m.bpm, m.drainSeconds, m.cs, m.ar, m.od].map(
-                          (v, i) => (
-                            <td key={i}>
-                              {v === null
-                                ? tr("Not recorded")
-                                : new Intl.NumberFormat(tr.locale, {
-                                    maximumFractionDigits: 2,
-                                  }).format(v)}
-                            </td>
-                          ),
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p>
-                {p.maps.length} {tr("Maps")}
-              </p>
-            )}
-            {source(p.source)}
-          </section>
-        ))}
-      </div>
+    const pool =
+      section === "pool" ? a.pools.find((p) => p.id === id) : a.pools[0];
+    if (section === "pool" && !pool) notFound();
+    title = tr("Mappools");
+    content = pool ? (
+      <ArchiveMappools
+        key={pool.id}
+        pool={pool}
+        stages={a.pools.map((p) => ({
+          id: p.id,
+          name: p.name,
+          count: p.maps.length,
+          href: href("mappools", p.id),
+        }))}
+      />
+    ) : (
+      <p className="notice">{tr("No mappools recorded.")}</p>
     );
   } else if (section === "bracket") {
     title = tr("Bracket");
@@ -550,7 +483,9 @@ export async function HistoricalArchiveView({
     );
   }
   return (
-    <div className="historical-archive stack">
+    <div
+      className={`historical-archive stack${section === "mappools" || section === "pool" ? " archive-pool-page" : ""}`}
+    >
       <PageHeading eyebrow={tr("Historical archive")} title={title}>
         <span>
           {tr(
