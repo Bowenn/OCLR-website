@@ -637,3 +637,20 @@
 .obs-source-link p {
   margin: 0;
 }
+
+.registration-review > .section-title {
+  align-items: center;
+  gap: 1rem;
+}
+.registration-review-actions {
+  margin: 0;
+  margin-inline-start: auto;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .registration-review-actions {
+    width: 100%;
+  }
+}

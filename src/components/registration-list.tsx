@@ -55,19 +55,25 @@ export async function RegistrationList({
               { count: total },
             )}
           </p>
-          {editionSlug && editions.find((e) => e.slug === editionSlug) && (
-            <ManualRegistration
-              edition={editions.find((e) => e.slug === editionSlug)!}
-            />
-          )}
-          {total > 0 && (
-            <a
-              className="button secondary"
-              href={`/api/admin/registrations/export?${query}`}
-            >
-              {tr("Export CSV ↓")}
-            </a>
-          )}
+          <div
+            className="actions registration-review-actions"
+            role="group"
+            aria-label={tr("Registration actions")}
+          >
+            {editionSlug && editions.find((e) => e.slug === editionSlug) && (
+              <ManualRegistration
+                edition={editions.find((e) => e.slug === editionSlug)!}
+              />
+            )}
+            {total > 0 && (
+              <a
+                className="button secondary"
+                href={`/api/admin/registrations/export?${query}`}
+              >
+                {tr("Export CSV ↓")}
+              </a>
+            )}
+          </div>
         </div>
         <form className="filters" action={basePath} method="get">
           <label className="field">

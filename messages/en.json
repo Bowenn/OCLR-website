@@ -1980,6 +1980,7 @@
     "m0dd0ec414d67": "MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement.",
     "m999840c1cbca": "Rookie: at least 5 appearances and draft-derived Tier of T4, T5 or below.",
     "m3bdabc69b8ef": "Awards are independent; ties remain tied.",
-    "mc6e40991e4f2": "Captains display as Captain (internal Tier 0). Other players receive Tiers from valid draft rounds."
+    "mc6e40991e4f2": "Captains display as Captain (internal Tier 0). Other players receive Tiers from valid draft rounds.",
+    "m28476af22d3d": "Registration actions"
   }
 }
