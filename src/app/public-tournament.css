@@ -1843,3 +1843,21 @@ html[data-theme="dark"] .brand .oclr-wordmark {
     bottom: calc(100% - 2rem);
   }
 }
+
+.public-staff-list > li {
+  align-items: flex-start;
+}
+.public-staff-list h3 {
+  margin: 0 0 0.2rem;
+  line-height: 1.35;
+}
+.country-flag {
+  display: inline-block;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 1em;
+  line-height: 1;
+}
+.public-staff-list h3 .country-flag {
+  margin-inline-start: 0.15rem;
+}

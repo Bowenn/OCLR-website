@@ -1,5 +1,7 @@
 import { useAppTranslations } from "@/i18n/shared";
 import Link from "next/link";
+import { CountryFlag } from "./country-flag";
+import { countryFlagData } from "@/lib/country-flag";
 import { Avatar } from "./avatar";
 export function PublicPlayerIdentity({
   osuId,
@@ -16,12 +18,7 @@ export function PublicPlayerIdentity({
 }) {
   const tr = useAppTranslations();
 
-  const flag =
-    countryCode && /^[A-Z]{2}$/.test(countryCode)
-      ? String.fromCodePoint(
-          ...[...countryCode].map((c) => 127397 + c.charCodeAt(0)),
-        )
-      : null;
+  const flag = countryFlagData(countryCode, tr.locale);
   return (
     <div className="public-player-identity">
       <Avatar osuId={osuId} username={username} />
@@ -35,15 +32,7 @@ export function PublicPlayerIdentity({
         </p>
         {flag && (
           <p className="small">
-            <span
-              role="img"
-              aria-label={tr("{value0} flag", {
-                value0: countryName ?? countryCode ?? "",
-              })}
-            >
-              {flag}
-            </span>{" "}
-            {countryName ?? countryCode}
+            <CountryFlag code={countryCode} /> {countryName ?? countryCode}
           </p>
         )}
         {edition && (

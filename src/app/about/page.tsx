@@ -1,6 +1,7 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { PageHeading } from "@/components/ui";
+import { CountryFlag } from "@/components/country-flag";
 import { Avatar } from "@/components/avatar";
 import { publicStaff } from "@/lib/public-staff";
 import { privacyContact } from "@/lib/auth/config";
@@ -40,7 +41,8 @@ export default async function About() {
                         href={`https://osu.ppy.sh/users/${person.osuId}`}
                       >
                         {person.username}
-                      </a>
+                      </a>{" "}
+                      <CountryFlag code={person.countryCode} />
                     </h3>
                     <ul>
                       {person.roles.map((grant) => (

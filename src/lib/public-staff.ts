@@ -1,18 +1,29 @@
 import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { editionState, staffRoles, users } from "@/db/schema";
+import { editionState, staffRoles, users, userProfileCache } from "@/db/schema";
 export async function publicStaff() {
   if (!process.env.DATABASE_URL) return [];
   const rows = await db()
     .select({
       osuId: users.osuId,
       username: users.username,
+      countryCode: sql<
+        string | null
+      >`${userProfileCache.profile}->>'countryCode'`,
       role: staffRoles.role,
       editionSlug: staffRoles.editionSlug,
       editionName: sql<string | null>`${editionState.configuration}->>'name'`,
     })
     .from(staffRoles)
     .innerJoin(users, eq(users.osuId, staffRoles.userId))
+    .leftJoin(
+      userProfileCache,
+      and(
+        eq(userProfileCache.osuId, users.osuId),
+        eq(userProfileCache.mode, "osu"),
+        sql`${userProfileCache.errorStatus} IS DISTINCT FROM 404`,
+      ),
+    )
     .leftJoin(editionState, eq(editionState.slug, staffRoles.editionSlug))
     .where(
       and(
@@ -30,6 +41,7 @@ export async function publicStaff() {
     {
       osuId: number;
       username: string;
+      countryCode: string | null;
       roles: { role: string; edition: { slug: string; name: string } | null }[];
     }
   >();
@@ -38,6 +50,7 @@ export async function publicStaff() {
     const person = people.get(row.osuId) ?? {
       osuId: row.osuId,
       username: row.username,
+      countryCode: row.countryCode,
       roles: [],
     };
     person.roles.push({
