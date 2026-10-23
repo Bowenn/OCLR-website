@@ -14,6 +14,7 @@ import {
   type DirectoryStatistics,
 } from "@/lib/osu-profiles";
 import { formatDate } from "@/lib/editions";
+import { z } from "zod";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
   return {
@@ -37,17 +38,26 @@ export default async function Players({
   if (!(await getPublicEdition(edition))) notFound();
   const base = `/tournaments/${edition}/players`;
   let result;
+  let view: "cards" | "list" = "cards";
   try {
     const query = await searchParams;
-    if (Object.keys(query).some((key) => !["q", "page"].includes(key)))
+    const selected = z
+      .enum(["cards", "list"])
+      .default("cards")
+      .safeParse(query.view);
+    if (
+      !selected.success ||
+      Object.keys(query).some((key) => !["q", "page", "view"].includes(key))
+    )
       throw new HttpError(400, "Choose a valid player search and page.");
-    result = await publicPlayers({ ...query, edition });
+    view = selected.data;
+    result = await publicPlayers({ q: query.q, page: query.page, edition });
   } catch (error) {
     if (!(error instanceof HttpError) || error.status !== 400) throw error;
     return (
       <div className="directory-page edition-players">
         <PageHeading eyebrow={tr("PUBLIC DIRECTORY")} title={tr("Players")}>
-          {error.message}
+          {tr(error.message)}
         </PageHeading>
         <Action href={base}>{tr("Clear filters")}</Action>
       </div>
@@ -74,22 +84,59 @@ export default async function Players({
       }
     });
   const number = new Intl.NumberFormat(tr.locale, { maximumFractionDigits: 2 });
-  const query = new URLSearchParams({ q: filters.q });
+  const query = new URLSearchParams({ q: filters.q, view });
+  const viewHref = (value: "cards" | "list") => {
+    const next = new URLSearchParams(query);
+    next.set("view", value);
+    next.set("page", String(filters.page));
+    return `${base}?${next}`;
+  };
   return (
     <div className="directory-page edition-players">
       <PageHeading title={tr("Players")} />
-      <form action={base} method="get" className="filters">
-        <label className="field">
-          <span>{tr("Search players")}</span>
-          <input
-            name="q"
-            defaultValue={filters.q}
-            maxLength={100}
-            placeholder={tr("Username or osu! ID")}
-          />
-        </label>
-        <button type="submit">{tr("Search")}</button>
-      </form>
+      <div className={styles.toolbar}>
+        <form action={base} method="get" className={`filters ${styles.search}`}>
+          <input type="hidden" name="view" value={view} />
+          <label className="field">
+            <span>{tr("Search players")}</span>
+            <input
+              name="q"
+              defaultValue={filters.q}
+              maxLength={100}
+              placeholder={tr("Username or osu! ID")}
+            />
+          </label>
+          <button type="submit">{tr("Search")}</button>
+        </form>
+        <nav className={styles.views} aria-label={tr("Player view")}>
+          {(["cards", "list"] as const).map((value) => (
+            <Link
+              key={value}
+              href={viewHref(value)}
+              prefetch={false}
+              scroll={false}
+              aria-current={view === value ? "page" : undefined}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                {value === "cards" ? (
+                  <path d="M3 3h5v5H3zM12 3h5v5h-5zM3 12h5v5H3zM12 12h5v5h-5z" />
+                ) : (
+                  <path d="M3 4h14M3 10h14M3 16h14" />
+                )}
+              </svg>
+              {value === "cards" ? tr("Cards") : tr("List")}
+            </Link>
+          ))}
+        </nav>
+      </div>
       {total > 0 && (
         <p className="muted small" role="status">
           {total} {tr(" player ")}
@@ -97,84 +144,133 @@ export default async function Players({
         </p>
       )}
       {rows.length ? (
-        <ul className={styles.grid}>
-          {rows.map((p) => {
-            const stats = statistics.get(p.osuId);
-            const updated = stats
-              ? tr("Updated {value0}{value1}", {
-                  value0: formatDate(stats.fetchedAt, "UTC", tr.locale),
-                  value1: "",
-                })
-              : tr("osu! statistics are temporarily unavailable.");
-            return (
-              <li className={styles.card} key={p.osuId}>
-                <div className={styles.identity}>
-                  <PublicPlayerIdentity osuId={p.osuId} username={p.username} />
-                  <Link
-                    className={`context-link ${styles.profile}`}
-                    href={`/players/${p.osuId}?edition=${edition}`}
-                    prefetch={false}
-                    aria-label={tr("OCLR profile")}
-                    title={tr("OCLR profile")}
-                  >
-                    <span aria-hidden="true">↗</span>
-                  </Link>
-                </div>
-                <div className={styles.stats} title={updated}>
-                  <div className={styles.mode}>
-                    <span>{"osu!standard"}</span>
-                    {stats?.stale && <span>{tr("SAVED SNAPSHOT")}</span>}
-                    {stats && (
-                      <time className="sr-only" dateTime={stats.fetchedAt}>
-                        {updated}
-                      </time>
+        <>
+          {view === "list" && (
+            <p
+              id="player-statistics"
+              className={`muted small ${styles.listMode}`}
+            >
+              {"osu!standard"} · {tr("Cached statistics")}
+            </p>
+          )}
+          <ul
+            className={view === "list" ? styles.list : styles.grid}
+            aria-describedby={view === "list" ? "player-statistics" : undefined}
+          >
+            {rows.map((p) => {
+              const stats = statistics.get(p.osuId);
+              const updated = stats
+                ? tr("Updated {value0}{value1}", {
+                    value0: formatDate(stats.fetchedAt, "UTC", tr.locale),
+                    value1: "",
+                  })
+                : tr("osu! statistics are temporarily unavailable.");
+              return (
+                <li
+                  className={view === "list" ? styles.row : styles.card}
+                  key={p.osuId}
+                >
+                  <div className={styles.identity}>
+                    <PublicPlayerIdentity
+                      osuId={p.osuId}
+                      username={p.username}
+                    />
+                    <Link
+                      className={`context-link ${styles.profile}`}
+                      href={`/players/${p.osuId}?edition=${edition}`}
+                      prefetch={false}
+                      aria-label={tr("OCLR profile")}
+                      title={tr("OCLR profile")}
+                    >
+                      <span aria-hidden="true">↗</span>
+                    </Link>
+                  </div>
+                  <div className={styles.stats} title={updated}>
+                    <div
+                      className={`${styles.mode}${view === "list" ? " sr-only" : ""}`}
+                    >
+                      {view === "cards" && <span>{"osu!standard"}</span>}
+                      {stats?.stale && <span>{tr("SAVED SNAPSHOT")}</span>}
+                      {stats && (
+                        <time className="sr-only" dateTime={stats.fetchedAt}>
+                          {updated}
+                        </time>
+                      )}
+                    </div>
+                    <dl>
+                      <div>
+                        <dt>
+                          {tr("Global rank")}
+                          {view === "list" && stats?.stale && (
+                            <span
+                              className={styles.snapshot}
+                              role="img"
+                              aria-label={tr("SAVED SNAPSHOT")}
+                              title={`${tr("SAVED SNAPSHOT")} · ${updated}`}
+                            >
+                              <svg
+                                aria-hidden="true"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.4"
+                              >
+                                <circle cx="8" cy="8" r="6" />
+                                <path d="M8 4v4l2 1" />
+                              </svg>
+                            </span>
+                          )}
+                        </dt>
+                        <dd>
+                          {stats?.globalRank != null && stats.globalRank > 0
+                            ? `#${number.format(stats.globalRank)}`
+                            : "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>PP</dt>
+                        <dd>
+                          {stats?.pp != null ? number.format(stats.pp) : "—"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                  <div className={styles.footer}>
+                    <span className={styles.status}>
+                      <span className="badge">
+                        {p.participation === "finalized_roster"
+                          ? tr("Finalized roster")
+                          : p.captain
+                            ? tr("Captain")
+                            : tr("Accepted player")}
+                      </span>
+                      {p.captain && p.participation === "finalized_roster" && (
+                        <span className="badge">{tr("Captain")}</span>
+                      )}
+                    </span>
+                    {p.team ? (
+                      <Link
+                        className={`context-link ${styles.team}`}
+                        href={`/tournaments/${edition}/teams/${p.team.id}`}
+                      >
+                        {p.team.name}
+                      </Link>
+                    ) : (
+                      <span
+                        className={`muted ${styles.team}`}
+                        title={tr("Team")}
+                      >
+                        {tr("Not announced")}
+                      </span>
                     )}
                   </div>
-                  <dl>
-                    <div>
-                      <dt>{tr("Global rank")}</dt>
-                      <dd>
-                        {stats?.globalRank != null && stats.globalRank > 0
-                          ? `#${number.format(stats.globalRank)}`
-                          : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>PP</dt>
-                      <dd>
-                        {stats?.pp != null ? number.format(stats.pp) : "—"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-                <div className={styles.footer}>
-                  <span className="badge">
-                    {p.participation === "finalized_roster"
-                      ? tr("Finalized roster")
-                      : p.captain
-                        ? tr("Captain")
-                        : tr("Accepted player")}
-                  </span>
-                  {p.captain && p.participation === "finalized_roster" && (
-                    <span className="badge">{tr("Captain")}</span>
-                  )}
-                  {p.team ? (
-                    <Link
-                      className="context-link"
-                      href={`/tournaments/${edition}/teams/${p.team.id}`}
-                    >
-                      {p.team.name}
-                    </Link>
-                  ) : (
-                    <span className="muted" title={tr("Team")}>
-                      {tr("Not announced")}
-                    </span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       ) : (
         <div className="directory-empty" role="status">
           <p className="muted">
@@ -183,7 +279,7 @@ export default async function Players({
               : tr("No accepted players yet")}
           </p>
           {filters.q && (
-            <Link className="context-link" href={base}>
+            <Link className="context-link" href={`${base}?view=${view}`}>
               {tr("Clear filters")}
             </Link>
           )}
@@ -193,6 +289,7 @@ export default async function Players({
         {filters.page > 1 && (
           <Link
             className="button secondary"
+            prefetch={false}
             href={`${base}?${query}&page=${filters.page - 1}`}
           >
             {tr("← Previous")}
@@ -201,6 +298,7 @@ export default async function Players({
         {filters.page * 24 < total && (
           <Link
             className="button secondary"
+            prefetch={false}
             href={`${base}?${query}&page=${filters.page + 1}`}
           >
             {tr("Next →")}

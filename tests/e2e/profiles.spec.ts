@@ -86,8 +86,7 @@ test.describe("published osu! profiles", () => {
     ).toBe(405);
     await page.goto(`/tournaments/test-cup/players?q=${base}`);
     await page
-      .getByRole("link", { name: "Player profile & statistics" })
-      .first()
+      .locator(`a[href="/players/${base}?edition=test-cup"]`)
       .click();
     await expect(
       page
