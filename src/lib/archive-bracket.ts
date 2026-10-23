@@ -90,18 +90,22 @@ export function archiveBracket(
             },
           ]
         : []),
-      ...[...groupMatches].map(([g, matches], i) => ({
-        id: `group-${i}`,
-        label: g,
-        layout: "grid" as const,
-        rounds: [
-          {
-            id: `group-round-${i}`,
-            label: sorted.find((m) => m.id === matches[0].id)!.stage,
-            matches,
-          },
-        ],
-      })),
+      ...[...groupMatches]
+        .map(([g, matches], i) => ({
+          id: `group-${i}`,
+          label: g,
+          layout: "grid" as const,
+          rounds: [
+            {
+              id: `group-round-${i}`,
+              label: sorted.find((m) => m.id === matches[0].id)!.stage,
+              matches,
+            },
+          ],
+        }))
+        .sort((a, b) =>
+          a.label.localeCompare(b.label, "en", { numeric: true }),
+        ),
     ],
   };
 }

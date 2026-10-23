@@ -87,3 +87,27 @@ describe("historical schedule bracket", () => {
           );
   });
 });
+
+it("sorts S8 group tabs by label without changing match-path order or group identity", () => {
+  const a = historicalArchiveSchema.parse(
+    JSON.parse(readFileSync("docs/imports/s8-archive.json", "utf8")),
+  );
+  const b = archiveBracket(a, href)!;
+  expect(b.groups.map((g) => g.label)).toEqual([
+    "Match path",
+    "A",
+    "B",
+    "C",
+    "D",
+  ]);
+  for (const g of b.groups.filter((g) => g.layout === "grid")) {
+    expect(g.rounds.flatMap((r) => r.matches)).toHaveLength(6);
+    for (const m of g.rounds[0].matches) {
+      expect(
+        a.standings.find((s) => s.teamId === m.slots[0].teamId)?.group,
+      ).toBe(g.label);
+    }
+  }
+  a.matches.reverse();
+  expect(archiveBracket(a, href)).toEqual(b);
+});
