@@ -486,8 +486,13 @@ export async function HistoricalArchiveView({
     content = rules ? (
       <>
         <p className="rules-version muted small">
-          {tr("Version ")}
-          {rules.version} · {rules.sections.length} {tr("sections")}
+          {rules.version ? (
+            <>
+              {tr("Version ")}
+              {rules.version} ·{" "}
+            </>
+          ) : null}
+          {rules.sections.length} {tr("sections")}
         </p>
         <RulesHandbook sections={rules.sections} />
       </>
