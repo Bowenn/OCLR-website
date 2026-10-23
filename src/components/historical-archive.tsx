@@ -195,7 +195,6 @@ export async function HistoricalArchiveView({
     const counts = archiveCounts(a);
     content = (
       <>
-        <p>{edition.summary}</p>
         <dl className="archive-counts">
           {[
             [tr("Teams"), counts.teams],
@@ -210,20 +209,22 @@ export async function HistoricalArchiveView({
             </div>
           ))}
         </dl>
-        <nav className="actions" aria-label={tr("Archive sections")}>
-          {[
-            ["teams", tr("Teams")],
-            ["players", tr("Players")],
-            ["schedule", tr("Schedule")],
-            ["mappools", tr("Mappools")],
-            ["draft", tr("Draft results")],
-            ["staff", tr("Staff")],
-          ].map(([path, label]) => (
-            <Link key={path} href={href(path)}>
-              {label}
-            </Link>
-          ))}
-        </nav>
+        {preview && (
+          <nav className="actions" aria-label={tr("Archive sections")}>
+            {[
+              ["teams", tr("Teams")],
+              ["players", tr("Players")],
+              ["schedule", tr("Schedule")],
+              ["mappools", tr("Mappools")],
+              ["draft", tr("Draft results")],
+              ["staff", tr("Staff")],
+            ].map(([path, label]) => (
+              <Link key={path} href={href(path)}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </>
     );
   } else if (section === "staff") {
@@ -461,7 +462,9 @@ export async function HistoricalArchiveView({
     <div
       className={`historical-archive stack${section === "mappools" || section === "pool" ? " archive-pool-page" : ""}`}
     >
-      <PageHeading eyebrow={tr("Historical archive")} title={title} />
+      <PageHeading eyebrow={tr("Historical archive")} title={title}>
+        {section === "overview" ? edition.summary : undefined}
+      </PageHeading>
       {preview && <p className="notice">{tr("Private archive preview")}</p>}
       {section !== "overview" && preview && (
         <Link className="text-link" href={base}>

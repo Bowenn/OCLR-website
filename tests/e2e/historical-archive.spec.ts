@@ -163,8 +163,10 @@ test.describe("historical archive browser workflow", () => {
       page.getByRole("heading", { name: "Current tournaments" }),
     ).toBeVisible();
     await page.goto(`/tournaments/${slug}`);
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
     await page
-      .locator(".historical-archive")
+      .getByRole("navigation", { name: "Tournament navigation" })
       .getByRole("link", { name: "Staff", exact: true })
       .click();
     await expect(page).toHaveURL(new RegExp(`/tournaments/${slug}/staff$`));
