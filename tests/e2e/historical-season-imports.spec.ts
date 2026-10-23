@@ -293,10 +293,29 @@ test.describe("historical season import handoff", () => {
         );
         await page.goto(`/tournaments/${slug}/bracket`);
         await expect(
-          page
-            .locator(".historical-archive")
-            .getByRole("cell", { name: "Not recorded", exact: true }),
-        ).toHaveCount(16);
+          page.locator(".historical-archive table tbody tr td:nth-child(2)"),
+        ).toHaveText([
+          "1",
+          "2",
+          "3",
+          "4",
+          "1",
+          "2",
+          "3",
+          "4",
+          "1",
+          "2",
+          "3",
+          "4",
+          "1",
+          "2",
+          "3",
+          "4",
+        ]);
+        await expect(page.locator(".historical-archive")).toContainText(
+          "This is a derived order, not an official archived ranking.",
+        );
+
         for (const group of ["A", "B", "C", "D"]) {
           await page.getByRole("button", { name: group, exact: true }).click();
           await expect(
@@ -307,7 +326,7 @@ test.describe("historical season import handoff", () => {
           [],
         );
         await page.screenshot({
-          path: info.outputPath("s8-unknown-rank-bracket.png"),
+          path: info.outputPath("s8-derived-standings-bracket.png"),
           fullPage: false,
         });
       }
