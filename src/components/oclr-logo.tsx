@@ -1,26 +1,37 @@
-/** Original CLR letter paths, with a matching gradient O outline and theme-aware CLR. */
+/** Transparent OCLR wordmark: shared O/C/L letter treatment, signature gradient R, and star. */
 export function OclrLogo() {
   return (
     <svg
       className="oclr-wordmark"
-      viewBox="0 0 260 92"
-      width="106"
-      height="33"
+      viewBox="140 233 1465 430"
+      width="132"
+      height="39"
       aria-hidden="true"
       focusable="false"
     >
       <defs>
-        <linearGradient id="oclr-wordmark-gradient" x1="0" y1="0" x2="0.9" y2="1">
-          <stop offset="0%" stopColor="#ff95c8" />
-          <stop offset="43%" stopColor="#ce79e9" />
-          <stop offset="100%" stopColor="#975cf4" />
+        <linearGradient id="oclr-letters" x1="0.16" y1="0" x2="0.65" y2="1">
+          <stop offset="0%" stopColor="var(--oclr-letter-top)" />
+          <stop offset="46%" stopColor="var(--oclr-letter-mid)" />
+          <stop offset="100%" stopColor="var(--oclr-letter-bottom)" />
+        </linearGradient>
+        <linearGradient id="oclr-r" x1="0.06" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor="#ff8cca" />
+          <stop offset="48%" stopColor="#e353e7" />
+          <stop offset="100%" stopColor="#815af7" />
+        </linearGradient>
+        <linearGradient id="oclr-star" x1="0.1" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor="#ff9ad4" />
+          <stop offset="57%" stopColor="#d06be8" />
+          <stop offset="100%" stopColor="#9c52fb" />
         </linearGradient>
       </defs>
-      <path fillRule="evenodd" d="M29 18 H35 C50 18 61 30 61 46 C61 63 50 75 35 75 H29 C14 75 3 63 3 46 C3 30 14 18 29 18 Z M29 36 H35 C40 36 42 39 42 46 C42 53 40 57 35 57 H29 C24 57 22 53 22 46 C22 39 24 36 29 36 Z" fill="url(#oclr-wordmark-gradient)" />
-      <g transform="translate(-28 0)" fill="var(--site-foreground, currentColor)">
-        <path d="M153 18 H131 C109 18 94 30 94 46 C94 63 109 75 131 75 H153 V57 H132 C120 57 113 53 113 46 C113 39 120 36 132 36 H153 Z" />
-        <path d="M160 18 H180 V56 H203 V74 H160 Z" />
-        <path fillRule="evenodd" d="M211 18 H244 C266 18 277 28 277 42 C277 53 271 59 262 63 L281 75 H254 L238 60 H231 V75 H211 Z M231 34 V46 H244 C252 46 257 44 257 40 C257 36 253 34 245 34 Z" />
+      <g strokeWidth="2" strokeLinejoin="round" fillRule="evenodd">
+        <path d="M512,391 494,376 473,365 457,360 431,356 328,357 291,365 250,383 214,409 197,427 178,455 166,481 158,509 155,540 158,565 168,592 178,607 206,631 227,641 260,649 336,651 374,648 411,639 444,624 479,599 500,577 517,552 534,512 540,480 539,446 530,418Z M442,444 451,459 455,476 454,498 450,513 443,528 433,542 414,560 403,567 380,577 348,583 307,583 286,579 271,573 263,568 250,554 245,544 242,530 243,507 248,489 262,463 279,445 290,437 316,425 337,420 388,419 419,427 431,434Z" fill="url(#oclr-letters)" stroke="var(--oclr-letter-outline)" />
+        <path d="M897,357 694,358 646,370 612,389 586,413 569,438 557,466 541,518 535,561 538,582 550,609 568,628 593,642 610,647 625,649 756,649 827,575 655,575 641,573 632,569 623,559 620,549 620,534 627,505 639,475 650,458 661,447 676,437 694,431 826,430Z" fill="url(#oclr-letters)" stroke="var(--oclr-letter-outline)" />
+        <path d="M916,357 821,649 1054,649 1123,575 945,575 935,573 1006,358Z" fill="url(#oclr-letters)" stroke="var(--oclr-letter-outline)" />
+        <path d="M1227,358 1171,430 1383,430 1391,432 1395,436 1395,450 1381,466 1359,474 1169,475 1111,649 1199,649 1232,551 1250,551 1345,649 1464,649 1354,536 1394,534 1420,527 1442,516 1468,493 1487,463 1496,432 1495,404 1492,394 1483,380 1460,364 1443,359 1425,357Z" fill="url(#oclr-r)" stroke="#ffadf2" />
+        <path d="M1522,247 1518,270 1507,293 1492,307 1479,313 1457,318 1483,324 1494,330 1506,341 1516,359 1523,387 1528,361 1540,340 1549,331 1561,324 1587,317 1565,313 1549,304 1541,296 1528,273Z" fill="url(#oclr-star)" stroke="#eca2ef" />
       </g>
     </svg>
   );
