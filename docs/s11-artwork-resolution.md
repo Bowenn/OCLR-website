@@ -23,3 +23,18 @@ Current source SHA-256:
 On 2026-10-24 the organizer supplied `/Users/emik/Downloads/oclr-s11-key-visual-1.webp`. It measures **1672×941**, is **293892 bytes**, and has SHA-256 `bfd7b6ef12654a7814c064a0bc2014b5250ce3f501991176977c3c9472dfab16`. A direct byte comparison (`cmp`) confirms it is identical to `public/oclr-s11-key-visual.webp`. It is therefore already the shipped tournament artwork, not a higher-resolution replacement. Nearby `oclr-s11*` files contain only the previously checked exports.
 
 No image was replaced, recompressed, upscaled or generated on this follow-up. #173 still requires a higher-resolution approved original to establish the requested sharpness improvement while preserving the artwork. The supplied key visual also has a different composition/aspect ratio from the text-free home background, so substituting it there would not preserve the current hero composition.
+
+## Organizer-authorized enhancement export
+
+On 2026-10-24 the organizer explicitly requested “進行超解析度處理製作一個更大的主視覺圖”. This authorizes a new enhancement candidate; the original artwork remains intact. The built-in `image_gen` editor produced two restoration candidates. Both actually returned **1672×941** PNGs despite requests for 3840×2160, including the attempt using an interpolated 4K input. The second candidate was visually checked for the existing composition, face, bow, logo and exact subtitle, and selected.
+
+The selected AI-restored result was then enlarged with Lanczos3 to **3840×2161**, preserving its aspect ratio without cropping, and exported as:
+
+| Artifact                                                |    Bytes | Purpose                                     |
+| ------------------------------------------------------- | -------: | ------------------------------------------- |
+| `output/imagegen/oclr-s11-key-visual-enhanced-3840.png` | 15907291 | Lossless master/export                      |
+| `public/oclr-s11-key-visual-enhanced-3840.webp`         |  1142224 | Smaller WebP delivery candidate, quality 95 |
+
+The exact prompts and observed output limits are recorded in `output/imagegen/oclr-s11-key-visual-enhancement-prompts.txt`. This is **AI detail restoration followed by interpolation**, not a native-4K super-resolution result or recovery of verifiable original detail. AI-estimated texture may differ from the original. Visual checks retain the composition, character, palette, “OCLR S11” and “OSU! CHINESE LEAGUE ROOKIE”; pixel identity is not claimed. Both exports decode at the stated dimensions. The original source hash remains unchanged.
+
+This follow-up delivers the requested larger image as sibling artifacts. It does not change the selected website artwork, the text-free homepage background, branding configuration, responsive layout or production service. The application's #173 visual/performance acceptance remains open; this artifact-generation step does not establish that the deployed hero is sharper. No application code or dependency changed, so the application suite was not repeated for these exports.
