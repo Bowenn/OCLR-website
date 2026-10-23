@@ -39,7 +39,7 @@ export default async function About() {
                         className="context-link"
                         href={`https://osu.ppy.sh/users/${person.osuId}`}
                       >
-                        {person.username} ↗
+                        {person.username}
                       </a>
                     </h3>
                     <ul>
