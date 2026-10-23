@@ -1,0 +1,7 @@
+# Historical official cover evidence
+
+Captured on 2026-10-24. `before-production.png` is the published S10 group-stage pool and shows the unconditional fallback. The after screenshots are an isolated **synthetic test edition** containing the two unchanged S10 source map records (BIDs 3786810 and 4914171) plus intentionally unavailable examples. The test provider supplies official set IDs, while the successful cover images are fetched from the **real official CDN**, not stubbed artwork. NM3 intentionally returns HTTP 404; NM4 has no ID. These demonstrate independent loading and accessible fallback, not a production deployment or live OAuth/API rehearsal.
+
+Confirmed upstream mappings in the browser: 3786810 → set 1843515, 4914171 → set 2299790. Both official `cover.jpg` assets load at 900×250. Product code resolves these dynamically through the existing official batch metadata API and never hardcodes this mapping. Cards preserve responsive crops; Compact Table retains its existing no-artwork layout. Filtering a failed image does not retry it; explicit view remounts can retry. API successes are cached for 24 hours and failed lookups for 60 seconds, with concurrent work shared.
+
+Run the network-independent browser test normally. For additional upstream verification set `OCLR_REAL_COVER_CHECK=1`; this mode fetched the actual CDN assets for the screenshots here. Tests always require an explicitly named isolated test database.

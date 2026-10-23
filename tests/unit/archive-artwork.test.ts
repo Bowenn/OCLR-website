@@ -15,8 +15,8 @@ describe("official archive artwork", () => {
       expect(beatmapCoverUrl(id)).toBeNull();
   });
   it("resolves independently, caches failures, shares work and preserves source records", async () => {
-    const rows = new Map([
-      [3786810, { metadata: { setId: 1844757 } }],
+    const rows = new Map<number, Error | { metadata: { setId: number } }>([
+      [3786810, { metadata: { setId: 1843515 } }],
       [4914171, new Error("missing")],
     ]);
     fetchBeatmaps.mockResolvedValue(rows);
@@ -27,7 +27,7 @@ describe("official archive artwork", () => {
       archiveArtworkSetIds(ids),
       archiveArtworkSetIds(ids),
     ]);
-    expect(results[0]).toEqual({ 3786810: 1844757, 4914171: null });
+    expect(results[0]).toEqual({ 3786810: 1843515, 4914171: null });
     expect(results[1]).toEqual(results[0]);
     await archiveArtworkSetIds(ids);
     expect(fetchBeatmaps).toHaveBeenCalledTimes(1);

@@ -75,10 +75,10 @@ globalThis.fetch = async (input, init) => {
     if (id === 666) return Response.json({ id });
     if (id === 555)
       throw new DOMException("Synthetic provider timeout", "TimeoutError");
-    if ([123, 456, 789, 101, 102].includes(id))
+    if ([123, 456, 789, 101, 102, 3786810, 4914171].includes(id))
       return Response.json({
         id,
-        beatmapset_id: 42,
+        beatmapset_id: id === 3786810 ? 1843515 : id === 4914171 ? 2299790 : 42,
         version: "Synthetic Difficulty",
         difficulty_rating: id === 123 ? 4.5 : 5.25,
         bpm: 180,
