@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { readFileSync } from "node:fs";
+import { historicalArchiveSchema } from "../../src/lib/historical-archive";
 import { closeDb } from "../../src/db";
 import { seedSession } from "./session";
 import { seedEditions } from "../fixtures/editions";
@@ -32,13 +34,11 @@ test.describe("historical archive browser workflow", () => {
     ]);
     const endpoint = `/api/admin/tournaments/${slug}`;
     await page.goto(`/admin/tournaments/${slug}/archive`);
-    await page
-      .getByLabel("Archive JSON file", { exact: true })
-      .setInputFiles({
-        name: "synthetic-archive.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(JSON.stringify(archive)),
-      });
+    await page.getByLabel("Archive JSON file", { exact: true }).setInputFiles({
+      name: "synthetic-archive.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(archive)),
+    });
     await page
       .getByRole("button", { name: "Validate and review archive" })
       .click();
@@ -158,7 +158,16 @@ test.describe("historical archive browser workflow", () => {
       new RegExp(`/tournaments/${slug}/players/91003$`),
     );
     await expect(page.getByText("Tier 1", { exact: true })).toBeVisible();
+    await page.goto(`/tournaments/${slug}/players`);
+    await expect(
+      page.locator('.archive-player-card[data-role="coach"]'),
+    ).toContainText("Coach");
+    await expect(
+      page.locator(".archive-player-card img").first(),
+    ).toHaveAttribute("src", /a\.ppy\.sh\/91001/);
+    await captureResponsiveLayout(page, info, "archive-players");
     await page.goto(`/tournaments/${slug}/results`);
+    await expect(page).toHaveURL(new RegExp(`/schedule\\?status=recorded$`));
     await expect(
       page.getByText("Unconfirmed alternative", { exact: true }),
     ).toHaveCount(0);
@@ -175,6 +184,30 @@ test.describe("historical archive browser workflow", () => {
         "Schedule record only; completion and result are not confirmed.",
       ),
     ).toBeVisible();
+    await page.getByRole("button", { name: /Unconfirmed records/ }).click();
+    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await expect(
+      page.getByText("Unconfirmed alternative", { exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: /All matches/ }).click();
+    await page.getByLabel("Stage", { exact: true }).selectOption("Final");
+    await expect(page.locator(".archive-match")).toHaveCount(2);
+    await captureResponsiveLayout(page, info, "archive-matches");
+    await page.goto(`/tournaments/${slug}/draft`);
+    await expect(
+      page.getByRole("heading", { name: "Round 1", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".archive-draft-picks li")).toHaveCount(1);
+    await captureResponsiveLayout(page, info, "archive-draft");
+    await page.goto(`/tournaments/${slug}/bracket`);
+    await expect(page.locator(".bracket-round")).toHaveCount(1);
+    await expect(
+      page.locator('.bracket-frame [data-match-id="one"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator('.bracket-frame [data-match-id="alternative"]'),
+    ).toHaveCount(0);
+    await captureResponsiveLayout(page, info, "archive-bracket");
     await page.goto(`/tournaments/${slug}/mappools/final`);
     await expect(
       page.getByText("Beatmap ID unresolved", { exact: true }),
@@ -207,5 +240,77 @@ test.describe("historical archive browser workflow", () => {
       ).toBeVisible();
       await expect(page.getByText("Captain", { exact: true })).toHaveCount(2);
     }
+  });
+  test("renders the complete S9 archive across appearances without inventing results", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    const slug = `s9-design-${isMobile ? "mobile" : "desktop"}-${Date.now()}`;
+    const archive = historicalArchiveSchema.parse({
+      ...JSON.parse(readFileSync("docs/imports/s9-archive.json", "utf8")),
+      editionSlug: slug,
+    });
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        name: "S9 archive design verification",
+        season: "9",
+        published: true,
+        status: "completed",
+        registration: null,
+        archive,
+      },
+    ]);
+    await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 1000 });
+    for (const appearance of ["default", "cute-pastel", "swiss-minimal"])
+      for (const theme of ["light", "dark"]) {
+        await context.addCookies([
+          {
+            name: "oclr-appearance",
+            value: appearance,
+            domain: "127.0.0.1",
+            path: "/",
+          },
+          { name: "oclr-theme", value: theme, domain: "127.0.0.1", path: "/" },
+        ]);
+        for (const path of ["schedule", "players", "draft", "bracket"]) {
+          await page.goto(`/tournaments/${slug}/${path}`);
+          if (path === "schedule") {
+            await expect(page.locator(".archive-match")).toHaveCount(28);
+            await page
+              .getByRole("button", { name: /Recorded results/ })
+              .click();
+            await expect(page.locator(".archive-match")).toHaveCount(22);
+          } else if (path === "players") {
+            await expect(page.locator(".archive-player-card")).toHaveCount(76);
+            await expect(page.locator('[data-role="coach"]')).toHaveCount(8);
+          } else if (path === "draft") {
+            await expect(page.locator(".archive-draft-round")).toHaveCount(7);
+            await expect(page.locator(".archive-draft-picks li")).toHaveCount(
+              56,
+            );
+          } else {
+            await expect(page.locator(".bracket-round")).toHaveCount(5);
+            await expect(
+              page.locator(".bracket-frame .match-card"),
+            ).toHaveCount(10);
+            await expect
+              .poll(() => page.locator(".bracket-connectors path").count())
+              .toBeGreaterThan(0);
+          }
+          expect((await new AxeBuilder({ page }).analyze()).violations).toEqual(
+            [],
+          );
+          expect(
+            await page.evaluate(() => document.documentElement.scrollWidth),
+          ).toBeLessThanOrEqual(isMobile ? 390 : 1440);
+          await page.screenshot({
+            path: info.outputPath(`${appearance}-${theme}-${path}.png`),
+            fullPage: false,
+          });
+        }
+      }
   });
 });

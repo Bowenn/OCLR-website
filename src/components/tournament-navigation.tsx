@@ -27,11 +27,11 @@ function Navigation({
   const base = `/tournaments/${slug}`;
   const links = [
     ["", "Overview"],
-    ["schedule", "Schedule"],
+    ["schedule", archived ? "Matches & results" : "Schedule"],
     ["mappools", "Mappools"],
     ["teams", "Teams"],
     ["rules", "Rules"],
-    ["results", "Results"],
+    ...(!archived ? [["results", "Results"]] : []),
     ["bracket", "Bracket"],
     ["players", "Players"],
     ...(liveDraft ? [["draft", "Live draft"]] : []),

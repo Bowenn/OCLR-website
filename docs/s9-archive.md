@@ -51,6 +51,8 @@ Import requires a private, completed edition with no registration configuration 
 
 Private saved preview: `/admin/tournaments/[edition]/archive/preview`. Public pages continue to use the existing edition routes and navigation: overview, teams and member details, players, schedule, match details, results, pools and pool details, standings, draft results and source references. All public reads require edition publication. Unknown IDs return 404. All links stay within the selected edition; external source links are explicit. Historical results are labelled as source records, not approved live results.
 
+Historical schedule and results now share one workspace with status/stage filters; the old results URL redirects to its recorded-results view. UID avatars identify players, Captain and Coach have distinct roster badges, and draft picks are grouped by round. The generated bracket connects teams’ previous recorded appearances in chronological columns, without claiming qualification rules; unconfirmed alternatives are excluded, group matches and source standings remain separate.
+
 The tournament directory groups current/upcoming tournaments separately from completed historical seasons, sorting seasons numerically in descending order. Existing current-tournament navigation is preserved. All three interface locales and default/pastel/Swiss designs share ordinary light/dark tokens; broadcast routes are unchanged.
 
 ## Deployment and later computer-use import

@@ -2046,6 +2046,15 @@
     "md7fcf32ee8e1": "OD",
     "m41da8b729fc1": "Wins",
     "m5bf03f14da68": "Losses",
-    "m831a9d52a9c3": "Pick"
+    "m831a9d52a9c3": "Pick",
+    "mc2e43d8393f8": "Match status",
+    "mde838855e4a6": "Stage",
+    "m48f2db14b661": "No matches in this view.",
+    "m21bffcfe3c74": "Matches & results",
+    "m0dffa066ecb4": "Match path",
+    "m55b588615b2b": "Generated from recorded matches. Lines connect each team's previous recorded appearance; they do not establish qualification rules. Unconfirmed alternatives are excluded.",
+    "mdfb5f5988d63": "No recorded matches.",
+    "maba67020529e": "Round {round}",
+    "m6fe790556119": "Pick {pick}"
   }
 }

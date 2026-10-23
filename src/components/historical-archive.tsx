@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { Avatar } from "./avatar";
+import { ArchiveMatchList } from "./archive-match-list";
+import { BracketView } from "./bracket-view";
+import { archiveBracket } from "@/lib/archive-bracket";
 import { getAppTranslations } from "@/i18n/server";
 import { getPublicEdition } from "@/lib/content";
 import { formatDate, type Edition } from "@/lib/editions";
@@ -31,6 +35,8 @@ export async function historicalPage(
 ) {
   const edition = await getPublicEdition(slug);
   if (!edition) notFound();
+  if (edition.archive && section === "results")
+    redirect(`/tournaments/${slug}/schedule?status=recorded`);
   return edition.archive ? (
     <HistoricalArchiveView
       edition={edition}
@@ -87,50 +93,85 @@ export async function HistoricalArchiveView({
     </p>
   );
   const roster = (members: HistoricalArchive["players"]) => (
-    <ul className="archive-roster">
+    <ul className="archive-player-grid">
       {members.map((p) => (
-        <li key={p.osuId}>
-          <div>
-            {playerLink(p)} <Badge>{role(p)}</Badge>
+        <li className="archive-player-card" key={p.osuId} data-role={p.role}>
+          <Link
+            href={href("players", String(p.osuId))}
+            tabIndex={-1}
+            aria-hidden="true"
+          >
+            <Avatar osuId={p.osuId} username={p.username} />
+          </Link>
+          <div className="archive-player-copy">
+            <div className="archive-player-name">
+              {playerLink(p)} <Badge>{role(p)}</Badge>
+            </div>
+            <span className="muted small">
+              {tr("osu! ID ")}
+              {p.osuId}
+            </span>
+            {p.teamId && (
+              <span className="archive-player-team">{teamLink(p.teamId)}</span>
+            )}
           </div>
-          {p.teamId && <span>{teamLink(p.teamId)}</span>}
         </li>
       ))}
     </ul>
   );
   const match = (m: HistoricalArchive["matches"][number]) => (
-    <article className="panel stack" key={m.id}>
-      <div className="section-title">
-        <Link href={href("matches", m.id)}>{m.label}</Link>
+    <article className="archive-match" key={m.id} data-recorded={!!m.score}>
+      <header className="archive-match-meta">
+        <Link className="text-link" href={href("matches", m.id)}>
+          {m.label}
+        </Link>
         <span>{m.stage}</span>
+        <span className="muted small">
+          {m.scheduledAt
+            ? formatDate(m.scheduledAt, edition.timeZone, tr.locale)
+            : tr("Not recorded")}
+        </span>
+      </header>
+      <div className="archive-scoreboard">
+        {[m.teamA, m.teamB].map((teamId, i) => {
+          const won = m.score && m.score[i] > m.score[1 - i];
+          return (
+            <div
+              className="archive-score-team"
+              key={teamId}
+              data-winner={won || undefined}
+            >
+              <span>
+                {teamLink(teamId)}
+                {won && <span className="sr-only">{tr(" (winner)")}</span>}
+              </span>
+              <strong>{m.score?.[i] ?? "—"}</strong>
+            </div>
+          );
+        })}
       </div>
-      <div className="archive-versus">
-        {teamLink(m.teamA)}
-        <strong>{m.score ? m.score.join(" : ") : tr("Not recorded")}</strong>
-        {teamLink(m.teamB)}
-      </div>
-      <p className="muted">
-        {m.scheduledAt
-          ? formatDate(m.scheduledAt, edition.timeZone, tr.locale)
-          : tr("Not recorded")}
-      </p>
+      <footer className="archive-match-footer">
+        <span className="small muted">
+          {m.score ? tr("Recorded results") : tr("Unconfirmed records")}
+        </span>
+        <div className="archive-source-links">
+          {m.mpUrls.map((url, i) => (
+            <a className="text-link" key={url} href={url} rel="noreferrer">
+              MP {i + 1}
+            </a>
+          ))}
+          {m.vodUrl && (
+            <a className="text-link" href={m.vodUrl} rel="noreferrer">
+              {tr("Watch replay")}
+            </a>
+          )}
+        </div>
+      </footer>
       {!m.score && (
-        <p className="notice">
+        <p className="muted small archive-unconfirmed">
           {tr("Schedule record only; completion and result are not confirmed.")}
         </p>
       )}
-      <div className="actions">
-        {m.mpUrls.map((url, i) => (
-          <a key={url} href={url} rel="noreferrer">
-            MP {i + 1}
-          </a>
-        ))}
-        {m.vodUrl && (
-          <a href={m.vodUrl} rel="noreferrer">
-            {tr("Watch replay")}
-          </a>
-        )}
-      </div>
       {section === "match" && (
         <>
           <dl className="detail-list">
@@ -235,7 +276,7 @@ export async function HistoricalArchiveView({
     content = (
       <div className="stack">
         {teams.map((t) => (
-          <section className="panel" key={t.id}>
+          <section className="archive-team-section" key={t.id}>
             {section === "teams" && <h2>{teamLink(t.id)}</h2>}
             {roster(a.players.filter((p) => p.teamId === t.id))}
             {source(t.source)}
@@ -277,13 +318,21 @@ export async function HistoricalArchiveView({
         (x.scheduledAt ?? "9999").localeCompare(y.scheduledAt ?? "9999"),
       );
     if (section === "match" && !matches.length) notFound();
-    title =
-      section === "match"
-        ? matches[0].label
-        : section === "results"
-          ? tr("Recorded results")
-          : tr("Schedule");
-    content = <div className="stack">{matches.map(match)}</div>;
+    title = section === "match" ? matches[0].label : tr("Matches & results");
+    content =
+      section === "match" ? (
+        match(matches[0])
+      ) : (
+        <ArchiveMatchList
+          recordedOnly={section === "results"}
+          matches={matches.map((m) => ({
+            id: m.id,
+            stage: m.stage,
+            recorded: !!m.score,
+            content: match(m),
+          }))}
+        />
+      );
   } else if (section === "mappools" || section === "pool") {
     const pools =
       section === "pool" ? a.pools.filter((p) => p.id === id) : a.pools;
@@ -372,14 +421,29 @@ export async function HistoricalArchiveView({
       </div>
     );
   } else if (section === "bracket") {
-    title = tr("Group standings");
+    title = tr("Bracket");
+    const bracket = archiveBracket(a, (id) => href("matches", id));
+    if (bracket)
+      for (const group of bracket.groups)
+        if (group.id === "match-path") group.label = tr("Match path");
     content = (
       <>
-        <p className="muted">
+        <p className="muted small">
           {tr(
-            "Historical standings from the source; no bracket progression is inferred.",
+            "Generated from recorded matches. Lines connect each team's previous recorded appearance; they do not establish qualification rules. Unconfirmed alternatives are excluded.",
           )}
         </p>
+        {bracket ? (
+          <BracketView
+            bracket={bracket}
+            teamUrls={Object.fromEntries(
+              a.teams.map((t) => [t.id, href("teams", t.id)]),
+            )}
+          />
+        ) : (
+          <p>{tr("No recorded matches.")}</p>
+        )}
+        <h2>{tr("Group standings")}</h2>
         <div
           className="table-scroll"
           tabIndex={0}
@@ -426,33 +490,42 @@ export async function HistoricalArchiveView({
   } else if (section === "draft") {
     title = tr("Draft results");
     content = (
-      <div
-        className="table-scroll"
-        tabIndex={0}
-        role="region"
-        aria-label={title}
-      >
-        <table>
-          <thead>
-            <tr>
-              {[tr("Round"), tr("Pick"), tr("Team"), tr("Player")].map((h) => (
-                <th key={h}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[...a.picks]
-              .sort((x, y) => x.round - y.round || x.pick - y.pick)
-              .map((p) => (
-                <tr key={p.osuId}>
-                  <td>{p.round}</td>
-                  <td>{p.pick}</td>
-                  <td>{teamLink(p.teamId)}</td>
-                  <td>{playerLink(player(p.osuId))}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+      <div className="archive-draft">
+        {[...new Set(a.picks.map((p) => p.round))]
+          .sort((a, b) => a - b)
+          .map((round) => (
+            <section className="archive-draft-round" key={round}>
+              <header>
+                <h2>{tr("Round {round}", { round })}</h2>
+                <span className="muted small">{`Tier ${round}`}</span>
+              </header>
+              <ol className="archive-draft-picks">
+                {a.picks
+                  .filter((p) => p.round === round)
+                  .sort((a, b) => a.pick - b.pick)
+                  .map((pick) => {
+                    const p = player(pick.osuId);
+                    return (
+                      <li key={p.osuId} value={pick.pick}>
+                        <span
+                          className="archive-pick-number"
+                          aria-label={tr("Pick {pick}", { pick: pick.pick })}
+                        >
+                          {String(pick.pick).padStart(2, "0")}
+                        </span>
+                        <Avatar osuId={p.osuId} username={p.username} />
+                        <div>
+                          <strong>{playerLink(p)}</strong>
+                          <span className="small muted">
+                            {teamLink(pick.teamId)}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </ol>
+            </section>
+          ))}
       </div>
     );
   } else {
@@ -486,8 +559,10 @@ export async function HistoricalArchiveView({
         </span>
       </PageHeading>
       {preview && <p className="notice">{tr("Private archive preview")}</p>}
-      {section !== "overview" && (
-        <Link href={base}>{tr("Archive overview")}</Link>
+      {section !== "overview" && preview && (
+        <Link className="text-link" href={base}>
+          {tr("Archive overview")}
+        </Link>
       )}
       {content}
     </div>

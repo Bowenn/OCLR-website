@@ -9,8 +9,10 @@ import type { ResolvedBracket, ResolvedMatch } from "@/lib/bracket-model";
 export function BracketView({
   bracket,
   renderMatch,
+  teamUrls,
 }: {
   bracket: ResolvedBracket;
+  teamUrls?: Record<string, string>;
   renderMatch?: (match: ResolvedMatch) => ReactNode;
 }) {
   const tr = useAppTranslations();
@@ -145,7 +147,10 @@ export function BracketView({
                             <span>
                               {slot.teamId ? (
                                 <Link
-                                  href={`/tournaments/${bracket.editionSlug}/teams/${slot.teamId}`}
+                                  href={
+                                    teamUrls?.[slot.teamId] ??
+                                    `/tournaments/${bracket.editionSlug}/teams/${slot.teamId}`
+                                  }
                                 >
                                   <TeamAvatar
                                     team={{
