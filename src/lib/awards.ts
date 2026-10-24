@@ -20,12 +20,13 @@ import type { User } from "./auth/sessions";
 import { HttpError } from "./http";
 import { readTournament } from "./tournaments";
 import {
-  AWARD_POLICY,
   awardConfigurationSchema,
   weeklyStandings,
   type AwardWeek,
   type AwardStanding,
 } from "./award-model";
+import { staffRoundRatings } from "./ratings";
+import { YUMU_POLICY } from "./yumu-rating";
 import { draftAwardTiers } from "./award-tiers";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 export type AwardReport = AwardWeek &
@@ -44,6 +45,7 @@ async function calculation(slug: string, reader: Reader) {
     .where(eq(awardSettings.editionSlug, slug));
   const configuration = awardConfigurationSchema.parse({
     weeks: stored?.weeks ?? [],
+    policy: stored?.policy ?? YUMU_POLICY,
   });
   const [session] = await reader
     .select()
@@ -95,42 +97,58 @@ async function calculation(slug: string, reader: Reader) {
     .innerJoin(users, eq(users.osuId, registrations.userId))
     .where(eq(registrations.editionSlug, slug));
   const games = await approvedRatingGames(slug, reader);
-  const reports = weeklyStandings(configuration.weeks, tiers, games).map(
-    (standing): AwardReport => {
-      const identities = standing.candidates.map((c) => {
-        const participant = participants.find((p) => p.userId === c.userId);
-        return {
-          userId: c.userId,
-          username: participant?.username ?? String(c.userId),
-          public: participant?.status === "accepted",
-        };
-      });
-      const report = {
-        ...standing,
-        policy: AWARD_POLICY,
-        timeZone: tournament.edition.timeZone,
-        identities,
-        issues: [
-          ...standing.issues,
-          ...(standing.candidates.some(
-            (c) =>
-              c.tier !== null &&
-              !releasedTiers.some(
-                (t) => t.userId === c.userId && t.tier === c.tier,
-              ),
-          )
-            ? ["Release draft Tier sources before publishing awards."]
-            : []),
-        ],
-      };
+  const reports = weeklyStandings(
+    configuration.weeks,
+    tiers,
+    games,
+    configuration.policy,
+  ).map((standing): AwardReport => {
+    const identities = standing.candidates.map((c) => {
+      const participant = participants.find((p) => p.userId === c.userId);
       return {
-        ...report,
-        fingerprint: createHash("sha256")
-          .update(JSON.stringify(report))
-          .digest("hex"),
+        userId: c.userId,
+        username: participant?.username ?? String(c.userId),
+        public: participant?.status === "accepted",
       };
-    },
-  );
+    });
+    const report = {
+      ...standing,
+      ...(configuration.policy === YUMU_POLICY
+        ? {
+            ratingContext: games
+              .filter((g) =>
+                standing.evidence.some((e) => e.gameId === g.gameId),
+              )
+              .map((g) => ({
+                gameId: g.gameId,
+                roundId: g.roundId,
+                approvalFingerprint: g.approvalFingerprint,
+              })),
+          }
+        : {}),
+      policy: configuration.policy,
+      timeZone: tournament.edition.timeZone,
+      identities,
+      issues: [
+        ...standing.issues,
+        ...(standing.candidates.some(
+          (c) =>
+            c.tier !== null &&
+            !releasedTiers.some(
+              (t) => t.userId === c.userId && t.tier === c.tier,
+            ),
+        )
+          ? ["Release draft Tier sources before publishing awards."]
+          : []),
+      ],
+    };
+    return {
+      ...report,
+      fingerprint: createHash("sha256")
+        .update(JSON.stringify(report))
+        .digest("hex"),
+    };
+  });
   const releases = await reader
     .select()
     .from(weeklyAwardReleases)
@@ -141,6 +159,12 @@ async function calculation(slug: string, reader: Reader) {
       ),
     );
   return {
+    roundRatings: await staffRoundRatings(
+      slug,
+      reader,
+      games,
+      new Map(participants.map((p) => [p.userId, p.username])),
+    ),
     edition: {
       slug,
       name: tournament.edition.name,
@@ -222,6 +246,7 @@ export async function awardCommand(actor: User, slug: string, input: unknown) {
     if (c.action === "configure") {
       const config = awardConfigurationSchema.safeParse({
         weeks: c.weeks,
+        policy: c.policy,
       });
       if (!config.success)
         throw new HttpError(
@@ -230,6 +255,7 @@ export async function awardCommand(actor: User, slug: string, input: unknown) {
         );
       before = {
         weeks: current.weeks,
+        policy: current.policy,
         version: current.version,
       };
       after = { ...config.data, version: current.version + 1 };
