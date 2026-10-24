@@ -1,4 +1,5 @@
 "use client";
+import styles from "./archive-competition.module.css";
 import { useState } from "react";
 import { BracketView } from "./bracket-view";
 import { useAppTranslations } from "@/i18n/shared";
@@ -22,7 +23,7 @@ export function ArchiveCompetition({
       phase === "group" ? g.layout === "grid" : g.layout !== "grid",
     ) ?? [];
   return (
-    <section className="archive-competition stack">
+    <section className={`archive-competition ${styles.competition}`}>
       <div className="event-tabs" role="group" aria-label={tr("Stage")}>
         <button
           type="button"
@@ -48,6 +49,7 @@ export function ArchiveCompetition({
       )}
       {bracket && groups.length ? (
         <BracketView
+          hideGroupTabs={phase === "knockout"}
           key={phase}
           bracket={{ ...bracket, groups }}
           teamUrls={teamUrls}
