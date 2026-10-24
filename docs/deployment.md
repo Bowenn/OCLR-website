@@ -511,7 +511,7 @@ This feature adds an optional `archive` field to versioned tournament configurat
 
 ## Private mappool replay storage (#185)
 
-Migration `0034_mappool_replays` adds private replay metadata, Tester/Replayer grants and a separate selection lock/Showcase deadline. It does not infer dates or grant access to names on the About page. Admins grant `tester` or `replayer` to verified accounts through Staff management; Mappoolers manage selection and may read/download but need one of those grants to upload/delete. Developer stays read-only; Admin can manage attachments. All writes use the same time window, including Admin.
+Migration `0035_mappool_replays` adds private replay metadata, Tester/Replayer grants and a separate selection lock/Showcase deadline. It does not infer dates or grant access to names on the About page. Admins grant `tester` or `replayer` to verified accounts through Staff management; Mappoolers manage selection and may read/download but need one of those grants to upload/delete. Developer stays read-only; Admin can manage attachments. All writes use the same time window, including Admin.
 
 On the app host install **Python 3 with the standard-library LZMA module** (Rocky Linux 10: `sudo dnf install python3`; verify with `sudo -u oclr python3 -I -c 'import lzma'`). There are no Python package downloads. The app invokes a fixed decoder with isolated Python mode and no shell; upload bytes travel over stdin. LZMA dictionary memory is capped at 32 MiB, decoded data at 16 MiB/300,000 frames, runtime at 3 seconds and concurrent decoders at two per Node process. Keep the aggregate limit in mind for multiple workers. Unsupported/missing codecs fail closed. The existing systemd PATH must include Python 3; no additional service is installed.
 

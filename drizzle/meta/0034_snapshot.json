@@ -1,5 +1,5 @@
 {
-  "id": "1b4c829c-d7bf-4f06-99f3-65d870e7ce0b",
+  "id": "ff23052b-5c8b-40f7-90c7-5c7f6714fdde",
   "prevId": "a207da0f-ef36-4d40-a7ba-33f1d5746292",
   "version": "7",
   "dialect": "postgresql",
@@ -20,6 +20,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "policy": {
+          "name": "policy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'relative-game-mean-v1'"
         },
         "weeks": {
           "name": "weeks",
@@ -1610,105 +1617,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.mappool_replays": {
-      "name": "mappool_replays",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "entry_id": {
-          "name": "entry_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sha256": {
-          "name": "sha256",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "filename": {
-          "name": "filename",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "uploader_id": {
-          "name": "uploader_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "uploader_name": {
-          "name": "uploader_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "summary": {
-          "name": "summary",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "mappool_replays_entry_id_mappool_entries_id_fk": {
-          "name": "mappool_replays_entry_id_mappool_entries_id_fk",
-          "tableFrom": "mappool_replays",
-          "tableTo": "mappool_entries",
-          "columnsFrom": [
-            "entry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "replay_entry_sha_unique": {
-          "name": "replay_entry_sha_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "entry_id",
-            "sha256"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.mappools": {
       "name": "mappools",
       "schema": "",
@@ -1761,18 +1669,6 @@
         },
         "published_at": {
           "name": "published_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "selection_locked_at": {
-          "name": "selection_locked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "showcase_at": {
-          "name": "showcase_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
@@ -4355,9 +4251,7 @@
         "mappooler",
         "referee",
         "developer",
-        "streamer",
-        "tester",
-        "replayer"
+        "streamer"
       ]
     },
     "public.stage_kind": {

@@ -544,3 +544,115 @@ describe.skipIf(!base)("registration operation provenance migration", () => {
       }
     }));
 });
+
+describe.skipIf(!base)("replay upgrade after the merged Yumu migration", () => {
+  it("preserves the existing policy and applies replay migration exactly once", async () =>
+    isolated(async (pool) => {
+      const folder = mkdtempSync(join(tmpdir(), "oclr-replay-upgrade-test-"));
+      try {
+        cpSync("drizzle", folder, { recursive: true });
+        const file = join(folder, "meta/_journal.json");
+        const journal = JSON.parse(readFileSync(file, "utf8"));
+        journal.entries = journal.entries.filter(
+          (entry: { idx: number }) => entry.idx <= 34,
+        );
+        writeFileSync(file, JSON.stringify(journal));
+        await migrate(drizzle(pool), { migrationsFolder: folder });
+        await pool.query(
+          "INSERT INTO edition_state (slug) VALUES ('replay-upgrade-test')",
+        );
+        const before = (
+          await pool.query(
+            "INSERT INTO award_settings (edition_slug,version,weeks,policy) VALUES ('replay-upgrade-test',7,'[]','yumu-v1') RETURNING *",
+          )
+        ).rows;
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect((await pool.query("SELECT * FROM award_settings")).rows).toEqual(
+          before,
+        );
+        expect(
+          (await pool.query("SELECT * FROM mappool_replays")).rows,
+        ).toEqual([]);
+        expect(
+          (
+            await pool.query(
+              "SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
+            )
+          ).rows[0].count,
+        ).toBe(journal.entries.length + 1);
+      } finally {
+        rmSync(folder, { recursive: true, force: true });
+      }
+    }));
+});
+
+describe.skipIf(!base)("Yumu award policy upgrade", () => {
+  it("preserves a persisted legacy award configuration and release, including repeated migration", async () =>
+    isolated(async (pool) => {
+      const folder = mkdtempSync(join(tmpdir(), "oclr-yumu-upgrade-test-"));
+      try {
+        cpSync("drizzle", folder, { recursive: true });
+        const file = join(folder, "meta/_journal.json");
+        const journal = JSON.parse(readFileSync(file, "utf8"));
+        journal.entries = journal.entries.filter(
+          (entry: { idx: number }) => entry.idx < 34,
+        );
+        writeFileSync(file, JSON.stringify(journal));
+        await migrate(drizzle(pool), { migrationsFolder: folder });
+        await pool.query(
+          "INSERT INTO edition_state (slug) VALUES ('legacy-rating-test')",
+        );
+        const weeks = [
+          {
+            number: 1,
+            startsAt: "2026-10-01T00:00:00Z",
+            endsAt: "2026-10-08T00:00:00Z",
+          },
+        ];
+        await pool.query(
+          "INSERT INTO award_settings (edition_slug,version,weeks) VALUES ('legacy-rating-test',7,$1)",
+          [JSON.stringify(weeks)],
+        );
+        const legacy = (
+          await pool.query(
+            "INSERT INTO weekly_award_releases (edition_slug,week,revision,fingerprint,report,published_by) VALUES ('legacy-rating-test',1,2,'persisted-source',$1,1) RETURNING *",
+            [
+              JSON.stringify({
+                policy: "relative-game-mean-v1",
+                candidates: [{ userId: 1, performance: 1000000000 }],
+                mvp: [1],
+                mip: [],
+                rookie: [],
+              }),
+            ],
+          )
+        ).rows[0];
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect(
+          (
+            await pool.query(
+              "SELECT version,weeks,policy FROM award_settings WHERE edition_slug='legacy-rating-test'",
+            )
+          ).rows,
+        ).toEqual([{ version: 7, weeks, policy: "relative-game-mean-v1" }]);
+        expect(
+          (
+            await pool.query(
+              "SELECT * FROM weekly_award_releases WHERE edition_slug='legacy-rating-test'",
+            )
+          ).rows,
+        ).toEqual([legacy]);
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect(
+          (
+            await pool.query(
+              "SELECT * FROM weekly_award_releases WHERE edition_slug='legacy-rating-test'",
+            )
+          ).rows,
+        ).toEqual([legacy]);
+      } finally {
+        rmSync(folder, { recursive: true, force: true });
+      }
+    }));
+});
