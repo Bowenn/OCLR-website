@@ -67,6 +67,43 @@ test.describe("historical statistics review and public exploration", () => {
     await expect(
       page.getByRole("checkbox", { name: "Include game 3", exact: true }),
     ).toBeDisabled();
+    // A referee's zero-score occupant blocks the game until explicitly reviewed.
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeDisabled();
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await page
+      .getByRole("checkbox", { name: "Exclude score 1 · 999999", exact: true })
+      .check();
+    await expect(
+      page.getByRole("button", { name: "Select eligible games", exact: true }),
+    ).toBeDisabled();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeEnabled();
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await expect(
+      page.getByRole("checkbox", {
+        name: "Exclude score 1 · 999999",
+        exact: true,
+      }),
+    ).toBeChecked();
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.screenshot({
+      path: info.outputPath("zero-score-review.png"),
+      fullPage: true,
+    });
     await page
       .getByRole("button", { name: "Select eligible games", exact: true })
       .click();
@@ -127,6 +164,7 @@ test.describe("historical statistics review and public exploration", () => {
               expectedVersion: 1,
               poolId: "final",
               included: [1, 2],
+              excludedScores: [{ gameId: 1, osuId: 999999 }],
             },
           })
         ).ok(),

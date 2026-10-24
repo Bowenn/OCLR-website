@@ -87,6 +87,43 @@ describe.skipIf(!url)("historical statistics transactions", () => {
     await closeDb();
     vi.unstubAllEnvs();
   });
+  it("requires a versioned review to exclude a zero-score occupant and publishes only retained scores", async () => {
+    const source = statisticsSource();
+    source.games[0].scores.push({
+      ...structuredClone(source.games[0].scores[0]),
+      osuId: 999999,
+      total: 0,
+      accuracy: 0,
+      combo: 0,
+      passed: false,
+      hitCounts: { great: 0, ok: 0, meh: 0, miss: 100 },
+    });
+    vi.mocked(fetchMatchSource).mockResolvedValue(source);
+    await statisticsCommand(referee, "s7", imported);
+    await expect(
+      statisticsCommand(referee, "s7", reviewed),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      statisticsCommand(referee, "s7", {
+        ...reviewed,
+        excludedScores: [{ gameId: 1, osuId: 91001 }],
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    await statisticsCommand(referee, "s7", {
+      ...reviewed,
+      excludedScores: [{ gameId: 1, osuId: 999999 }],
+    });
+    const workspace = await statisticsWorkspace(admin, "s7", "one");
+    expect(workspace.reviews[0].games[0].game.scores).toHaveLength(5);
+    expect(workspace.reviews[0].excludedScores).toEqual([
+      { gameId: 1, osuId: 999999 },
+    ]);
+    expect((await publicArchiveStatistics("s7")).plays).toEqual([]);
+    await statisticsCommand(admin, "s7", publish);
+    const publicData = await publicArchiveStatistics("s7");
+    expect(publicData.plays).toHaveLength(8);
+    expect(publicData.plays.some((p) => p.osuId === 999999)).toBe(false);
+  });
   it("imports privately, publishes reviewed games atomically and preserves published data across draft edits", async () => {
     await statisticsCommand(referee, "s7", imported);
     expect((await publicArchiveStatistics("s7")).plays).toEqual([]);

@@ -8,7 +8,46 @@ export type StatisticsSnapshot = {
   poolId: string;
   included: number[];
   allowUnlistedMaps?: boolean;
+  excludedScores?: { gameId: number; osuId: number }[];
 };
+// Zero-score lobby occupants require an explicit review decision. A failed
+// player's zero remains a real appearance unless the reviewer excludes it.
+export function canExcludeStatisticsScore(score: MatchScore) {
+  return (
+    score.osuId !== null &&
+    score.total === 0 &&
+    score.combo === 0 &&
+    score.accuracy === 0 &&
+    score.hitCounts?.great === 0 &&
+    score.hitCounts.ok === 0 &&
+    score.hitCounts.meh === 0 &&
+    score.problems.length === 0
+  );
+}
+export function statisticsScores(
+  game: MatchGame,
+  excluded: NonNullable<StatisticsSnapshot["excludedScores"]> = [],
+) {
+  const ids = new Set(
+    excluded.filter((e) => e.gameId === game.id).map((e) => e.osuId),
+  );
+  return game.scores.filter(
+    (score) => !ids.has(score.osuId!) || !canExcludeStatisticsScore(score),
+  );
+}
+export function validStatisticsExclusions(snapshot: StatisticsSnapshot) {
+  const excluded = snapshot.excludedScores ?? [];
+  return (
+    new Set(excluded.map((e) => `${e.gameId}:${e.osuId}`)).size ===
+      excluded.length &&
+    excluded.every((e) => {
+      const scores = snapshot.source.games
+        .find((g) => g.id === e.gameId)
+        ?.scores.filter((s) => s.osuId === e.osuId);
+      return scores?.length === 1 && canExcludeStatisticsScore(scores[0]);
+    })
+  );
+}
 export type StatisticsSourceSummary = {
   mpId: number;
   fixtureId: string;
@@ -31,6 +70,7 @@ export function statisticsGameIssues(
   poolId: string,
   game: MatchGame,
   allowUnlistedMaps = false,
+  excludedScores: StatisticsSnapshot["excludedScores"] = [],
 ) {
   const issues: string[] = [];
   const fixture = archive.matches.find((m) => m.id === fixtureId);
@@ -53,7 +93,7 @@ export function statisticsGameIssues(
     issues.push("Game data is incomplete.");
   const seen = new Set<number>();
   const colors = new Map<string, Set<string>>();
-  for (const s of game.scores) {
+  for (const s of statisticsScores(game, excludedScores)) {
     const player = archive.players.find((p) => p.osuId === s.osuId);
     if (
       !player?.teamId ||
@@ -119,6 +159,8 @@ export function fixtureStatisticsIssues(
   const wins = [0, 0];
   const issues: string[] = [];
   for (const s of snapshots) {
+    if (!validStatisticsExclusions(s))
+      issues.push("Only verified zero-score records can be excluded.");
     if (
       !s.source.complete ||
       !s.source.match.endTime ||
@@ -133,6 +175,7 @@ export function fixtureStatisticsIssues(
           s.poolId,
           g,
           s.allowUnlistedMaps,
+          s.excludedScores,
         ),
       );
       if (seen.has(g.id) || (g.beatmapId !== null && maps.has(g.beatmapId)))
@@ -140,7 +183,7 @@ export function fixtureStatisticsIssues(
       seen.add(g.id);
       if (g.beatmapId) maps.add(g.beatmapId);
       const totals = [fixture.teamA, fixture.teamB].map((id) =>
-        g.scores.reduce(
+        statisticsScores(g, s.excludedScores).reduce(
           (sum, score) =>
             sum +
             (archive.players.find((p) => p.osuId === score.osuId)?.teamId === id
@@ -188,8 +231,9 @@ export function projectStatistics(
   const pool = archive.pools.find((p) => p.id === snapshot.poolId);
   return selectedStatisticsGames(snapshot).flatMap((g) => {
     const map = pool?.maps.find((m) => m.beatmapId === g.beatmapId);
-    const maximum = Math.max(...g.scores.map((s) => s.total ?? 0));
-    return g.scores.map((s) => ({
+    const scores = statisticsScores(g, snapshot.excludedScores);
+    const maximum = Math.max(...scores.map((s) => s.total ?? 0));
+    return scores.map((s) => ({
       fixtureId,
       mpId: snapshot.source.match.id,
       gameId: g.id,

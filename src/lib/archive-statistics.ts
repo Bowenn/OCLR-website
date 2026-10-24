@@ -18,9 +18,20 @@ import {
   suggestStatisticsPool,
   fixtureStatisticsIssues,
   projectStatistics,
+  validStatisticsExclusions,
   type StatisticsSnapshot,
 } from "./archive-statistics-model";
 
+const excludedScoresSchema = z
+  .array(
+    z
+      .object({
+        gameId: z.number().int().positive(),
+        osuId: z.number().int().positive(),
+      })
+      .strict(),
+  )
+  .max(32000);
 const snapshotSchema = z
   .object({
     archiveKey: z.string().regex(/^[a-f0-9]{64}$/),
@@ -28,6 +39,7 @@ const snapshotSchema = z
     poolId: z.string().max(80),
     included: z.array(z.number().int().positive()).max(500),
     allowUnlistedMaps: z.boolean().optional(),
+    excludedScores: excludedScoresSchema.optional(),
   })
   .strict();
 const integer = z.number().int().nonnegative();
@@ -47,6 +59,7 @@ const commandSchema = z.discriminatedUnion("action", [
       poolId: z.string().max(80),
       included: z.array(integer.positive()).max(500),
       allowUnlistedMaps: z.boolean().default(false),
+      excludedScores: excludedScoresSchema.default([]),
     })
     .strict(),
   z
@@ -162,6 +175,8 @@ export async function statisticsWorkspace(
       r.published.source.fingerprint !== r.draft.source.fingerprint ||
       r.published.poolId !== r.draft.poolId ||
       r.published.allowUnlistedMaps !== r.draft.allowUnlistedMaps ||
+      JSON.stringify(r.published.excludedScores ?? []) !==
+        JSON.stringify(r.draft.excludedScores ?? []) ||
       JSON.stringify(r.published.included) !== JSON.stringify(r.draft.included),
     stale: r.draft.archiveKey !== key,
   }));
@@ -188,6 +203,7 @@ export async function statisticsWorkspace(
         version: r.version,
         poolId: r.draft.poolId,
         allowUnlistedMaps: r.draft.allowUnlistedMaps ?? false,
+        excludedScores: r.draft.excludedScores ?? [],
         complete: r.draft.source.complete,
         fetchedAt: r.draft.source.fetchedAt,
         warnings: r.draft.source.warnings,
@@ -200,6 +216,7 @@ export async function statisticsWorkspace(
             r.draft.poolId,
             game,
             r.draft.allowUnlistedMaps,
+            r.draft.excludedScores,
           ),
         })),
       })),
@@ -323,8 +340,10 @@ export async function statisticsCommand(
         poolId: c.poolId,
         included: c.included,
         allowUnlistedMaps: c.allowUnlistedMaps,
+        excludedScores: c.excludedScores,
       };
       if (
+        !validStatisticsExclusions(draft) ||
         (!archive.pools.some((p) => p.id === c.poolId) &&
           !(c.allowUnlistedMaps && c.poolId === "")) ||
         new Set(c.included).size !== c.included.length ||
@@ -338,6 +357,7 @@ export async function statisticsCommand(
               c.poolId,
               game,
               c.allowUnlistedMaps,
+              c.excludedScores,
             ).length > 0
           );
         })
@@ -405,6 +425,7 @@ export async function statisticsCommand(
                 ? {
                     allowUnlistedMaps: c.allowUnlistedMaps,
                     included: c.included,
+                    excludedScores: c.excludedScores,
                   }
                 : {}),
             }

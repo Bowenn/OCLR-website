@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useAppTranslations } from "@/i18n/shared";
 import type { StatisticsWorkspace } from "@/lib/archive-statistics";
+import { canExcludeStatisticsScore } from "@/lib/archive-statistics-model";
 import { ConfirmMutation } from "./confirm-mutation";
 type Review = StatisticsWorkspace["reviews"][number];
 function SourceReview({
@@ -24,8 +25,13 @@ function SourceReview({
   const [allowUnlistedMaps, setAllowUnlisted] = useState(
     review.allowUnlistedMaps,
   );
+  const [excludedScores, setExcludedScores] = useState(review.excludedScores);
+  const exclusionsChanged =
+    JSON.stringify(excludedScores) !== JSON.stringify(review.excludedScores);
   const poolChanged =
-    poolId !== review.poolId || allowUnlistedMaps !== review.allowUnlistedMaps;
+    poolId !== review.poolId ||
+    allowUnlistedMaps !== review.allowUnlistedMaps ||
+    exclusionsChanged;
   return (
     <section className="statistics-review stack">
       <h3>MP {review.mpId}</h3>
@@ -78,13 +84,16 @@ function SourceReview({
         )}
       </label>
       {poolChanged && (
-        <p role="status">
-          {tr("Save the mappool selection before choosing games.")}
-        </p>
+        <p role="status">{tr("Save review settings before choosing games.")}</p>
       )}
       <p className="muted">
         {tr(
           "Select official scoring games only. Exclude warmups, aborted games and superseded replays.",
+        )}
+      </p>
+      <p className="muted">
+        {tr(
+          "Exclude zero-score lobby records only after confirming that the user did not play. Keep genuine failed scores.",
         )}
       </p>
       <div className="actions">
@@ -179,6 +188,41 @@ function SourceReview({
                             : (s.accuracy * 100).toFixed(2) + "%"}
                         </span>
                         <span>{s.mods.join(" ") || "NM"}</span>
+                        {canExcludeStatisticsScore(s) && (
+                          <label className="checkbox-field">
+                            <input
+                              type="checkbox"
+                              aria-label={
+                                tr("Exclude score") +
+                                " " +
+                                game.id +
+                                " · " +
+                                s.osuId
+                              }
+                              checked={excludedScores.some(
+                                (e) =>
+                                  e.gameId === game.id && e.osuId === s.osuId,
+                              )}
+                              disabled={busy}
+                              onChange={(e) => {
+                                setExcludedScores(
+                                  e.target.checked
+                                    ? [
+                                        ...excludedScores,
+                                        { gameId: game.id, osuId: s.osuId! },
+                                      ]
+                                    : excludedScores.filter(
+                                        (v) =>
+                                          v.gameId !== game.id ||
+                                          v.osuId !== s.osuId,
+                                      ),
+                                );
+                                setIncluded([]);
+                              }}
+                            />
+                            {tr("Exclude score")}
+                          </label>
+                        )}
                       </p>
                     ))}
                   </details>
@@ -199,6 +243,7 @@ function SourceReview({
             poolId,
             included,
             allowUnlistedMaps,
+            excludedScores,
           })
         }
       >

@@ -12,6 +12,7 @@ import {
   projectStatistics,
   statisticsFixtures,
   suggestStatisticsPool,
+  validStatisticsExclusions,
   type StatisticsSnapshot,
 } from "../../src/lib/archive-statistics-model";
 const snapshot = (): StatisticsSnapshot => ({
@@ -21,6 +22,63 @@ const snapshot = (): StatisticsSnapshot => ({
   included: [1, 2],
 });
 describe("historical MP statistics", () => {
+  it("explicitly excludes reviewed zero-score occupants without changing raw MP or genuine failures", () => {
+    const s = snapshot();
+    const game = s.source.games[0];
+    const occupant = {
+      ...structuredClone(game.scores[0]),
+      osuId: 999999,
+      total: 0,
+      accuracy: 0,
+      combo: 0,
+      passed: false,
+      hitCounts: { great: 0, ok: 0, meh: 0, miss: 100 },
+    };
+    game.scores.push(occupant);
+    expect(fixtureStatisticsIssues(a, "one", [s])).toContain(
+      "A score cannot be matched to the recorded roster.",
+    );
+    s.excludedScores = [{ gameId: game.id, osuId: 999999 }];
+    expect(validStatisticsExclusions(s)).toBe(true);
+    expect(fixtureStatisticsIssues(a, "one", [s])).toEqual([]);
+    expect(projectStatistics(a, "one", s)).toHaveLength(8);
+    expect(game.scores).toHaveLength(5);
+    // A roster player's actual failure remains an appearance by default.
+    game.scores[1] = { ...occupant, osuId: game.scores[1].osuId };
+    expect(
+      projectStatistics(a, "one", s).filter((p) => p.score === 0),
+    ).toHaveLength(1);
+  });
+  it("rejects forged exclusions, duplicates, positive scores and partially played failures", () => {
+    const s = snapshot();
+    for (const excludedScores of [
+      [{ gameId: 999, osuId: 91001 }],
+      [{ gameId: 1, osuId: 999 }],
+      [{ gameId: 1, osuId: 91001 }],
+    ]) {
+      s.excludedScores = excludedScores;
+      expect(validStatisticsExclusions(s)).toBe(false);
+      expect(fixtureStatisticsIssues(a, "one", [s])).toContain(
+        "Only verified zero-score records can be excluded.",
+      );
+    }
+    const p = s.source.games[0].scores[0];
+    Object.assign(p, {
+      total: 0,
+      accuracy: 0,
+      combo: 0,
+      passed: false,
+      hitCounts: { great: 1, ok: 0, meh: 0, miss: 100 },
+    });
+    expect(validStatisticsExclusions(s)).toBe(false);
+    p.hitCounts!.great = 0;
+    expect(validStatisticsExclusions(s)).toBe(true);
+    // NF/pass flags do not establish participation; exclusion is still explicit.
+    p.passed = true;
+    expect(validStatisticsExclusions(s)).toBe(true);
+    s.excludedScores!.push({ ...s.excludedScores![0] });
+    expect(validStatisticsExclusions(s)).toBe(false);
+  });
   it("requires explicit review for missing historical pools and preserves MP metadata", () => {
     const s = snapshot();
     s.poolId = "";

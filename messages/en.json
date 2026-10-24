@@ -2155,6 +2155,10 @@
     "m1a020bb7c622": "Unpublished changes",
     "m0c68d24927a4": "Scoring system",
     "m3f19d55259df": "MP beatmaps; historical mappool unavailable",
-    "m4de30f335098": "I reviewed the MP beatmaps because the historical mappool is incomplete."
+    "m4de30f335098": "I reviewed the MP beatmaps because the historical mappool is incomplete.",
+    "m878476bc27c6": "Save review settings before choosing games.",
+    "m1d947f906f8e": "Exclude zero-score lobby records only after confirming that the user did not play. Keep genuine failed scores.",
+    "m6d5536fc3605": "Exclude score",
+    "m73bfdd7ebc76": "Only verified zero-score records can be excluded."
   }
 }
