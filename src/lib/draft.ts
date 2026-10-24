@@ -14,7 +14,11 @@ import {
   users,
   fixtures,
 } from "@/db/schema";
-import { assertCapability, hasCapability } from "./auth/staff";
+import {
+  assertReadCapability,
+  assertCapability,
+  hasCapability,
+} from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { hashToken } from "./auth/tokens";
 import { getEdition, getPublicEdition } from "./content";
@@ -210,7 +214,7 @@ function sequenceTeams(data: Data) {
   }));
 }
 export async function staffDraft(actor: User, slug: string) {
-  await assertCapability(actor, "manage_draft", slug);
+  await assertReadCapability(actor, "manage_draft", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {

@@ -12,7 +12,7 @@ import {
   mappoolEntries,
   mappoolEvents,
 } from "@/db/schema";
-import { assertCapability } from "./auth/staff";
+import { assertReadCapability, assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { getEdition, getPublicEdition } from "./content";
 import {
@@ -207,7 +207,7 @@ const poolFields = {
   updatedAt: mappools.updatedAt,
 };
 export async function mappoolWorkspace(actor: User, slug: string) {
-  await assertCapability(actor, "manage_mappools", slug);
+  await assertReadCapability(actor, "manage_mappools", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {

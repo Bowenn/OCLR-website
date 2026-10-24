@@ -1,4 +1,9 @@
 "use client";
+import {
+  ReadOnlyFields,
+  MutationButton,
+  useStaffReadOnly,
+} from "./staff-read-only";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import { awardTierLabel } from "@/lib/award-tiers";
@@ -9,6 +14,7 @@ import { AwardPolicy } from "./award-policy";
 import { AwardTable } from "./award-table";
 type Data = Awaited<ReturnType<typeof awardWorkspace>>;
 export function AwardManager({ initial }: { initial: Data }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
   const [data, setData] = useState(initial),
     [weeks, setWeeks] = useState<AwardWeek[]>(initial.weeks);
@@ -20,6 +26,7 @@ export function AwardManager({ initial }: { initial: Data }) {
   const [query, setQuery] = useState("");
   const dirty = JSON.stringify(weeks) !== JSON.stringify(data.weeks);
   async function send(command: Record<string, unknown>) {
+    if (readOnly) return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -70,36 +77,38 @@ export function AwardManager({ initial }: { initial: Data }) {
         >
           <p className="muted small">{data.edition.timeZone}</p>
           {weeks.map((week, index) => (
-            <fieldset key={week.number}>
-              <legend>{tr("Week {value0}", { value0: week.number })}</legend>
-              <div className="form-grid">
-                {(["startsAt", "endsAt"] as const).map((key) => (
-                  <ZonedDateInput
-                    key={key}
-                    label={key === "startsAt" ? tr("Starts") : tr("Ends")}
-                    value={week[key] || null}
-                    timeZone={data.edition.timeZone}
-                    onChange={(value) =>
-                      setWeeks((rows) =>
-                        rows.map((r, i) =>
-                          i === index ? { ...r, [key]: value ?? "" } : r,
-                        ),
-                      )
-                    }
-                    onValidityChange={(valid) =>
-                      setValidity((state) =>
-                        state[`${index}-${key}`] === valid
-                          ? state
-                          : { ...state, [`${index}-${key}`]: valid },
-                      )
-                    }
-                  />
-                ))}
-              </div>
-            </fieldset>
+            <ReadOnlyFields key={week.number}>
+              <fieldset>
+                <legend>{tr("Week {value0}", { value0: week.number })}</legend>
+                <div className="form-grid">
+                  {(["startsAt", "endsAt"] as const).map((key) => (
+                    <ZonedDateInput
+                      key={key}
+                      label={key === "startsAt" ? tr("Starts") : tr("Ends")}
+                      value={week[key] || null}
+                      timeZone={data.edition.timeZone}
+                      onChange={(value) =>
+                        setWeeks((rows) =>
+                          rows.map((r, i) =>
+                            i === index ? { ...r, [key]: value ?? "" } : r,
+                          ),
+                        )
+                      }
+                      onValidityChange={(valid) =>
+                        setValidity((state) =>
+                          state[`${index}-${key}`] === valid
+                            ? state
+                            : { ...state, [`${index}-${key}`]: valid },
+                        )
+                      }
+                    />
+                  ))}
+                </div>
+              </fieldset>
+            </ReadOnlyFields>
           ))}
           <div className="actions">
-            <button
+            <MutationButton
               type="button"
               className="secondary"
               disabled={busy || weeks.length >= 52}
@@ -111,8 +120,8 @@ export function AwardManager({ initial }: { initial: Data }) {
               }
             >
               {tr("Add week")}
-            </button>
-            <button
+            </MutationButton>
+            <MutationButton
               type="button"
               className="secondary"
               disabled={busy || !weeks.length}
@@ -122,7 +131,7 @@ export function AwardManager({ initial }: { initial: Data }) {
               }}
             >
               {tr("Remove last week")}
-            </button>
+            </MutationButton>
           </div>
           <p className="muted small">
             {tr(
@@ -164,11 +173,11 @@ export function AwardManager({ initial }: { initial: Data }) {
               </tbody>
             </table>
           </div>
-          <button
+          <MutationButton
             disabled={busy || !dirty || Object.values(validity).some((v) => !v)}
           >
             {tr("Save configuration")}
-          </button>
+          </MutationButton>
         </form>
       </details>
       <section className="panel form-stack">
@@ -225,7 +234,7 @@ export function AwardManager({ initial }: { initial: Data }) {
               }))}
             />
             <div className="actions">
-              <button
+              <MutationButton
                 disabled={
                   busy ||
                   dirty ||
@@ -246,9 +255,9 @@ export function AwardManager({ initial }: { initial: Data }) {
                 }}
               >
                 {tr("Approve & publish")}
-              </button>
+              </MutationButton>
               {release && (
-                <button
+                <MutationButton
                   className="secondary"
                   disabled={busy}
                   onClick={() => {
@@ -260,7 +269,7 @@ export function AwardManager({ initial }: { initial: Data }) {
                   }}
                 >
                   {tr("Unpublish")}
-                </button>
+                </MutationButton>
               )}
             </div>
           </>

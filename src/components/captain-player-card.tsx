@@ -1,4 +1,5 @@
 "use client";
+import { useStaffReadOnly } from "./staff-read-only";
 
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -20,12 +21,14 @@ export function CaptainPlayerCard({
   username: string;
   identity?: CaptainIdentity;
 }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
 
   const root = useRef<HTMLDivElement>(null);
   const [profile, setProfile] = useState(identity);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
+    if (readOnly) return;
     if (identity?.countryCode || !root.current) return;
     const controller = new AbortController();
     let visible = false,
@@ -70,7 +73,7 @@ export function CaptainPlayerCard({
       controller.abort();
       observer.disconnect();
     };
-  }, [userId, identity?.countryCode]);
+  }, [userId, identity?.countryCode, readOnly]);
   const country = profile?.countryCode;
   const flag =
     country && /^[A-Z]{2}$/.test(country)
