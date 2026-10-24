@@ -13,6 +13,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { registrations, userProfileCache, users } from "../../src/db/schema";
 import {
+  getOsuProfileByUsername,
   getOsuUserProfile,
   PROFILE_TTL_MS,
   PROFILE_CACHE_LIMIT,
@@ -132,6 +133,36 @@ describe.skipIf(!url)(
         (await db().select().from(userProfileCache))[0].profile,
       ).not.toBeNull();
       expect(provider).toHaveBeenCalledTimes(2);
+    });
+    it("refreshes a cached pre-rename profile after resolving the current username", async () => {
+      await getOsuUserProfile(base);
+      const [cached] = await db()
+        .select()
+        .from(userProfileCache)
+        .where(eq(userProfileCache.osuId, base));
+      await db()
+        .update(userProfileCache)
+        .set({
+          profile: { ...cached.profile!, username: "Previous Name" },
+          retryAt: new Date(0),
+        })
+        .where(eq(userProfileCache.osuId, base));
+      const currentProfile = { ...profileResponse, username: "Current Name" };
+      provider
+        .mockReset()
+        .mockResolvedValueOnce(currentProfile)
+        .mockResolvedValueOnce(currentProfile);
+      const result = await getOsuProfileByUsername("Current Name");
+      expect(result.profile.username).toBe("Current Name");
+      expect(provider).toHaveBeenCalledTimes(2);
+      expect(
+        (
+          await db()
+            .select()
+            .from(userProfileCache)
+            .where(eq(userProfileCache.osuId, base))
+        )[0].profile?.username,
+      ).toBe("Current Name");
     });
     it("negative-caches first lookup failures without returning invented empty stats", async () => {
       provider.mockRejectedValue(new HttpError(502, "private"));
