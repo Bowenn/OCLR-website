@@ -24,6 +24,7 @@ export function ReviewForm({
       <label className="field">
         <span>{tr("Decision")}</span>
         <select
+          aria-label={tr("Decision")}
           value={status}
           onChange={(event) =>
             setStatus(
