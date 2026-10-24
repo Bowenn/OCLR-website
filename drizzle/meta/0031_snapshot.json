@@ -1,5 +1,5 @@
 {
-  "id": "31883faa-43f3-4cc3-b3be-6957cb34f31b",
+  "id": "d7440be6-21a0-4603-988f-07d46398e551",
   "prevId": "8d2f341f-5127-4c64-8abc-5824634a2082",
   "version": "7",
   "dialect": "postgresql",
@@ -20,13 +20,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
-        },
-        "policy": {
-          "name": "policy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'relative-game-mean-v1'"
         },
         "weeks": {
           "name": "weeks",
@@ -905,6 +898,123 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.fixture_streams": {
+      "name": "fixture_streams",
+      "schema": "",
+      "columns": {
+        "fixture_id": {
+          "name": "fixture_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_by": {
+          "name": "assigned_by",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "confirmed_scheduled_at": {
+          "name": "confirmed_scheduled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_time_zone": {
+          "name": "confirmed_time_zone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fixture_streams_user_idx": {
+          "name": "fixture_streams_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fixture_streams_fixture_id_fixtures_id_fk": {
+          "name": "fixture_streams_fixture_id_fixtures_id_fk",
+          "tableFrom": "fixture_streams",
+          "tableTo": "fixtures",
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fixture_streams_user_id_users_osu_id_fk": {
+          "name": "fixture_streams_user_id_users_osu_id_fk",
+          "tableFrom": "fixture_streams",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fixture_streams_assigned_by_users_osu_id_fk": {
+          "name": "fixture_streams_assigned_by_users_osu_id_fk",
+          "tableFrom": "fixture_streams",
+          "tableTo": "users",
+          "columnsFrom": [
+            "assigned_by"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "fixture_streams_source": {
+          "name": "fixture_streams_source",
+          "value": "\"fixture_streams\".\"source\" IN ('self', 'staff')"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.fixtures": {
       "name": "fixtures",
       "schema": "",
@@ -1010,6 +1120,13 @@
         },
         "assignment_revision": {
           "name": "assignment_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "stream_revision": {
+          "name": "stream_revision",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -3965,7 +4082,8 @@
         "admin",
         "mappooler",
         "referee",
-        "developer"
+        "developer",
+        "streamer"
       ]
     },
     "public.stage_kind": {

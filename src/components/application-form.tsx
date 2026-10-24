@@ -94,6 +94,13 @@ export function ApplicationForm({
         {tr(". Your osu! identity comes from your signed-in session.")}
       </p>
       {verification && <EligibilitySummary value={verification} />}
+      {edition.registration?.publicIntroductionQuestionId && (
+        <p className="notice">
+          {tr(
+            "Your self introduction will be public if your application is accepted. Other answers remain private.",
+          )}
+        </p>
+      )}
       {edition.registration?.questions.map((q) => {
         const label = (
           <>

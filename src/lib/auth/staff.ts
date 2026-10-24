@@ -6,6 +6,9 @@ import { requireUser } from "./user";
 import { HttpError } from "../http";
 
 export const capabilities = [
+  "view_streaming",
+  "select_streaming",
+  "manage_streaming",
   "manage_staff",
   "manage_registrations",
   "manage_captains",
@@ -19,13 +22,20 @@ export const capabilities = [
   "configure_tournament",
 ] as const;
 export type Capability = (typeof capabilities)[number];
-export const roles = ["admin", "mappooler", "referee", "developer"] as const;
+export const roles = [
+  "admin",
+  "mappooler",
+  "referee",
+  "developer",
+  "streamer",
+] as const;
 export type StaffRole = (typeof roles)[number];
 const roleCapabilities: Record<StaffRole, readonly Capability[]> = {
   developer: [],
   admin: capabilities,
   mappooler: ["manage_mappools"],
   referee: ["record_results"],
+  streamer: ["view_streaming", "select_streaming"],
 };
 export type StaffGrant = { role: StaffRole; editionSlug: string | null };
 export function permits(

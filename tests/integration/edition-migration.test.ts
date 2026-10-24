@@ -378,9 +378,12 @@ describe.skipIf(!base)(
               { column_name: "home_team_id", is_nullable: "YES" },
             ]);
             expect(
-              (await pool.query("SELECT assignment_revision FROM fixtures"))
-                .rows,
-            ).toEqual([{ assignment_revision: 0 }]);
+              (
+                await pool.query(
+                  "SELECT assignment_revision, stream_revision FROM fixtures",
+                )
+              ).rows,
+            ).toEqual([{ assignment_revision: 0, stream_revision: 0 }]);
             expect(
               (await pool.query("SELECT about_published FROM staff_roles"))
                 .rows,
@@ -411,7 +414,7 @@ describe.skipIf(!base)(
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source' - 'eligibility_verification' - 'attempt'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source' - 'eligibility_verification' - 'attempt'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision' - 'stream_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));
@@ -541,7 +544,7 @@ describe.skipIf(!base)("Yumu award policy upgrade", () => {
         const file = join(folder, "meta/_journal.json");
         const journal = JSON.parse(readFileSync(file, "utf8"));
         journal.entries = journal.entries.filter(
-          (entry: { idx: number }) => entry.idx < 31,
+          (entry: { idx: number }) => entry.idx < 33,
         );
         writeFileSync(file, JSON.stringify(journal));
         await migrate(drizzle(pool), { migrationsFolder: folder });

@@ -624,6 +624,8 @@ function Registration({ data, saved }: EditorProps) {
   const [closesValid, setClosesValid] = useState(Boolean(closesAt));
   const [withdrawValid, setWithdrawValid] = useState(true);
   const [questions, setQuestions] = useState(e.registration?.questions ?? []);
+  const [publicIntroductionQuestionId, setPublicIntroductionQuestionId] =
+    useState(e.registration?.publicIntroductionQuestionId ?? "");
   const blockers = registrationBlockers(
     e,
     data.readiness.some(
@@ -731,6 +733,30 @@ function Registration({ data, saved }: EditorProps) {
           </fieldset>
           <fieldset className="settings-card form-stack" disabled={!configured}>
             <legend>{tr("Application questions")}</legend>
+            <label className="field">
+              <span>{tr("Public self introduction question")}</span>
+              <select
+                aria-label={tr("Public self introduction question")}
+                value={publicIntroductionQuestionId}
+                onChange={(e) =>
+                  setPublicIntroductionQuestionId(e.target.value)
+                }
+              >
+                <option value="">{tr("Not set")}</option>
+                {questions
+                  .filter((q) => q.type === "text")
+                  .map((q) => (
+                    <option key={q.id} value={q.id}>
+                      {q.label}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <p className="muted small">
+              {tr(
+                "The selected answer is public for accepted players, including existing submissions. Select only the self introduction intended for publication.",
+              )}
+            </p>
             <p className="muted small">
               {tr("{count, plural, one {# question} other {# questions}}", {
                 count: questions.length,
@@ -828,7 +854,20 @@ function Registration({ data, saved }: EditorProps) {
           action="registration"
           fields={{
             registration: configured
-              ? { enabled, opensAt, closesAt, withdrawUntil, questions }
+              ? {
+                  enabled,
+                  opensAt,
+                  closesAt,
+                  withdrawUntil,
+                  questions,
+                  publicIntroductionQuestionId: questions.some(
+                    (q) =>
+                      q.id === publicIntroductionQuestionId &&
+                      q.type === "text",
+                  )
+                    ? publicIntroductionQuestionId
+                    : null,
+                }
               : null,
           }}
           label={tr("Save registration settings")}
