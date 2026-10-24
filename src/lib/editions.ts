@@ -122,6 +122,7 @@ export const editionSchema = z
         closesAt: instant,
         withdrawUntil: instant.nullable(),
         questions: z.array(questionSchema).max(16).default([]),
+        publicIntroductionQuestionId: questionFields.id.nullable().optional(),
       })
       .strict()
       .refine(
@@ -132,6 +133,14 @@ export const editionSchema = z
         (v) =>
           new Set(v.questions.map((q) => q.id)).size === v.questions.length,
         "Question IDs must be unique",
+      )
+      .refine(
+        (v) =>
+          !v.publicIntroductionQuestionId ||
+          v.questions.some(
+            (q) => q.id === v.publicIntroductionQuestionId && q.type === "text",
+          ),
+        "Choose a text question for the public self introduction.",
       )
       .refine(
         (v) =>

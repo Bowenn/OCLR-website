@@ -706,3 +706,47 @@
     flex: 1;
   }
 }
+
+.event-player-identity .avatar {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+}
+.event-player-bio > p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.player-message-form {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.player-message-form textarea {
+  width: 100%;
+  min-height: 44px;
+  resize: vertical;
+}
+.player-message-form button {
+  justify-self: start;
+}
+.event-player-messages time {
+  display: block;
+}
+.themed-site .event-player-row {
+  height: auto;
+  min-height: 280px;
+}
+.event-player-messages .event-message-scroll {
+  flex: none;
+  height: 112px;
+}
+@media (max-width: 900px) {
+  .themed-site .event-player-row {
+    grid-template-rows: auto auto;
+  }
+}
+@media (max-width: 560px) {
+  .themed-site .event-player-row {
+    grid-template-rows: auto auto auto;
+  }
+}
