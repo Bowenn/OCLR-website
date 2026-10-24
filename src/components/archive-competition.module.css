@@ -11,3 +11,7 @@
 .competition > p {
   max-width: 75ch;
 }
+
+.competition > * {
+  min-width: 0;
+}

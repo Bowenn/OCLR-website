@@ -41,9 +41,9 @@ test("241 historical presentation", async ({ page, context }, info) => {
         await phase.nth(1).click();
         await expect(page.locator(".bracket-group-grid")).toHaveCount(0);
         expect(await page.locator(".bracket-round").count()).toBeGreaterThan(1);
-        expect(
-          await page.locator(".bracket-frame svg path").count(),
-        ).toBeGreaterThan(0);
+        await expect
+          .poll(() => page.locator(".bracket-frame svg path").count())
+          .toBeGreaterThan(0);
         await expect(page.locator(".archive-competition")).toContainText(
           "do not establish qualification rules",
         );
