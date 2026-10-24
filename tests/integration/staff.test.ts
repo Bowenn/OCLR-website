@@ -52,6 +52,51 @@ describe.skipIf(!url)("staff review boundaries and concurrency", () => {
         .returning()
     )[0];
   }
+  it("keeps deferred applications private, filterable and auditable through final review", async () => {
+    let r = await application();
+    const initial = r.updatedAt.toISOString();
+    r = await reviewApplication(staff, r.id, {
+      status: "deferred",
+      confirmed: true,
+      expectedUpdatedAt: initial,
+    });
+    expect(r.status).toBe("deferred");
+    expect((await listApplications(staff, { status: "deferred" })).total).toBe(
+      1,
+    );
+    await expect(
+      reviewApplication(staff, r.id, {
+        status: "accepted",
+        confirmed: true,
+        expectedUpdatedAt: initial,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    r = await reviewApplication(staff, r.id, {
+      status: "pending",
+      confirmed: true,
+      expectedUpdatedAt: r.updatedAt.toISOString(),
+    });
+    r = await reviewApplication(staff, r.id, {
+      status: "deferred",
+      confirmed: true,
+      expectedUpdatedAt: r.updatedAt.toISOString(),
+    });
+    r = await reviewApplication(staff, r.id, {
+      status: "accepted",
+      confirmed: true,
+      expectedUpdatedAt: r.updatedAt.toISOString(),
+    });
+    await expect(
+      reviewApplication(staff, r.id, {
+        status: "deferred",
+        confirmed: true,
+        expectedUpdatedAt: r.updatedAt.toISOString(),
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(
+      (await db().select().from(registrationEvents)).map((e) => e.toStatus),
+    ).toEqual(["deferred", "pending", "deferred", "accepted"]);
+  });
   it("rejects nonstaff across listing, details, exports and mutations", async () => {
     const r = await application();
     await expect(listApplications(player, {})).rejects.toMatchObject({

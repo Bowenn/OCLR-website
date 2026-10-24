@@ -114,6 +114,18 @@ export const editionSchema = z
       .strict()
       .nullable(),
     automaticEligibility: eligibilityLimitsSchema.nullable().optional(),
+    rankGraceRange: z
+      .object({
+        minRank: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+        maxRank: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+      })
+      .strict()
+      .refine(
+        (v) => v.minRank <= v.maxRank,
+        "Minimum numeric rank must not exceed maximum numeric rank.",
+      )
+      .nullable()
+      .optional(),
     eligibility: z.string().trim().min(1).max(4000).nullable(),
     registration: z
       .object({
