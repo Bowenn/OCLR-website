@@ -24,6 +24,10 @@ vi.mock("next/navigation", () => ({
 vi.mock("../../src/i18n/server", () => ({
   getAppTranslations: async () => english,
 }));
+vi.mock("../../src/lib/auth/user", () => ({ currentUser: async () => null }));
+vi.mock("../../src/lib/player-messages", () => ({
+  publicPlayerIntroductions: async () => new Map(),
+}));
 vi.mock("../../src/lib/players", () => ({ publicPlayers: vi.fn() }));
 vi.mock("../../src/lib/content", () => ({ getPublicEdition: vi.fn() }));
 vi.mock("../../src/lib/osu-profiles", () => ({

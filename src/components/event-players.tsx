@@ -140,6 +140,7 @@ export function EventPlayers({
                     </div>
                   ) : (
                     <PlayerMessageBoard
+                      key={`${edition}:${p.id}`}
                       edition={edition}
                       playerId={p.id}
                       name={p.name}
