@@ -213,3 +213,38 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Keep complete user artwork inside a compact, consistently padded card. */
+.themed-site .organizer-page .organizer-people {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  max-width: 64rem;
+  gap: 1rem;
+}
+.themed-site .organizer-page .organizer-people > li {
+  padding: 1rem;
+  gap: 1rem;
+  align-items: flex-start;
+  border: 1px solid var(--site-border);
+  border-radius: 0.75rem;
+  background: var(--site-surface);
+}
+.organizer-page .organizer-people .avatar,
+.organizer-page .organizer-portrait {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+}
+.organizer-page .organizer-people .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.organizer-page .organizer-people h4 {
+  line-height: 1.4;
+  margin-bottom: 0.35rem;
+}
+.organizer-page .organizer-people > li:focus-within {
+  border-color: var(--site-accent);
+}
