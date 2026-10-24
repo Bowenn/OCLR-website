@@ -19,9 +19,10 @@ export const capabilities = [
   "configure_tournament",
 ] as const;
 export type Capability = (typeof capabilities)[number];
-export const roles = ["admin", "mappooler", "referee"] as const;
+export const roles = ["admin", "mappooler", "referee", "developer"] as const;
 export type StaffRole = (typeof roles)[number];
 const roleCapabilities: Record<StaffRole, readonly Capability[]> = {
+  developer: [],
   admin: capabilities,
   mappooler: ["manage_mappools"],
   referee: ["record_results"],
@@ -37,6 +38,38 @@ export function permits(
       (g.editionSlug === null || g.editionSlug === edition) &&
       roleCapabilities[g.role].includes(capability),
   );
+}
+/** Developer adds global reads only. Existing roles keep their original write scopes. */
+export function isDeveloper(grants: readonly StaffGrant[]) {
+  return grants.some((g) => g.role === "developer" && g.editionSlug === null);
+}
+export function canRead(
+  grants: readonly StaffGrant[],
+  capability: Capability,
+  edition?: string,
+) {
+  return isDeveloper(grants) || permits(grants, capability, edition);
+}
+export async function assertReadCapability(
+  user: User,
+  capability: Capability,
+  edition?: string,
+  reader?: StaffReader,
+) {
+  if (!canRead(await staffAccess(user, reader), capability, edition))
+    throw new HttpError(403, "You do not have permission for this operation.");
+}
+export async function assertBusinessWrite(
+  user: User,
+  edition?: string,
+  reader?: StaffReader,
+) {
+  const grants = await staffAccess(user, reader);
+  if (
+    isDeveloper(grants) &&
+    !capabilities.some((capability) => permits(grants, capability, edition))
+  )
+    throw new HttpError(403, "Developer access is read-only.");
 }
 export function bootstrapAdminIds() {
   return (process.env.ADMIN_OSU_IDS ?? "")
@@ -88,13 +121,21 @@ export async function requireStaff() {
     throw new HttpError(403, "Staff access is required.");
   return user;
 }
-export async function capabilityScope(user: User, capability: Capability) {
-  const grants = (await staffAccess(user)).filter((g) =>
+function scopeFor(grants: readonly StaffGrant[], capability: Capability) {
+  const allowed = grants.filter((g) =>
     roleCapabilities[g.role].includes(capability),
   );
-  if (!grants.length)
+  if (!allowed.length)
     throw new HttpError(403, "You do not have permission for this operation.");
-  return grants.some((g) => g.editionSlug === null)
+  return allowed.some((g) => g.editionSlug === null)
     ? null
-    : grants.map((g) => g.editionSlug!);
+    : allowed.map((g) => g.editionSlug!);
+}
+export async function capabilityScope(user: User, capability: Capability) {
+  return scopeFor(await staffAccess(user), capability);
+}
+/** Read authorization is explicit; never use this to authorize a command or export. */
+export async function readCapabilityScope(user: User, capability: Capability) {
+  const grants = await staffAccess(user);
+  return isDeveloper(grants) ? null : scopeFor(grants, capability);
 }

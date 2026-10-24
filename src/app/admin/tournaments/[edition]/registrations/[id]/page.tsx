@@ -1,4 +1,4 @@
-import { getOsuUserProfile } from "@/lib/osu-profiles";
+import { cachedOsuUserProfile, getOsuUserProfile } from "@/lib/osu-profiles";
 import { applicationAnswers } from "@/lib/application-answers";
 import Link from "next/link";
 import { RegistrationRemoval } from "@/components/registration-removal";
@@ -6,7 +6,12 @@ import { EligibilitySummary } from "@/components/eligibility-summary";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { authorizedPage } from "@/lib/auth/page";
-import { requireStaff } from "@/lib/auth/staff";
+import {
+  requireStaff,
+  staffAccess,
+  isDeveloper,
+  hasCapability,
+} from "@/lib/auth/staff";
 import { applicationDetails } from "@/lib/staff";
 import { readTournament } from "@/lib/tournaments";
 import { formatDate } from "@/lib/editions";
@@ -26,9 +31,15 @@ export default async function Application({
     const data = await applicationDetails(actor, id);
     if (data.registration.editionSlug !== slug) notFound();
     const { registration: r, username } = data;
+    const developer =
+      isDeveloper(await staffAccess(actor)) &&
+      !(await hasCapability(actor, "manage_registrations", slug));
     const [record, snapshot] = await Promise.all([
       readTournament(r.editionSlug),
-      getOsuUserProfile(r.userId, "osu").catch(() => null),
+      (developer ? cachedOsuUserProfile : getOsuUserProfile)(
+        r.userId,
+        "osu",
+      ).catch(() => null),
     ]);
     const edition = record?.edition;
     const profile = snapshot?.profile;

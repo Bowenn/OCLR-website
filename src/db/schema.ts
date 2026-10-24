@@ -512,6 +512,7 @@ export const staffRole = pgEnum("staff_role", [
   "admin",
   "mappooler",
   "referee",
+  "developer",
 ]);
 export const staffRoles = pgTable(
   "staff_roles",
@@ -537,6 +538,10 @@ export const staffRoles = pgTable(
       .on(t.userId, t.role, t.editionSlug)
       .where(sql`${t.editionSlug} IS NOT NULL AND ${t.revokedAt} IS NULL`),
     index("staff_roles_user_idx").on(t.userId),
+    check(
+      "developer_global_only",
+      sql`${t.role}::text <> 'developer' OR ${t.editionSlug} IS NULL`,
+    ),
   ],
 );
 export const staffRoleEvents = pgTable(

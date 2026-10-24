@@ -14,7 +14,13 @@ import {
   teams,
   tournamentStages,
 } from "@/db/schema";
-import { assertCapability, staffAccess, permits } from "./auth/staff";
+import {
+  assertReadCapability,
+  assertCapability,
+  staffAccess,
+  permits,
+  canRead,
+} from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { privacyReady } from "./auth/config";
 import { HttpError } from "./http";
@@ -174,7 +180,7 @@ export function tournamentLinks(
   slug: string,
 ) {
   const can = (cap: Parameters<typeof permits>[1]) =>
-    permits(grants, cap, slug);
+    canRead(grants, cap, slug);
   return tournamentNavigation.flatMap((group) =>
     group.items
       .filter(
@@ -251,7 +257,7 @@ export async function competitionStructureProtected(
   );
 }
 export async function tournamentForAdmin(actor: User, slug: string) {
-  await assertCapability(actor, "configure_tournament", slug);
+  await assertReadCapability(actor, "configure_tournament", slug);
   const row = await readTournament(slug);
   if (!row) throw new HttpError(404, "Tournament not found.");
   const [applications] = await db()

@@ -28,7 +28,9 @@ export default async function Admin({
       );
     }
     const access = await staffAccess(actor);
-    const isAdmin = access.some((g) => g.role === "admin");
+    const isAdmin = access.some(
+      (g) => g.role === "admin" || g.role === "developer",
+    );
     const data = await tournamentList(actor);
     const pending = isAdmin
       ? await listApplications(actor, { status: "pending" })

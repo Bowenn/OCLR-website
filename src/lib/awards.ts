@@ -20,7 +20,7 @@ import {
   registrations,
   users,
 } from "@/db/schema";
-import { assertCapability } from "./auth/staff";
+import { assertReadCapability, assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { HttpError } from "./http";
 import { readTournament } from "./tournaments";
@@ -302,7 +302,7 @@ async function calculation(slug: string, reader: Reader) {
   };
 }
 export async function awardWorkspace(actor: User, slug: string) {
-  await assertCapability(actor, "approve_results", slug);
+  await assertReadCapability(actor, "approve_results", slug);
   return db().transaction((tx) => calculation(slug, tx), {
     isolationLevel: "repeatable read",
     accessMode: "read only",

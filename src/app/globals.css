@@ -4960,6 +4960,11 @@ body:has([data-broadcast]) .site-shell {
   min-width: 0;
 }
 
+/* Preserve existing component geometry while native fieldset enforces read-only controls. */
+.staff-readonly-fields {
+  display: contents;
+}
+
 .status-deferred {
   color: var(--site-accent);
   border-color: var(--site-control-border);

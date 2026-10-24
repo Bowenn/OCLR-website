@@ -21,7 +21,12 @@ import {
   users,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
-import { assertCapability, capabilityScope } from "./auth/staff";
+import {
+  assertReadCapability,
+  assertCapability,
+  capabilityScope,
+  readCapabilityScope,
+} from "./auth/staff";
 import { HttpError } from "./http";
 import {
   assertRegistrationUnassigned,
@@ -92,7 +97,9 @@ export async function listApplications(
   input: unknown,
   exporting = false,
 ) {
-  const scopes = await capabilityScope(actor, "manage_registrations");
+  const scopes = exporting
+    ? await capabilityScope(actor, "manage_registrations")
+    : await readCapabilityScope(actor, "manage_registrations");
   const filters = parseFilters(input);
   const where = and(
     conditions(filters),
@@ -195,7 +202,7 @@ export async function exportApplications(actor: User, input: unknown) {
   });
 }
 export async function applicationDetails(actor: User, id: string) {
-  await capabilityScope(actor, "manage_registrations");
+  await readCapabilityScope(actor, "manage_registrations");
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Application not found.");
   const [row] = await db()
@@ -216,7 +223,7 @@ export async function applicationDetails(actor: User, id: string) {
     )
     .where(eq(registrations.id, id));
   if (!row) throw new HttpError(404, "Application not found.");
-  await assertCapability(
+  await assertReadCapability(
     actor,
     "manage_registrations",
     row.registration.editionSlug,
