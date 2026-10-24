@@ -1,0 +1,1013 @@
+{
+  "capturedOn": "2026-10-25",
+  "matches": [
+    {
+      "matchId": "match-1",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117484931",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 6,
+        "gs2": 1
+      },
+      "games": [
+        {
+          "gameId": 613359997,
+          "beatmapId": 3764198
+        },
+        {
+          "gameId": 613360359,
+          "beatmapId": 3280087
+        },
+        {
+          "gameId": 613360710,
+          "beatmapId": 4693311
+        },
+        {
+          "gameId": 613360969,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613361233,
+          "beatmapId": 4914171
+        },
+        {
+          "gameId": 613359582,
+          "beatmapId": 5015365
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 5,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-2",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117474217",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 8,
+        "gs2": 0
+      },
+      "games": [
+        {
+          "gameId": 613290168,
+          "beatmapId": 4371192
+        },
+        {
+          "gameId": 613290586,
+          "beatmapId": 4722275
+        },
+        {
+          "gameId": 613290964,
+          "beatmapId": 4552088
+        },
+        {
+          "gameId": 613291351,
+          "beatmapId": 1891659
+        },
+        {
+          "gameId": 613291737,
+          "beatmapId": 3833249
+        },
+        {
+          "gameId": 613288977,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613289305,
+          "beatmapId": 3764198
+        },
+        {
+          "gameId": 613289758,
+          "beatmapId": 4719384
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 8,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-3",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117499366",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 8,
+        "gs2": 1
+      },
+      "games": [
+        {
+          "gameId": 613454209,
+          "beatmapId": 3833249
+        },
+        {
+          "gameId": 613454818,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 613455288,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613455795,
+          "beatmapId": 4722275
+        },
+        {
+          "gameId": 613456234,
+          "beatmapId": 4693311
+        },
+        {
+          "gameId": 613456748,
+          "beatmapId": 3489502
+        },
+        {
+          "gameId": 613457120,
+          "beatmapId": 4822144
+        },
+        {
+          "gameId": 613453723,
+          "beatmapId": 4371192
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 7,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-4",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117555922",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 9,
+        "gs2": 1
+      },
+      "games": [
+        {
+          "gameId": 613824018,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 613824316,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613824644,
+          "beatmapId": 4880506
+        },
+        {
+          "gameId": 613825004,
+          "beatmapId": 3833249
+        },
+        {
+          "gameId": 613825353,
+          "beatmapId": 4719384
+        },
+        {
+          "gameId": 613825731,
+          "beatmapId": 4475964
+        },
+        {
+          "gameId": 613823088,
+          "beatmapId": 4552088
+        },
+        {
+          "gameId": 613823357,
+          "beatmapId": 4914171
+        },
+        {
+          "gameId": 613823719,
+          "beatmapId": 4693311
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 8,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-5",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117556616",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 6,
+        "gs2": 0
+      },
+      "games": [
+        {
+          "gameId": 613827636,
+          "beatmapId": 4371192
+        },
+        {
+          "gameId": 613828020,
+          "beatmapId": 3764198
+        },
+        {
+          "gameId": 613828608,
+          "beatmapId": 4880506
+        },
+        {
+          "gameId": 613829117,
+          "beatmapId": 4693311
+        },
+        {
+          "gameId": 613829633,
+          "beatmapId": 3786810
+        },
+        {
+          "gameId": 613830163,
+          "beatmapId": 3833249
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 6,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-6",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117630454",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 9
+      },
+      "games": [
+        {
+          "gameId": 614312396,
+          "beatmapId": 3230925
+        },
+        {
+          "gameId": 614312974,
+          "beatmapId": 4306595
+        },
+        {
+          "gameId": 614313669,
+          "beatmapId": 4919642
+        },
+        {
+          "gameId": 614314120,
+          "beatmapId": 4809261
+        },
+        {
+          "gameId": 614314592,
+          "beatmapId": 4630925
+        },
+        {
+          "gameId": 614315099,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614315667,
+          "beatmapId": 5036455
+        },
+        {
+          "gameId": 614311112,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614311576,
+          "beatmapId": 4912337
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 8
+      }
+    },
+    {
+      "matchId": "match-7",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117630206",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 7
+      },
+      "games": [
+        {
+          "gameId": 614309495,
+          "beatmapId": 4809261
+        },
+        {
+          "gameId": 614309921,
+          "beatmapId": 4052151
+        },
+        {
+          "gameId": 614310359,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614310804,
+          "beatmapId": 4919642
+        },
+        {
+          "gameId": 614311497,
+          "beatmapId": 4655439
+        },
+        {
+          "gameId": 614311970,
+          "beatmapId": 3230925
+        },
+        {
+          "gameId": 614308976,
+          "beatmapId": 4630925
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      }
+    },
+    {
+      "matchId": "match-8",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117643393",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 11
+      },
+      "games": [
+        {
+          "gameId": 614395834,
+          "beatmapId": 4993143
+        },
+        {
+          "gameId": 614396336,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614396720,
+          "beatmapId": 2297237
+        },
+        {
+          "gameId": 614397322,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614397827,
+          "beatmapId": 4655439
+        },
+        {
+          "gameId": 614398304,
+          "beatmapId": 4630925
+        },
+        {
+          "gameId": 614398928,
+          "beatmapId": 4809261
+        },
+        {
+          "gameId": 614399450,
+          "beatmapId": 5036455
+        },
+        {
+          "gameId": 614400012,
+          "beatmapId": 3383612
+        },
+        {
+          "gameId": 614394478,
+          "beatmapId": 4052151
+        },
+        {
+          "gameId": 614394946,
+          "beatmapId": 4530104
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 10
+      }
+    },
+    {
+      "matchId": "match-9",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117712196",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      },
+      "games": [
+        {
+          "gameId": 614836479,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614836982,
+          "beatmapId": 4993143
+        },
+        {
+          "gameId": 614837685,
+          "beatmapId": 3230925
+        },
+        {
+          "gameId": 614838155,
+          "beatmapId": 4052151
+        },
+        {
+          "gameId": 614838642,
+          "beatmapId": 5033877
+        },
+        {
+          "gameId": 614839233,
+          "beatmapId": 5036455
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      }
+    },
+    {
+      "matchId": "match-10",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117711238",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 3,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 11
+      },
+      "games": [
+        {
+          "gameId": 614832509,
+          "beatmapId": 4655439
+        },
+        {
+          "gameId": 614833288,
+          "beatmapId": 2297237
+        },
+        {
+          "gameId": 614833671,
+          "beatmapId": 4487658
+        },
+        {
+          "gameId": 614834015,
+          "beatmapId": 4306595
+        },
+        {
+          "gameId": 614834388,
+          "beatmapId": 4912337
+        },
+        {
+          "gameId": 614834933,
+          "beatmapId": 3383612
+        },
+        {
+          "gameId": 614830838,
+          "beatmapId": 4919642
+        },
+        {
+          "gameId": 614831159,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614831563,
+          "beatmapId": 3230925
+        },
+        {
+          "gameId": 614831827,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614832139,
+          "beatmapId": 4828159
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 10
+      }
+    },
+    {
+      "matchId": "match-11",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117486999",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 1,
+      "matchedUniqueBeatmaps": {
+        "gs1": 6,
+        "gs2": 0
+      },
+      "games": [
+        {
+          "gameId": 613372755,
+          "beatmapId": 4822144
+        },
+        {
+          "gameId": 613373289,
+          "beatmapId": 4719384
+        },
+        {
+          "gameId": 613374132,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613374664,
+          "beatmapId": 4552088
+        },
+        {
+          "gameId": 613375319,
+          "beatmapId": 3833249
+        },
+        {
+          "gameId": 613376185,
+          "beatmapId": 3489502
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 6,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-12",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117474455",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 9,
+        "gs2": 0
+      },
+      "games": [
+        {
+          "gameId": 613290796,
+          "beatmapId": 3833249
+        },
+        {
+          "gameId": 613291151,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613291488,
+          "beatmapId": 3764198
+        },
+        {
+          "gameId": 613291840,
+          "beatmapId": 4475964
+        },
+        {
+          "gameId": 613292551,
+          "beatmapId": 4722275
+        },
+        {
+          "gameId": 613292923,
+          "beatmapId": 1891659
+        },
+        {
+          "gameId": 613293411,
+          "beatmapId": 4693311
+        },
+        {
+          "gameId": 613289935,
+          "beatmapId": 4371192
+        },
+        {
+          "gameId": 613290242,
+          "beatmapId": 4719384
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 9,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-13",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117498506",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 3,
+      "matchedUniqueBeatmaps": {
+        "gs1": 11,
+        "gs2": 1
+      },
+      "games": [
+        {
+          "gameId": 613449967,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613450331,
+          "beatmapId": 5015295
+        },
+        {
+          "gameId": 613450802,
+          "beatmapId": 4693311
+        },
+        {
+          "gameId": 613451253,
+          "beatmapId": 4880506
+        },
+        {
+          "gameId": 613451813,
+          "beatmapId": 3833249
+        },
+        {
+          "gameId": 613452326,
+          "beatmapId": 4754948
+        },
+        {
+          "gameId": 613448107,
+          "beatmapId": 4371192
+        },
+        {
+          "gameId": 613448447,
+          "beatmapId": 3280087
+        },
+        {
+          "gameId": 613448929,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 613449269,
+          "beatmapId": 3489502
+        },
+        {
+          "gameId": 613449626,
+          "beatmapId": 1891659
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 10,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-14",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117556904",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 11,
+        "gs2": 0
+      },
+      "games": [
+        {
+          "gameId": 613831320,
+          "beatmapId": 4880506
+        },
+        {
+          "gameId": 613832016,
+          "beatmapId": 4693311
+        },
+        {
+          "gameId": 613832494,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613832932,
+          "beatmapId": 5015295
+        },
+        {
+          "gameId": 613833418,
+          "beatmapId": 1891659
+        },
+        {
+          "gameId": 613833894,
+          "beatmapId": 4475964
+        },
+        {
+          "gameId": 613834333,
+          "beatmapId": 4822144
+        },
+        {
+          "gameId": 613835098,
+          "beatmapId": 4754948
+        },
+        {
+          "gameId": 613829595,
+          "beatmapId": 4371192
+        },
+        {
+          "gameId": 613829892,
+          "beatmapId": 3764198
+        },
+        {
+          "gameId": 613830939,
+          "beatmapId": 4722275
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 11,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-15",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117545273",
+      "poolId": "gs1",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 8,
+        "gs2": 1
+      },
+      "games": [
+        {
+          "gameId": 613756300,
+          "beatmapId": 2708875
+        },
+        {
+          "gameId": 613756733,
+          "beatmapId": 5015295
+        },
+        {
+          "gameId": 613757064,
+          "beatmapId": 1891659
+        },
+        {
+          "gameId": 613757372,
+          "beatmapId": 4822144
+        },
+        {
+          "gameId": 613757792,
+          "beatmapId": 4722275
+        },
+        {
+          "gameId": 613755291,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 613755625,
+          "beatmapId": 3489502
+        },
+        {
+          "gameId": 613755942,
+          "beatmapId": 3764198
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 7,
+        "gs2": 0
+      }
+    },
+    {
+      "matchId": "match-16",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117630204",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 8
+      },
+      "games": [
+        {
+          "gameId": 614310432,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614310866,
+          "beatmapId": 4487658
+        },
+        {
+          "gameId": 614311534,
+          "beatmapId": 4052151
+        },
+        {
+          "gameId": 614312111,
+          "beatmapId": 4809261
+        },
+        {
+          "gameId": 614312685,
+          "beatmapId": 4630925
+        },
+        {
+          "gameId": 614313699,
+          "beatmapId": 4912337
+        },
+        {
+          "gameId": 614309239,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614309729,
+          "beatmapId": 2297237
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 7
+      }
+    },
+    {
+      "matchId": "match-17",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117642125",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 1,
+      "matchedUniqueBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      },
+      "games": [
+        {
+          "gameId": 614387205,
+          "beatmapId": 4530104
+        },
+        {
+          "gameId": 614387629,
+          "beatmapId": 4993143
+        },
+        {
+          "gameId": 614388162,
+          "beatmapId": 4487658
+        },
+        {
+          "gameId": 614388519,
+          "beatmapId": 4912337
+        },
+        {
+          "gameId": 614388906,
+          "beatmapId": 4685613
+        },
+        {
+          "gameId": 614389304,
+          "beatmapId": 5036455
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      }
+    },
+    {
+      "matchId": "match-18",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117642682",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 2,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 9
+      },
+      "games": [
+        {
+          "gameId": 614390916,
+          "beatmapId": 3230925
+        },
+        {
+          "gameId": 614391433,
+          "beatmapId": 4912337
+        },
+        {
+          "gameId": 614391795,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614392144,
+          "beatmapId": 2297237
+        },
+        {
+          "gameId": 614392732,
+          "beatmapId": 4052151
+        },
+        {
+          "gameId": 614393213,
+          "beatmapId": 4530104
+        },
+        {
+          "gameId": 614394061,
+          "beatmapId": 4630925
+        },
+        {
+          "gameId": 614394514,
+          "beatmapId": 4487658
+        },
+        {
+          "gameId": 614394786,
+          "beatmapId": 4487658
+        },
+        {
+          "gameId": 614390500,
+          "beatmapId": 4919642
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 8
+      }
+    },
+    {
+      "matchId": "match-19",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117700157",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 1,
+      "matchedUniqueBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      },
+      "games": [
+        {
+          "gameId": 614758526,
+          "beatmapId": 4993143
+        },
+        {
+          "gameId": 614759071,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614759699,
+          "beatmapId": 5036455
+        },
+        {
+          "gameId": 614760482,
+          "beatmapId": 4630925
+        },
+        {
+          "gameId": 614761005,
+          "beatmapId": 4919642
+        },
+        {
+          "gameId": 614761651,
+          "beatmapId": 4530104
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 6
+      }
+    },
+    {
+      "matchId": "match-20",
+      "mpUrl": "https://osu.ppy.sh/community/matches/117712200",
+      "poolId": "gs2",
+      "complete": true,
+      "pages": 3,
+      "matchedUniqueBeatmaps": {
+        "gs1": 1,
+        "gs2": 11
+      },
+      "games": [
+        {
+          "gameId": 614839656,
+          "beatmapId": 3230925
+        },
+        {
+          "gameId": 614840100,
+          "beatmapId": 4919642
+        },
+        {
+          "gameId": 614840860,
+          "beatmapId": 4306595
+        },
+        {
+          "gameId": 614841551,
+          "beatmapId": 2297237
+        },
+        {
+          "gameId": 614842340,
+          "beatmapId": 3383612
+        },
+        {
+          "gameId": 614837064,
+          "beatmapId": 5015365
+        },
+        {
+          "gameId": 614837663,
+          "beatmapId": 4630925
+        },
+        {
+          "gameId": 614838239,
+          "beatmapId": 4655439
+        },
+        {
+          "gameId": 614838789,
+          "beatmapId": 4898574
+        },
+        {
+          "gameId": 614839172,
+          "beatmapId": 5036455
+        },
+        {
+          "gameId": 614836600,
+          "beatmapId": 4052151
+        }
+      ],
+      "exclusiveBeatmaps": {
+        "gs1": 0,
+        "gs2": 10
+      }
+    }
+  ]
+}

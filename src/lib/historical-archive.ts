@@ -97,6 +97,7 @@ export const historicalArchiveSchema = z
             id: key,
             label: text,
             stage: text,
+            poolId: key.nullable().optional(),
             teamA: key,
             teamB: key,
             scheduledAt: z.iso.datetime({ offset: true }).nullable(),
@@ -201,6 +202,13 @@ export const historicalArchiveSchema = z
       archive.standings.map((s) => s.teamId),
       "standing team",
     );
+    for (const match of archive.matches) {
+      if (
+        match.poolId &&
+        !archive.pools.some((pool) => pool.id === match.poolId)
+      )
+        issue("Unknown match pool reference.");
+    }
     const teams = new Set(archive.teams.map((t) => t.id));
     const team = (id: string) => {
       if (!teams.has(id)) issue("Unknown team reference.");

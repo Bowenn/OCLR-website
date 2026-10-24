@@ -1,3 +1,4 @@
+import { archiveMatchPool } from "./archive-match-pool";
 import { formatDate } from "./editions";
 import {
   archiveWinner,
@@ -14,27 +15,31 @@ export function archiveEventMatches(
   timeZone: string,
   locale: string,
 ): EventMatch[] {
-  return matches.map((m) => ({
-    id: m.id,
-    label: m.label,
-    round: m.stage,
-    stage: m.stage,
-    pool: "—",
-    time: m.scheduledAt ? formatDate(m.scheduledAt, timeZone, locale) : "—",
-    red: archive.teams.find((t) => t.id === m.teamA)!.name,
-    blue: archive.teams.find((t) => t.id === m.teamB)!.name,
-    redHref: href("teams", m.teamA),
-    blueHref: href("teams", m.teamB),
-    score: m.score,
-    winner: archiveWinner(m),
-    forfeit: m.forfeitWinner !== undefined,
-    recorded: recordedArchiveMatch(m),
-    redBan: m.bansA ?? undefined,
-    blueBan: m.bansB ?? undefined,
-    mps: m.mpUrls,
-    vod: m.vodUrl ?? undefined,
-    referee: m.referee ?? undefined,
-    streamer: m.streamer ?? undefined,
-    href: href("matches", m.id),
-  }));
+  return matches.map((m) => {
+    const pool = archiveMatchPool(archive, m);
+    return {
+      id: m.id,
+      label: m.label,
+      round: m.stage,
+      stage: m.stage,
+      pool: pool?.name ?? "—",
+      poolHref: pool ? href("mappools", pool.id) : undefined,
+      time: m.scheduledAt ? formatDate(m.scheduledAt, timeZone, locale) : "—",
+      red: archive.teams.find((t) => t.id === m.teamA)!.name,
+      blue: archive.teams.find((t) => t.id === m.teamB)!.name,
+      redHref: href("teams", m.teamA),
+      blueHref: href("teams", m.teamB),
+      score: m.score,
+      winner: archiveWinner(m),
+      forfeit: m.forfeitWinner !== undefined,
+      recorded: recordedArchiveMatch(m),
+      redBan: m.bansA ?? undefined,
+      blueBan: m.bansB ?? undefined,
+      mps: m.mpUrls,
+      vod: m.vodUrl ?? undefined,
+      referee: m.referee ?? undefined,
+      streamer: m.streamer ?? undefined,
+      href: href("matches", m.id),
+    };
+  });
 }
