@@ -4929,3 +4929,33 @@ body:has([data-broadcast]) .site-shell {
     font-size: 1.3rem;
   }
 }
+
+.manual-batch-dialog {
+  width: min(760px, calc(100% - 24px));
+  max-width: calc(100% - 24px);
+}
+.manual-batch-rows {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+.manual-batch-row {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+}
+.manual-batch-dialog code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.manual-batch-row a,
+.manual-batch-row p,
+.manual-batch-row span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.manual-batch-row .registration-player > div {
+  min-width: 0;
+}
