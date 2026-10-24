@@ -1,3 +1,4 @@
+import { archiveStaff } from "@/lib/archive-staff";
 import { archiveArtworkSetIds } from "@/lib/archive-artwork";
 import { deriveS8Standings } from "@/lib/s8-standings";
 import Link from "next/link";
@@ -308,7 +309,7 @@ export async function HistoricalArchiveView({
   } else if (section === "staff") {
     title = tr("Staff");
     const groups = new Map<string, HistoricalArchive["staff"]>();
-    for (const person of a.staff) {
+    for (const person of archiveStaff(a)) {
       const members = groups.get(person.position) ?? [];
       members.push(person);
       groups.set(person.position, members);
@@ -317,7 +318,15 @@ export async function HistoricalArchiveView({
       <div className="archive-staff stack">
         {Array.from(groups, ([position, members]) => (
           <section key={position}>
-            <h2>{position}</h2>
+            <h2>
+              {position === "Referee"
+                ? tr("Referee")
+                : position === "Streamer"
+                  ? tr("Streamer")
+                  : position === "Commentators"
+                    ? tr("Commentators")
+                    : position}
+            </h2>
             <ul className="public-staff-list">
               {members.map((person, index) => (
                 <li key={`${person.osuId}-${index}`}>
