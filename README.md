@@ -50,3 +50,8 @@ Artwork and tournament dates shown in [design references](docs/design/) are exam
 ## Contributors
 
 - [qi_e](https://osu.ppy.sh/users/6963321/osu)
+
+## Collaborators
+
+- [Sonoaoi](https://osu.ppy.sh/users/9755808)
+- [Tensorera](https://osu.ppy.sh/users/19204569)
