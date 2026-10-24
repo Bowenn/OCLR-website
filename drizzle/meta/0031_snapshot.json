@@ -1,5 +1,5 @@
 {
-  "id": "974b15c7-1d1f-4d89-87dd-edb9667da160",
+  "id": "d7440be6-21a0-4603-988f-07d46398e551",
   "prevId": "8d2f341f-5127-4c64-8abc-5824634a2082",
   "version": "7",
   "dialect": "postgresql",
@@ -898,6 +898,123 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.fixture_streams": {
+      "name": "fixture_streams",
+      "schema": "",
+      "columns": {
+        "fixture_id": {
+          "name": "fixture_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_by": {
+          "name": "assigned_by",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "confirmed_scheduled_at": {
+          "name": "confirmed_scheduled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_time_zone": {
+          "name": "confirmed_time_zone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fixture_streams_user_idx": {
+          "name": "fixture_streams_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fixture_streams_fixture_id_fixtures_id_fk": {
+          "name": "fixture_streams_fixture_id_fixtures_id_fk",
+          "tableFrom": "fixture_streams",
+          "tableTo": "fixtures",
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fixture_streams_user_id_users_osu_id_fk": {
+          "name": "fixture_streams_user_id_users_osu_id_fk",
+          "tableFrom": "fixture_streams",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fixture_streams_assigned_by_users_osu_id_fk": {
+          "name": "fixture_streams_assigned_by_users_osu_id_fk",
+          "tableFrom": "fixture_streams",
+          "tableTo": "users",
+          "columnsFrom": [
+            "assigned_by"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "fixture_streams_source": {
+          "name": "fixture_streams_source",
+          "value": "\"fixture_streams\".\"source\" IN ('self', 'staff')"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.fixtures": {
       "name": "fixtures",
       "schema": "",
@@ -1003,6 +1120,13 @@
         },
         "assignment_revision": {
           "name": "assignment_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "stream_revision": {
+          "name": "stream_revision",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -3887,166 +4011,6 @@
         }
       },
       "isRLSEnabled": false
-    },
-    "public.player_messages": {
-      "name": "player_messages",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "edition_slug": {
-          "name": "edition_slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "player_id": {
-          "name": "player_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "author_id": {
-          "name": "author_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "request_id": {
-          "name": "request_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "body": {
-          "name": "body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "player_messages_target_idx": {
-          "name": "player_messages_target_idx",
-          "columns": [
-            {
-              "expression": "edition_slug",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "player_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "player_messages_author_time_idx": {
-          "name": "player_messages_author_time_idx",
-          "columns": [
-            {
-              "expression": "author_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "player_messages_edition_slug_edition_state_slug_fk": {
-          "name": "player_messages_edition_slug_edition_state_slug_fk",
-          "tableFrom": "player_messages",
-          "tableTo": "edition_state",
-          "columnsFrom": [
-            "edition_slug"
-          ],
-          "columnsTo": [
-            "slug"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "player_messages_player_id_users_osu_id_fk": {
-          "name": "player_messages_player_id_users_osu_id_fk",
-          "tableFrom": "player_messages",
-          "tableTo": "users",
-          "columnsFrom": [
-            "player_id"
-          ],
-          "columnsTo": [
-            "osu_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "player_messages_author_id_users_osu_id_fk": {
-          "name": "player_messages_author_id_users_osu_id_fk",
-          "tableFrom": "player_messages",
-          "tableTo": "users",
-          "columnsFrom": [
-            "author_id"
-          ],
-          "columnsTo": [
-            "osu_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "player_messages_author_request_unique": {
-          "name": "player_messages_author_request_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "author_id",
-            "request_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "player_messages_body_length": {
-          "name": "player_messages_body_length",
-          "value": "char_length(btrim(\"player_messages\".\"body\")) BETWEEN 1 AND 1000"
-        }
-      },
-      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -4118,7 +4082,8 @@
         "admin",
         "mappooler",
         "referee",
-        "developer"
+        "developer",
+        "streamer"
       ]
     },
     "public.stage_kind": {
