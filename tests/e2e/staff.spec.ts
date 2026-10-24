@@ -1,9 +1,13 @@
 import { englishStorage } from "../fixtures/preferences";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 import { seedSession } from "./session";
 import { db, closeDb } from "../../src/db";
-import { registrations } from "../../src/db/schema";
+import { registrations, userProfileCache } from "../../src/db/schema";
+import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
+import { profileResponse } from "../fixtures/osu-profile";
+import { csv as serializeCsv } from "../../src/lib/csv";
 test.describe("staff registration review", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(async () => closeDb());
@@ -17,6 +21,34 @@ test.describe("staff registration review", () => {
     const playerId = staffId + 1;
     const staffCookie = await seedSession(staffId);
     const playerCookie = await seedSession(playerId);
+    const fetchedAt = new Date().toISOString();
+    const profile = normalizeOsuProfile(
+      {
+        ...profileResponse,
+        id: playerId,
+        username: `Synthetic Player ${playerId}`,
+      },
+      playerId,
+      "osu",
+      fetchedAt,
+    );
+    await db()
+      .insert(userProfileCache)
+      .values({
+        osuId: playerId,
+        mode: "osu",
+        profile,
+        attemptedAt: new Date(),
+        retryAt: new Date(Date.now() + 3600000),
+      })
+      .onConflictDoUpdate({
+        target: [userProfileCache.osuId, userProfileCache.mode],
+        set: {
+          profile,
+          errorStatus: null,
+          retryAt: new Date(Date.now() + 3600000),
+        },
+      });
     const [record] = await db()
       .insert(registrations)
       .values({
@@ -114,6 +146,57 @@ test.describe("staff registration review", () => {
     expect(content).toContain("accepted");
     expect(content).toContain("Application answers");
     expect(content).toContain("private [private]: Private test answer");
+    const expectedCsv = serializeCsv([
+      [
+        "osu! ID",
+        "Username",
+        "Edition",
+        "Status",
+        "Submitted at (UTC)",
+        "Application answers",
+        "Global rank (osu!standard)",
+        "PP (osu!standard)",
+        "Statistics fetched at (UTC)",
+        "Statistics status",
+      ],
+      [
+        playerId,
+        `Synthetic Player ${playerId}`,
+        "test-cup",
+        "accepted",
+        record.createdAt.toISOString(),
+        "private [private]: Private test answer",
+        12345,
+        1234.56,
+        fetchedAt,
+        "fresh",
+      ],
+    ]);
+    expect(content).toBe(expectedCsv);
+    expect(csv.headers()["cache-control"]).toBe("no-store");
+    expect(csv.headers()["x-content-type-options"]).toBe("nosniff");
+    for (const path of [
+      "/admin/registrations",
+      "/admin/tournaments/test-cup/registrations",
+    ]) {
+      await page.goto(`${path}?q=${playerId}`);
+      const downloadPromise = page.waitForEvent("download");
+      await page.locator('a[href^="/api/admin/registrations/export?"]').click();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toBe("oclr-registrations.csv");
+      expect(await readFile((await download.path())!, "utf8")).toBe(
+        expectedCsv,
+      );
+    }
+    for (const locale of ["zh-Hans", "zh-Hant", "en"]) {
+      await context.addCookies([
+        { name: "oclr-locale", value: locale, url: "http://127.0.0.1:3100" },
+      ]);
+      const localized = await context.request.get(
+        `/api/admin/registrations/export?q=${playerId}`,
+      );
+      expect(await localized.text()).toBe(content);
+    }
     const own = await other.request.get(
       "http://127.0.0.1:3100/api/registrations",
     );

@@ -17,6 +17,10 @@ export async function GET(request: NextRequest) {
         "Status",
         "Submitted at (UTC)",
         "Application answers",
+        "Global rank (osu!standard)",
+        "PP (osu!standard)",
+        "Statistics fetched at (UTC)",
+        "Statistics status",
       ],
       ...rows.map((r) => [
         r.userId,
@@ -25,6 +29,10 @@ export async function GET(request: NextRequest) {
         r.status,
         r.createdAt.toISOString(),
         r.applicationAnswers,
+        r.statistics?.globalRank ?? "",
+        r.statistics?.pp ?? "",
+        r.statistics?.fetchedAt ?? "",
+        r.statistics?.status ?? "unavailable",
       ]),
     ]);
     return new NextResponse(body, {

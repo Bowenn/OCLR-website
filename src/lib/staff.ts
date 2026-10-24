@@ -29,6 +29,7 @@ import {
 } from "./registrations";
 import { applicationAnswers } from "./application-answers";
 import type { EditionConfiguration } from "./editions";
+import { cachedExportStatistics } from "./osu-profiles";
 const filterSchema = z
   .object({
     q: z.string().trim().max(100).default(""),
@@ -114,6 +115,9 @@ export async function listApplications(
 export async function exportApplications(actor: User, input: unknown) {
   const { rows } = await listApplications(actor, input, true);
   if (!rows.length) return [];
+  const statistics = await cachedExportStatistics(
+    rows.map((row) => row.userId),
+  );
   const snapshots = await db()
     .select({
       id: registrations.id,
@@ -167,6 +171,7 @@ export async function exportApplications(actor: User, input: unknown) {
     const snapshot = byId.get(row.id);
     return {
       ...row,
+      statistics: statistics.get(row.userId) ?? null,
       applicationAnswers: snapshot
         ? applicationAnswers(
             snapshot.answers,
