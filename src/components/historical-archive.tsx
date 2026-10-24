@@ -1,3 +1,4 @@
+import { archiveKeyVisual } from "@/lib/archive-key-visual";
 import { archiveArtworkSetIds } from "@/lib/archive-artwork";
 import { deriveS8Standings } from "@/lib/s8-standings";
 import Link from "next/link";
@@ -245,25 +246,19 @@ export async function HistoricalArchiveView({
   let title = edition.name;
   if (section === "overview") {
     const counts = archiveCounts(a);
+    const visual = archiveKeyVisual(a, edition.branding.keyVisual);
     content = (
       <>
-        {edition.branding.keyVisual && (
-          <Image
-            className="edition-key-visual"
-            src={edition.branding.keyVisual}
-            alt={tr("{value0} key visual", { value0: edition.name })}
-            width={
-              edition.branding.keyVisual === "/archive/s7/key-visual.jpg"
-                ? 1920
-                : 1672
-            }
-            height={
-              edition.branding.keyVisual === "/archive/s7/key-visual.jpg"
-                ? 1080
-                : 941
-            }
-            unoptimized
-          />
+        {visual && (
+          <div className="archive-key-visual">
+            <Image
+              src={visual.src}
+              alt={tr("{value0} key visual", { value0: edition.name })}
+              width={visual.width}
+              height={visual.height}
+              unoptimized
+            />
+          </div>
         )}
         <dl className="archive-counts">
           {[
