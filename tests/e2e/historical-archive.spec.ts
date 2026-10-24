@@ -121,7 +121,7 @@ test.describe("historical archive browser workflow", () => {
       `/admin/tournaments/${slug}/archive/preview?section=schedule`,
     );
     await page.getByRole("button", { name: /Unconfirmed records/ }).click();
-    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await expect(
       page.getByText("Unconfirmed alternative", { exact: true }),
     ).toBeVisible();
@@ -273,15 +273,15 @@ test.describe("historical archive browser workflow", () => {
       "https://osu.ppy.sh/community/matches/123456",
     );
     await page.goto(`/tournaments/${slug}/schedule`);
-    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await expect(
       page.getByRole("button", { name: /Unconfirmed records/ }),
     ).toHaveCount(0);
     await expect(
       page.getByText("Unconfirmed alternative", { exact: true }),
     ).toHaveCount(0);
-    await page.getByLabel("Stage", { exact: true }).selectOption("Final");
-    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await page.getByLabel("Rounds", { exact: true }).selectOption("Final");
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await captureResponsiveLayout(page, info, "archive-matches");
     await page.goto(`/tournaments/${slug}/draft`);
     await expect(
@@ -424,7 +424,9 @@ test.describe("historical archive browser workflow", () => {
         ]) {
           await page.goto(`/tournaments/${slug}/${path}`);
           if (path === "schedule") {
-            await expect(page.locator(".archive-match")).toHaveCount(22);
+            await expect(page.locator(".event-matches tbody tr")).toHaveCount(
+              22,
+            );
             await expect(
               page.getByRole("button", { name: /Unconfirmed records/ }),
             ).toHaveCount(0);

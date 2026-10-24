@@ -6,7 +6,8 @@ import { notFound, redirect } from "next/navigation";
 import { ArchivePlayerSearch } from "./archive-player-search";
 import { ArchiveMappools } from "./archive-mappools";
 import { Avatar } from "./avatar";
-import { ArchiveMatchList } from "./archive-match-list";
+import { EventSchedule } from "./event-schedule";
+import { archiveEventMatches } from "@/lib/archive-event-matches";
 import { BracketView } from "./bracket-view";
 import { archiveBracket } from "@/lib/archive-bracket";
 import { getAppTranslations } from "@/i18n/server";
@@ -391,15 +392,21 @@ export async function HistoricalArchiveView({
       section === "match" ? (
         match(matches[0])
       ) : (
-        <ArchiveMatchList
+        <EventSchedule
+          edition={edition.slug}
+          heading={false}
           reviewMode={preview}
-          recordedOnly={section === "results"}
-          matches={matches.map((m) => ({
-            id: m.id,
-            stage: m.stage,
-            recorded: recordedArchiveMatch(m),
-            content: match(m),
+          phases={[...new Set(matches.map((m) => m.stage))].map((stage) => ({
+            id: stage,
+            label: stage,
           }))}
+          matches={archiveEventMatches(
+            a,
+            matches,
+            href,
+            edition.timeZone,
+            tr.locale,
+          )}
         />
       );
   } else if (section === "mappools" || section === "pool") {

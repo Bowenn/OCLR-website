@@ -8,15 +8,31 @@ export function EventSchedule({
   matches,
   groups = [],
   edition,
+  phases,
+  heading = true,
+  timeZone = "UTC+8",
+  reviewMode = false,
 }: {
   matches: EventMatch[];
   groups?: PublicGroup[];
   edition: string;
+  phases?: { id: string; label: string }[];
+  heading?: boolean;
+  timeZone?: string;
+  reviewMode?: boolean;
 }) {
   const tr = useAppTranslations();
-  const [phase, setPhase] = useState("group");
+  const phaseOptions = phases ?? [
+    { id: "group", label: tr("Group stage / Swiss") },
+    { id: "knockout", label: tr("Double elimination") },
+  ];
+  const [phase, setPhase] = useState(phaseOptions[0]?.id ?? "");
+  const [status, setStatus] = useState("all");
+  const listed = matches.filter(
+    (m) => status === "all" || m.recorded === (status === "recorded"),
+  );
   const [filter, setFilter] = useState("");
-  const selected = matches.filter((m) => m.stage === phase);
+  const selected = listed.filter((m) => m.stage === phase);
   const rounds = [...new Set(selected.map((m) => m.round))];
   const positions: Record<string, [number, number]> = {
     W1: [20, 56],
@@ -66,7 +82,7 @@ export function EventSchedule({
     return (
       <article className="event-match-card" id={`match-${m.id}`} key={m.id}>
         <header>
-          <a href={`#row-${m.id}`}>#{m.id}</a>
+          <a href={m.href ?? `#row-${m.id}`}>{m.label ?? `#${m.id}`}</a>
           {m.status === "cancelled" ? (
             <span>{tr("Cancelled")}</span>
           ) : (
@@ -74,10 +90,29 @@ export function EventSchedule({
           )}
         </header>
         {[m.red, m.blue].map((name, i) => (
-          <div className="event-match-side" key={i}>
+          <div
+            className="event-match-side"
+            key={i}
+            data-winner={m.winner === i || undefined}
+          >
             <span>{i + 1}</span>
-            <strong>{name}</strong>
-            <b>{m.score?.[i] ?? "—"}</b>
+            <strong>
+              {(i === 0 ? m.redHref : m.blueHref) ? (
+                <a href={i === 0 ? m.redHref : m.blueHref}>{name}</a>
+              ) : (
+                name
+              )}
+              {m.winner === i && (
+                <span className="sr-only">{tr(" (winner)")}</span>
+              )}
+            </strong>
+            <b>
+              {m.forfeit
+                ? m.winner === i
+                  ? tr("Winner")
+                  : tr("Forfeit")
+                : (m.score?.[i] ?? "—")}
+            </b>
           </div>
         ))}
         {(m.sourceRed || m.sourceBlue) && (
@@ -90,23 +125,32 @@ export function EventSchedule({
   }
   return (
     <div className="event-schedule">
-      <div className="event-section-heading">
-        <h1>{tr("Schedule")}</h1>
-        <span>{"UTC+8"}</span>
-      </div>
-      <div className="event-tabs">
-        <button
-          aria-pressed={phase === "group"}
-          onClick={() => setPhase("group")}
-        >
-          {tr("Group stage / Swiss")}
-        </button>
-        <button
-          aria-pressed={phase === "knockout"}
-          onClick={() => setPhase("knockout")}
-        >
-          {tr("Double elimination")}
-        </button>
+      {heading && (
+        <div className="event-section-heading">
+          <h1>{tr("Schedule")}</h1>
+          <span>{timeZone}</span>
+        </div>
+      )}
+      {reviewMode && (
+        <label>
+          {tr("Match status")}
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="all">{tr("All matches")}</option>
+            <option value="recorded">{tr("Recorded results")}</option>
+            <option value="unconfirmed">{tr("Unconfirmed records")}</option>
+          </select>
+        </label>
+      )}
+      <div className="event-tabs" role="group" aria-label={tr("Stage")}>
+        {phaseOptions.map((option) => (
+          <button
+            key={option.id}
+            aria-pressed={phase === option.id}
+            onClick={() => setPhase(option.id)}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
       <div
         className="event-bracket-scroll"
@@ -114,7 +158,9 @@ export function EventSchedule({
         role="region"
         aria-label={tr("Bracket")}
       >
-        {structured ? (
+        {!selected.length ? (
+          <p className="muted">{tr("No matches in this view.")}</p>
+        ) : structured ? (
           <div
             className="event-knockout"
             style={{ minWidth: chartWidth, height: chartHeight }}
@@ -253,7 +299,7 @@ export function EventSchedule({
               </tr>
             </thead>
             <tbody>
-              {matches
+              {listed
                 .filter((m) => !filter || m.round === filter)
                 .map((m) => (
                   <tr key={m.id} id={`row-${m.id}`} data-status={m.status}>
@@ -268,18 +314,26 @@ export function EventSchedule({
                           if (!m.href) setPhase(m.stage);
                         }}
                       >
-                        #{m.id}
+                        {m.label ?? `#${m.id}`}
                       </a>
                       <small>{m.time}</small>
                       {m.status === "cancelled" && (
                         <small>{tr("Cancelled")}</small>
                       )}
                     </td>
-                    <td>{m.red}</td>
-                    <td className="event-score">
-                      {m.score ? m.score.join(" : ") : "—"}
+                    <td>
+                      {m.redHref ? <a href={m.redHref}>{m.red}</a> : m.red}
                     </td>
-                    <td>{m.blue}</td>
+                    <td className="event-score">
+                      {m.forfeit
+                        ? tr("Forfeit")
+                        : m.score
+                          ? m.score.join(" : ")
+                          : "—"}
+                    </td>
+                    <td>
+                      {m.blueHref ? <a href={m.blueHref}>{m.blue}</a> : m.blue}
+                    </td>
                     <td>
                       {m.first
                         ? tr(m.first === "red" ? "Red team" : "Blue team")
@@ -288,13 +342,20 @@ export function EventSchedule({
                     <td>{m.redBan ?? "—"}</td>
                     <td>{m.blueBan ?? "—"}</td>
                     <td>
-                      {m.mp ? (
-                        <a href={m.mp} target="_blank" rel="noreferrer">
-                          {m.mp.split("/").at(-1)} ↗
-                        </a>
-                      ) : (
-                        "—"
-                      )}
+                      {(m.mps ?? (m.mp ? [m.mp] : [])).length
+                        ? (m.mps ?? [m.mp!]).map((url, index) => (
+                            <a
+                              key={url}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {m.mps
+                                ? `MP ${index + 1}`
+                                : `${url.split("/").at(-1)} ↗`}{" "}
+                            </a>
+                          ))
+                        : "—"}
                     </td>
                     <td>
                       {m.vod ? (
