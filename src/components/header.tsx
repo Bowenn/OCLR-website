@@ -198,12 +198,6 @@ function AccountControl({
     </div>
   );
 }
-const links = [
-  ["/", "Home"],
-  ["/tournaments", "Tournaments"],
-  ["/news", "News"],
-  ["/about", "About"],
-] as const;
 export function Header({
   user,
   theme,
@@ -219,6 +213,12 @@ export function Header({
 }) {
   const tr = useAppTranslations();
 
+  const links = [
+    { href: "/", label: tr("navigation_home") },
+    { href: "/news", label: tr("Tournament news") },
+    { href: null, label: tr("OCLR Wiki") },
+    { href: "/about", label: tr("Organizers") },
+  ];
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
@@ -240,24 +240,35 @@ export function Header({
           aria-label={tr("Main navigation")}
           className={open ? "main-nav open" : "main-nav"}
         >
-          {links.map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={
-                (
-                  href === "/"
-                    ? path === "/"
-                    : path === href || path.startsWith(`${href}/`)
-                )
-                  ? "page"
-                  : undefined
-              }
-              onClick={() => setOpen(false)}
-            >
-              {tr(href === "/" ? "navigation_home" : label)}
-            </Link>
-          ))}
+          {links.map(({ href, label }) =>
+            href === null ? (
+              <a
+                key={label}
+                role="link"
+                aria-disabled="true"
+                className="nav-unavailable"
+              >
+                {label}
+              </a>
+            ) : (
+              <Link
+                key={href}
+                href={href}
+                aria-current={
+                  (
+                    href === "/"
+                      ? path === "/"
+                      : path === href || path.startsWith(`${href}/`)
+                  )
+                    ? "page"
+                    : undefined
+                }
+                onClick={() => setOpen(false)}
+              >
+                {label}
+              </Link>
+            ),
+          )}
         </nav>
         <div className="site-preferences">
           <AppearanceControl

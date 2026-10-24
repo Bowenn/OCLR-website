@@ -1878,3 +1878,11 @@ html[data-theme="dark"] .brand .oclr-wordmark {
   border-bottom-color: var(--site-accent);
   color: var(--site-accent);
 }
+
+.themed-site .main-nav > .nav-unavailable,
+.themed-site .main-nav > .nav-unavailable:hover {
+  color: var(--site-muted);
+  cursor: default;
+  border-color: transparent;
+  transform: none;
+}
