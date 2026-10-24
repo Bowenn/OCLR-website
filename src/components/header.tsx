@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar } from "./avatar";
-import { OclrLogo } from "./oclr-logo";
+import { OclLogo } from "./oclr-logo";
 import { ThemeControl } from "./theme-control";
 import type { Theme, Appearance } from "@/lib/preferences";
 import { AppearanceControl } from "./appearance-control";
@@ -224,8 +224,8 @@ export function Header({
   return (
     <header className="site-header">
       <div className="nav-wrap">
-        <Link href="/" className="brand" aria-label={tr("OCLR home")}>
-          <OclrLogo />
+        <Link href="/" className="brand" aria-label={tr("OCL home")}>
+          <OclLogo />
         </Link>
         <button
           className="menu-toggle secondary"

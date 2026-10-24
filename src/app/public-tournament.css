@@ -1470,9 +1470,9 @@ html[data-theme="dark"] .themed-site {
 }
 .brand .oclr-wordmark {
   display: block;
-  width: 132px;
+  width: 100px;
   height: auto;
-  aspect-ratio: 1465 / 430;
+  aspect-ratio: 1105 / 430;
   flex-shrink: 0;
   --oclr-letter-top: #573446;
   --oclr-letter-mid: #794267;
@@ -1487,7 +1487,7 @@ html[data-theme="dark"] .brand .oclr-wordmark {
 }
 @media (max-width: 400px) {
   .brand .oclr-wordmark {
-    width: 112px;
+    width: 85px;
   }
 }
 
