@@ -247,6 +247,8 @@ test.describe("historical archive browser workflow", () => {
       `/tournaments/${slug}/staff`,
     );
     await staffLink.click();
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
     await expect(staffLink).toHaveAttribute("aria-current", "page");
     await expect(page.locator(".archive-staff")).toContainText(
       "Historical Host",
