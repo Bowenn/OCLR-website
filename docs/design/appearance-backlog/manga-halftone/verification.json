@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-24",
+  "scope": "Offline CSS specimens/provenance only; not production appearance integration",
+  "browser": "Headless Google Chrome",
+  "evidence": [
+    {
+      "style": "manga-halftone",
+      "sourceHash": "6c1c5fb8cd9cb8dc5fbb64723a6e8a9733d13321be908654069f1bbb95e6bc27",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    }
+  ],
+  "cases": [
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    }
+  ],
+  "fallbacks": [
+    {
+      "style": "manga-halftone",
+      "forcedColors": "passed"
+    }
+  ],
+  "errors": []
+}

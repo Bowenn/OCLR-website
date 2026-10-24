@@ -1,0 +1,15 @@
+.F{background:#fff;color:#111;font-family:"Noto Sans TC",sans-serif;font-weight:500;border:3px solid #111}
+.F .nv{border-bottom:3px solid #111;background:linear-gradient(90deg,#fff 45%,rgba(255,255,255,0)),radial-gradient(circle,#ff4f9a 1.5px,transparent 1.8px) 0 0/8px 8px}
+.F .nv b{font:400 24px Bangers;letter-spacing:.05em}
+.F .nv .on{background:#111;color:#fff;padding:0 10px}
+.F .se{border:3px solid #111;position:relative;background:#fff;overflow:hidden}
+.F .se::after{content:"";position:absolute;right:0;top:0;width:120px;height:100px;background:radial-gradient(circle,#ff4f9a 2px,transparent 2.4px) 0 0/9px 9px;-webkit-mask:linear-gradient(225deg,#000,transparent 70%);mask:linear-gradient(225deg,#000,transparent 70%);pointer-events:none}
+.F .se::before{content:"";position:absolute;left:0;right:0;bottom:0;height:40px;background:repeating-linear-gradient(100deg,#111 0 1.5px,transparent 1.5px 9px);-webkit-mask:linear-gradient(0deg,#000,transparent);mask:linear-gradient(0deg,#000,transparent);opacity:.3;pointer-events:none}
+.F .tag{display:inline-block;position:relative;background:#fff;border:3px solid #111;border-radius:99px;padding:0 14px;font-weight:700;margin-bottom:10px}
+.F .tag::after{content:"";position:absolute;left:16px;bottom:-9px;width:10px;height:10px;background:#fff;border-right:3px solid #111;border-bottom:3px solid #111;transform:rotate(45deg)}
+.F h4{font:400 50px/1 Bangers!important;letter-spacing:.03em}
+.F .bar{border:3px solid #111;height:16px;background:#fff}.F .bar i{background:#ff4f9a;border-right:3px solid #111}
+.F .bt{background:#111;color:#fff;padding:8px 22px;transform:rotate(-2deg)}
+.F .tb span{border:3px solid #111;background:#fff;padding:0 12px;font-weight:700}.F .tb .on{background:#ff4f9a}
+.F .mp{border:3px solid #111;background:#fff}.F .mp em{background:#111;color:#fff;font:400 26px Bangers;padding:0 16px}
+.F .st u{border:2px solid #111;padding:0 8px}
