@@ -16,6 +16,7 @@ type RuleFigure = {
   height: number;
 };
 type RuleSection = {
+  id?: string;
   heading: string;
   body: string;
   figures?: RuleFigure[];
@@ -77,10 +78,10 @@ export function RulesHandbook({
 }) {
   const tr = useAppTranslations();
 
-  const ids = useMemo(
-    () => rulesSectionIds(sections.map((s) => s.heading)),
-    [sections],
-  );
+  const ids = useMemo(() => {
+    const generated = rulesSectionIds(sections.map((s) => s.heading));
+    return sections.map((section, index) => section.id ?? generated[index]);
+  }, [sections]);
   const [active, setActive] = useState(ids[0]);
   useEffect(() => {
     const visible = new Set<string>();

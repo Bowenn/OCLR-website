@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RulesHandbook } from "./rules-handbook";
 import { TournamentStageScroll } from "@/components/tournament-stage-scroll";
 import type { TournamentStage } from "@/lib/tournament-stages";
 import Image from "next/image";
@@ -29,10 +30,6 @@ export async function InformationDocument({
       ? [{ id: "schedule", title: tr("Tournament schedule") }]
       : []),
     ...(document.prizes.length ? [{ id: "prizes", title: tr("Prizes") }] : []),
-    ...(document.organization.length
-      ? [{ id: "organization", title: tr("Organisation") }]
-      : []),
-    ...(document.links.length ? [{ id: "links", title: tr("Links") }] : []),
     ...(document.teams.length
       ? [{ id: "participants", title: tr("Participants") }]
       : []),
@@ -45,41 +42,42 @@ export async function InformationDocument({
   ];
   return (
     <div className="information-page">
+      <header className="information-heading">
+        <p className="eyebrow">{"osu! Chinese League Rookie"}</p>
+        <h1 id="information-title">{document.name}</h1>
+      </header>
+      {document.banner && (
+        <div className="information-banner">
+          <Image
+            src={document.banner}
+            alt=""
+            width={2560}
+            height={1200}
+            sizes="(max-width: 900px) 100vw, 1000px"
+            unoptimized
+          />
+          <span>{document.name}</span>
+        </div>
+      )}
+      <TournamentStageScroll
+        stages={stages ?? [{ ...active, id: "active", state: "current" }]}
+        labels={{
+          title: tr("Tournament stages"),
+          previous: tr("Scroll to earlier stages"),
+          next: tr("Scroll to later stages"),
+          current: tr("Current phase"),
+          past: tr("Earlier"),
+          upcoming: tr("Upcoming"),
+          planned: tr("Planned"),
+        }}
+      />
+
       <div className="information-layout">
         <article
           className="information-document document-typeset"
           data-handbook=""
           aria-labelledby="information-title"
         >
-          <header className="information-heading">
-            <p className="eyebrow">{"osu! Chinese League Rookie"}</p>
-            <h1 id="information-title">{document.name}</h1>
-          </header>
-          {document.banner && (
-            <div className="information-banner">
-              <Image
-                src={document.banner}
-                alt=""
-                width={2560}
-                height={1200}
-                sizes="(max-width: 900px) 100vw, 1000px"
-                unoptimized
-              />
-              <span>{document.name}</span>
-            </div>
-          )}
-          <TournamentStageScroll
-            stages={stages ?? [{ ...active, id: "active", state: "current" }]}
-            labels={{
-              title: tr("Tournament stages"),
-              previous: tr("Scroll to earlier stages"),
-              next: tr("Scroll to later stages"),
-              current: tr("Current phase"),
-              past: tr("Earlier"),
-              upcoming: tr("Upcoming"),
-              planned: tr("Planned"),
-            }}
-          />
           {document.intro && (
             <p className="information-intro">{document.intro}</p>
           )}
@@ -137,58 +135,6 @@ export async function InformationDocument({
                   </tbody>
                 </table>
               </div>
-            </section>
-          )}
-          {document.organization.length > 0 && (
-            <section id="organization">
-              <h2>{tr("Organisation")}</h2>
-              <div className="information-table-scroll" tabIndex={0}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">{tr("Position")}</th>
-                      <th scope="col">{tr("Members")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {document.organization.map((row, i) => (
-                      <tr key={i}>
-                        <td>{row.role}</td>
-                        <td>
-                          {row.members.map((person, j) => (
-                            <span key={person.name}>
-                              {j > 0 && (
-                                <span className="information-name-separator">
-                                  {" / "}
-                                </span>
-                              )}
-                              {person.href ? (
-                                <a href={person.href}>{person.name}</a>
-                              ) : (
-                                <span className="information-name">
-                                  {person.name}
-                                </span>
-                              )}
-                            </span>
-                          ))}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          )}
-          {document.links.length > 0 && (
-            <section id="links">
-              <h2>{tr("Links")}</h2>
-              <ul className="information-links">
-                {document.links.map((link) => (
-                  <li key={link.href}>
-                    <a href={link.href}>{link.label}</a>
-                  </li>
-                ))}
-              </ul>
             </section>
           )}
           {document.teams.length > 0 && (
@@ -257,21 +203,6 @@ export async function InformationDocument({
               ))}
             </section>
           )}
-          {document.rules.length > 0 && (
-            <section id="rules">
-              <h2>{tr("Tournament rules")}</h2>
-              {document.rules.map((rule, i) => (
-                <div className="information-rule" id={`rules-${i + 1}`} key={i}>
-                  <h3>{rule.heading}</h3>
-                  <ol>
-                    {rule.paragraphs.map((paragraph, j) => (
-                      <li key={j}>{paragraph}</li>
-                    ))}
-                  </ol>
-                </div>
-              ))}
-            </section>
-          )}
         </article>
         {sections.length > 0 && (
           <aside className="information-contents">
@@ -286,15 +217,6 @@ export async function InformationDocument({
                       </span>
                       {section.title}
                     </a>
-                    {section.id === "rules" && (
-                      <ul>
-                        {document.rules.map((rule, j) => (
-                          <li key={j}>
-                            <a href={`#rules-${j + 1}`}>{rule.heading}</a>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
                   </li>
                 ))}
               </ol>
@@ -305,6 +227,22 @@ export async function InformationDocument({
           </aside>
         )}
       </div>
+      {document.rules.length > 0 && (
+        <section
+          id="rules"
+          className="archive-overview-rules"
+          aria-labelledby="current-rules-title"
+        >
+          <h2 id="current-rules-title">{tr("Tournament rules")}</h2>
+          <RulesHandbook
+            sections={document.rules.map((rule, i) => ({
+              id: `rules-${i + 1}`,
+              heading: rule.heading,
+              body: rule.paragraphs.join("\n\n"),
+            }))}
+          />
+        </section>
+      )}
     </div>
   );
 }

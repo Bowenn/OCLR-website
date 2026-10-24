@@ -5056,18 +5056,36 @@ body:has([data-broadcast]) .site-shell {
 .archive-overview-summary > * {
   min-width: 0;
 }
-.archive-overview-summary.has-visual .archive-counts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem 2rem;
+.information-page > .archive-overview-rules {
+  margin-top: 2rem;
 }
-.archive-overview-summary.has-visual .archive-counts dt {
+
+/* Compact definition rows keep all five metrics together beside the artwork. */
+.archive-overview-summary .archive-counts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  width: 100%;
+  max-width: 28rem;
+  justify-self: center;
+}
+.archive-overview-summary .archive-counts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--site-border);
+}
+.archive-overview-summary .archive-counts dt {
   color: var(--site-secondary-text);
 }
-.archive-overview-summary.has-visual .archive-counts dd {
-  margin-top: 0.25rem;
-  font-size: 2.5rem;
-  line-height: 1.15;
+.archive-overview-summary .archive-counts dd {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 .archive-key-visual {
   width: 100%;

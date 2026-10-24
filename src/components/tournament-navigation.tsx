@@ -51,15 +51,14 @@ function Navigation({
         ["mappools", "Mappools"],
         ["statistics", "Statistics"],
         ...(archived ? [["staff", "Staff"]] : []),
+        ["rules", "Rules"],
       ]
     : legacyLinks;
   const section = publicTournamentSection(pathname, base);
   const active = mobileMenu
     ? ["bracket", "results"].includes(section ?? "")
       ? "schedule"
-      : ["rules"].includes(section ?? "")
-        ? ""
-        : section
+      : section
     : section;
   return (
     <div
