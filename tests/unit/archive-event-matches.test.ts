@@ -29,9 +29,7 @@ describe("historical schedule adapter", () => {
       expect(matches.map((m) => m.stage)).toEqual(source.map((m) => m.stage));
       expect(matches.map((m) => m.score)).toEqual(source.map((m) => m.score));
       expect(matches.map((m) => m.mps)).toEqual(source.map((m) => m.mpUrls));
-      expect(
-        matches.every((m) => m.sourceRed === undefined && m.pool === "—"),
-      ).toBe(true);
+      expect(matches.every((m) => m.sourceRed === undefined)).toBe(true);
       if (season === 10) expect(matches).toHaveLength(30);
     });
   it("keeps forfeits, multiple rooms, time zone and preview links without altering records", () => {
@@ -59,4 +57,48 @@ describe("historical schedule adapter", () => {
     expect(matches[0].time).toContain("UTC+8");
     expect(source.score).toBeNull();
   });
+});
+
+it("links verified pools within the edition and preserves unknown relationships", () => {
+  const a = historicalArchiveSchema.parse(
+    JSON.parse(readFileSync("docs/imports/s10-archive.json", "utf8")),
+  );
+  const rows = archiveEventMatches(a, a.matches, href, "Asia/Shanghai", "en");
+  expect(rows.find((m) => m.id === "match-21")?.poolHref).toBe(
+    href("mappools", "sf"),
+  );
+  expect(rows.find((m) => m.id === "match-1")?.poolHref).toBeUndefined();
+  const explicit = { ...a.matches[0], poolId: "gs1" };
+  expect(
+    archiveEventMatches(a, [explicit], href, "Asia/Shanghai", "en")[0].poolHref,
+  ).toBe(href("mappools", "gs1"));
+  expect(
+    historicalArchiveSchema.safeParse({
+      ...a,
+      matches: [{ ...explicit, poolId: "missing" }],
+    }).success,
+  ).toBe(false);
+  expect(
+    archiveEventMatches(
+      { ...a, sourceUrl: "https://example.com/other" },
+      a.matches,
+      href,
+      "Asia/Shanghai",
+      "en",
+    ).every((m) => m.poolHref === undefined),
+  ).toBe(true);
+  for (const season of [8, 9]) {
+    const archive = historicalArchiveSchema.parse(
+      JSON.parse(readFileSync(`docs/imports/s${season}-archive.json`, "utf8")),
+    );
+    expect(
+      archiveEventMatches(
+        archive,
+        archive.matches,
+        href,
+        "Asia/Shanghai",
+        "en",
+      ).every((m) => m.poolHref),
+    ).toBe(true);
+  }
 });

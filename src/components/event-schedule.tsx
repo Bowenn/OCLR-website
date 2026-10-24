@@ -319,7 +319,13 @@ export function EventSchedule({
                     data-recorded={m.recorded}
                   >
                     <td>
-                      <strong>{m.pool}</strong>
+                      <strong>
+                        {m.poolHref ? (
+                          <a href={m.poolHref}>{m.pool}</a>
+                        ) : (
+                          m.pool
+                        )}
+                      </strong>
                       <small>{m.round}</small>
                     </td>
                     <td>
