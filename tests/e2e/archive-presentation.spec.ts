@@ -96,7 +96,7 @@ test.describe("archive presentation fixes", () => {
           await expect(page.locator(".match-alternative")).toHaveCount(0);
           const tabs = page.locator(".bracket-tabs button");
           const names = await tabs.allTextContents();
-          expect(names.slice(1)).toEqual(
+          expect(names).toEqual(
             index === 0 ? ["A", "B", "C", "D"] : ["A", "B"],
           );
           for (let i = 0; i < (await tabs.count()); i++) {

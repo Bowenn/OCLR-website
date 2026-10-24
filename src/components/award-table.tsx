@@ -1,19 +1,22 @@
 "use client";
+import { PlayerClassBadge } from "./player-class-badge";
 import { useAppTranslations } from "@/i18n/shared";
 import { awardTierLabel } from "@/lib/award-tiers";
-import { awardPercentage, type AwardCandidate } from "@/lib/award-model";
+import { awardValue, type AwardCandidate } from "@/lib/award-model";
 export function AwardTable({
   candidates,
   mvp,
   mip,
   rookie,
   explain = false,
+  policy = "relative-game-mean-v1",
 }: {
   candidates: (AwardCandidate & { username: string })[];
   mvp: number[];
   mip: number[];
   rookie: number[];
   explain?: boolean;
+  policy?: string;
 }) {
   const tr = useAppTranslations();
   return (
@@ -25,6 +28,7 @@ export function AwardTable({
             <th>{tr("Tier")}</th>
             <th>{tr("Appearances")}</th>
             <th>{tr("Weekly performance")}</th>
+            {policy === "yumu-mra-v1" && <th>{tr("Player evaluation")}</th>}
             <th>{tr("Previous week")}</th>
             <th>{tr("Improvement")}</th>
             <th>{tr("Awards")}</th>
@@ -45,18 +49,28 @@ export function AwardTable({
               </th>
               <td>{awardTierLabel(row.tier)}</td>
               <td>{row.appearances}</td>
-              <td>{awardPercentage(row.performance)}</td>
+              <td>{awardValue(row.performance, policy)}</td>
+              {policy === "yumu-mra-v1" && (
+                <td>
+                  <PlayerClassBadge
+                    classification={row.ratingClass ?? null}
+                    indices={row.rating}
+                  />
+                </td>
+              )}
               <td>
                 {row.previousPerformance === null
                   ? "—"
-                  : `${awardPercentage(row.previousPerformance)} (${row.previousAppearances})`}
+                  : `${awardValue(row.previousPerformance, policy)} (${row.previousAppearances})`}
               </td>
               <td>
                 {row.improvement === null
                   ? "—"
-                  : tr("{value0} percentage points", {
-                      value0: `${row.improvement > 0 ? "+" : ""}${(row.improvement / 10_000_000).toFixed(7)}`,
-                    })}
+                  : policy === "yumu-mra-v1"
+                    ? `${row.improvement > 0 ? "+" : ""}${awardValue(row.improvement, policy)}`
+                    : tr("{value0} percentage points", {
+                        value0: `${row.improvement > 0 ? "+" : ""}${(row.improvement / 10_000_000).toFixed(7)}`,
+                      })}
               </td>
               <td>
                 {[
