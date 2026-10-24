@@ -119,6 +119,9 @@ export default async function About() {
               <li>
                 <a href="#developer">{tr("Developer")}</a>
               </li>
+              <li>
+                <a href="#contributors">{tr("Contributors")}</a>
+              </li>
             </ol>
           </nav>
         </aside>
@@ -151,6 +154,19 @@ export default async function About() {
           <section id="developer" aria-labelledby="developer-title">
             <h2 id="developer-title">{tr("Developer")}</h2>
             {people(organizerDirectory.developer, ["developer"])}
+          </section>
+          <section id="contributors" aria-labelledby="contributors-title">
+            <h2 id="contributors-title">{tr("Contributors")}</h2>
+            <ul className="organizer-people">
+              <li>
+                <Avatar osuId={6963321} username="qi_e" />
+                <div>
+                  <h4>
+                    <a href="https://osu.ppy.sh/users/6963321/osu">qi_e</a>
+                  </h4>
+                </div>
+              </li>
+            </ul>
           </section>
           <footer className="organizer-contact">
             <div>

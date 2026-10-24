@@ -46,3 +46,7 @@ Use the reviewed [production deployment runbook](docs/deployment.md) before depl
 Use `sudo oclr cleanup` to preview old release cleanup, then `sudo oclr cleanup --apply` to remove eligible versions. The newest 3 releases and the `current`/`previous` targets are retained. See the runbook for retention options and upgrading the installed command.
 
 Artwork and tournament dates shown in [design references](docs/design/) are examples, not approved competition data.
+
+## Contributors
+
+- [qi_e](https://osu.ppy.sh/users/6963321/osu)
