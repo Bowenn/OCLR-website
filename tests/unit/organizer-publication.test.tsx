@@ -61,4 +61,25 @@ describe("organizer directory publication", () => {
     expect(html).toContain("Northwind");
     expect(html).toContain("Komorebi");
   });
+  it("renders an approved Developer in its own section", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.mocked(publicStaff).mockResolvedValue([
+      {
+        osuId: 4243,
+        username: "Published Developer",
+        countryCode: null,
+        roles: [{ role: "developer", edition: null }],
+      },
+    ]);
+    const html = await render();
+    const section = html.match(
+      /<section id="developer"[\s\S]*?<\/section>/,
+    )?.[0];
+    expect(section).toContain("Published Developer");
+    expect(section).toContain('href="https://osu.ppy.sh/users/4243"');
+    expect(section).toContain('src="https://a.ppy.sh/4243"');
+    expect(section).toContain("All editions");
+    expect(section).not.toContain("Not announced");
+    expect(html).not.toContain("Kite");
+  });
 });
