@@ -25,6 +25,12 @@ export default async function About() {
       roles: ["mappooler"],
     },
     {
+      id: "replayer",
+      title: "Replayer",
+      names: [],
+      roles: ["replayer"],
+    },
+    {
       id: "tester",
       title: "Tester",
       names: organizerDirectory.tester,
