@@ -59,7 +59,16 @@ test.describe("concise public tournament surfaces", () => {
     );
     await expect(credit).toHaveAttribute("rel", "noopener noreferrer");
     await expect(credit).toHaveAttribute("target", "_blank");
-    await expect(page.locator("footer a")).toHaveCount(1);
+    const github = page
+      .locator("footer")
+      .getByRole("link", { name: "GitHub", exact: true });
+    await expect(github).toHaveAttribute(
+      "href",
+      "https://github.com/PhoenixEmik/OCLR-website",
+    );
+    await expect(github).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(github).toHaveAttribute("target", "_blank");
+    await expect(page.locator("footer a")).toHaveCount(2);
     await expect(page.locator("footer button, footer nav")).toHaveCount(0);
     await page.goto("/about");
     await page

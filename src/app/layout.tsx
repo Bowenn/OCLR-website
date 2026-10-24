@@ -163,6 +163,14 @@ export default async function RootLayout({
                   </a>{" "}
                   {"· OCLR — osu! Chinese League Rookie"}
                 </p>
+                <a
+                  className="footer-credit"
+                  href="https://github.com/PhoenixEmik/OCLR-website"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {tr("GitHub")}
+                </a>
               </footer>
             </SiteFrame>
           </AppearanceProvider>
