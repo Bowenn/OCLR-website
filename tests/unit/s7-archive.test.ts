@@ -99,7 +99,7 @@ describe("S7 source competition package", () => {
       ["B", 6],
     ]);
   });
-  it("retains literal ACE maps and name-only staff, and excludes absent content", () => {
+  it("retains literal ACE maps and reviewed staff identities, and excludes absent content", () => {
     expect(a.pools.map((p) => p.maps.length)).toEqual([15, 15, 17]);
     expect(a.pools.every((p) => p.maps.at(-1)?.slot === "ACE1")).toBe(true);
     expect(a.pools[0].maps.find((m) => m.slot === "NM1")).toMatchObject({
@@ -110,8 +110,18 @@ describe("S7 source competition package", () => {
       drainSeconds: 238,
     });
     expect(a.staff).toHaveLength(18);
-    expect(a.staff.filter((s) => s.osuId === null)).toHaveLength(11);
-    expect(a.staff.find((s) => s.username === "Muziyami")?.osuId).toBeNull();
+    expect(a.staff.filter((s) => s.osuId === null)).toHaveLength(0);
+    expect(a.staff.find((s) => s.username === "Muziyami")?.osuId).toBe(7003013);
+    expect(a.staff.find((s) => s.username === "110")?.osuId).toBe(4524921);
+    expect(a.staff.find((s) => s.username === "Truth you left")?.osuId).toBe(
+      4082595,
+    );
+    expect(a.matches.find((m) => m.label === "A5")?.referee).toBe(
+      "Truth you left",
+    );
+    expect(JSON.stringify(a)).not.toMatch(
+      /"(?:username|referee)":"Truth your left"/,
+    );
     expect(historicalRulebook(a)).toBeNull();
     expect(JSON.stringify(a)).not.toMatch(
       /选手名单!|教练名单!|Damage!|Chess!|联系方式|@qq|@gmail/,

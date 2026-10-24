@@ -11,7 +11,7 @@ test.describe("legacy historical evidence", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.setTimeout(90000);
   test.afterAll(async () => closeDb());
-  test("imports final Tiers, ACE slots, name-only staff and a separately confirmed forfeit", async ({
+  test("imports final Tiers, ACE slots, reviewed staff and a separately confirmed forfeit", async ({
     page,
     context,
     isMobile,
@@ -120,8 +120,14 @@ test.describe("legacy historical evidence", () => {
           await expect(page.locator(".archive-staff")).toContainText(
             "Muziyami",
           );
-          await expect(page.locator(".public-staff-list a")).toHaveCount(7);
+          await expect(page.locator(".public-staff-list a")).toHaveCount(18);
           await expect(page.locator(".public-staff-list li")).toHaveCount(18);
+          await expect(
+            page.getByRole("link", { name: "Truth you left", exact: true }),
+          ).toHaveAttribute("href", "https://osu.ppy.sh/users/4082595");
+          await expect(
+            page.getByRole("link", { name: "110", exact: true }),
+          ).toHaveAttribute("href", "https://osu.ppy.sh/users/4524921");
         } else if (section === "mappools") {
           await page.getByRole("tab", { name: "ACE", exact: true }).click();
           await expect(page.locator(".archive-map-item")).toHaveCount(1);

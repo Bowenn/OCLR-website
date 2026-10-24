@@ -12,7 +12,7 @@
     "A8 原值為 C 對 G 0:-1、無 MP；處理：forfeit。棄權不換算為一般得圖數。所有其他 21 場均保留原比分及 MP。",
     "淘汰賽在第 997–1006 列，不因中間空白列遺漏；有 2 個重播連結。僅有標籤而沒有對手或結果的模板行不匯入。",
     "三個有實際譜面的圖池共 47 張，保留 ACE1 原始槽位與歷史屬性；GS 空白 NM6/HD4/HR4/DT4 不視為已選譜面。Grand Finals 及其餘空白模板不建立虛構圖池。",
-    "Staff 的裁判／直播名單與逐場欄核對。可在本表隊員／教練資料對應的 UID 才建立頭像和個人檔案連結；其餘保留原始署名、不猜 UID。這些署名不授予現行職權。",
+    "Staff 的裁判／直播名單與逐場欄核對。7 位 UID 來自本表隊員／教練；其餘 11 位於 2026-10-24 核對 osu! 公開個人頁及既有賽季身分資料後補全。主辦者確認 Truth your left 為 Truth you left（4082595）的拼寫錯誤，署名與逐場裁判欄一併修正。110 為使用者名稱，其 UID 為 4524921。這些署名不授予現行職權。",
     "Cover 為空，未提供 S7 規則書或縮略圖，不挪用其他賽季內容。選手／教練申請表、聯絡方式、評語、Damage 評分及 Chess 均不匯入。"
   ],
   "links": [],
@@ -581,22 +581,22 @@
       "source": "Staff!A1; 对阵表!H2:I1006"
     },
     {
-      "osuId": null,
+      "osuId": 9580470,
       "username": "osu happy",
       "position": "Referee",
-      "source": "Staff!A2; 对阵表!H2:I1006"
+      "source": "Staff!A2; 对阵表!H2:I1006; https://osu.ppy.sh/users/9580470 (reviewed 2026-10-24)"
     },
     {
-      "osuId": null,
+      "osuId": 6854920,
       "username": "Another Flower",
       "position": "Referee",
-      "source": "Staff!A3; 对阵表!H2:I1006"
+      "source": "Staff!A3; 对阵表!H2:I1006; https://osu.ppy.sh/users/6854920 (reviewed 2026-10-24)"
     },
     {
-      "osuId": null,
+      "osuId": 7083201,
       "username": "Morika",
       "position": "Referee",
-      "source": "Staff!A4; 对阵表!H2:I1006"
+      "source": "Staff!A4; 对阵表!H2:I1006; https://osu.ppy.sh/users/7083201 (reviewed 2026-10-24)"
     },
     {
       "osuId": 5242158,
@@ -611,34 +611,34 @@
       "source": "Staff!A6; 对阵表!H2:I1006"
     },
     {
-      "osuId": null,
-      "username": "Truth your left",
+      "osuId": 4082595,
+      "username": "Truth you left",
       "position": "Referee",
-      "source": "Staff!A7; 对阵表!H2:I1006"
+      "source": "Staff!A7; 对阵表!H2:I1006; https://osu.ppy.sh/users/4082595 (reviewed 2026-10-24)"
     },
     {
-      "osuId": null,
+      "osuId": 13617153,
       "username": "WhiteCookies",
       "position": "Referee",
-      "source": "Staff!A8; 对阵表!H2:I1006"
+      "source": "Staff!A8; 对阵表!H2:I1006; https://osu.ppy.sh/users/13617153 (reviewed 2026-10-24)"
     },
     {
-      "osuId": null,
+      "osuId": 4524921,
       "username": "110",
       "position": "Referee",
-      "source": "Staff!A9; 对阵表!H2:I1006"
+      "source": "Staff!A9; 对阵表!H2:I1006; https://osu.ppy.sh/users/4524921 (reviewed 2026-10-24)"
     },
     {
-      "osuId": null,
+      "osuId": 7003013,
       "username": "Muziyami",
       "position": "Streamer",
-      "source": "Staff!C1; 对阵表!H2:I1006"
+      "source": "Staff!C1; 对阵表!H2:I1006; https://osu.ppy.sh/users/7003013 (reviewed 2026-10-24)"
     },
     {
-      "osuId": null,
+      "osuId": 245276,
       "username": "Explosive",
       "position": "Streamer",
-      "source": "Staff!C2; 对阵表!H2:I1006"
+      "source": "Staff!C2; 对阵表!H2:I1006; https://osu.ppy.sh/users/245276 (reviewed 2026-10-24)"
     },
     {
       "osuId": 4733339,
@@ -653,10 +653,10 @@
       "source": "Staff!C4; 对阵表!H2:I1006"
     },
     {
-      "osuId": null,
+      "osuId": 7825227,
       "username": "FcEazy",
       "position": "Streamer",
-      "source": "Staff!C5; 对阵表!H2:I1006"
+      "source": "Staff!C5; 对阵表!H2:I1006; https://osu.ppy.sh/users/7825227 (reviewed 2026-10-24)"
     },
     {
       "osuId": 12624507,
@@ -665,10 +665,10 @@
       "source": "Staff!C6; 对阵表!H2:I1006"
     },
     {
-      "osuId": null,
+      "osuId": 4734497,
       "username": "feifeiis",
       "position": "Streamer",
-      "source": "Staff!C7; 对阵表!H2:I1006"
+      "source": "Staff!C7; 对阵表!H2:I1006; https://osu.ppy.sh/users/4734497 (reviewed 2026-10-24)"
     },
     {
       "osuId": 10040597,
@@ -677,10 +677,10 @@
       "source": "Staff!C8; 对阵表!H2:I1006"
     },
     {
-      "osuId": null,
+      "osuId": 1698898,
       "username": "Alice Mana",
       "position": "Streamer",
-      "source": "Staff!C9; 对阵表!H2:I1006"
+      "source": "Staff!C9; 对阵表!H2:I1006; https://osu.ppy.sh/users/1698898 (reviewed 2026-10-24)"
     }
   ],
   "standings": [
@@ -827,7 +827,7 @@
       "score": [6, 3],
       "mpUrls": ["https://osu.ppy.sh/community/matches/95712424"],
       "vodUrl": "https://www.bilibili.com/video/BV1LL4y1E79Y/",
-      "referee": "Truth your left",
+      "referee": "Truth you left",
       "streamer": "Explosive",
       "commentators": "Explosive FcEazy",
       "bansA": null,

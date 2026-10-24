@@ -20,6 +20,21 @@ parser.add_argument("--captured-on", required=True, type=dt.date.fromisoformat)
 parser.add_argument("--january-year", required=True, choices=["corrected-2022", "source", "unknown"])
 parser.add_argument("--a8", required=True, choices=["forfeit", "omit"])
 args = parser.parse_args()
+# Reviewed against public osu! profiles on 2026-10-24; evidence in docs/s7-archive.md.
+# These supplement the source workbook, never a live/fuzzy username lookup.
+staff_identities = {
+    "osu happy": (9580470, "osu happy"),
+    "Another Flower": (6854920, "Another Flower"),
+    "Morika": (7083201, "Morika"),
+    "Truth your left": (4082595, "Truth you left"),  # Organizer-confirmed typo.
+    "WhiteCookies": (13617153, "WhiteCookies"),
+    "110": (4524921, "110"),  # Username, not UID 110.
+    "Muziyami": (7003013, "Muziyami"),
+    "Explosive": (245276, "Explosive"),
+    "FcEazy": (7825227, "FcEazy"),
+    "feifeiis": (4734497, "feifeiis"),
+    "Alice Mana": (1698898, "Alice Mana"),
+}
 ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 rid = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"
 
@@ -96,7 +111,14 @@ for column, position in [("A", "Referee"), ("C", "Streamer")]:
         name = value("Staff", f"{column}{row}")
         if name == "110.0":
             name = "110"
-        staff.append({"osuId": identity_ids.get(name.casefold()), "username": name, "position": position, "source": f"Staff!{column}{row}; 对阵表!H2:I1006"})
+        uid = identity_ids.get(name.casefold())
+        source = f"Staff!{column}{row}; 对阵表!H2:I1006"
+        if name in staff_identities:
+            reviewed_uid, reviewed_name = staff_identities[name]
+            assert uid is None or uid == reviewed_uid
+            uid, name = reviewed_uid, reviewed_name
+            source += f"; https://osu.ppy.sh/users/{uid} (reviewed 2026-10-24)"
+        staff.append({"osuId": uid, "username": name, "position": position, "source": source})
 
 for row in [*range(2, 14), *range(997, 1007)]:
     label = value("对阵表", f"A{row}")
@@ -122,6 +144,8 @@ for row in [*range(2, 14), *range(997, 1007)]:
     match = {"id": f"match-{label.lower()}", "label": label, "stage": stage, "teamA": f"team-{a.lower()}", "teamB": f"team-{b.lower()}", "scheduledAt": timestamp.isoformat() if timestamp else None, "score": None if forfeit else scores, "mpUrls": [f"https://osu.ppy.sh/community/matches/{int(mp)}"] if mp else [], "vodUrl": f"https://www.bilibili.com/video/{vod}/" if vod else None, "referee": value("对阵表", f"H{row}"), "streamer": value("对阵表", f"I{row}"), "commentators": value("对阵表", f"J{row}"), "bansA": None, "bansB": None, "source": f"对阵表!A{row}:L{row}"}
     if match["referee"] == "110.0":
         match["referee"] = "110"
+    if match["referee"] in staff_identities:
+        match["referee"] = staff_identities[match["referee"]][1]
     if forfeit:
         match["forfeitWinner"] = 0
     matches.append(match)
@@ -172,7 +196,7 @@ data = {"formatVersion": 1, "editionSlug": "s7", "sourceUrl": "https://docs.goog
     f"A8 原值為 C 對 G 0:-1、無 MP；處理：{args.a8}。棄權不換算為一般得圖數。所有其他 21 場均保留原比分及 MP。",
     "淘汰賽在第 997–1006 列，不因中間空白列遺漏；有 2 個重播連結。僅有標籤而沒有對手或結果的模板行不匯入。",
     "三個有實際譜面的圖池共 47 張，保留 ACE1 原始槽位與歷史屬性；GS 空白 NM6/HD4/HR4/DT4 不視為已選譜面。Grand Finals 及其餘空白模板不建立虛構圖池。",
-    "Staff 的裁判／直播名單與逐場欄核對。可在本表隊員／教練資料對應的 UID 才建立頭像和個人檔案連結；其餘保留原始署名、不猜 UID。這些署名不授予現行職權。",
+    "Staff 的裁判／直播名單與逐場欄核對。7 位 UID 來自本表隊員／教練；其餘 11 位於 2026-10-24 核對 osu! 公開個人頁及既有賽季身分資料後補全。主辦者確認 Truth your left 為 Truth you left（4082595）的拼寫錯誤，署名與逐場裁判欄一併修正。110 為使用者名稱，其 UID 為 4524921。這些署名不授予現行職權。",
     "Cover 為空，未提供 S7 規則書或縮略圖，不挪用其他賽季內容。選手／教練申請表、聯絡方式、評語、Damage 評分及 Chess 均不匯入。",
 ], "links": [], "teams": teams, "players": players, "picks": [], "staff": staff, "standings": standings, "matches": matches, "pools": pools}
 assert len(teams) == 8 and len(players) == 64 and len({p["osuId"] for p in players}) == 64
