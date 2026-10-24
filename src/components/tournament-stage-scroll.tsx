@@ -55,10 +55,6 @@ export function TournamentStageScroll({
       const clamped = Math.max(-2, Math.min(2, distance));
       row.style.setProperty("--wheel-rotation", `${clamped * -40}deg`);
       row.style.setProperty(
-        "--wheel-scale",
-        String(1 - Math.min(Math.abs(distance), 2) * 0.09),
-      );
-      row.style.setProperty(
         "--wheel-opacity",
         String(Math.max(0.25, 1 - Math.abs(distance) * 0.42)),
       );

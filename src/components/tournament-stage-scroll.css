@@ -107,8 +107,7 @@
   gap: 1.1rem;
   height: var(--wheel-row);
   padding: 0.3rem 1.5rem;
-  transform: perspective(500px) rotateX(var(--wheel-rotation, 0deg))
-    scale(var(--wheel-scale, 1));
+  transform: rotateX(var(--wheel-rotation, 0deg));
   opacity: var(--wheel-opacity, 1);
   transform-origin: center;
   backface-visibility: hidden;
