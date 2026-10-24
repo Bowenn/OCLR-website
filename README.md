@@ -47,11 +47,15 @@ Use `sudo oclr cleanup` to preview old release cleanup, then `sudo oclr cleanup 
 
 Artwork and tournament dates shown in [design references](docs/design/) are examples, not approved competition data.
 
-## Contributors
-
-- [qi_e](https://osu.ppy.sh/users/6963321/osu)
-
 ## Collaborators
 
 - [Sonoaoi](https://osu.ppy.sh/users/9755808)
 - [Tensorera](https://osu.ppy.sh/users/19204569)
+
+## Contributors
+
+- [qi_e](https://osu.ppy.sh/users/6963321/osu)
+
+## License
+
+Licensed under the [MIT License](LICENSE).
