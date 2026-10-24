@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-24",
+  "scope": "Offline CSS specimens/provenance only; not production appearance integration",
+  "browser": "Headless Google Chrome",
+  "evidence": [
+    {
+      "style": "frutiger-aero",
+      "sourceHash": "0e20f5f12dea2f35dbe0b81467831ee14c6b4bab74cb5692620afd6ff3a827d8",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    }
+  ],
+  "cases": [
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    }
+  ],
+  "fallbacks": [
+    {
+      "style": "frutiger-aero",
+      "forcedColors": "passed"
+    }
+  ],
+  "errors": []
+}

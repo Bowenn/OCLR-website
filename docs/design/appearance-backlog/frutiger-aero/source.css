@@ -1,0 +1,14 @@
+.G{background:linear-gradient(180deg,#8fd3ff 0,#d9f2ff 42%,#effbe6 100%);color:#0b3a57;font-family:"Varela Round","Noto Sans TC",sans-serif;border-radius:22px;border:1px solid #fff;font-size:15px}
+.G .nv{background:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.4));border-bottom:1px solid #fff;box-shadow:0 2px 8px rgba(30,140,220,.2)}
+.G .nv .on{background:linear-gradient(#9fe3ff,#4ab8f4);color:#04334d;border-radius:99px;padding:0 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 5px rgba(20,120,200,.4)}
+.G .se{background:rgba(255,255,255,.68);border:1px solid #fff;border-radius:20px;box-shadow:0 8px 24px rgba(30,140,220,.25),inset 0 1px 0 #fff;position:relative;overflow:hidden}
+.G .se::after{content:"";position:absolute;right:-22px;top:-28px;width:112px;height:112px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#fff,rgba(255,255,255,.2) 40%,rgba(120,210,255,.35) 70%);border:1px solid #fff}
+.G .tag{display:inline-block;background:linear-gradient(#d6f8a6,#8be04e);color:#1f4a05;border-radius:99px;padding:0 14px;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.G .bar{height:16px;background:#cfe9f7;border-radius:99px;box-shadow:inset 0 2px 4px rgba(0,80,140,.25)}
+.G .bar i{background:linear-gradient(#d6f8a6 0,#8be04e 50%,#62c423 51%,#8be04e);border-radius:99px}
+.G .bt{background:linear-gradient(#ffd6e7 0,#ff86b6 50%,#ff5f9b 51%,#ff8cba);color:#4a0d28;border-radius:99px;border:1px solid #fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 10px rgba(255,90,151,.45)}
+.G .tb span{background:linear-gradient(#fff,#d8f0ff);border-radius:99px;border:1px solid #fff;box-shadow:0 2px 5px rgba(30,140,220,.25)}
+.G .tb .on{background:linear-gradient(#9fe3ff,#4ab8f4)}
+.G .mp{background:rgba(255,255,255,.72);border:1px solid #fff;border-radius:18px;box-shadow:0 6px 18px rgba(30,140,220,.22)}
+.G .mp em{background:linear-gradient(#9fe3ff,#4ab8f4);color:#04334d;margin:8px;border-radius:50%;width:56px;height:56px;padding:0;align-self:center;font-size:15px;box-shadow:inset 0 2px 0 rgba(255,255,255,.7)}
+.G .st u{color:#2a7fb0}

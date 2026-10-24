@@ -1,0 +1,196 @@
+/* REVIEW-ONLY candidate for style G; not registered or imported by OCLR.
+ * source.css preserves the original; this file adapts tokens and safe geometry. */
+html[data-appearance="frutiger-aero"] .themed-site {
+  --site-background: #eef8ff;
+  --site-surface: #ffffff;
+  --site-raised: #e1f1fb;
+  --site-tint: #d9eff9;
+  --site-foreground: #0b3a57;
+  --site-muted: #46677a;
+  --site-secondary-text: #2c5269;
+  --site-accent: #106284;
+  --site-border: #b5d3e2;
+  --site-control-border: #577c90;
+  --site-primary: #ffc3dc;
+  --site-primary-hover: #ffafd2;
+  --site-on-primary: #4a0d28;
+  --site-header: #ffffff;
+  --site-accent-strong: #106284;
+  --site-focus: #106284;
+  --site-selection: #d9eff9;
+  --site-highlight: #106284;
+  --site-connector: #577c90;
+  --site-success: #21664c;
+  --site-warning: #805500;
+  --site-danger: #b32343;
+  --site-shadow: #17213725;
+  --site-soft-shadow: #17213714;
+  --site-panel-shadow: #17213720;
+  --site-dialog-shadow: #17213745;
+  --site-backdrop: #10131d80;
+  --style-detail: #22620e;
+  --radius-panel: 20px;
+  --button-radius: 999px;
+  color-scheme: light;
+  background: var(--site-background);
+  color: var(--site-foreground);
+}
+html[data-theme="dark"][data-appearance="frutiger-aero"] .themed-site {
+  --site-background: #112331;
+  --site-surface: #203646;
+  --site-raised: #2a4759;
+  --site-tint: #244c62;
+  --site-foreground: #e6f7ff;
+  --site-muted: #b4d2e0;
+  --site-secondary-text: #d0e7f1;
+  --site-accent: #90deff;
+  --site-border: #49687d;
+  --site-control-border: #80a8bf;
+  --site-primary: #ffc3dc;
+  --site-primary-hover: #ffdae9;
+  --site-on-primary: #4a0d28;
+  --site-header: #203646;
+  --site-accent-strong: #90deff;
+  --site-focus: #90deff;
+  --site-selection: #244c62;
+  --site-highlight: #90deff;
+  --site-connector: #80a8bf;
+  --site-success: #91e0bd;
+  --site-warning: #f0ce85;
+  --site-danger: #ffa0b4;
+  --site-shadow: #0006;
+  --site-soft-shadow: #0003;
+  --site-panel-shadow: #0005;
+  --site-dialog-shadow: #0009;
+  --site-backdrop: #050810b3;
+  --style-detail: #c8f4a5;
+  color-scheme: dark;
+}
+html[data-appearance="frutiger-aero"]
+  .themed-site
+  :is(button, .button, input, select, textarea) {
+  border-radius: var(--button-radius);
+}
+html[data-appearance="frutiger-aero"]
+  .themed-site
+  :is(.panel, .season-overview-hero, .map-browse-card, .public-match-card) {
+  border-radius: var(--radius-panel);
+}
+html[data-appearance="frutiger-aero"] .themed-site :focus-visible {
+  outline: 3px solid var(--site-focus);
+  outline-offset: 4px;
+}
+html[data-appearance="frutiger-aero"] .themed-site ::selection {
+  background: var(--site-selection);
+}
+html[data-appearance="frutiger-aero"] .themed-site .season-overview-hero {
+  background: linear-gradient(155deg, var(--site-surface), var(--site-raised));
+  box-shadow:
+    inset 0 1px 0 #ffffff70,
+    0 6px 16px var(--site-soft-shadow);
+}
+html[data-appearance="frutiger-aero"] .themed-site .button.primary {
+  background:
+    linear-gradient(#ffffff66, transparent 50%, #ffffff14 51%),
+    var(--site-primary);
+  border: 1px solid var(--site-control-border);
+  box-shadow:
+    inset 0 1px 0 #ffffff80,
+    0 3px 8px var(--site-soft-shadow);
+}
+html[data-appearance="frutiger-aero"] .themed-site .button.primary:hover {
+  background: var(--site-primary-hover);
+}
+html[data-appearance="frutiger-aero"] .themed-site .map-slot-badge {
+  border-radius: 999px;
+  background: var(--site-tint);
+  border: 1px solid var(--site-control-border);
+  color: var(--site-accent);
+  min-width: 52px;
+  min-height: 52px;
+}
+html[data-appearance="frutiger-aero"] .themed-site progress {
+  accent-color: var(--style-detail);
+}
+html[data-appearance="frutiger-aero"]
+  .themed-site
+  :is(table, .public-match-card) {
+  background: var(--site-surface);
+  box-shadow: none;
+}
+/* Explicit progress rendering: native accent-color varies across engines. */
+html[data-appearance="frutiger-aero"] .themed-site progress {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 14px;
+  border: 1px solid var(--site-control-border);
+  border-radius: var(--button-radius);
+  overflow: hidden;
+  background: var(--site-raised);
+}
+html[data-appearance="frutiger-aero"]
+  .themed-site
+  progress::-webkit-progress-bar {
+  background: var(--site-raised);
+  border-radius: inherit;
+}
+html[data-appearance="frutiger-aero"]
+  .themed-site
+  progress::-webkit-progress-value {
+  background: var(--style-detail);
+  border-radius: inherit;
+}
+html[data-appearance="frutiger-aero"] .themed-site progress::-moz-progress-bar {
+  background: var(--style-detail);
+  border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-appearance="frutiger-aero"] .themed-site *,
+  html[data-appearance="frutiger-aero"] .themed-site *::before,
+  html[data-appearance="frutiger-aero"] .themed-site *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  html[data-appearance="frutiger-aero"] .themed-site {
+    background: Canvas;
+    color: CanvasText;
+  }
+  html[data-appearance="frutiger-aero"]
+    .themed-site
+    :is(
+      .season-overview-hero,
+      .panel,
+      .button,
+      .map-browse-card,
+      input,
+      select
+    ) {
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: CanvasText;
+  }
+  html[data-appearance="frutiger-aero"]
+    .themed-site
+    :is(.season-overview-hero, .badge)::before,
+  html[data-appearance="frutiger-aero"]
+    .themed-site
+    .season-overview-hero::after {
+    display: none;
+  }
+  html[data-appearance="frutiger-aero"] .themed-site :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-appearance="frutiger-aero"] .themed-site progress {
+    appearance: auto;
+    -webkit-appearance: auto;
+  }
+}
