@@ -4959,3 +4959,8 @@ body:has([data-broadcast]) .site-shell {
 .manual-batch-row .registration-player > div {
   min-width: 0;
 }
+
+/* Preserve existing component geometry while native fieldset enforces read-only controls. */
+.staff-readonly-fields {
+  display: contents;
+}

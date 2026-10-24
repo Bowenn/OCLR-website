@@ -1,4 +1,5 @@
 "use client";
+import { ReadOnlyFields, MutationButton } from "./staff-read-only";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -82,61 +83,63 @@ export function TeamEditor({
         }}
       >
         <form className="form-stack" onSubmit={save}>
-          <h2>{tr("Edit team")}</h2>
-          <label className="field">
-            <span>{tr("Team name")}</span>
-            <input
-              required
-              disabled={pending}
-              name="name"
-              maxLength={80}
-              defaultValue={team.name}
-            />
-          </label>
-          <label className="field">
-            <span>{tr("Roster capacity (optional)")}</span>
-            <input
-              disabled={pending}
-              name="capacity"
-              type="number"
-              min={team.members.length}
-              max={256}
-              readOnly={locked || !!team.finalizedAt}
-              defaultValue={team.capacity ?? ""}
-            />
-          </label>
-          <div className="team-image-preview">
-            {preview ? (
-              <Image
-                width={96}
-                height={96}
-                src={preview}
-                unoptimized
-                alt={tr("Pending team image")}
+          <ReadOnlyFields>
+            <h2>{tr("Edit team")}</h2>
+            <label className="field">
+              <span>{tr("Team name")}</span>
+              <input
+                required
+                disabled={pending}
+                name="name"
+                maxLength={80}
+                defaultValue={team.name}
               />
-            ) : (
-              <TeamAvatar
-                team={{ ...team, avatarKey: remove ? null : team.avatarKey }}
+            </label>
+            <label className="field">
+              <span>{tr("Roster capacity (optional)")}</span>
+              <input
+                disabled={pending}
+                name="capacity"
+                type="number"
+                min={team.members.length}
+                max={256}
+                readOnly={locked || !!team.finalizedAt}
+                defaultValue={team.capacity ?? ""}
               />
-            )}
-          </div>
-          <label className="field">
-            <span>{tr("Team avatar")}</span>
-            <input
-              disabled={pending}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => {
-                chooseImage(e.target.files?.[0] ?? null);
-                setRemove(false);
-              }}
-            />
-          </label>
-          <p className="small muted">
-            {tr("JPEG, PNG or WebP · up to 5 MB · saved as a square image")}
-          </p>
+            </label>
+            <div className="team-image-preview">
+              {preview ? (
+                <Image
+                  width={96}
+                  height={96}
+                  src={preview}
+                  unoptimized
+                  alt={tr("Pending team image")}
+                />
+              ) : (
+                <TeamAvatar
+                  team={{ ...team, avatarKey: remove ? null : team.avatarKey }}
+                />
+              )}
+            </div>
+            <label className="field">
+              <span>{tr("Team avatar")}</span>
+              <input
+                disabled={pending}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => {
+                  chooseImage(e.target.files?.[0] ?? null);
+                  setRemove(false);
+                }}
+              />
+            </label>
+            <p className="small muted">
+              {tr("JPEG, PNG or WebP · up to 5 MB · saved as a square image")}
+            </p>
+          </ReadOnlyFields>
           <div className="actions">
-            <button
+            <MutationButton
               type="button"
               className="secondary"
               disabled={pending}
@@ -146,10 +149,10 @@ export function TeamEditor({
               }}
             >
               {tr("Remove avatar")}
-            </button>
-            <button disabled={pending} type="submit">
+            </MutationButton>
+            <MutationButton disabled={pending} type="submit">
               {tr("Save team")}
-            </button>
+            </MutationButton>
             <button
               disabled={pending}
               type="button"

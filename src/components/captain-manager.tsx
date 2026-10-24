@@ -1,4 +1,5 @@
 "use client";
+import { useStaffReadOnly, MutationButton } from "./staff-read-only";
 
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -18,6 +19,7 @@ export function CaptainManager({
   setup: Setup;
   identities?: Record<number, CaptainIdentity>;
 }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
 
   const [action, setAction] = useState("replace");
@@ -54,7 +56,7 @@ export function CaptainManager({
     `${p.username} ${p.userId}`.toLowerCase().includes(search.toLowerCase()),
   );
   const changed = order.some((id, i) => id !== setup.captains[i]?.userId);
-  const editable = !setup.locked && !pending;
+  const editable = !readOnly && !setup.locked && !pending;
   function move(id: number, target: number | undefined) {
     if (!editable) return;
     const destination =
@@ -262,7 +264,7 @@ export function CaptainManager({
                     />
                     <div className="captain-card-actions">
                       <div className="captain-move-actions">
-                        <button
+                        <MutationButton
                           className="secondary"
                           type="button"
                           disabled={!editable || index === 0}
@@ -272,8 +274,8 @@ export function CaptainManager({
                           onClick={() => move(c.userId, order[index - 1])}
                         >
                           ↑
-                        </button>
-                        <button
+                        </MutationButton>
+                        <MutationButton
                           className="secondary"
                           type="button"
                           disabled={!editable || index === order.length - 1}
@@ -283,7 +285,7 @@ export function CaptainManager({
                           onClick={() => move(c.userId, order[index + 1])}
                         >
                           ↓
-                        </button>
+                        </MutationButton>
                       </div>
                       <ConfirmMutation
                         label={tr("Unappoint")}
@@ -329,15 +331,15 @@ export function CaptainManager({
           )}
           {ordered.length > 0 && !setup.locked && (
             <div className="actions">
-              <button
+              <MutationButton
                 type="button"
                 className="secondary"
                 disabled={!changed || pending}
                 onClick={() => void mutate({ action: "order", userIds: order })}
               >
                 {pending ? tr("Saving…") : tr("Save captain order")}
-              </button>
-              <button
+              </MutationButton>
+              <MutationButton
                 className="secondary"
                 type="button"
                 disabled={!changed || pending}
@@ -348,7 +350,7 @@ export function CaptainManager({
                 }}
               >
                 {tr("Reset order")}
-              </button>
+              </MutationButton>
             </div>
           )}
         </section>
@@ -395,7 +397,7 @@ export function CaptainManager({
                     username={p.username}
                     identity={identities[p.userId]}
                   />
-                  <button
+                  <MutationButton
                     className="secondary"
                     type="button"
                     disabled={!editable || changed}
@@ -405,7 +407,7 @@ export function CaptainManager({
                     onClick={() => void appoint(p.userId)}
                   >
                     {tr("Appoint captain")}
-                  </button>
+                  </MutationButton>
                 </article>
               ))}
             </div>
@@ -427,6 +429,7 @@ export function CaptainManager({
         <h2 id="captain-publication-heading">{tr("Publication settings")}</h2>
         <label className="check-field">
           <input
+            disabled={readOnly}
             type="checkbox"
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
@@ -435,6 +438,7 @@ export function CaptainManager({
         </label>
         <label className="check-field">
           <input
+            disabled={readOnly}
             type="checkbox"
             checked={poolPublished}
             onChange={(e) => setPoolPublished(e.target.checked)}
@@ -492,6 +496,7 @@ export function CaptainManager({
           <label className="field">
             <span>{tr("Player")}</span>
             <select
+              disabled={readOnly}
               value={userId}
               onChange={(e) => {
                 setUserId(e.target.value);
@@ -515,6 +520,7 @@ export function CaptainManager({
           <label className="field">
             <span>{tr("Captain to replace")}</span>
             <select
+              disabled={readOnly}
               value={previousUserId}
               onChange={(e) => setPrevious(e.target.value)}
             >
@@ -530,6 +536,7 @@ export function CaptainManager({
         {action === "availability" && (
           <label className="check-field">
             <input
+              disabled={readOnly}
               type="checkbox"
               checked={available}
               onChange={(e) => setAvailable(e.target.checked)}
@@ -542,6 +549,7 @@ export function CaptainManager({
           <label className="field">
             <span>{tr("Draft unavailability explanation")}</span>
             <textarea
+              disabled={readOnly}
               value={unavailableExplanation}
               onChange={(e) => setExplanation(e.target.value)}
               maxLength={1000}

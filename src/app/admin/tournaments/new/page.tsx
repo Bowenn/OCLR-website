@@ -1,7 +1,7 @@
 import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
-import { assertCapability } from "@/lib/auth/staff";
+import { assertReadCapability } from "@/lib/auth/staff";
 import { PageHeading } from "@/components/ui";
 import { CreateTournamentForm } from "@/components/tournament-editor";
 export async function generateMetadata() {
@@ -13,7 +13,7 @@ export default async function NewTournament() {
   const tr = await getAppTranslations();
 
   return authorizedPage(async () => {
-    await assertCapability(await requireUser(), "configure_tournament");
+    await assertReadCapability(await requireUser(), "configure_tournament");
     return (
       <>
         <PageHeading
