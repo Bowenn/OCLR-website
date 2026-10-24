@@ -3627,6 +3627,10 @@ html:lang(zh-Hant) .eyebrow {
   position: relative;
   isolation: isolate;
 }
+/* Lift the isolated menu above the later, wrapped preferences row as a unit. */
+.account-menu:has([aria-expanded="true"]) {
+  z-index: 20;
+}
 .account-control:hover {
   transform: none;
 }
