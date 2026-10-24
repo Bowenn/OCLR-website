@@ -1,0 +1,215 @@
+.organizer-page {
+  color: var(--site-foreground);
+}
+.organizer-heading {
+  padding: 1rem 0 2.5rem;
+  border-bottom: 1px solid var(--site-border);
+}
+.organizer-heading .eyebrow {
+  color: var(--site-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  margin: 0 0 1rem;
+}
+.organizer-heading h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.organizer-layout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-top: 2.5rem;
+  align-items: start;
+}
+.organizer-sidebar {
+  position: sticky;
+  top: 6rem;
+}
+.organizer-sidebar h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--site-muted);
+  margin: 0 0 1rem;
+}
+.organizer-sidebar ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.organizer-sidebar nav > ol {
+  border-left: 1px solid var(--site-border);
+}
+.organizer-sidebar a {
+  display: block;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+}
+.organizer-sidebar ol ol a {
+  padding-left: 2rem;
+  color: var(--site-muted);
+  font-size: 0.82rem;
+}
+.organizer-sidebar a:hover {
+  border-left-color: var(--site-accent);
+  background: var(--site-tint);
+  color: var(--site-accent);
+}
+.organizer-directory {
+  min-width: 0;
+}
+.organizer-directory section {
+  scroll-margin-top: 6rem;
+}
+.organizer-directory > section {
+  padding-bottom: 2.3rem;
+  margin-bottom: 2.3rem;
+  border-bottom: 1px solid var(--site-border);
+}
+.organizer-directory h2 {
+  font-size: 1.65rem;
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  margin: 0 0 1.8rem;
+}
+.organizer-group + .organizer-group {
+  margin-top: 2.4rem;
+}
+.organizer-group h3 {
+  margin: 0 0 1.3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.organizer-page .organizer-people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.8rem 2rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.organizer-page .organizer-people > li {
+  display: block;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.organizer-people h4 {
+  color: var(--site-accent);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+  overflow-wrap: anywhere;
+}
+.organizer-people p {
+  color: var(--site-muted);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  margin: 0;
+}
+.organizer-contact {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+}
+.organizer-contact h2 {
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+}
+.organizer-contact p {
+  margin: 0 0 0.7rem;
+}
+.organizer-contact a {
+  color: var(--site-accent);
+  text-underline-offset: 0.25em;
+}
+.organizer-contact a:hover,
+.organizer-people a:hover {
+  text-decoration: underline;
+}
+#organizers-title {
+  scroll-margin-top: 6rem;
+}
+@media (max-width: 700px) {
+  .organizer-heading {
+    padding: 0.5rem 0 1.5rem;
+  }
+  .organizer-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    padding-top: 1.5rem;
+  }
+  .organizer-sidebar {
+    position: static;
+  }
+  .organizer-sidebar nav > ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    border-left: 0;
+  }
+  .organizer-sidebar nav > ol > li {
+    flex: 1 1 auto;
+  }
+  .organizer-sidebar a {
+    padding: 0.65rem 0.5rem;
+  }
+  .organizer-sidebar ol ol {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .organizer-sidebar ol ol a {
+    padding-left: 0.5rem;
+  }
+  .organizer-directory h2 {
+    font-size: 1.45rem;
+  }
+  .organizer-page .organizer-people {
+    gap: 1.5rem 1rem;
+  }
+}
+@media (max-width: 380px) {
+  .organizer-page .organizer-people {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.organizer-page .organizer-people > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.organizer-people > li > div:last-child {
+  min-width: 0;
+}
+.organizer-portrait,
+.organizer-page .organizer-people .avatar {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 88px;
+  flex: 0 0 72px;
+  overflow: hidden;
+  border-radius: 2px;
+  border: 1px solid var(--site-border);
+  background: var(--site-tint);
+  color: var(--site-muted);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+.organizer-page .organizer-people .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 700px) {
+  .organizer-page .organizer-people {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -19,6 +19,8 @@
     "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:local": "tsx scripts/local-database.ts",
+    "db:seed:dev": "tsx scripts/seed-development.ts",
     "test:integration": "vitest run tests/integration",
     "db:cleanup": "tsx scripts/cleanup.ts",
     "release:check": "tsx scripts/check-release.ts",

@@ -3,7 +3,13 @@ import { registrationAvailability } from "@/lib/registrations";
 import { Action, Badge } from "./ui";
 import { EditionArtwork } from "./edition-artwork";
 import { formatDate, publicEditionSummary, type Edition } from "@/lib/editions";
-export async function EditionCard({ edition }: { edition: Edition }) {
+export async function EditionCard({
+  edition,
+  href,
+}: {
+  edition: Edition;
+  href?: string;
+}) {
   const tr = await getAppTranslations();
 
   const state = await registrationAvailability(edition);
@@ -31,7 +37,7 @@ export async function EditionCard({ edition }: { edition: Edition }) {
               {tr("Register")}
             </Action>
           )}
-          <Action href={`/tournaments/${edition.slug}`} secondary>
+          <Action href={href ?? `/tournaments/${edition.slug}`} secondary>
             {tr("View tournament")}
           </Action>
         </div>

@@ -1,0 +1,456 @@
+.home-redesign {
+  color: var(--site-foreground);
+}
+.home-feature {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #11172a;
+  --site-surface: #11172a;
+  --site-foreground: #f4f3fc;
+  --site-secondary-text: #d4cce1;
+  --site-accent: #dba5f7;
+  --site-accent-strong: #e8c3ff;
+  --site-control-border: #685475;
+  --site-tint: #282039;
+  --site-highlight: #efa5d6;
+}
+.home-feature .home-feature-art {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+  animation: none;
+}
+.home-feature::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    #090d19 4%,
+    #090d19eb 25%,
+    #090d1970 53%,
+    #090d1900 82%
+  );
+}
+.home-feature-inner {
+  min-height: 46.875vw;
+  display: flex;
+  align-items: center;
+  padding-block: clamp(1.5rem, 3vw, 4rem);
+}
+.home-feature-left {
+  width: 45%;
+  padding-right: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+.home-full-name {
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  letter-spacing: 0.12em;
+  color: var(--site-secondary-text);
+  margin: 0;
+}
+.home-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15em;
+  white-space: nowrap;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(5.33rem, 11.44vw, 12.35rem);
+  font-weight: 950;
+  font-style: italic;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.home-painted-wordmark {
+  display: block;
+  flex: none;
+  width: 4.9em;
+  max-width: none;
+  height: auto;
+  margin-block: -0.12em;
+  margin-left: -0.25em;
+}
+.home-contact-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 0;
+}
+.home-feature .home-contact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.4rem;
+  min-height: 32.1264px;
+  padding: 0.24rem 0.9rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.home-contact-number {
+  margin-left: 0.35rem;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.home-contact > span:last-child {
+  color: inherit;
+}
+.home-registration-link {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  min-height: 32.1264px;
+  padding: 0.24rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.home-feature .home-contact,
+.home-registration-link {
+  border: 1px solid var(--site-control-border);
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--site-foreground);
+  box-shadow: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.home-feature .home-contact > span,
+.home-registration-link > span {
+  background: linear-gradient(
+    120deg,
+    var(--site-foreground) 25%,
+    var(--site-accent) 90%
+  );
+  background-clip: text;
+  color: transparent;
+}
+.home-feature .home-contact:hover,
+.home-registration-link:hover {
+  border-color: var(--site-accent);
+  background: color-mix(in srgb, var(--site-tint) 35%, transparent);
+}
+.home-registration-divider {
+  opacity: 0.5;
+  font-weight: 400;
+}
+.home-registration-arrow {
+  margin-left: auto;
+}
+.home-archive-section {
+  padding-block: 3.5rem 5rem;
+  scroll-margin-top: 6rem;
+}
+.home-archive-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--site-border);
+}
+.home-archive-heading h2 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+.home-archive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+.home-archive-grid .edition-card {
+  grid-template-columns: 128px minmax(0, 1fr);
+  min-width: 0;
+}
+.home-other-current {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+html[data-appearance="swiss-minimal"]
+  .home-redesign
+  :is(.home-registration-link, .home-contact, .home-archive-art) {
+  border-radius: 0;
+}
+@media (max-width: 760px) {
+  .home-feature-inner {
+    min-height: 0;
+    align-items: end;
+    padding-block: 3rem;
+  }
+  .home-feature-left {
+    width: 90%;
+    padding: 0;
+  }
+  .home-feature .home-feature-art {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 32 / 15;
+    background-size: contain;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
+  .home-feature::after {
+    display: none;
+  }
+  .home-full-name {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+  .home-wordmark {
+    font-size: clamp(4.225rem, 20.15vw, 9.1rem);
+  }
+  .home-contact-bar {
+    gap: 1rem;
+  }
+  .home-feature .home-contact {
+    gap: 0.8rem;
+    padding: 0.25rem 0.72rem;
+    font-size: 0.8rem;
+  }
+  .home-registration-link {
+    min-height: 32.1264px;
+    padding: 0.25rem 0.72rem;
+    gap: 0.675rem;
+    font-size: 0.8rem;
+  }
+  .home-archive-section {
+    padding-block: 2.5rem;
+  }
+  .home-archive-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+@media (max-width: 420px) {
+  .home-archive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 360px) {
+  .home-wordmark {
+    font-size: 19.5vw;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-archive-grid .edition-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+}
+
+.home-full-name {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, #f8e4f4b3, #f8e4f440) 1;
+  width: 100%;
+}
+.home-entry-links {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+}
+.home-feature :is(.home-contact, .home-registration-link) {
+  justify-content: flex-start;
+  gap: 0.65rem;
+}
+.home-entry-icon {
+  flex: 0 0 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #e8c3ee;
+}
+.home-feature :is(.home-contact, .home-registration-link) > span:last-child {
+  background: none;
+  color: #e8c3ee;
+  border-left: 1px solid #f8e4f440;
+  margin-left: auto;
+  padding-left: 0.85rem;
+  line-height: 1.4;
+}
+.home-registration-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.themed-site:has(.home-redesign) .site-header {
+  --site-header: #f0e9fa;
+  --site-surface: #faf7ff;
+  --site-raised: #f5effb;
+  --site-foreground: #291b36;
+  --site-secondary-text: #594566;
+  --site-muted: #756782;
+  --site-accent: #713299;
+  --site-accent-strong: #552074;
+  --site-control-border: #cfc0df;
+  --site-border: #ded5e7;
+  --site-tint: #ece5f3;
+  --site-primary: #713299;
+  --site-primary-hover: #8740b2;
+  --site-on-primary: #fff;
+  --color-muted: #756782;
+  --color-foreground: #291b36;
+  --color-border: #ded5e7;
+  background: var(--site-header);
+  color: var(--site-foreground);
+  color-scheme: light;
+}
+html[data-theme="dark"] .themed-site:has(.home-redesign) .site-header {
+  --site-header: #111329;
+  --site-surface: #15142c;
+  --site-raised: #1c1937;
+  --site-foreground: #f0dcff;
+  --site-secondary-text: #d4bfeb;
+  --site-muted: #b5a1c9;
+  --site-accent: #d6a0f4;
+  --site-accent-strong: #ebc1ff;
+  --site-control-border: #655078;
+  --site-border: #795394;
+  --site-tint: #28203e;
+  --site-primary: transparent;
+  --site-primary-hover: #302345;
+  --site-on-primary: #e3b3fa;
+  --color-muted: #b5a1c9;
+  --color-foreground: #f0dcff;
+  --color-border: #795394;
+  background:
+    linear-gradient(100deg, #101124ed, #171332e8),
+    url("/oclr-s11-website-background.webp") center 12% / cover;
+  color-scheme: dark;
+}
+html[data-theme="dark"]
+  .themed-site:has(.home-redesign)
+  .site-header
+  .nav-login {
+  background: transparent;
+  border: 1px solid var(--site-accent);
+  border-radius: 0.65rem;
+  color: var(--site-on-primary);
+}
+html[data-theme="dark"]
+  .themed-site:has(.home-redesign)
+  .site-header
+  .nav-login:hover {
+  background: var(--site-tint);
+}
+@media (max-width: 420px) {
+  .home-entry-links .home-contact-bar {
+    gap: 0.75rem;
+  }
+  .home-entry-links .home-contact {
+    gap: 0.25rem;
+    padding-inline: 0.35rem;
+  }
+  .home-contact .home-entry-icon {
+    flex-basis: 0.875rem;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  .home-feature .home-contact > span:last-child {
+    padding-left: 0.3rem;
+  }
+  .home-contact-number {
+    margin-left: 0;
+  }
+  .home-registration-label {
+    gap: 0.4rem;
+  }
+  .home-feature .home-registration-link {
+    gap: 0.4rem;
+    padding-inline: 0.5rem;
+  }
+  .home-feature .home-registration-link > span:last-child {
+    padding-left: 0.4rem;
+  }
+}
+.home-painted-wordmark {
+  filter: saturate(0.82);
+}
+.home-feature .home-entry-links :is(.home-contact, .home-registration-link) {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transform: skewX(-25deg);
+  border: 1px solid #edb9f3b3;
+  border-radius: 4px;
+  background: linear-gradient(
+    120deg,
+    #d8a5ec45,
+    #27203536 35%,
+    #ca95d72b 80%,
+    #f2bfdd40
+  );
+  backdrop-filter: blur(9px) saturate(1.1);
+  -webkit-backdrop-filter: blur(9px) saturate(1.1);
+  box-shadow:
+    inset 0 1px 5px #ffe4ff50,
+    inset 0 -1px 4px #efb0f040,
+    0 3px 12px #0b071b30;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link):hover::before,
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link):focus-visible::before {
+  border-color: #f9d4ff;
+  background: linear-gradient(
+    120deg,
+    #d8a5ec60,
+    #30243e50 35%,
+    #ca95d740 80%,
+    #f2bfdd60
+  );
+  box-shadow:
+    inset 0 1px 6px #ffe4ff70,
+    inset 0 -1px 5px #efb0f060,
+    0 3px 14px #b86be826;
+}
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link)
+  > span:last-child {
+  border-left: 0;
+}
+@media (max-width: 760px) {
+  .home-feature
+    .home-entry-links
+    :is(.home-contact, .home-registration-link)::before {
+    transform: skewX(-18deg);
+  }
+}

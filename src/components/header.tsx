@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar } from "./avatar";
-import { OclrLogo } from "./oclr-logo";
+import { OclLogo } from "./oclr-logo";
 import { ThemeControl } from "./theme-control";
 import type { Theme, Appearance } from "@/lib/preferences";
 import { AppearanceControl } from "./appearance-control";
@@ -198,19 +198,15 @@ function AccountControl({
     </div>
   );
 }
-const links = [
-  ["/", "Home"],
-  ["/tournaments", "Tournaments"],
-  ["/news", "News"],
-  ["/about", "About"],
-] as const;
 export function Header({
+  informationHref = "/tournaments",
   user,
   theme,
   appearance = "default",
   defaultAppearance = "default",
   appearancePreference,
 }: {
+  informationHref?: string;
   user: Account | null;
   theme: Theme;
   appearance?: Appearance;
@@ -219,13 +215,20 @@ export function Header({
 }) {
   const tr = useAppTranslations();
 
+  const links = [
+    { href: "/", label: tr("navigation_home") },
+    { href: informationHref, label: tr("Information page") },
+    { href: "/news", label: tr("Tournament news") },
+    { href: "/wiki", label: tr("OCL Wiki") },
+    { href: "/about", label: tr("Organizers") },
+  ];
   const [open, setOpen] = useState(false);
   const path = usePathname();
   return (
     <header className="site-header">
       <div className="nav-wrap">
-        <Link href="/" className="brand" aria-label={tr("OCLR home")}>
-          <OclrLogo />
+        <Link href="/" className="brand" aria-label={tr("OCL home")}>
+          <OclLogo />
         </Link>
         <button
           className="menu-toggle secondary"
@@ -240,24 +243,35 @@ export function Header({
           aria-label={tr("Main navigation")}
           className={open ? "main-nav open" : "main-nav"}
         >
-          {links.map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={
-                (
-                  href === "/"
-                    ? path === "/"
-                    : path === href || path.startsWith(`${href}/`)
-                )
-                  ? "page"
-                  : undefined
-              }
-              onClick={() => setOpen(false)}
-            >
-              {tr(href === "/" ? "navigation_home" : label)}
-            </Link>
-          ))}
+          {links.map(({ href, label }) =>
+            href === null ? (
+              <a
+                key={label}
+                role="link"
+                aria-disabled="true"
+                className="nav-unavailable"
+              >
+                {label}
+              </a>
+            ) : (
+              <Link
+                key={href}
+                href={href}
+                aria-current={
+                  (
+                    href === "/"
+                      ? path === "/"
+                      : path === href || path.startsWith(`${href}/`)
+                  )
+                    ? "page"
+                    : undefined
+                }
+                onClick={() => setOpen(false)}
+              >
+                {label}
+              </Link>
+            ),
+          )}
         </nav>
         <div className="site-preferences">
           <AppearanceControl

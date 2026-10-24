@@ -1,97 +1,164 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
-import { PageHeading } from "@/components/ui";
-import { CountryFlag } from "@/components/country-flag";
 import { Avatar } from "@/components/avatar";
+import { CountryFlag } from "@/components/country-flag";
 import { publicStaff } from "@/lib/public-staff";
 import { privacyContact } from "@/lib/auth/config";
+import { organizerDirectory } from "@/lib/organizer-directory";
+import "./organizers.css";
+
 export async function generateMetadata() {
   const tr = await getAppTranslations();
-  return { title: tr("About OCLR") };
+  return { title: tr("Organizers") };
 }
 
 export const dynamic = "force-dynamic";
 export default async function About() {
   const tr = await getAppTranslations();
-
   const staff = await publicStaff();
   const contact = privacyContact();
-  return (
-    <div className="container page">
-      <PageHeading
-        eyebrow={tr("THE ROOKIE STAGE")}
-        title={"osu! Chinese League Rookie"}
-      >
-        {tr(
-          "Founded in 2018, OCLR is part of the OCL tournament series, whose history dates back to 2014.",
-        )}
-      </PageHeading>
-      <div className="about-layout">
-        <section className="about-staff" aria-labelledby="staff-heading">
-          <h2 id="staff-heading">{tr("Staff & organizers")}</h2>
-          {staff.length ? (
-            <ul className="public-staff-list">
-              {staff.map((person) => (
-                <li key={person.osuId}>
-                  <Avatar osuId={person.osuId} username={person.username} />
-                  <div>
-                    <h3>
-                      <a
-                        className="context-link"
-                        href={`https://osu.ppy.sh/users/${person.osuId}`}
-                      >
-                        {person.username}
-                      </a>{" "}
-                      <CountryFlag code={person.countryCode} />
-                    </h3>
-                    <ul>
-                      {person.roles.map((grant) => (
-                        <li
-                          key={`${grant.role}-${grant.edition?.slug ?? "global"}`}
-                        >
-                          <span className="staff-role-name">
-                            {tr(grant.role)}
-                          </span>{" "}
-                          · {grant.edition?.name ?? tr("All editions")}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
+  const groups = [
+    {
+      id: "pooler",
+      title: "Pooler",
+      names: organizerDirectory.pooler,
+      roles: ["mappooler"],
+    },
+    {
+      id: "tester",
+      title: "Tester",
+      names: organizerDirectory.tester,
+      roles: [],
+    },
+    {
+      id: "streamer",
+      title: "Streamer",
+      names: organizerDirectory.streamer,
+      roles: ["streamer"],
+    },
+    {
+      id: "referee",
+      title: "Referee",
+      names: organizerDirectory.referee,
+      roles: ["referee"],
+    },
+  ];
+  function people(names: readonly string[], roles: string[]) {
+    const published = staff.flatMap((person) => {
+      const grants = person.roles.filter((grant) => roles.includes(grant.role));
+      return grants.length ? [{ ...person, roles: grants }] : [];
+    });
+    return published.length ? (
+      <ul className="organizer-people public-staff-list">
+        {published.map((person) => (
+          <li key={person.osuId}>
+            <Avatar osuId={person.osuId} username={person.username} />
+            <div>
+              <h4>
+                <a href={`https://osu.ppy.sh/users/${person.osuId}`}>
+                  {person.username}
+                </a>{" "}
+                <CountryFlag code={person.countryCode} />
+              </h4>
+              {person.roles.map((grant) => (
+                <p key={`${grant.role}-${grant.edition?.slug ?? "global"}`}>
+                  <span className="staff-role-name">{tr(grant.role)}</span> ·{" "}
+                  {grant.edition?.name ?? tr("All editions")}
+                </p>
               ))}
-            </ul>
-          ) : (
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : process.env.NODE_ENV === "development" ? (
+      <ul className="organizer-people">
+        {names.map((name) => (
+          <li key={name}>
+            <span className="organizer-portrait" aria-hidden="true" />
+            <div>
+              <h4>{name}</h4>
+              <p>osu! Chinese League Rookie</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="muted">{tr("Not announced")}</p>
+    );
+  }
+  return (
+    <div className="container page organizer-page">
+      <header className="organizer-heading">
+        <p className="eyebrow">osu! Chinese League Rookie</p>
+        <h1 id="organizers-title">{tr("Organizers")}</h1>
+      </header>
+      <div className="organizer-layout">
+        <aside className="organizer-sidebar">
+          <nav aria-label={tr("Contents")}>
+            <h2>{tr("Contents")}</h2>
+            <ol>
+              <li>
+                <a href="#hosts">{tr("Tournament organizers")}</a>
+              </li>
+              <li>
+                <a href="#staff">{tr("directory_staff")}</a>
+                <ol>
+                  {groups.map((group) => (
+                    <li key={group.id}>
+                      <a href={`#${group.id}`}>{group.title}</a>
+                    </li>
+                  ))}
+                </ol>
+              </li>
+              <li>
+                <a href="#developer">{tr("Developer")}</a>
+              </li>
+            </ol>
+          </nav>
+        </aside>
+        <div className="organizer-directory">
+          {!staff.length && process.env.NODE_ENV !== "development" && (
             <p className="muted">
               {tr(
                 "OCLR is run by its community organizing team. Public staff profiles have not been announced.",
               )}
             </p>
           )}
-        </section>
-        <aside className="about-aside" aria-labelledby="contact-heading">
-          <h2 id="contact-heading">{tr("Contact")}</h2>
-          {contact ? (
-            <p>
-              <a
-                href={contact.url}
-                className="button secondary about-contact-link"
+          <section id="hosts" aria-labelledby="hosts-title">
+            <h2 id="hosts-title">{tr("Tournament organizers")}</h2>
+            {people(organizerDirectory.hosts, ["admin"])}
+          </section>
+          <section id="staff" aria-labelledby="staff-title">
+            <h2 id="staff-title">{tr("directory_staff")}</h2>
+            {groups.map((group) => (
+              <section
+                className="organizer-group"
+                id={group.id}
+                key={group.id}
+                aria-labelledby={`${group.id}-title`}
               >
-                {tr("Contact OCLR Admin on osu!")}
-              </a>
-            </p>
-          ) : (
-            <p className="muted">
-              {tr("Public contact details have not been announced.")}
-            </p>
-          )}
-          <p className="small muted">
-            {tr("For personal data requests, see the")}{" "}
-            <Link className="text-link" href="/privacy">
-              {tr("privacy notice")}
-            </Link>
-            .
-          </p>
-        </aside>
+                <h3 id={`${group.id}-title`}>{group.title}</h3>
+                {people(group.names, group.roles)}
+              </section>
+            ))}
+          </section>
+          <section id="developer" aria-labelledby="developer-title">
+            <h2 id="developer-title">{tr("Developer")}</h2>
+            {people(organizerDirectory.developer, [])}
+          </section>
+          <footer className="organizer-contact">
+            <div>
+              <h2>{tr("Contact")}</h2>
+              {contact && (
+                <p>
+                  <a href={contact.url}>{tr("Contact OCLR Admin on osu!")}</a>
+                </p>
+              )}
+              <Link href="/privacy">{tr("privacy notice")}</Link>
+            </div>
+            <a href="#organizers-title">{tr("Back to top")} ↑</a>
+          </footer>
+        </div>
       </div>
     </div>
   );

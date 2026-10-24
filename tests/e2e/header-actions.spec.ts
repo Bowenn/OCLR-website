@@ -248,10 +248,17 @@ test.describe("role-aware header actions and compact tournament context", () => 
     });
     expect(await publicNav.getByRole("link").allTextContents()).toEqual([
       "Home",
-      "Tournaments",
-      "News",
-      "About",
+      "Information page",
+      "Tournament news",
+      "OCL Wiki",
+      "Organizers",
     ]);
+    await expect(
+      publicNav.getByRole("link", { name: "Information page", exact: true }),
+    ).toHaveAttribute("href", /^\/tournaments(?:\/[^/]+)?$/);
+    await expect(
+      publicNav.getByRole("link", { name: "OCL Wiki", exact: true }),
+    ).toHaveAttribute("href", "/wiki");
     await expect(publicNav.getByRole("link", { name: /Staff/ })).toHaveCount(0);
     if (isMobile)
       await page.getByRole("button", { name: "Close", exact: true }).click();

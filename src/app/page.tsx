@@ -1,151 +1,247 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
-import { Action } from "@/components/ui";
-import { publicNewsContext } from "@/lib/public-news";
-import { nextConfirmedMilestone, milestoneLabel } from "@/lib/public-milestones";
+import Image from "next/image";
+import { EditionCard } from "@/components/edition-card";
+import { getPublicEditions } from "@/lib/content";
 import { registrationAvailability } from "@/lib/registrations";
-import { formatDate, publicEditionSummary } from "@/lib/editions";
+import { formatDate } from "@/lib/editions";
+import "./home.css";
+
 export const dynamic = "force-dynamic";
+
+function EntryIcon({ kind }: { kind: "discord" | "qq" | "info" | "calendar" }) {
+  return (
+    <svg
+      className="home-entry-icon"
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Brand paths from Simple Icons (CC0): simpleicons.org. */}
+      {kind === "discord" && (
+        <path
+          fill="currentColor"
+          stroke="none"
+          d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"
+        />
+      )}
+      {kind === "qq" && (
+        <path
+          fill="currentColor"
+          stroke="none"
+          d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"
+        />
+      )}
+      {kind === "info" && (
+        <>
+          <rect x="4" y="3" width="16" height="18" rx="2" />
+          <path d="M8 8h8M8 12h8M8 16h5" />
+        </>
+      )}
+      {kind === "calendar" && (
+        <>
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M7 3v4M17 3v4M3 10h18m-13 5 3 3 5-5" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export default async function Home() {
   const tr = await getAppTranslations();
-
-  const now = new Date();
-  const { editions, items } = await publicNewsContext(undefined, tr);
+  const editions = await getPublicEditions();
   const featured =
     editions.find((e) => e.status === "live") ??
-    editions.find((e) => e.status === "upcoming") ??
-    editions[0];
+    editions.find((e) => e.status === "upcoming");
   const availability = featured
     ? await registrationAvailability(featured)
     : null;
-  const summary = featured ? publicEditionSummary(featured.summary) : null;
-  const news = items.slice(0, 3);
-  const milestone = nextConfirmedMilestone(editions, now);
+  const archives = editions
+    .filter((e) => e.status === "completed")
+    .sort((a, b) =>
+      (b.season ?? b.slug).localeCompare(a.season ?? a.slug, "en", {
+        numeric: true,
+      }),
+    );
+  const previewArchive =
+    process.env.NODE_ENV !== "production"
+      ? archives.find((edition) => edition.slug === "dev-archive")
+      : undefined;
+  const archiveCards = previewArchive
+    ? [10, 9, 8, 7].map((season) => ({
+        edition: {
+          ...previewArchive,
+          name: `OCLR S${season}`,
+          season: String(season),
+          summary: "",
+          branding: {
+            ...previewArchive.branding,
+            logo:
+              (
+                {
+                  10: "/archive/s10/thumbnail.png",
+                  9: "/archive/s9/thumbnail.png",
+                  8: "/archive/s8/thumbnail.jpg",
+                } as const
+              )[season as 10 | 9 | 8] ?? null,
+          },
+        },
+        href:
+          season === 10
+            ? `/tournaments/${previewArchive.slug}`
+            : "/tournaments",
+      }))
+    : archives.map((edition) => ({
+        edition,
+        href: `/tournaments/${edition.slug}`,
+      }));
+  const otherCurrent = editions.filter(
+    (e) => e.status !== "completed" && e.slug !== featured?.slug,
+  );
+  const base = featured ? `/tournaments/${featured.slug}` : "/tournaments";
+  const registrationLabel =
+    availability === "open"
+      ? tr("Registration phase")
+      : availability === "upcoming"
+        ? tr("Registration opens {value0}", {
+            value0: formatDate(
+              featured!.registration!.opensAt,
+              featured!.timeZone,
+              tr.locale,
+            ),
+          })
+        : availability === "paused"
+          ? tr("Registration paused")
+          : availability === "closed"
+            ? tr("Registration closed")
+            : availability === "unavailable"
+              ? tr("Registration temporarily unavailable")
+              : featured
+                ? tr("Registration not announced")
+                : tr("The next edition has not been announced yet.");
   return (
-    <>
-      <section className="hero" aria-labelledby="hero-title">
+    <div className="home-redesign">
+      <section className="home-feature" aria-labelledby="hero-title">
         <div
-          className="hero-art"
+          className="home-feature-art hero-art"
           style={{
             backgroundImage: `url("${featured?.branding.background ?? "/rookie-stage.svg"}")`,
           }}
           aria-hidden="true"
         />
-        <div className="hero-shade" aria-hidden="true" />
-        <div className="container hero-content">
-          <div className="hero-meta">
-            <p className="eyebrow hero-kicker">
-              {"osu! Chinese League Rookie"}
-            </p>
-            {featured && (
-              <span
-                className="hero-status"
-                data-state={featured.status}
-                aria-label={tr("Tournament status")}
+        <div className="container home-feature-inner">
+          <div className="home-feature-left">
+            <p className="home-full-name">{"osu! Chinese League Rookie"}</p>
+            <h1 id="hero-title" className="home-wordmark">
+              <Image
+                src="/oclr-s11-classic-wordmark-soft.png"
+                alt="OCLR S11"
+                width={2086}
+                height={754}
+                unoptimized
+                preload
+                className="home-painted-wordmark"
+              />
+            </h1>
+            <div className="home-entry-links">
+              <div className="home-contact-bar" aria-label={tr("Contact")}>
+                <a
+                  href="https://discord.gg/OCLRfanclube"
+                  className="home-contact"
+                >
+                  <EntryIcon kind="discord" />
+                  <span>{"Discord"}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+                <a
+                  href="mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1611727&card_type=group&source=qrcode"
+                  className="home-contact"
+                >
+                  <EntryIcon kind="qq" />
+                  <span>
+                    {"QQ"} <span className="home-contact-number">1611727</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+              <Link className="home-contact home-information-link" href={base}>
+                <EntryIcon kind="info" />
+                <span>{tr("Information page")}</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                className="home-registration-link"
+                href={availability === "open" ? `${base}/register` : base}
               >
-                {tr(
-                  {
-                    upcoming: "Upcoming",
-                    live: "Live",
-                    completed: "Completed",
-                  }[featured.status],
-                )}
-              </span>
-            )}
-          </div>
-          <h1 id="hero-title">{featured?.name ?? "OCLR"}</h1>
-          {summary && <p className="hero-copy">{summary}</p>}
-          {!featured && (
-            <p className="hero-copy">
-              {tr("The next edition has not been announced yet.")}
-            </p>
-          )}
-          {featured && availability !== "open" && (
-            <p className="hero-enrollment">
-              {availability === "upcoming"
-                ? tr("Registration opens {value0}", {
-                    value0: tr(
-                      formatDate(
-                        featured.registration?.opensAt ?? null,
-                        featured.timeZone,
-                        tr.locale,
-                      ),
-                    ),
-                  })
-                : availability === "paused"
-                  ? tr("Registration paused")
-                  : availability === "closed"
-                    ? tr("Registration closed")
-                    : availability === "unavailable"
-                      ? tr("Registration temporarily unavailable")
-                      : tr("Registration not announced")}
-            </p>
-          )}
-          <div className="actions">
-            {availability === "open" && (
-              <Action href={`/tournaments/${featured!.slug}/register`}>
-                {tr("Register")}
-              </Action>
-            )}
-            <Action
-              href={featured ? `/tournaments/${featured.slug}` : "/tournaments"}
-              secondary={availability === "open"}
-            >
-              {featured ? tr("View tournament") : tr("Browse tournaments")}
-            </Action>
+                <EntryIcon kind="calendar" />
+                <span className="home-registration-label">
+                  <span>{registrationLabel}</span>
+                  {availability === "open" && featured?.registration && (
+                    <>
+                      <span
+                        className="home-registration-divider"
+                        aria-hidden="true"
+                      >
+                        |
+                      </span>
+                      <span>
+                        {tr("Deadline {date}", {
+                          date: formatDate(
+                            featured.registration.closesAt,
+                            featured.timeZone,
+                            tr.locale,
+                          ),
+                        })}
+                      </span>
+                    </>
+                  )}
+                </span>
+                <span className="home-registration-arrow" aria-hidden="true">
+                  →
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
-      <div className="container home-updates">
-        <section aria-labelledby="latest-news-title">
-          <div className="section-title">
-            <h2 id="latest-news-title">{tr("Latest news")}</h2>
-            <Action href="/news" secondary>
-              {tr("All news")}
-            </Action>
+      <div className="container home-archive-section" id="past-seasons">
+        {otherCurrent.length > 0 && (
+          <section className="home-other-current">
+            <h2>{tr("Current tournaments")}</h2>
+            {otherCurrent.map((edition) => (
+              <Link
+                className="context-link"
+                key={edition.slug}
+                href={`/tournaments/${edition.slug}`}
+              >
+                {edition.slug.startsWith("dev-")
+                  ? `OCLR S${edition.season}`
+                  : edition.name}{" "}
+                →
+              </Link>
+            ))}
+          </section>
+        )}
+        <section aria-labelledby="archive-title">
+          <div className="home-archive-heading">
+            <h2 id="archive-title">{tr("Past tournament")}</h2>
           </div>
-          {news.length ? (
-            <ol className="home-news">
-              {news.map((item) => (
-                <li key={item.slug}>
-                  <p className="muted small">
-                    {item.future ? tr("Scheduled for ") : ""}
-                    {tr(formatDate(item.at, item.timeZone, tr.locale))}
-                  </p>
-                  <h3>
-                    <Link className="news-headline" href={`/news/${item.slug}`}>
-                      {item.title}
-                    </Link>
-                  </h3>
-                  <p className="muted small">{item.summary}</p>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="muted">{tr("No announcements yet.")}</p>
-          )}
+          <div className="home-archive-grid">
+            {archiveCards.map(({ edition, href }) => (
+              <EditionCard
+                key={`${edition.slug}-${edition.season}`}
+                edition={edition}
+                href={href}
+              />
+            ))}
+          </div>
         </section>
-        <aside aria-labelledby="next-milestone-title">
-          <p className="eyebrow">{tr("COMING UP")}</p>
-          <h2 id="next-milestone-title">{tr("Next milestone")}</h2>
-          {milestone ? (
-            <>
-              <p className="muted small">{milestone.edition}</p>
-              <h3>{milestoneLabel(milestone, tr)}</h3>
-              <p>
-                {tr(formatDate(milestone.at, milestone.timeZone, tr.locale))}
-              </p>
-              <Action href={milestone.url} secondary>
-                {tr("View schedule")}
-              </Action>
-            </>
-          ) : (
-            <p className="muted">
-              {tr("No future milestone has been confirmed.")}
-            </p>
-          )}
-        </aside>
       </div>
-    </>
+    </div>
   );
 }

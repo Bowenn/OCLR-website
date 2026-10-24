@@ -9,5 +9,13 @@ test-results/
 !.env.example
 .DS_Store
 
+# Local database storage and root-level exports (keep drizzle migrations tracked).
+/.local/
+/postgres-data/
+/*.dump
+/*.backup
+/*.sql
+/*.sql.gz
+
 # Generated only in versioned deployment releases.
 .oclr-release
