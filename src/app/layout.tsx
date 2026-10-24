@@ -152,9 +152,6 @@ export default async function RootLayout({
                   </a>{" "}
                   {"· OCLR — osu! Chinese League Rookie"}
                 </p>
-                <p className="muted">
-                  {tr("Not affiliated with or endorsed by osu!.")}
-                </p>
               </footer>
             </SiteFrame>
           </AppearanceProvider>
