@@ -20,6 +20,7 @@ import {
   projectStatistics,
   validStatisticsExclusions,
   canExcludeNonParticipantScore,
+  canExcludeStatisticsBenchScore,
   type StatisticsSnapshot,
 } from "./archive-statistics-model";
 
@@ -222,8 +223,18 @@ export async function statisticsWorkspace(
           game,
           included: r.draft.included.includes(game.id),
           nonParticipantIds: game.scores
-            .filter((score) =>
-              canExcludeNonParticipantScore(archive, r.fixtureId, score),
+            .filter(
+              (score) =>
+                canExcludeNonParticipantScore(archive, r.fixtureId, score) ||
+                canExcludeStatisticsBenchScore(
+                  archive,
+                  r.fixtureId,
+                  game,
+                  score,
+                  (r.draft.excludedScores ?? [])
+                    .filter((e) => e.gameId === game.id)
+                    .map((e) => e.osuId),
+                ),
             )
             .map((score) => score.osuId!),
           issues: statisticsGameIssues(

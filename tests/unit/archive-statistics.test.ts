@@ -160,6 +160,40 @@ describe("historical MP statistics", () => {
     s.excludedScores[0].osuId = 99999;
     expect(validStatisticsExclusions(s, a, "one")).toBe(false);
   });
+  it("permits only explicitly reviewed bench records beyond four retained teammates", () => {
+    const archive = structuredClone(a),
+      s = snapshot(),
+      game = s.source.games[0];
+    for (const uid of [91006, 91007, 91008]) {
+      archive.players.push({
+        ...archive.players[0],
+        osuId: uid,
+        username: "Synthetic teammate " + uid,
+        role: "player",
+        tier: null,
+      });
+      game.scores.push({ ...structuredClone(game.scores[0]), osuId: uid });
+    }
+    game.scores[0].total = 50;
+    s.excludedScores = [{ gameId: 1, osuId: 91001, reason: "non-participant" }];
+    expect(validStatisticsExclusions(s, archive, "one")).toBe(true);
+    expect(fixtureStatisticsIssues(archive, "one", [s])).toEqual([]);
+    expect(
+      projectStatistics(archive, "one", s).filter(
+        (p) => p.gameId === 1 && p.teamId === "alpha",
+      ),
+    ).toHaveLength(4);
+    expect(game.scores[0].total).toBe(50);
+    s.excludedScores.push({
+      gameId: 1,
+      osuId: 91006,
+      reason: "non-participant",
+    });
+    expect(validStatisticsExclusions(s, archive, "one")).toBe(false);
+    s.excludedScores = [{ gameId: 1, osuId: 91001, reason: "non-participant" }];
+    game.scores.find((p) => p.osuId === 91008)!.total = 0;
+    expect(validStatisticsExclusions(s, archive, "one")).toBe(false);
+  });
   it("requires explicit review for missing historical pools and preserves MP metadata", () => {
     const s = snapshot();
     s.poolId = "";

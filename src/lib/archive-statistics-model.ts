@@ -53,6 +53,40 @@ export function canExcludeNonParticipantScore(
     ![fixture.teamA, fixture.teamB].includes(player?.teamId ?? "")
   );
 }
+// A reviewed bench occupant can also be on the edition roster. Require four
+// other positive, retained same-team records; never reduce a real lineup.
+export function canExcludeStatisticsBenchScore(
+  archive: HistoricalArchive,
+  fixtureId: string,
+  game: MatchGame,
+  score: MatchScore,
+  excludedIds: number[] = [],
+) {
+  const fixture = archive.matches.find((m) => m.id === fixtureId);
+  const team = archive.players.find((p) => p.osuId === score.osuId)?.teamId;
+  return (
+    !!fixture &&
+    !!team &&
+    [fixture.teamA, fixture.teamB].includes(team) &&
+    score.osuId !== null &&
+    score.total !== null &&
+    score.problems.length === 0 &&
+    new Set(
+      game.scores
+        .filter(
+          (other) =>
+            other.osuId !== score.osuId &&
+            other.osuId !== null &&
+            !excludedIds.includes(other.osuId) &&
+            (other.total ?? 0) > 0 &&
+            other.problems.length === 0 &&
+            archive.players.find((p) => p.osuId === other.osuId)?.teamId ===
+              team,
+        )
+        .map((other) => other.osuId),
+    ).size >= 4
+  );
+}
 export function statisticsScores(
   game: MatchGame,
   excluded: NonNullable<StatisticsSnapshot["excludedScores"]> = [],
@@ -83,15 +117,23 @@ export function validStatisticsExclusions(
     new Set(excluded.map((e) => `${e.gameId}:${e.osuId}`)).size ===
       excluded.length &&
     excluded.every((e) => {
-      const scores = snapshot.source.games
-        .find((g) => g.id === e.gameId)
-        ?.scores.filter((s) => s.osuId === e.osuId);
+      const game = snapshot.source.games.find((g) => g.id === e.gameId);
+      const scores = game?.scores.filter((s) => s.osuId === e.osuId);
       return (
         scores?.length === 1 &&
         (e.reason === "non-participant"
           ? !!archive &&
             !!fixtureId &&
-            canExcludeNonParticipantScore(archive, fixtureId, scores[0])
+            (canExcludeNonParticipantScore(archive, fixtureId, scores[0]) ||
+              canExcludeStatisticsBenchScore(
+                archive,
+                fixtureId,
+                game!,
+                scores[0],
+                excluded
+                  .filter((x) => x.gameId === e.gameId)
+                  .map((x) => x.osuId),
+              ))
           : canExcludeStatisticsScore(scores[0]))
       );
     })
