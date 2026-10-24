@@ -120,10 +120,14 @@ test.describe("historical archive browser workflow", () => {
     await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=schedule`,
     );
-    await page.getByRole("button", { name: /Unconfirmed records/ }).click();
+    await page
+      .getByLabel("Match status", { exact: true })
+      .selectOption("unconfirmed");
     await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await expect(
-      page.getByText("Unconfirmed alternative", { exact: true }),
+      page
+        .locator(".event-matches")
+        .getByText("Unconfirmed alternative", { exact: true }),
     ).toBeVisible();
     const guest = await context.browser()!.newContext();
     expect(

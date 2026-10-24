@@ -1,4 +1,5 @@
 "use client";
+import "../app/tournaments/[edition]/event-pages.css";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { EventMatch } from "@/lib/event-preview";
@@ -134,7 +135,11 @@ export function EventSchedule({
       {reviewMode && (
         <label>
           {tr("Match status")}
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select
+            aria-label={tr("Match status")}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
             <option value="all">{tr("All matches")}</option>
             <option value="recorded">{tr("Recorded results")}</option>
             <option value="unconfirmed">{tr("Unconfirmed records")}</option>
@@ -274,7 +279,11 @@ export function EventSchedule({
           <h2>{tr("Match information")}</h2>
           <label>
             {tr("Rounds")}
-            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <select
+              aria-label={tr("Rounds")}
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
               <option value="">{tr("All rounds")}</option>
               {[...new Set(matches.map((m) => m.round))].map((r) => (
                 <option key={r}>{r}</option>
