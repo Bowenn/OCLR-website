@@ -151,7 +151,7 @@ export default async function Home() {
             <div className="home-entry-links">
               <div className="home-contact-bar" aria-label={tr("Contact")}>
                 <a
-                  href="https://discord.gg/OCLRfanclube"
+                  href="https://discord.gg/graS4RJHjM"
                   className="home-contact"
                 >
                   <EntryIcon kind="discord" />
@@ -159,12 +159,13 @@ export default async function Home() {
                   <span aria-hidden="true">→</span>
                 </a>
                 <a
-                  href="mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1611727&card_type=group&source=qrcode"
+                  href="https://qm.qq.com/q/sqIoPulwUo"
                   className="home-contact"
                 >
                   <EntryIcon kind="qq" />
                   <span>
-                    {"QQ"} <span className="home-contact-number">1611727</span>
+                    {"QQ群"}{" "}
+                    <span className="home-contact-number">926872640</span>
                   </span>
                   <span aria-hidden="true">→</span>
                 </a>

@@ -64,7 +64,7 @@ export const wikiArticles: WikiArticle[] = [
         id: "community",
         title: "找到赛事社区",
         paragraphs: [
-          "QQ群：1611727",
+          "QQ群 926872640",
           "Discord：OCLRfanclube。社区用于赛事通知、队伍交流和日常联机；当前赛季的报名入口与阶段安排可从顶部 Information page 进入。",
         ],
       },

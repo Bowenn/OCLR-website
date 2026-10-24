@@ -90,12 +90,12 @@ export function informationPreview(slug: string): TournamentInformation | null {
     links: [
       { label: "选手报名", href: `${base}/register` },
       {
-        label: "QQ 群 · 1611727",
-        href: "mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1611727&card_type=group&source=qrcode",
+        label: "QQ群 926872640",
+        href: "https://qm.qq.com/q/sqIoPulwUo",
       },
       {
         label: "Discord · OCLRfanclube",
-        href: "https://discord.gg/OCLRfanclube",
+        href: "https://discord.gg/graS4RJHjM",
       },
       { label: "选秀直播间", href: `${base}/draft` },
       { label: "赛事对阵", href: `${base}/bracket` },
