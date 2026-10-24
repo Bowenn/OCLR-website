@@ -6,7 +6,7 @@ export function BwsSummary({ value }: { value: Summary }) {
   return (
     <section className="bws-summary" aria-label={tr("Badge-weighted seeding")}>
       <h3>
-        {tr("BWS adjusted seed")}{" "}
+        {tr("Rank-based BWS")}{" "}
         <span className="muted small">· {modeNames[value.mode]}</span>
       </h3>
       {value.value !== null ? (
@@ -15,12 +15,7 @@ export function BwsSummary({ value }: { value: Summary }) {
             {new Intl.NumberFormat(tr.locale, {
               maximumFractionDigits: 0,
             }).format(value.value)}
-          </strong>{" "}
-          <span className="muted small">
-            {tr("Eligible tournament badges: {count}", {
-              count: value.badgeCount!,
-            })}
-          </span>
+          </strong>
         </p>
       ) : (
         <p className="muted" role="status">
@@ -29,6 +24,47 @@ export function BwsSummary({ value }: { value: Summary }) {
             : tr("Badge eligibility pending staff review")}
         </p>
       )}
+      <p className="small muted">
+        <code>{"globalRank ^ (0.9937 ^ (badges ^ 2))"}</code>
+      </p>
+      <p>
+        <span className="muted small">{tr("Original pp")}</span>{" "}
+        <strong>
+          {value.rawPp === null
+            ? tr("Unavailable")
+            : new Intl.NumberFormat(tr.locale, {
+                maximumFractionDigits: 2,
+                notation: value.rawPp >= 1e12 ? "scientific" : "standard",
+              }).format(value.rawPp)}
+        </strong>
+      </p>
+      <h3>{tr("Badge-weighted pp")}</h3>
+      {value.adjustedPp !== null ? (
+        <p>
+          <strong className="bws-value">
+            {new Intl.NumberFormat(tr.locale, {
+              maximumFractionDigits: 2,
+              notation: value.adjustedPp >= 1e12 ? "scientific" : "standard",
+            }).format(value.adjustedPp)}
+          </strong>
+        </p>
+      ) : (
+        <p className="muted" role="status">
+          {value.ppStatus === "pending"
+            ? tr("Badge eligibility pending staff review")
+            : tr("Weighted pp unavailable (missing data or numeric limit)")}
+        </p>
+      )}
+      <p className="small muted">
+        <code>{"pp^(1.0063^(badges^2)/1)"}</code>
+      </p>
+      <p className="small muted">
+        {value.badgeCount === null
+          ? tr("Badge eligibility pending staff review")
+          : tr("Eligible tournament badges: {count}", {
+              count: value.badgeCount,
+            })}
+      </p>
       <p className="small muted">
         {tr(
           "Informational for the selected ruleset, not a leaderboard position or registration decision.",
@@ -56,7 +92,7 @@ export function BwsSummary({ value }: { value: Summary }) {
       <p className="small muted">
         {tr("Profile updated")}{" "}
         <time dateTime={value.fetchedAt}>{value.fetchedAt}</time>
-        {value.status === "stale" && <> · {tr("Stale snapshot")}</>}
+        {value.stale && <> · {tr("Stale snapshot")}</>}
       </p>
     </section>
   );

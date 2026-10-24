@@ -68,7 +68,7 @@ describe.skipIf(!url)("scoped BWS review and public projection", () => {
       ...profileResponse,
       id: player,
       badges,
-      statistics: { global_rank: 10000 },
+      statistics: { global_rank: 10000, pp: 1234.567 },
     });
   });
   afterAll(async () => {
@@ -100,6 +100,9 @@ describe.skipIf(!url)("scoped BWS review and public projection", () => {
       status: "ready",
       badgeCount: 1,
       value: 10000 ** 0.9937,
+      rawPp: 1234.567,
+      adjustedPp: 1234.567 ** 1.0063,
+      ppStatus: "ready",
     });
     const publicData = await publishedPlayerProfile(
       String(player),
@@ -194,7 +197,7 @@ describe.skipIf(!url)("scoped BWS review and public projection", () => {
       ...profileResponse,
       id: player,
       badges: badges.slice(1),
-      statistics: { global_rank: 10000 },
+      statistics: { global_rank: 10000, pp: 1234.567 },
     });
     const fresh = await getOsuUserProfile(player, "osu");
     expect((await profileBws(fresh, edition.slug))?.value).toBeNull();

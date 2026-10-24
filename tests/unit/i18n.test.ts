@@ -85,6 +85,7 @@ describe("localized interface catalogs", () => {
               "UTC",
               "OCLR",
               "osu! Chinese League Rookie",
+              "Muziyami", // Contributor identity, kept literal in every locale.
               "/tournaments/",
             ].includes(text)
           )

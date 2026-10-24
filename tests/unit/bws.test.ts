@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { calculateBws, summarizeBws } from "../../src/lib/bws-model";
+import {
+  calculateBadgeWeightedPp,
+  calculateBws,
+  summarizeBws,
+} from "../../src/lib/bws-model";
 import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
 const badge = {
   description: "Synthetic tournament",
@@ -98,5 +102,73 @@ describe("badge-weighted seeding", () => {
         null,
       ).status,
     ).toBe("unranked");
+  });
+});
+
+describe("badge-weighted pp", () => {
+  it("preserves the organizer formula and fractional precision", () => {
+    expect(calculateBadgeWeightedPp(1234.567, 0)).toBe(1234.567);
+    expect(calculateBadgeWeightedPp(1234.567, 1)).toBe(1234.567 ** 1.0063);
+    expect(calculateBadgeWeightedPp(1234.567, 4)).toBe(
+      1234.567 ** (1.0063 ** 16 / 1),
+    );
+    expect(calculateBadgeWeightedPp(0, 3)).toBe(0);
+    expect(calculateBadgeWeightedPp(0.5, 2)).toBe(0.5 ** (1.0063 ** 4));
+  });
+  it("rejects invalid inputs and nonfinite intermediate or final results", () => {
+    for (const pp of [null, undefined, -1, NaN, Infinity, "123"])
+      expect(calculateBadgeWeightedPp(pp, 0)).toBeNull();
+    for (const badges of [
+      null,
+      undefined,
+      -1,
+      0.5,
+      NaN,
+      Infinity,
+      "1",
+      Number.MAX_SAFE_INTEGER + 1,
+    ])
+      expect(calculateBadgeWeightedPp(123, badges)).toBeNull();
+    expect(calculateBadgeWeightedPp(Number.MAX_VALUE, 1)).toBeNull();
+    expect(calculateBadgeWeightedPp(1000, Number.MAX_SAFE_INTEGER)).toBeNull();
+  });
+  it("keeps pp independent of rank, review and snapshot freshness", () => {
+    const p = profile([badge, badge, badge], null);
+    p.statistics.pp = 1234.567;
+    const snapshot = { profile: p, stale: false, notice: null };
+    expect(summarizeBws(snapshot, null)).toMatchObject({
+      rawPp: 1234.567,
+      adjustedPp: null,
+      ppStatus: "pending",
+    });
+    expect(
+      summarizeBws(snapshot, ["osu", "unknown", "other"]).adjustedPp,
+    ).toBeNull();
+    expect(summarizeBws(snapshot, ["osu", "taiko", "other"])).toMatchObject({
+      value: null,
+      adjustedPp: 1234.567 ** 1.0063,
+      ppStatus: "ready",
+      badgeCount: 1,
+    });
+    expect(
+      summarizeBws({ ...snapshot, stale: true }, ["osu", "mania", "fruits"]),
+    ).toMatchObject({ ppStatus: "stale", stale: true });
+    expect(
+      summarizeBws({ ...snapshot, notice: "Provider unavailable" }, null).stale,
+    ).toBe(true);
+    p.statistics.pp = 0;
+    expect(summarizeBws(snapshot, ["other", "other", "other"]).adjustedPp).toBe(
+      0,
+    );
+    p.statistics.pp = null;
+    p.statistics.globalRank = 10000;
+    expect(summarizeBws(snapshot, ["osu", "other", "other"])).toMatchObject({
+      value: 10000 ** 0.9937,
+      adjustedPp: null,
+      ppStatus: "unavailable",
+    });
+    p.ruleset = "taiko";
+    p.statistics.pp = 123;
+    expect(summarizeBws(snapshot, ["osu", "osu", "osu"]).adjustedPp).toBeNull();
   });
 });

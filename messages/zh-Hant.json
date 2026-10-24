@@ -2495,6 +2495,10 @@
     "tester": "Tester",
     "replayer": "Replayer",
     "m350ad433c42f": "貢獻者",
-    "mf911e414cf6b": "GitHub"
+    "mf911e414cf6b": "GitHub",
+    "m82d5d9938bca": "基於 rank 的 BWS",
+    "m06ed353efdae": "原始 pp",
+    "mdfe84b459dfd": "徽章加權 pp",
+    "mb7823f2ea63c": "無法計算加權 pp（資料缺失或超出數值範圍）"
   }
 }

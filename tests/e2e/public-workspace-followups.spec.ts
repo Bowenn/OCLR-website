@@ -349,7 +349,7 @@ test.describe("public and operational follow-ups", () => {
               ...profileResponse,
               id,
               badges: id === seed.memberId ? [] : badges,
-              statistics: { global_rank: 10000 },
+              statistics: { global_rank: 10000, pp: 1234.567 },
             },
             id,
             "osu",
@@ -393,9 +393,14 @@ test.describe("public and operational follow-ups", () => {
       section.getByLabel("Badge classification evidence"),
     ).toHaveCount(0);
     await section.getByRole("button", { name: "Save badge review" }).click();
-    await expect(section.locator(".bws-value")).toHaveText(
+    await expect(section.locator(".bws-value").first()).toHaveText(
       new Intl.NumberFormat("en", { maximumFractionDigits: 0 }).format(
         10000 ** 0.9937,
+      ),
+    );
+    await expect(section.locator(".bws-value").nth(1)).toHaveText(
+      new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(
+        1234.567 ** 1.0063,
       ),
     );
     expect(
@@ -406,59 +411,90 @@ test.describe("public and operational follow-ups", () => {
         })
       ).status(),
     ).toBe(403);
-    for (const locale of locales) {
-      await preferences(context, locale);
-      await page.goto(
-        `/admin/tournaments/test-cup/registrations/${registration.id}`,
-      );
-      await section.locator(".actions button").click();
-      await expect(section.locator(".bws-value")).toBeVisible();
-      await page.setViewportSize({ width: isMobile ? 320 : 1440, height: 900 });
-      await noOverflow(page);
-      await page.screenshot({
-        path: info.outputPath(`staff-bws-${locale}.png`),
-        fullPage: true,
-      });
-      await accessible(page);
-    }
+    for (const appearance of ["default", "cute-pastel", "swiss-minimal"])
+      for (const theme of ["light", "dark"])
+        for (const locale of locales) {
+          await preferences(context, locale, theme);
+          await context.addCookies([
+            {
+              name: "oclr-appearance",
+              value: appearance,
+              url: "http://127.0.0.1:3100",
+            },
+          ]);
+          await page.goto(
+            `/admin/tournaments/test-cup/registrations/${registration.id}`,
+          );
+          await section.locator(".actions button").click();
+          await expect(section.locator(".bws-value").first()).toBeVisible();
+          await page.setViewportSize({
+            width: isMobile ? 320 : 1440,
+            height: 900,
+          });
+          await noOverflow(page);
+          await page.screenshot({
+            path: info.outputPath(
+              `staff-bws-${locale}-${appearance}-${theme}.png`,
+            ),
+            fullPage: true,
+          });
+          await accessible(page);
+        }
     const guest = await browser.newContext({
       baseURL: "http://127.0.0.1:3100",
       viewport: { width: isMobile ? 320 : 1440, height: 900 },
     });
     try {
       const publicPage = await guest.newPage();
-      for (const locale of locales) {
-        await preferences(guest, locale);
-        await publicPage.goto(
-          `/players/${seed.captainId}?edition=test-cup&mode=osu`,
-        );
-        await expect(publicPage.locator(".bws-value")).toBeVisible();
-        expect(await publicPage.locator("main").innerText()).not.toContain(
-          "PRIVATE_BWS_REVIEW_EVIDENCE",
-        );
-        const data = await (
-          await guest.request.get(
-            `/api/players/${seed.captainId}?edition=test-cup&mode=osu`,
-          )
-        ).json();
-        expect(data.bws).toMatchObject({
-          badgeCount: 1,
-          value: 10000 ** 0.9937,
-        });
-        expect(JSON.stringify(data)).not.toMatch(
-          /PRIVATE_BWS_REVIEW_EVIDENCE|classifications|reviewedBy/,
-        );
-        await noOverflow(publicPage);
-        await publicPage.screenshot({
-          path: info.outputPath(`public-bws-${locale}.png`),
-          fullPage: true,
-        });
-      }
+      for (const appearance of ["default", "cute-pastel", "swiss-minimal"])
+        for (const theme of ["light", "dark"])
+          for (const locale of locales) {
+            await preferences(guest, locale, theme);
+            await guest.addCookies([
+              {
+                name: "oclr-appearance",
+                value: appearance,
+                url: "http://127.0.0.1:3100",
+              },
+            ]);
+            await publicPage.goto(
+              `/players/${seed.captainId}?edition=test-cup&mode=osu`,
+            );
+            await expect(
+              publicPage.locator(".bws-value").first(),
+            ).toBeVisible();
+            expect(await publicPage.locator("main").innerText()).not.toContain(
+              "PRIVATE_BWS_REVIEW_EVIDENCE",
+            );
+            const data = await (
+              await guest.request.get(
+                `/api/players/${seed.captainId}?edition=test-cup&mode=osu`,
+              )
+            ).json();
+            expect(data.bws).toMatchObject({
+              badgeCount: 1,
+              value: 10000 ** 0.9937,
+              rawPp: 1234.567,
+              adjustedPp: 1234.567 ** 1.0063,
+            });
+            expect(JSON.stringify(data)).not.toMatch(
+              /PRIVATE_BWS_REVIEW_EVIDENCE|classifications|reviewedBy/,
+            );
+            await noOverflow(publicPage);
+            await publicPage.screenshot({
+              path: info.outputPath(
+                `public-bws-${locale}-${appearance}-${theme}.png`,
+              ),
+              fullPage: true,
+            });
+          }
       await preferences(guest, "en");
       await publicPage.goto(
         `/players/${seed.memberId}?edition=test-cup&mode=osu`,
       );
-      await expect(publicPage.locator(".bws-value")).toHaveText("10,000");
+      await expect(publicPage.locator(".bws-value").first()).toHaveText(
+        "10,000",
+      );
     } finally {
       await guest.close();
     }

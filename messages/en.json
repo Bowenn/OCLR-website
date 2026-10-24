@@ -2495,6 +2495,10 @@
     "tester": "Tester",
     "replayer": "Replayer",
     "m350ad433c42f": "Contributors",
-    "mf911e414cf6b": "GitHub"
+    "mf911e414cf6b": "GitHub",
+    "m82d5d9938bca": "Rank-based BWS",
+    "m06ed353efdae": "Original pp",
+    "mdfe84b459dfd": "Badge-weighted pp",
+    "mb7823f2ea63c": "Weighted pp unavailable (missing data or numeric limit)"
   }
 }
