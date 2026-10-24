@@ -415,7 +415,9 @@ test.describe("isolated multi-captain rehearsal", () => {
       new RegExp(`/tournaments/${slug}/players$`),
     );
     await expect(
-      bracketPage.locator(".badge").filter({ hasText: /^Captain$/ }),
+      bracketPage
+        .locator(".event-player-identity .muted")
+        .filter({ hasText: /^Captain/ }),
     ).toHaveCount(2);
     // Accepted players remain public even when they have no released roster.
     await expect(
