@@ -85,7 +85,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   margin: 0;
 }
 .home-feature .home-contact {
@@ -220,7 +220,7 @@ html[data-appearance="swiss-minimal"]
     font-size: clamp(4.225rem, 20.15vw, 9.1rem);
   }
   .home-contact-bar {
-    gap: 0.75rem;
+    gap: 1rem;
   }
   .home-feature .home-contact {
     gap: 0.8rem;
@@ -266,7 +266,7 @@ html[data-appearance="swiss-minimal"]
 }
 .home-entry-links {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   width: 100%;
 }
 .home-feature :is(.home-contact, .home-registration-link) {
@@ -354,7 +354,7 @@ html[data-theme="dark"]
 }
 @media (max-width: 420px) {
   .home-entry-links .home-contact-bar {
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   .home-entry-links .home-contact {
     gap: 0.25rem;
