@@ -266,6 +266,9 @@ export function MappoolReplays({
           ? err.message
           : tr("Replay deletion failed. Reload and retry."),
       );
+      dialog.current?.close();
+      setDeleting(null);
+      summary.current?.focus();
     } finally {
       setPending(false);
       await load();
