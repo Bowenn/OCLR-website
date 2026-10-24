@@ -166,6 +166,24 @@ test.describe("private replay workflow", () => {
     await page
       .getByRole("button", { name: "Delete replay", exact: true })
       .click();
+    const deleteUrl = `**${url}/${row.id}`;
+    await page.route(deleteUrl, async (route) => {
+      if (route.request().method() === "DELETE")
+        await route.fulfill({
+          status: 409,
+          json: { error: "This pool changed. Refresh before confirming." },
+        });
+      else await route.continue();
+    });
+    await dialog
+      .getByRole("button", { name: "Delete replay", exact: true })
+      .click();
+    await expect(dialog.getByRole("alert")).toBeVisible();
+    await expect(dialog.getByRole("alert")).toHaveText(
+      "This pool changed. Refresh before confirming.",
+    );
+    await expect(page.locator(".replay-item")).toHaveCount(1);
+    await page.unroute(deleteUrl);
     await dialog
       .getByRole("button", { name: "Delete replay", exact: true })
       .click();

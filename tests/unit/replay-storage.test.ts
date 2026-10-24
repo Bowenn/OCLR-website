@@ -11,6 +11,7 @@ import {
   rm,
   readdir,
   stat,
+  lstat,
   utimes,
 } from "node:fs/promises";
 import { join } from "node:path";
@@ -21,6 +22,10 @@ import {
   replayDirectory,
 } from "../../src/lib/replay-storage";
 import { REPLAY_STORAGE_MAX_BYTES } from "../../src/lib/replay-model";
+vi.mock("node:fs/promises", async (original) => {
+  const fs = await original<typeof import("node:fs/promises")>();
+  return { ...fs, lstat: vi.fn(fs.lstat) };
+});
 let root: string;
 beforeEach(async () => {
   root = await realpath(
@@ -33,6 +38,50 @@ afterEach(async () => {
   vi.unstubAllEnvs();
 });
 describe("durable private replay storage", () => {
+  it("allows an upload when a committed deletion removes a file during quota accounting", async () => {
+    const directory = await replayDirectory();
+    const deleted = join(directory, randomUUID() + ".osr");
+    await writeFile(deleted, "deleted replay");
+    const { lstat: actualLstat } =
+      await vi.importActual<typeof import("node:fs/promises")>(
+        "node:fs/promises",
+      );
+    vi.mocked(lstat)
+      .mockImplementationOnce(actualLstat)
+      .mockImplementationOnce(async (path) => {
+        await rm(deleted);
+        return actualLstat(path);
+      });
+    const bytes = Buffer.from("new replay"),
+      id = randomUUID();
+    await storeReplay(id, bytes);
+    expect(
+      await readReplay(
+        id,
+        bytes.length,
+        createHash("sha256").update(bytes).digest("hex"),
+      ),
+    ).toEqual(bytes);
+    expect(await readdir(directory)).toEqual([id + ".osr"]);
+  });
+  it("still rejects storage errors other than a concurrently removed file", async () => {
+    const directory = await replayDirectory();
+    await writeFile(join(directory, randomUUID() + ".osr"), "keep");
+    const failure = Object.assign(new Error("Synthetic storage failure"), {
+      code: "EACCES",
+    });
+    const { lstat: actualLstat } =
+      await vi.importActual<typeof import("node:fs/promises")>(
+        "node:fs/promises",
+      );
+    vi.mocked(lstat)
+      .mockImplementationOnce(actualLstat)
+      .mockRejectedValueOnce(failure);
+    await expect(storeReplay(randomUUID(), Buffer.from("x"))).rejects.toBe(
+      failure,
+    );
+    expect(await readdir(directory)).toHaveLength(1);
+  });
   it("uses generated paths and private permissions, detects changed content and refuses symlink reads", async () => {
     const bytes = Buffer.from("synthetic byte equality fixture"),
       id = randomUUID(),

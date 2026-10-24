@@ -55,7 +55,14 @@ export async function storeReplay(key: string, bytes: Buffer) {
   let total = bytes.length,
     count = 1;
   for (const name of await readdir(directory)) {
-    const stat = await lstat(join(directory, name));
+    const stat = await lstat(join(directory, name)).catch(
+      (error: NodeJS.ErrnoException) => {
+        // Deletions unlink after committing/releasing the database storage lock.
+        if (error.code === "ENOENT") return null;
+        throw error;
+      },
+    );
+    if (!stat) continue;
     if (!stat.isFile() || stat.isSymbolicLink())
       throw new HttpError(503, "Replay storage is unavailable.");
     total += stat.size;

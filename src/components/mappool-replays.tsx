@@ -372,6 +372,7 @@ export function MappoolReplays({
                     className="secondary"
                     disabled={pending}
                     onClick={() => {
+                      setError("");
                       setDeleting(item);
                       dialog.current?.showModal();
                     }}
@@ -454,7 +455,7 @@ export function MappoolReplays({
           role={error ? "alert" : undefined}
           className="error-text"
         >
-          {error && tr(error)}
+          {error && !deleting && tr(error)}
         </p>
         <dialog
           ref={dialog}
@@ -469,6 +470,11 @@ export function MappoolReplays({
               "This removes the staff attachment. It does not change the beatmap or any result.",
             )}
           </p>
+          {deleting && error && (
+            <p role="alert" className="error-text">
+              {tr(error)}
+            </p>
+          )}
           <div className="actions">
             <button
               type="button"
