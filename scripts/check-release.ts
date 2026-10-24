@@ -94,6 +94,9 @@ try {
     );
   await db().execute(sql`SELECT latest_import_id FROM match_results LIMIT 0`);
   await db().execute(
+    sql`SELECT draft, published, version FROM historical_statistics LIMIT 0`,
+  );
+  await db().execute(
     sql`SELECT request_key, request_hash FROM result_audit_events LIMIT 0`,
   );
   await db().execute(

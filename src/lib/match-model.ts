@@ -13,6 +13,15 @@ export const matchScoreSchema = z
     mods: z.array(z.string().max(16)).max(64),
     accuracy: z.number().min(0).max(1).nullable(),
     combo: integer.nullable(),
+    hitCounts: z
+      .object({
+        great: integer.nullable(),
+        ok: integer.nullable(),
+        meh: integer.nullable(),
+        miss: integer.nullable(),
+      })
+      .strict()
+      .optional(),
     providerFields: z.record(
       z.string(),
       z.union([

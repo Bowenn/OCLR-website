@@ -15,6 +15,35 @@ import {
 vi.mock("../../src/lib/osu-api", () => ({ osuApi: vi.fn() }));
 beforeEach(() => vi.mocked(osuApi).mockReset());
 describe("official MP history normalization", () => {
+  it("retains legacy and modern hit counts without replacing unavailable values with zero", async () => {
+    const game = syntheticApiGame(1);
+    const scores = game.scores.map((s, i) => ({
+      ...s,
+      statistics:
+        i === 0
+          ? { count_300: 90, count_100: 5, count_50: 1, count_miss: 0 }
+          : i === 1
+            ? { great: 90, ok: 5, meh: 1, miss: 3 }
+            : i === 2
+              ? { count_miss: 1, miss: 2 }
+              : {},
+    }));
+    vi.mocked(osuApi).mockResolvedValue(
+      syntheticPage([syntheticEvent(1, { ...game, scores })], {
+        latest_event_id: 1,
+      }),
+    );
+    const source = await fetchMatchSource(syntheticMatchId);
+    expect(source.games[0].scores[0].hitCounts).toEqual({
+      great: 90,
+      ok: 5,
+      meh: 1,
+      miss: 0,
+    });
+    expect(source.games[0].scores[1].hitCounts?.miss).toBe(3);
+    expect(source.games[0].scores[2].hitCounts?.miss).toBeNull();
+    expect(source.games[0].scores[3].hitCounts?.great).toBeNull();
+  });
   it("bounds a slow paginated provider without returning a falsely complete source", async () => {
     const clock = vi.spyOn(performance, "now").mockReturnValue(0);
     vi.mocked(osuApi).mockImplementation(async () => {

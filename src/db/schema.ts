@@ -961,3 +961,34 @@ export const weeklyAwardReleases = pgTable(
     check("weekly_award_positive", sql`${t.week} > 0 AND ${t.revision} > 0`),
   ],
 );
+
+// MP-derived historical statistics have independent draft/release versions.
+export const historicalStatistics = pgTable(
+  "historical_statistics",
+  {
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    mpId: bigint("mp_id", { mode: "number" }).notNull(),
+    fixtureId: text("fixture_id").notNull(),
+    version: integer("version").notNull().default(0),
+    draft: jsonb("draft")
+      .$type<import("@/lib/archive-statistics-model").StatisticsSnapshot>()
+      .notNull(),
+    published:
+      jsonb("published").$type<
+        import("@/lib/archive-statistics-model").StatisticsSnapshot
+      >(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.editionSlug, t.mpId] }),
+    check(
+      "historical_statistics_version",
+      sql.raw("version >= 0 AND mp_id > 0"),
+    ),
+  ],
+);

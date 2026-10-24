@@ -1,0 +1,215 @@
+import {
+  beforeAll,
+  beforeEach,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+} from "vitest";
+import { sql } from "drizzle-orm";
+import { db, closeDb } from "../../src/db";
+import { users, staffRoles, editionEvents } from "../../src/db/schema";
+import { seedEditions } from "../fixtures/editions";
+import { edition } from "../fixtures/edition";
+import { assertTestDatabase } from "../database";
+import {
+  statisticsArchive,
+  statisticsSource,
+} from "../fixtures/archive-statistics";
+import { fetchMatchSource } from "../../src/lib/osu-matches";
+import {
+  statisticsCommand,
+  statisticsWorkspace,
+  publicArchiveStatistics,
+} from "../../src/lib/archive-statistics";
+vi.mock("../../src/lib/osu-matches", () => ({ fetchMatchSource: vi.fn() }));
+const url = process.env.TEST_DATABASE_URL;
+const admin = { osuId: 391001, username: "Statistics Admin" };
+const referee = { osuId: 391002, username: "Statistics Referee" };
+const other = { osuId: 391003, username: "Other edition Admin" };
+const imported = { action: "import", mpId: 999177, expectedVersion: 0 };
+const reviewed = {
+  action: "review",
+  mpId: 999177,
+  expectedVersion: 1,
+  poolId: "final",
+  included: [1, 2],
+};
+const publish = {
+  action: "publish",
+  fixtureId: "one",
+  expectedVersions: { "999177": 2 },
+  confirmed: true,
+};
+describe.skipIf(!url)("historical statistics transactions", () => {
+  beforeAll(() => {
+    assertTestDatabase(url);
+    vi.stubEnv("DATABASE_URL", url!);
+    vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
+  });
+  beforeEach(async () => {
+    vi.mocked(fetchMatchSource)
+      .mockReset()
+      .mockResolvedValue(statisticsSource());
+    await db().execute(sql`TRUNCATE edition_state, users CASCADE`);
+    await db().insert(users).values([admin, referee, other]);
+    await seedEditions([
+      {
+        ...edition,
+        slug: "s7",
+        name: "Synthetic S7 statistics",
+        status: "completed",
+        registration: null,
+        published: true,
+        archive: structuredClone(statisticsArchive),
+      },
+      { ...edition, slug: "s8" },
+    ]);
+    await db()
+      .insert(staffRoles)
+      .values([
+        {
+          userId: referee.osuId,
+          role: "referee",
+          editionSlug: "s7",
+          grantedBy: admin.osuId,
+        },
+        {
+          userId: other.osuId,
+          role: "admin",
+          editionSlug: "s8",
+          grantedBy: admin.osuId,
+        },
+      ]);
+  });
+  afterAll(async () => {
+    await closeDb();
+    vi.unstubAllEnvs();
+  });
+  it("imports privately, publishes reviewed games atomically and preserves published data across draft edits", async () => {
+    await statisticsCommand(referee, "s7", imported);
+    expect((await publicArchiveStatistics("s7")).plays).toEqual([]);
+    await statisticsCommand(referee, "s7", reviewed);
+    await statisticsCommand(admin, "s7", publish);
+    const publicData = await publicArchiveStatistics("s7");
+    expect(publicData.plays).toHaveLength(8);
+    expect(publicData.mpCovered).toBe(1);
+    expect(JSON.stringify(publicData)).not.toContain("providerFields");
+    await statisticsCommand(referee, "s7", {
+      ...reviewed,
+      expectedVersion: 3,
+      included: [],
+    });
+    expect((await publicArchiveStatistics("s7")).plays).toHaveLength(8);
+    await statisticsCommand(admin, "s7", {
+      action: "withdraw",
+      fixtureId: "one",
+      expectedVersions: { "999177": 4 },
+      confirmed: true,
+    });
+    expect((await publicArchiveStatistics("s7")).plays).toEqual([]);
+    expect(await db().select().from(editionEvents)).toHaveLength(5);
+  });
+  it("enforces edition scope, source allowlists, review permissions and versions", async () => {
+    await expect(
+      statisticsCommand(other, "s7", imported),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      statisticsCommand(admin, "s7", { ...imported, mpId: 123 }),
+    ).rejects.toMatchObject({ status: 400 });
+    expect(fetchMatchSource).not.toHaveBeenCalled();
+    await statisticsCommand(referee, "s7", imported);
+    await expect(
+      statisticsCommand(referee, "s7", publish),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      statisticsCommand(admin, "s7", { ...reviewed, expectedVersion: 0 }),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      statisticsCommand(admin, "s7", { ...reviewed, included: [1, 1] }),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      statisticsCommand(admin, "s7", { ...reviewed, included: [3] }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+  it("refuses replay or incomplete-source publication and survives provider failure", async () => {
+    await statisticsCommand(admin, "s7", imported);
+    await statisticsCommand(admin, "s7", { ...reviewed, included: [1, 4] });
+    await expect(statisticsCommand(admin, "s7", publish)).rejects.toMatchObject(
+      { status: 400 },
+    );
+    vi.mocked(fetchMatchSource).mockRejectedValue(
+      new Error("Provider unavailable"),
+    );
+    await expect(
+      statisticsCommand(admin, "s7", { ...imported, expectedVersion: 2 }),
+    ).rejects.toThrow("Provider unavailable");
+    expect(
+      (await statisticsWorkspace(admin, "s7", "one")).reviews[0].games.filter(
+        (g) => g.included,
+      ),
+    ).toHaveLength(2);
+    const incomplete = statisticsSource();
+    incomplete.complete = false;
+    incomplete.fingerprint = "b".repeat(64);
+    vi.mocked(fetchMatchSource).mockResolvedValue(incomplete);
+    await statisticsCommand(admin, "s7", { ...imported, expectedVersion: 2 });
+    await statisticsCommand(admin, "s7", { ...reviewed, expectedVersion: 3 });
+    await expect(
+      statisticsCommand(admin, "s7", {
+        ...publish,
+        expectedVersions: { "999177": 4 },
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+  it("serializes concurrent review writes and performs no audit mutation on an identical refresh", async () => {
+    await statisticsCommand(admin, "s7", imported);
+    const results = await Promise.allSettled([
+      statisticsCommand(admin, "s7", reviewed),
+      statisticsCommand(admin, "s7", reviewed),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    const count = (await db().select().from(editionEvents)).length;
+    await statisticsCommand(admin, "s7", { ...imported, expectedVersion: 2 });
+    expect((await statisticsWorkspace(admin, "s7")).summaries[0].version).toBe(
+      2,
+    );
+    expect(await db().select().from(editionEvents)).toHaveLength(count);
+  });
+  it("hides unpublished editions and stale archive releases", async () => {
+    await statisticsCommand(admin, "s7", imported);
+    await statisticsCommand(admin, "s7", reviewed);
+    await statisticsCommand(admin, "s7", publish);
+    const changed = structuredClone(statisticsArchive);
+    changed.matches[0].score = [3, 0];
+    await seedEditions(
+      [
+        {
+          ...edition,
+          slug: "s7",
+          status: "completed",
+          registration: null,
+          published: true,
+          archive: changed,
+        },
+      ],
+      true,
+    );
+    expect((await publicArchiveStatistics("s7")).plays).toHaveLength(0);
+    // Re-seed the edition as private: no public projection, even with stored statistics.
+    await seedEditions([
+      {
+        ...edition,
+        slug: "s7",
+        status: "completed",
+        registration: null,
+        published: false,
+        archive: statisticsArchive,
+      },
+    ]);
+    await expect(publicArchiveStatistics("s7")).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+});

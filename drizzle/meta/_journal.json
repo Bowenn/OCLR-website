@@ -204,6 +204,13 @@
       "when": 1792760459610,
       "tag": "0028_team_coaches",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792812251679,
+      "tag": "0029_historical_statistics",
+      "breakpoints": true
     }
   ]
 }

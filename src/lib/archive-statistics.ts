@@ -1,0 +1,470 @@
+import { createHash } from "node:crypto";
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/db";
+import { editionEvents, editionState, historicalStatistics } from "@/db/schema";
+import { readTournament } from "./tournaments";
+import { assertCapability, hasCapability } from "./auth/staff";
+import type { User } from "./auth/sessions";
+import type { HistoricalArchive } from "./historical-archive";
+import { HttpError } from "./http";
+import { fetchMatchSource } from "./osu-matches";
+import { matchSourceSchema } from "./match-model";
+import {
+  archiveMpId,
+  statisticsSeasons,
+  statisticsFixtures,
+  statisticsGameIssues,
+  suggestStatisticsPool,
+  fixtureStatisticsIssues,
+  projectStatistics,
+  type StatisticsSnapshot,
+} from "./archive-statistics-model";
+
+const snapshotSchema = z
+  .object({
+    archiveKey: z.string().regex(/^[a-f0-9]{64}$/),
+    source: matchSourceSchema,
+    poolId: z.string().max(80),
+    included: z.array(z.number().int().positive()).max(500),
+    allowUnlistedMaps: z.boolean().optional(),
+  })
+  .strict();
+const integer = z.number().int().nonnegative();
+const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      action: z.literal("import"),
+      mpId: integer.positive(),
+      expectedVersion: integer,
+    })
+    .strict(),
+  z
+    .object({
+      action: z.literal("review"),
+      mpId: integer.positive(),
+      expectedVersion: integer,
+      poolId: z.string().max(80),
+      included: z.array(integer.positive()).max(500),
+      allowUnlistedMaps: z.boolean().default(false),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.enum(["publish", "withdraw"]),
+      fixtureId: z.string().max(80),
+      expectedVersions: z.record(z.string(), integer),
+      confirmed: z.literal(true),
+    })
+    .strict(),
+]);
+type Reader = Pick<ReturnType<typeof db>, "select">;
+export function statisticsArchiveKey(a: HistoricalArchive) {
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        editionSlug: a.editionSlug,
+        teams: a.teams.map(({ id, name }) => ({ id, name })),
+        players: a.players.map(({ osuId, username, teamId, role, tier }) => ({
+          osuId,
+          username,
+          teamId,
+          role,
+          tier,
+        })),
+        matches: a.matches.map(
+          ({
+            id,
+            label,
+            stage,
+            teamA,
+            teamB,
+            scheduledAt,
+            score,
+            forfeitWinner,
+            mpUrls,
+          }) => ({
+            id,
+            label,
+            stage,
+            teamA,
+            teamB,
+            scheduledAt,
+            score,
+            forfeitWinner,
+            mpUrls,
+          }),
+        ),
+        pools: a.pools.map(({ id, maps }) => ({
+          id,
+          maps: maps.map(({ beatmapId, title, slot }) => ({
+            beatmapId,
+            title,
+            slot,
+          })),
+        })),
+      }),
+    )
+    .digest("hex");
+}
+function supported(slug: string) {
+  return (statisticsSeasons as readonly string[]).includes(slug);
+}
+async function archiveFor(
+  slug: string,
+  reader: Reader = db(),
+  publicOnly = false,
+) {
+  const t = await readTournament(slug, reader, publicOnly);
+  if (!supported(slug) || !t?.edition.archive)
+    throw new HttpError(404, "Historical statistics are unavailable.");
+  return t.edition.archive;
+}
+function where(slug: string) {
+  return eq(historicalStatistics.editionSlug, slug);
+}
+async function stored(slug: string, reader: Reader = db()) {
+  const rows = await reader
+    .select()
+    .from(historicalStatistics)
+    .where(where(slug));
+  return rows.map((r) => ({
+    ...r,
+    draft: snapshotSchema.parse(r.draft),
+    published: r.published ? snapshotSchema.parse(r.published) : null,
+  }));
+}
+export async function statisticsWorkspace(
+  actor: User,
+  slug: string,
+  fixtureId = "",
+) {
+  await assertCapability(actor, "record_results", slug);
+  const archive = await archiveFor(slug);
+  const key = statisticsArchiveKey(archive);
+  const rows = (await stored(slug)).filter((r) =>
+    statisticsFixtures(archive).some(
+      (f) =>
+        f.id === r.fixtureId && f.mpUrls.some((u) => archiveMpId(u) === r.mpId),
+    ),
+  );
+  const summaries = rows.map((r) => ({
+    mpId: r.mpId,
+    fixtureId: r.fixtureId,
+    version: r.version,
+    importedAt: r.draft.source.fetchedAt,
+    publishedAt:
+      r.published?.archiveKey === key
+        ? (r.publishedAt?.toISOString() ?? null)
+        : null,
+    changes:
+      !r.published ||
+      r.published.source.fingerprint !== r.draft.source.fingerprint ||
+      r.published.poolId !== r.draft.poolId ||
+      r.published.allowUnlistedMaps !== r.draft.allowUnlistedMaps ||
+      JSON.stringify(r.published.included) !== JSON.stringify(r.draft.included),
+    stale: r.draft.archiveKey !== key,
+  }));
+  const fixtures = statisticsFixtures(archive).map((m) => ({
+    id: m.id,
+    label: m.label,
+    stage: m.stage,
+    score: m.score,
+    teams: [m.teamA, m.teamB].map(
+      (id) => archive.teams.find((t) => t.id === id)!.name,
+    ),
+    mpIds: m.mpUrls.map(archiveMpId),
+  }));
+  return {
+    slug,
+    fixtures,
+    summaries,
+    canPublish: await hasCapability(actor, "approve_results", slug),
+    pools: archive.pools.map(({ id, name }) => ({ id, name })),
+    reviews: rows
+      .filter((r) => r.fixtureId === fixtureId)
+      .map((r) => ({
+        mpId: r.mpId,
+        version: r.version,
+        poolId: r.draft.poolId,
+        allowUnlistedMaps: r.draft.allowUnlistedMaps ?? false,
+        complete: r.draft.source.complete,
+        fetchedAt: r.draft.source.fetchedAt,
+        warnings: r.draft.source.warnings,
+        games: r.draft.source.games.map((game) => ({
+          game,
+          included: r.draft.included.includes(game.id),
+          issues: statisticsGameIssues(
+            archive,
+            r.fixtureId,
+            r.draft.poolId,
+            game,
+            r.draft.allowUnlistedMaps,
+          ),
+        })),
+      })),
+    blockers: fixtureId
+      ? fixtureStatisticsIssues(
+          archive,
+          fixtureId,
+          rows.filter((r) => r.fixtureId === fixtureId).map((r) => r.draft),
+        )
+      : [],
+  };
+}
+export type StatisticsWorkspace = Awaited<
+  ReturnType<typeof statisticsWorkspace>
+>;
+
+export async function statisticsCommand(
+  actor: User,
+  slug: string,
+  input: unknown,
+) {
+  const parsed = commandSchema.safeParse(input);
+  if (!parsed.success) throw new HttpError(400, "Invalid statistics request.");
+  const c = parsed.data;
+  const permission =
+    c.action === "publish" || c.action === "withdraw"
+      ? "approve_results"
+      : "record_results";
+  await assertCapability(actor, permission, slug);
+  const archive = await archiveFor(slug);
+  const key = statisticsArchiveKey(archive);
+  const fixture = statisticsFixtures(archive).find((m) =>
+    "mpId" in c
+      ? m.mpUrls.some((u) => archiveMpId(u) === c.mpId)
+      : m.id === c.fixtureId,
+  );
+  if (!fixture)
+    throw new HttpError(
+      400,
+      "Use an MP link already recorded in this edition.",
+    );
+  let imported: StatisticsSnapshot | undefined;
+  if (c.action === "import") {
+    const existing = (await stored(slug)).find((r) => r.mpId === c.mpId);
+    if ((existing?.version ?? 0) !== c.expectedVersion)
+      throw new HttpError(409, "Statistics changed. Reload before retrying.");
+    if (
+      existing &&
+      Date.now() - Date.parse(existing.draft.source.fetchedAt) < 30_000
+    )
+      throw new HttpError(429, "Wait before refreshing this MP.");
+    // Provider calls occur outside the DB transaction; all authority is checked again below.
+    const source = await fetchMatchSource(c.mpId);
+    if (
+      source.games.length > 500 ||
+      Buffer.byteLength(JSON.stringify(source)) > 2_000_000
+    )
+      throw new HttpError(413, "MP statistics exceed the import limit.");
+    const poolId = suggestStatisticsPool(archive, source);
+    imported = { archiveKey: key, source, poolId, included: [] };
+  }
+  await db().transaction(async (tx) => {
+    await tx
+      .select({ slug: editionState.slug })
+      .from(editionState)
+      .where(eq(editionState.slug, slug))
+      .for("update");
+    await assertCapability(actor, permission, slug, tx);
+    const currentArchive = await archiveFor(slug, tx);
+    if (statisticsArchiveKey(currentArchive) !== key)
+      throw new HttpError(409, "Archive changed. Reload before retrying.");
+    const rows = await stored(slug, tx);
+    const relevant = rows.filter(
+      (r) =>
+        r.fixtureId === fixture.id &&
+        fixture.mpUrls.some((u) => archiveMpId(u) === r.mpId),
+    );
+    const selected =
+      "mpId" in c ? rows.find((r) => r.mpId === c.mpId) : undefined;
+    if (
+      "expectedVersion" in c &&
+      (selected?.version ?? 0) !== c.expectedVersion
+    )
+      throw new HttpError(409, "Statistics changed. Reload before retrying.");
+    if (
+      selected &&
+      selected.fixtureId !== fixture.id &&
+      selected.draft.archiveKey === key
+    )
+      throw new HttpError(409, "Archive changed. Reload before retrying.");
+    if (c.action === "import") {
+      if (
+        selected &&
+        selected.draft.archiveKey === key &&
+        selected.draft.source.fingerprint === imported!.source.fingerprint
+      )
+        return;
+      if (selected)
+        await tx
+          .update(historicalStatistics)
+          .set({
+            fixtureId: fixture.id,
+            draft: imported!,
+            version: selected.version + 1,
+            updatedAt: new Date(),
+          })
+          .where(and(where(slug), eq(historicalStatistics.mpId, c.mpId)));
+      else
+        await tx.insert(historicalStatistics).values({
+          editionSlug: slug,
+          mpId: c.mpId,
+          fixtureId: fixture.id,
+          version: 1,
+          draft: imported!,
+        });
+    } else if (c.action === "review") {
+      if (!selected || selected.draft.archiveKey !== key)
+        throw new HttpError(409, "Import the current archive MP first.");
+      const draft = {
+        ...selected.draft,
+        poolId: c.poolId,
+        included: c.included,
+        allowUnlistedMaps: c.allowUnlistedMaps,
+      };
+      if (
+        (!archive.pools.some((p) => p.id === c.poolId) &&
+          !(c.allowUnlistedMaps && c.poolId === "")) ||
+        new Set(c.included).size !== c.included.length ||
+        c.included.some((id) => {
+          const game = draft.source.games.find((g) => g.id === id);
+          return (
+            !game ||
+            statisticsGameIssues(
+              archive,
+              fixture.id,
+              c.poolId,
+              game,
+              c.allowUnlistedMaps,
+            ).length > 0
+          );
+        })
+      )
+        throw new HttpError(
+          400,
+          "Only eligible recorded games can be selected.",
+        );
+      await tx
+        .update(historicalStatistics)
+        .set({ draft, version: selected.version + 1, updatedAt: new Date() })
+        .where(and(where(slug), eq(historicalStatistics.mpId, c.mpId)));
+    } else {
+      if (
+        !relevant.length ||
+        relevant.some(
+          (r) => c.expectedVersions[String(r.mpId)] !== r.version,
+        ) ||
+        Object.keys(c.expectedVersions).length !== relevant.length
+      )
+        throw new HttpError(409, "Statistics changed. Reload before retrying.");
+      if (c.action === "publish") {
+        if (relevant.some((r) => r.draft.archiveKey !== key))
+          throw new HttpError(409, "Import the current archive MP first.");
+        const issues = fixtureStatisticsIssues(
+          archive,
+          fixture.id,
+          relevant.map((r) => r.draft),
+        );
+        if (issues.length) throw new HttpError(400, issues[0]);
+        const other = rows.filter(
+          (r) => r.fixtureId !== fixture.id && r.published?.archiveKey === key,
+        );
+        const claimed = new Set(other.flatMap((r) => r.published!.included));
+        if (
+          relevant.some((r) => r.draft.included.some((id) => claimed.has(id)))
+        )
+          throw new HttpError(
+            409,
+            "A game is already published for another match.",
+          );
+      }
+      for (const r of relevant)
+        await tx
+          .update(historicalStatistics)
+          .set({
+            published: c.action === "publish" ? r.draft : null,
+            publishedAt: c.action === "publish" ? new Date() : null,
+            version: r.version + 1,
+            updatedAt: new Date(),
+          })
+          .where(and(where(slug), eq(historicalStatistics.mpId, r.mpId)));
+    }
+    await tx.insert(editionEvents).values({
+      editionSlug: slug,
+      actorId: actor.osuId,
+      kind: "statistics_" + c.action,
+      detail: {
+        fixtureId: fixture.id,
+        ...("mpId" in c
+          ? {
+              mpId: c.mpId,
+              fromVersion: c.expectedVersion,
+              ...(c.action === "review"
+                ? {
+                    allowUnlistedMaps: c.allowUnlistedMaps,
+                    included: c.included,
+                  }
+                : {}),
+            }
+          : { versions: c.expectedVersions }),
+      },
+    });
+  });
+  return statisticsWorkspace(actor, slug, fixture.id);
+}
+export async function publicArchiveStatistics(slug: string) {
+  const archive = await archiveFor(slug, db(), true);
+  const key = statisticsArchiveKey(archive);
+  const rows = await stored(slug);
+  const fixtures = statisticsFixtures(archive);
+  const published = fixtures.flatMap((fixture) => {
+    const sources = rows.filter(
+      (r) =>
+        r.fixtureId === fixture.id &&
+        fixture.mpUrls.some((u) => archiveMpId(u) === r.mpId),
+    );
+    if (
+      !sources.length ||
+      sources.some((r) => !r.published || r.published.archiveKey !== key)
+    )
+      return [];
+    const snapshots = sources.map((r) => r.published!);
+    if (fixtureStatisticsIssues(archive, fixture.id, snapshots).length)
+      return [];
+    return sources;
+  });
+  const plays = published.flatMap((r) =>
+    projectStatistics(archive, r.fixtureId, r.published!),
+  );
+  return {
+    slug,
+    players: archive.players.map(({ osuId, username, teamId, role, tier }) => ({
+      osuId,
+      username,
+      teamId,
+      role,
+      tier,
+    })),
+    teams: archive.teams.map(({ id, name }) => ({ id, name })),
+    stages: [...new Set(fixtures.map((m) => m.stage))],
+    fixtures: fixtures.map((m) => ({
+      id: m.id,
+      label: m.label,
+      stage: m.stage,
+      covered: published.some((r) => r.fixtureId === m.id),
+    })),
+    plays,
+    publishedAt:
+      published
+        .map((r) => r.publishedAt!.toISOString())
+        .sort()
+        .at(-1) ?? null,
+    mpTotal: fixtures.reduce((n, m) => n + m.mpUrls.length, 0),
+    mpCovered: published.length,
+  };
+}
+export type PublicArchiveStatistics = Awaited<
+  ReturnType<typeof publicArchiveStatistics>
+>;

@@ -176,7 +176,12 @@ export function tournamentLinks(
     permits(grants, cap, slug);
   return tournamentNavigation.flatMap((group) =>
     group.items
-      .filter((item) => !item.capabilities || item.capabilities.some(can))
+      .filter(
+        (item) =>
+          (!item.capabilities || item.capabilities.some(can)) &&
+          (item.path !== "statistics" ||
+            ["s7", "s8", "s9", "s10"].includes(slug)),
+      )
       .map((item) => ({
         href: `/admin/tournaments/${slug}${item.path ? `/${item.path}` : ""}`,
         label: item.label,

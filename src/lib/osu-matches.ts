@@ -126,6 +126,14 @@ function normalizeScore(value: unknown): MatchScore {
   const playerMods = mods(s.mods);
   if (!playerMods) problems.push("Player mod data is unavailable.");
   const providerFields: MatchScore["providerFields"] = {};
+  const statistics = object(s.statistics);
+  const hitCount = (legacy: string, modern: string) => {
+    const old = number(statistics[legacy]);
+    const current = number(statistics[modern]);
+    return old !== null && current !== null && old !== current
+      ? null
+      : (old ?? current);
+  };
   for (const key of [
     "type",
     "score",
@@ -156,6 +164,12 @@ function normalizeScore(value: unknown): MatchScore {
         ? s.accuracy
         : null,
     combo: number(s.max_combo),
+    hitCounts: {
+      great: hitCount("count_300", "great"),
+      ok: hitCount("count_100", "ok"),
+      meh: hitCount("count_50", "meh"),
+      miss: hitCount("count_miss", "miss"),
+    },
     providerFields,
     problems,
   };

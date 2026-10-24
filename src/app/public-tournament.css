@@ -1851,3 +1851,30 @@ html[data-theme="dark"] .brand .oclr-wordmark {
 .public-staff-list h3 .country-flag {
   margin-inline-start: 0.15rem;
 }
+
+/* Statistics filters and identities are navigation controls, not filled CTAs. */
+.themed-site .statistics-workspace button.statistics-player,
+.themed-site
+  .statistics-workspace
+  button.statistics-player:is(:hover, :focus-visible, :active) {
+  background: transparent;
+  border: 0;
+  color: var(--site-accent);
+  box-shadow: none;
+  transform: none;
+}
+.themed-site .statistics-workspace .statistics-rounds button {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--site-secondary-text);
+  box-shadow: none;
+}
+.themed-site
+  .statistics-workspace
+  .statistics-rounds
+  button[aria-pressed="true"] {
+  border-bottom-color: var(--site-accent);
+  color: var(--site-accent);
+}

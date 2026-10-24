@@ -2,6 +2,7 @@
 import { syntheticApiGame, syntheticEvent, syntheticPage } from "./match";
 import { profileResponse } from "./osu-profile";
 import { assertTestDatabase } from "../database";
+import { statisticsApiGames } from "./archive-statistics";
 assertTestDatabase(process.env.TEST_DATABASE_URL);
 if (
   process.env.DATABASE_URL !== process.env.TEST_DATABASE_URL ||
@@ -42,6 +43,26 @@ globalThis.fetch = async (input, init) => {
           end_time: "2020-01-01T23:59:00Z",
         },
       }),
+    );
+  }
+  if (url.pathname === "/api/v2/matches/999177") {
+    const after = Number(url.searchParams.get("after") ?? 0);
+    return Response.json(
+      syntheticPage(
+        statisticsApiGames()
+          .filter((g) => g.id > after)
+          .map((g) => syntheticEvent(g.id, g)),
+        {
+          match: {
+            id: 999177,
+            name: "Synthetic statistics lobby",
+            start_time: "2020-01-01T00:00:00Z",
+            end_time: "2020-01-01T01:00:00Z",
+          },
+          first_event_id: 1,
+          latest_event_id: 4,
+        },
+      ),
     );
   }
   if (url.pathname === "/api/v2/beatmaps") {

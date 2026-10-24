@@ -50,6 +50,11 @@ export const tournamentNavigation: readonly {
         capabilities: ["configure_tournament"],
       },
       {
+        path: "statistics",
+        label: "Historical statistics",
+        capabilities: ["record_results"],
+      },
+      {
         path: "settings",
         label: "Settings",
         capabilities: ["configure_tournament"],

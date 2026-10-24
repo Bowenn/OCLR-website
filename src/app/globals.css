@@ -4804,3 +4804,128 @@ body:has([data-broadcast]) .site-shell {
   margin: 0;
   padding-bottom: 0.75rem;
 }
+
+/* Historical MP statistics: a compact reading workspace, shared theme tokens. */
+.statistics-workspace {
+  min-width: 0;
+}
+.statistics-summary {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding-block: 1rem;
+  border-block: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.statistics-summary > div {
+  display: grid;
+  gap: 0.2rem;
+}
+.statistics-summary strong {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+}
+.statistics-summary span {
+  font-size: 0.85rem;
+}
+.statistics-summary p {
+  flex: 1 1 18rem;
+  max-width: 38rem;
+  margin: 0;
+}
+.statistics-rounds {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+  gap: 0.5rem;
+}
+.statistics-rounds button {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-muted);
+  padding: 0.85rem 1rem;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+.statistics-rounds button[aria-pressed="true"] {
+  color: var(--color-accent);
+  border-bottom-color: currentColor;
+}
+.statistics-filters {
+  display: grid;
+  grid-template-columns: minmax(14rem, 2fr) repeat(2, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+.statistics-table {
+  min-width: 1040px;
+  font-variant-numeric: tabular-nums;
+}
+.statistics-table small {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.statistics-player {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  text-align: left;
+  padding: 0.25rem 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  border-radius: 0;
+}
+.statistics-player .avatar {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+.statistics-player .avatar img {
+  width: 100%;
+  height: 100%;
+}
+.statistics-detail {
+  border-top: 2px solid var(--color-accent);
+  padding-top: 1rem;
+}
+.statistics-detail table {
+  min-width: 950px;
+}
+.statistics-coverage {
+  list-style: none;
+  padding: 0;
+}
+.statistics-coverage li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.65rem 0;
+}
+.statistics-review {
+  border-top: 1px solid var(--color-border);
+  padding-block: 1rem;
+}
+.statistics-review table {
+  min-width: 750px;
+}
+.statistics-game-score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  font-size: 0.85rem;
+}
+@media (max-width: 700px) {
+  .statistics-filters {
+    grid-template-columns: 1fr;
+  }
+  .statistics-summary {
+    gap: 1.25rem;
+  }
+  .statistics-summary strong {
+    font-size: 1.3rem;
+  }
+}
