@@ -234,6 +234,7 @@
   height: 72px;
   flex: 0 0 72px;
   aspect-ratio: 1;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   border-radius: 0.5rem;
 }
 .organizer-page .organizer-people .avatar img {
@@ -247,4 +248,10 @@
 }
 .organizer-page .organizer-people > li:focus-within {
   border-color: var(--site-accent);
+}
+
+.organizer-page .organizer-people .avatar img {
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
 }
