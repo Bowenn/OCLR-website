@@ -2,7 +2,17 @@
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { EventMatch } from "@/lib/event-preview";
-export function EventSchedule({ matches }: { matches: EventMatch[] }) {
+import type { PublicGroup } from "@/lib/public-competition";
+import { GroupStandings } from "./public-matches";
+export function EventSchedule({
+  matches,
+  groups = [],
+  edition,
+}: {
+  matches: EventMatch[];
+  groups?: PublicGroup[];
+  edition: string;
+}) {
   const tr = useAppTranslations();
   const [phase, setPhase] = useState("group");
   const [filter, setFilter] = useState("");
@@ -38,17 +48,6 @@ export function EventSchedule({ matches }: { matches: EventMatch[] }) {
     ? 530
     : Math.max(240, ...selected.map((m) => positions[m.id][1] + 110));
   const structured = phase === "knockout" && selected.length > 0;
-  const records = new Map<string, { wins: number; losses: number }>();
-  selected
-    .filter((m) => m.stage === "group" && m.score)
-    .forEach((m) => {
-      [m.red, m.blue].forEach((name, i) => {
-        const record = records.get(name) ?? { wins: 0, losses: 0 };
-        if (m.score![i] > m.score![1 - i]) record.wins++;
-        else if (m.score![i] < m.score![1 - i]) record.losses++;
-        records.set(name, record);
-      });
-    });
   const columns = [
     "Mappool",
     "Match number & time",
@@ -68,7 +67,11 @@ export function EventSchedule({ matches }: { matches: EventMatch[] }) {
       <article className="event-match-card" id={`match-${m.id}`} key={m.id}>
         <header>
           <a href={`#row-${m.id}`}>#{m.id}</a>
-          <time>{m.time}</time>
+          {m.status === "cancelled" ? (
+            <span>{tr("Cancelled")}</span>
+          ) : (
+            <time>{m.time}</time>
+          )}
         </header>
         {[m.red, m.blue].map((name, i) => (
           <div className="event-match-side" key={i}>
@@ -216,28 +219,10 @@ export function EventSchedule({ matches }: { matches: EventMatch[] }) {
                 ))}
               </section>
             ))}
-            {records.size > 0 && (
-              <section className="event-bracket-round">
-                <h2>{tr("Standings")}</h2>
-                {[...records]
-                  .sort(
-                    (a, b) =>
-                      b[1].wins - a[1].wins || a[1].losses - b[1].losses,
-                  )
-                  .map(([name, record], i) => (
-                    <div className="event-standing" key={name}>
-                      <b>{i + 1}</b>
-                      <span>{name}</span>
-                      <span>
-                        {record.wins}–{record.losses}
-                      </span>
-                    </div>
-                  ))}
-              </section>
-            )}
           </div>
         )}
       </div>
+      {phase === "group" && <GroupStandings groups={groups} slug={edition} />}
       <section className="event-match-summary">
         <div className="event-section-heading">
           <h2>{tr("Match information")}</h2>
@@ -271,7 +256,7 @@ export function EventSchedule({ matches }: { matches: EventMatch[] }) {
               {matches
                 .filter((m) => !filter || m.round === filter)
                 .map((m) => (
-                  <tr key={m.id} id={`row-${m.id}`}>
+                  <tr key={m.id} id={`row-${m.id}`} data-status={m.status}>
                     <td>
                       <strong>{m.pool}</strong>
                       <small>{m.round}</small>
@@ -286,6 +271,9 @@ export function EventSchedule({ matches }: { matches: EventMatch[] }) {
                         #{m.id}
                       </a>
                       <small>{m.time}</small>
+                      {m.status === "cancelled" && (
+                        <small>{tr("Cancelled")}</small>
+                      )}
                     </td>
                     <td>{m.red}</td>
                     <td className="event-score">
