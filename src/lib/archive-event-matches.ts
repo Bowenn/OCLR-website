@@ -1,0 +1,40 @@
+import { formatDate } from "./editions";
+import {
+  archiveWinner,
+  recordedArchiveMatch,
+  type HistoricalArchive,
+} from "./historical-archive";
+import type { EventMatch } from "./event-preview";
+
+/** Adapt recorded evidence without inferring stages, pools or bracket edges. */
+export function archiveEventMatches(
+  archive: HistoricalArchive,
+  matches: HistoricalArchive["matches"],
+  href: (section: string, id?: string) => string,
+  timeZone: string,
+  locale: string,
+): EventMatch[] {
+  return matches.map((m) => ({
+    id: m.id,
+    label: m.label,
+    round: m.stage,
+    stage: m.stage,
+    pool: "—",
+    time: m.scheduledAt ? formatDate(m.scheduledAt, timeZone, locale) : "—",
+    red: archive.teams.find((t) => t.id === m.teamA)!.name,
+    blue: archive.teams.find((t) => t.id === m.teamB)!.name,
+    redHref: href("teams", m.teamA),
+    blueHref: href("teams", m.teamB),
+    score: m.score,
+    winner: archiveWinner(m),
+    forfeit: m.forfeitWinner !== undefined,
+    recorded: recordedArchiveMatch(m),
+    redBan: m.bansA ?? undefined,
+    blueBan: m.bansB ?? undefined,
+    mps: m.mpUrls,
+    vod: m.vodUrl ?? undefined,
+    referee: m.referee ?? undefined,
+    streamer: m.streamer ?? undefined,
+    href: href("matches", m.id),
+  }));
+}

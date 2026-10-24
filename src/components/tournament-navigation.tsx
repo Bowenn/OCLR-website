@@ -48,6 +48,7 @@ function Navigation({
         ["schedule", "Schedule"],
         ["mappools", "Mappools"],
         ["statistics", "Statistics"],
+        ...(archived ? [["staff", "Staff"]] : []),
       ]
     : legacyLinks;
   const section = publicTournamentSection(pathname, base);
@@ -56,7 +57,7 @@ function Navigation({
       ? "players"
       : ["bracket", "results"].includes(section ?? "")
         ? "schedule"
-        : ["rules", "staff"].includes(section ?? "")
+        : ["rules"].includes(section ?? "")
           ? ""
           : section
     : section;

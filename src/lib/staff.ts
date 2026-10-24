@@ -44,7 +44,15 @@ const filterSchema = z
       .max(80)
       .default(""),
     status: z
-      .enum(["active", "", "pending", "accepted", "rejected", "withdrawn"])
+      .enum([
+        "active",
+        "",
+        "pending",
+        "deferred",
+        "accepted",
+        "rejected",
+        "withdrawn",
+      ])
       .default("active"),
     page: z.coerce.number().int().min(1).max(10000).default(1),
   })
@@ -246,7 +254,7 @@ export async function reviewApplication(
   await capabilityScope(actor, "manage_registrations");
   const result = z
     .object({
-      status: z.enum(["accepted", "rejected"]),
+      status: z.enum(["accepted", "rejected", "deferred", "pending"]),
       reason: z.string().trim().max(1000).default(""),
       expectedUpdatedAt: z.iso.datetime(),
       confirmed: z.literal(true),
@@ -281,7 +289,8 @@ export async function reviewApplication(
       .for("update");
     if (
       edition.registrationPausedAt ||
-      current.status !== "pending" ||
+      !["pending", "deferred"].includes(current.status) ||
+      current.status === result.data.status ||
       current.updatedAt.toISOString() !== result.data.expectedUpdatedAt
     )
       throw new HttpError(

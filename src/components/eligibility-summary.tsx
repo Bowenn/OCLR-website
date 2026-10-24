@@ -37,6 +37,14 @@ export function EligibilitySummary({
                 : "Unable to verify",
         )}
       </p>
+      {value.rankGraceRange && (
+        <p className="notice small">
+          {tr(
+            "Submitted within the rank grace range for manual review. This is not an eligibility pass.",
+          )}{" "}
+          {value.rankGraceRange.minRank}–{value.rankGraceRange.maxRank}
+        </p>
+      )}
       <p>
         {"PP"}: {value.pp ?? "—"} · {tr("Global Rank")}: {value.rank ?? "—"}
       </p>

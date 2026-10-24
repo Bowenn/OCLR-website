@@ -118,7 +118,7 @@ export async function RegistrationList({
             <select name="status" defaultValue={filters.status}>
               <option value="active">{tr("Active registrations")}</option>
               <option value="">{tr("All statuses")}</option>
-              {["pending", "accepted", "rejected", "withdrawn"].map(
+              {["pending", "deferred", "accepted", "rejected", "withdrawn"].map(
                 (status) => (
                   <option key={status} value={status}>
                     {tr(status)}
@@ -163,12 +163,36 @@ export async function RegistrationList({
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td>
-                      <div className="registration-player">
-                        <Avatar osuId={r.userId} username={r.username} />
+                      {Number.isSafeInteger(r.userId) && r.userId > 0 ? (
+                        <a
+                          className="registration-player context-link"
+                          href={`https://osu.ppy.sh/users/${r.userId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={tr("opens osu! profile in a new tab")}
+                        >
+                          <Avatar osuId={r.userId} username={r.username} />
+                          <span>{r.username}</span>
+                        </a>
+                      ) : (
                         <span>{r.username}</span>
-                      </div>
+                      )}
                     </td>
-                    <td>{r.userId}</td>
+                    <td>
+                      {Number.isSafeInteger(r.userId) && r.userId > 0 ? (
+                        <a
+                          className="context-link"
+                          href={`https://osu.ppy.sh/users/${r.userId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={tr("opens osu! profile in a new tab")}
+                        >
+                          {r.userId}
+                        </a>
+                      ) : (
+                        r.userId
+                      )}
+                    </td>
                     {!editionSlug && (
                       <td>
                         {editions.find((e) => e.slug === r.editionSlug)?.name ??

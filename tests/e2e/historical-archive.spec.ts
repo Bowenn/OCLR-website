@@ -120,10 +120,14 @@ test.describe("historical archive browser workflow", () => {
     await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=schedule`,
     );
-    await page.getByRole("button", { name: /Unconfirmed records/ }).click();
-    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await page
+      .getByLabel("Match status", { exact: true })
+      .selectOption("unconfirmed");
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await expect(
-      page.getByText("Unconfirmed alternative", { exact: true }),
+      page
+        .locator(".event-matches")
+        .getByText("Unconfirmed alternative", { exact: true }),
     ).toBeVisible();
     const guest = await context.browser()!.newContext();
     expect(
@@ -237,6 +241,23 @@ test.describe("historical archive browser workflow", () => {
         );
       }
     }
+    const staffLink = page
+      .getByRole("navigation", { name: "Tournament navigation" })
+      .getByRole("link", { name: "Staff", exact: true });
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
+    await expect(staffLink).toHaveAttribute(
+      "href",
+      `/tournaments/${slug}/staff`,
+    );
+    await staffLink.click();
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
+    await expect(staffLink).toHaveAttribute("aria-current", "page");
+    await expect(page.locator(".archive-staff")).toContainText(
+      "Historical Host",
+    );
+    await page.goto(`/tournaments/${slug}`);
     await captureResponsiveLayout(page, info, "archive-overview");
     await page.goto(`/tournaments/${slug}/teams/alpha`);
     await expect(page.locator(".historical-archive")).not.toContainText(
@@ -266,6 +287,7 @@ test.describe("historical archive browser workflow", () => {
       page.getByText("Unconfirmed alternative", { exact: true }),
     ).toHaveCount(0);
     await page
+      .locator(".event-matches")
       .getByRole("link", { name: "Historical Final", exact: true })
       .click();
     await expect(page.getByRole("link", { name: "MP 1" })).toHaveAttribute(
@@ -273,15 +295,15 @@ test.describe("historical archive browser workflow", () => {
       "https://osu.ppy.sh/community/matches/123456",
     );
     await page.goto(`/tournaments/${slug}/schedule`);
-    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await expect(
       page.getByRole("button", { name: /Unconfirmed records/ }),
     ).toHaveCount(0);
     await expect(
       page.getByText("Unconfirmed alternative", { exact: true }),
     ).toHaveCount(0);
-    await page.getByLabel("Stage", { exact: true }).selectOption("Final");
-    await expect(page.locator(".archive-match")).toHaveCount(1);
+    await page.getByLabel("Rounds", { exact: true }).selectOption("Final");
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await captureResponsiveLayout(page, info, "archive-matches");
     await page.goto(`/tournaments/${slug}/draft`);
     await expect(
@@ -424,7 +446,9 @@ test.describe("historical archive browser workflow", () => {
         ]) {
           await page.goto(`/tournaments/${slug}/${path}`);
           if (path === "schedule") {
-            await expect(page.locator(".archive-match")).toHaveCount(22);
+            await expect(page.locator(".event-matches tbody tr")).toHaveCount(
+              22,
+            );
             await expect(
               page.getByRole("button", { name: /Unconfirmed records/ }),
             ).toHaveCount(0);
@@ -562,6 +586,19 @@ test.describe("historical archive browser workflow", () => {
           });
         }
       }
+    await page.goto(`/tournaments/${slug}`);
+    await expect(page.locator("#rules .rules-article > section")).toHaveCount(
+      8,
+    );
+    await expect(page.locator("#rules .rules-version")).toContainText("v1.2");
+    await expect(page.locator("#rules .rules-article")).toContainText(
+      "没有总决赛reset！",
+    );
+    await expect(page.locator("#rules .rules-illustration img")).toHaveCount(2);
+    await page.screenshot({
+      path: info.outputPath("historical-overview-rules.png"),
+      fullPage: true,
+    });
     await page.goto(`/tournaments/${slug}/rules`);
     if (isMobile) await page.locator(".rules-mobile-contents summary").click();
     const contents = page.locator(

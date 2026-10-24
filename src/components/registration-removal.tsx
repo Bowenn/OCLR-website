@@ -19,7 +19,7 @@ export function RegistrationRemoval({
   tournament: string;
   username: string;
   osuId: number;
-  status: "pending" | "accepted" | "rejected" | "withdrawn";
+  status: "pending" | "deferred" | "accepted" | "rejected" | "withdrawn";
   updatedAt: string;
   staffRemoved: boolean;
 }) {

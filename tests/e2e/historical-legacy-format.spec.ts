@@ -97,18 +97,18 @@ test.describe("legacy historical evidence", () => {
       ]) {
         await page.goto(`/tournaments/${slug}/${section}`);
         if (section === "schedule") {
-          await expect(page.locator(".archive-match")).toHaveCount(22);
+          await expect(page.locator(".event-matches tbody tr")).toHaveCount(22);
           await expect(
-            page.locator(".archive-match[data-forfeit] .archive-scoreboard"),
+            page.locator(".event-matches tr[data-forfeit] .event-score"),
           ).toContainText("Winner");
           await expect(
-            page.locator(".archive-match[data-forfeit] .archive-scoreboard"),
+            page.locator(".event-matches tr[data-forfeit] .event-score"),
           ).toContainText("Forfeit");
           await expect(
-            page.locator(".archive-match[data-forfeit] .archive-match-footer"),
-          ).toContainText("Recorded results");
+            page.locator(".event-matches tr[data-forfeit]"),
+          ).toHaveAttribute("data-recorded", "true");
           await expect(
-            page.locator(".archive-match[data-forfeit] .archive-scoreboard"),
+            page.locator(".event-matches tr[data-forfeit] .event-score"),
           ).not.toContainText("-1");
         } else if (section === "draft") {
           await expect(page.locator(".archive-draft")).toContainText(
@@ -148,7 +148,7 @@ test.describe("legacy historical evidence", () => {
         ).toBeLessThanOrEqual(isMobile ? 390 : 1440);
         if (section === "schedule")
           await page
-            .locator(".archive-match[data-forfeit]")
+            .locator(".event-matches tr[data-forfeit]")
             .scrollIntoViewIfNeeded();
         await page.screenshot({
           path: info.outputPath(`${theme}-${section}.png`),

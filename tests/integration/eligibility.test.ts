@@ -59,6 +59,45 @@ describe.skipIf(!url)("authoritative registration eligibility", () => {
     await closeDb();
     vi.unstubAllEnvs();
   });
+  it("allows only rank-only failures inside an explicitly configured grace range to reach manual review", async () => {
+    provider.mockResolvedValue({
+      id: user.osuId,
+      username: user.username,
+      statistics: { pp: 7999, global_rank: 9500 },
+    });
+    await expect(
+      submitRegistration(user, edition.slug, input),
+    ).rejects.toMatchObject({ status: 400 });
+    await seedEditions([
+      { ...limited, rankGraceRange: { minRank: 9000, maxRank: 9999 } },
+    ]);
+    const saved = await submitRegistration(user, edition.slug, input);
+    expect(saved.status).toBe("pending");
+    expect(saved.eligibilityVerification).toMatchObject({
+      status: "fail",
+      rank: 9500,
+      rankGraceRange: { minRank: 9000, maxRank: 9999 },
+    });
+    await db().delete(registrations);
+    await db().delete(userProfileCache);
+    provider.mockResolvedValue({
+      id: user.osuId,
+      username: user.username,
+      statistics: { pp: 8001, global_rank: 9500 },
+    });
+    await expect(
+      submitRegistration(user, edition.slug, input),
+    ).rejects.toMatchObject({ status: 400 });
+    await db().delete(userProfileCache);
+    provider.mockResolvedValue({
+      id: user.osuId,
+      username: user.username,
+      statistics: { pp: 7999, global_rank: 8999 },
+    });
+    await expect(
+      submitRegistration(user, edition.slug, input),
+    ).rejects.toMatchObject({ status: 400 });
+  });
   it("persists verified inputs and rejects forgery, failure and unavailable snapshots", async () => {
     await expect(
       submitRegistration(user, edition.slug, { ...input, pp: 1 }),

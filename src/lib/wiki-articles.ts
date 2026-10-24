@@ -6,7 +6,7 @@ export type WikiArticle = {
   sections: {
     id: string;
     title: string;
-    paragraphs?: string[];
+    paragraphs?: (string | (string | { label: string; href: string })[])[];
     items?: string[];
     table?: { headers: string[]; rows: string[][] };
   }[];
@@ -65,7 +65,11 @@ export const wikiArticles: WikiArticle[] = [
         title: "找到赛事社区",
         paragraphs: [
           "QQ群 926872640",
-          "Discord：OCLRfanclube。社区用于赛事通知、队伍交流和日常联机；当前赛季的报名入口与阶段安排可从顶部 Information page 进入。",
+          [
+            "Discord：",
+            { label: "OCL Series", href: "https://discord.gg/graS4RJHjM" },
+            "。社区用于赛事通知、队伍交流和日常联机；当前赛季的报名入口与阶段安排可从顶部 Information page 进入。",
+          ],
         ],
       },
     ],
