@@ -420,12 +420,7 @@ export function MappoolReplays({
             <div className="actions">
               <button
                 type="submit"
-                disabled={
-                  !writable ||
-                  !file ||
-                  pending ||
-                  (loaded && items.length >= REPLAY_ENTRY_LIMIT)
-                }
+                disabled={!writable || !file || pending}
               >
                 {pending
                   ? progress === 100
