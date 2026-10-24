@@ -2324,6 +2324,18 @@
     "m9acf0658787d": "There is no streaming task to reconfirm.",
     "mdbd61bd1a2ea": "There is no streaming task to cancel.",
     "m086f466f3370": "Loser of {value0}",
-    "m07957d8d8283": "Winner of {value0}"
+    "m07957d8d8283": "Winner of {value0}",
+    "m053bc5dc18f5": "Your self introduction will be public if your application is accepted. Other answers remain private.",
+    "mb6ccf4bbbd28": "Messages could not be loaded. Please refresh to try again.",
+    "m37e193694984": "Leave a signed message for {name}",
+    "mf5290c633c5c": "Post message",
+    "m51e2572dd559": "Sign in with osu! to leave a signed message",
+    "m13ff0a8cfe7e": "Public self introduction question",
+    "m4895f73177ab": "Not set",
+    "m37ccf3249208": "The selected answer is public for accepted players, including existing submissions. Select only the self introduction intended for publication.",
+    "m53c6d1954f9a": "Enter a message of 1 to 1000 characters.",
+    "m69728f1dbfbd": "This message request has already been used.",
+    "md4bfce56416a": "Please wait before posting another message.",
+    "m3da57e084a89": "An explicitly designated self introduction is public after application acceptance; other questionnaire answers remain private. Signed player messages are public and identify the authenticated author's osu! account."
   }
 }

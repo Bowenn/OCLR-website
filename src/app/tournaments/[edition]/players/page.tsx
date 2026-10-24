@@ -1,3 +1,5 @@
+import { currentUser } from "@/lib/auth/user";
+import { publicPlayerIntroductions } from "@/lib/player-messages";
 import { EventPlayers } from "@/components/event-players";
 import { eventPreview } from "@/lib/event-preview";
 import { historicalPage } from "@/components/historical-archive";
@@ -37,7 +39,8 @@ export default async function Players({
   const { edition } = await params;
   const archivePage = await historicalPage(edition, "players");
   if (archivePage) return archivePage;
-  if (!(await getPublicEdition(edition))) notFound();
+  const currentEdition = await getPublicEdition(edition);
+  if (!currentEdition) notFound();
   const preview = eventPreview(edition);
   if (preview)
     return (
@@ -93,6 +96,14 @@ export default async function Players({
         // Stats refresh must never prevent an otherwise usable public directory.
       }
     });
+  const [viewer, introductions] = await Promise.all([
+    currentUser(),
+    publicPlayerIntroductions(
+      edition,
+      rows.map((p) => p.osuId),
+      currentEdition.registration?.publicIntroductionQuestionId,
+    ),
+  ]);
   const query = new URLSearchParams({ q: filters.q, view });
   return (
     <div className="directory-page edition-players">
@@ -111,12 +122,14 @@ export default async function Players({
       <EventPlayers
         edition={edition}
         search={false}
+        signedIn={Boolean(viewer)}
         grouped={rows.some((p) => p.participation === "finalized_roster")}
         players={rows.map((p) => ({
           id: p.osuId,
           name: p.username,
           team: p.team?.name ?? null,
           captain: p.captain,
+          bio: introductions.get(p.osuId),
           rank: statistics.get(p.osuId)?.globalRank ?? null,
           pp: statistics.get(p.osuId)?.pp ?? null,
           href: `/players/${p.osuId}?edition=${edition}`,
