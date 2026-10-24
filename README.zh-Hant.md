@@ -1,6 +1,6 @@
 # OCLR — osu! Chinese League Rookie
 
-[English](README.md) | [繁體中文](README.zh-Hant.md)
+[English](README.md) | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md)
 
 **osu! Chinese League Rookie（OCLR）** 官方社群賽事網站。OCLR 是社群活動，與 osu! 無隸屬關係，亦未獲 osu! 背書。
 
