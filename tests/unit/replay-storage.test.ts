@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { tmpdir } from "node:os";
 import { randomUUID, createHash } from "node:crypto";
 import {
+  realpath,
   mkdtemp,
   mkdir,
   writeFile,
@@ -21,7 +23,9 @@ import {
 import { REPLAY_STORAGE_MAX_BYTES } from "../../src/lib/replay-model";
 let root: string;
 beforeEach(async () => {
-  root = await mkdtemp("/private/tmp/oclr-replay-storage-test-");
+  root = await realpath(
+    await mkdtemp(join(tmpdir(), "oclr-replay-storage-test-")),
+  );
   vi.stubEnv("OCLR_MEDIA_DIR", root);
 });
 afterEach(async () => {

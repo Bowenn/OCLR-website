@@ -7,8 +7,10 @@ import {
   it,
   vi,
 } from "vitest";
+import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import {
+  realpath,
   mkdtemp,
   readdir,
   readFile,
@@ -96,7 +98,7 @@ describe.skipIf(!url)("private replay attachment lifecycle", () => {
     assertTestDatabase(url);
     vi.stubEnv("DATABASE_URL", url!);
     vi.stubEnv("ADMIN_OSU_IDS", String(admin.osuId));
-    root = await mkdtemp("/private/tmp/oclr-185-media-");
+    root = await realpath(await mkdtemp(join(tmpdir(), "oclr-185-media-")));
     vi.stubEnv("OCLR_MEDIA_DIR", root);
   });
   beforeEach(async () => {
@@ -256,14 +258,12 @@ describe.skipIf(!url)("private replay attachment lifecycle", () => {
   it("separates scoped Tester writes from Developer reads, rejects cross-edition IDs and applies revocation", async () => {
     await lock();
     const r = await upload(admin);
-    await db()
-      .insert(staffRoles)
-      .values({
-        userId: outsider.osuId,
-        role: "replayer",
-        editionSlug: edition.slug,
-        grantedBy: admin.osuId,
-      });
+    await db().insert(staffRoles).values({
+      userId: outsider.osuId,
+      role: "replayer",
+      editionSlug: edition.slug,
+      grantedBy: admin.osuId,
+    });
     await upload(outsider, syntheticReplay({ player: "Replayer file" }));
     await db()
       .update(staffRoles)

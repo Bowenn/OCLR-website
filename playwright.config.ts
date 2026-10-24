@@ -1,5 +1,5 @@
 import { assertTestDatabase } from "./tests/database";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync, mkdirSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { announcements } from "./tests/fixtures/announcements";
@@ -13,6 +13,13 @@ const bracketsPath =
   join(tmpdir(), `oclr-e2e-brackets-${process.pid}.json`);
 if (process.env.TEST_DATABASE_URL) {
   assertTestDatabase(process.env.TEST_DATABASE_URL);
+  // Provision only the explicit isolated test environment; both server and workers
+  // use the canonical path so private storage works on macOS and Linux.
+  const testMedia =
+    process.env.OCLR_MEDIA_DIR ||
+    join(realpathSync(tmpdir()), `oclr-browser-test-media-${process.pid}`);
+  mkdirSync(testMedia, { recursive: true, mode: 0o700 });
+  process.env.OCLR_MEDIA_DIR = realpathSync(testMedia);
   process.env.OCLR_TEST_BRACKETS_FILE = bracketsPath;
   process.env.OCLR_BRACKETS_FILE = bracketsPath;
   if (!existsSync(bracketsPath)) writeFileSync(bracketsPath, "[]");
