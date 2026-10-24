@@ -28,6 +28,7 @@ export function PlayerMessageBoard({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const region = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const requestId = useRef<string | null>(null);
@@ -54,12 +55,26 @@ export function PlayerMessageBoard({
   );
   useEffect(() => {
     const controller = new AbortController();
-    load(controller.signal)
-      .then(receive)
-      .catch((error) => {
-        if (error.name !== "AbortError") setError(loadError);
-      });
-    return () => controller.abort();
+    const node = region.current;
+    if (!node) return;
+    // All identities render immediately; fetch messages only near the viewport.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        load(controller.signal)
+          .then(receive)
+          .catch((error) => {
+            if (error.name !== "AbortError") setError(loadError);
+          });
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      controller.abort();
+    };
   }, [load, receive, loadError]);
   useEffect(() => {
     if (open) input.current?.focus();
@@ -150,6 +165,7 @@ export function PlayerMessageBoard({
   return (
     <>
       <div
+        ref={region}
         className="event-message-scroll"
         tabIndex={0}
         role="region"

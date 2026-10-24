@@ -4,7 +4,6 @@ import { EventPlayers } from "@/components/event-players";
 import { eventPreview } from "@/lib/event-preview";
 import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
-import Link from "next/link";
 import { publicPlayers } from "@/lib/players";
 import { getPublicEdition } from "@/lib/content";
 import { notFound } from "next/navigation";
@@ -51,7 +50,6 @@ export default async function Players({
     );
   const base = `/tournaments/${edition}/players`;
   let result;
-  let view: "cards" | "list" = "cards";
   try {
     const query = await searchParams;
     const selected = z
@@ -63,7 +61,6 @@ export default async function Players({
       Object.keys(query).some((key) => !["q", "page", "view"].includes(key))
     )
       throw new HttpError(400, "Choose a valid player search and page.");
-    view = selected.data;
     result = await publicPlayers({ q: query.q, page: query.page, edition });
   } catch (error) {
     if (!(error instanceof HttpError) || error.status !== 400) throw error;
@@ -76,7 +73,7 @@ export default async function Players({
       </div>
     );
   }
-  const { rows, total, filters } = result;
+  const { rows, filters } = result;
   const { statistics, refreshIds } = await cachedDirectoryStatistics(
     rows.map((p) => p.osuId),
   ).catch(() => ({
@@ -104,7 +101,6 @@ export default async function Players({
       currentEdition.registration?.publicIntroductionQuestionId,
     ),
   ]);
-  const query = new URLSearchParams({ q: filters.q, view });
   return (
     <div className="directory-page edition-players">
       <PageHeading title={tr("Players")} />
@@ -137,24 +133,6 @@ export default async function Players({
           fetchedAt: statistics.get(p.osuId)?.fetchedAt,
         }))}
       />
-      <nav className="actions spaced" aria-label={tr("Player directory pages")}>
-        {filters.page > 1 && (
-          <Link
-            className="button secondary"
-            href={`${base}?${query}&page=${filters.page - 1}`}
-          >
-            {tr("← Previous")}
-          </Link>
-        )}
-        {filters.page * 24 < total && (
-          <Link
-            className="button secondary"
-            href={`${base}?${query}&page=${filters.page + 1}`}
-          >
-            {tr("Next →")}
-          </Link>
-        )}
-      </nav>
     </div>
   );
 }

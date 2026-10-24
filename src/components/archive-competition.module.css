@@ -1,0 +1,17 @@
+.competition {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.competition > p,
+.competition > :global(.event-tabs),
+.competition > :global(.bracket-tabs) {
+  margin: 0;
+}
+.competition > p {
+  max-width: 75ch;
+}
+
+.competition > * {
+  min-width: 0;
+}

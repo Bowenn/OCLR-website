@@ -10,8 +10,10 @@ export function BracketView({
   bracket,
   renderMatch,
   teamUrls,
+  hideGroupTabs = false,
 }: {
   bracket: ResolvedBracket;
+  hideGroupTabs?: boolean;
   teamUrls?: Record<string, string>;
   renderMatch?: (match: ResolvedMatch) => ReactNode;
 }) {
@@ -65,7 +67,7 @@ export function BracketView({
   }, [group, flat]);
   return (
     <>
-      {!renderMatch && (
+      {!renderMatch && !hideGroupTabs && (
         <div
           className="bracket-tabs"
           role="group"

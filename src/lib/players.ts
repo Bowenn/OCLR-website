@@ -222,9 +222,8 @@ export async function publicPlayers(input: unknown, exactOsuId?: number) {
             a.osuId - b.osuId,
         );
       return {
-        rows: exactOsuId
-          ? matching
-          : matching.slice((filters.page - 1) * 24, filters.page * 24),
+        // Legacy page parameters remain valid, but never hide directory entries.
+        rows: matching,
         total: matching.length,
         filters,
       };
