@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { EditionCard } from "@/components/edition-card";
 import { getPublicEditions } from "@/lib/content";
+import { registrationAvailability } from "@/lib/registrations";
+import { formatDate } from "@/lib/editions";
 import "./home.css";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +58,9 @@ export default async function Home() {
   const featured =
     editions.find((e) => e.status === "live") ??
     editions.find((e) => e.status === "upcoming");
+  const availability = featured
+    ? await registrationAvailability(featured)
+    : null;
   const archives = editions
     .filter((e) => e.status === "completed")
     .sort((a, b) =>
@@ -99,6 +104,26 @@ export default async function Home() {
     (e) => e.status !== "completed" && e.slug !== featured?.slug,
   );
   const base = featured ? `/tournaments/${featured.slug}` : "/tournaments";
+  const registrationLabel =
+    availability === "open"
+      ? tr("Registration phase")
+      : availability === "upcoming"
+        ? tr("Registration opens {value0}", {
+            value0: formatDate(
+              featured!.registration!.opensAt,
+              featured!.timeZone,
+              tr.locale,
+            ),
+          })
+        : availability === "paused"
+          ? tr("Registration paused")
+          : availability === "closed"
+            ? tr("Registration closed")
+            : availability === "unavailable"
+              ? tr("Registration temporarily unavailable")
+              : featured
+                ? tr("Registration not announced")
+                : tr("The next edition has not been announced yet.");
   return (
     <div className="home-redesign">
       <section className="home-feature" aria-labelledby="hero-title">
@@ -151,18 +176,30 @@ export default async function Home() {
               </Link>
               <Link
                 className="home-registration-link"
-                href={featured ? `${base}/register` : "/tournaments"}
+                href={availability === "open" ? `${base}/register` : base}
               >
                 <EntryIcon kind="calendar" />
                 <span className="home-registration-label">
-                  <span>{tr("Registration phase")}</span>
-                  <span
-                    className="home-registration-divider"
-                    aria-hidden="true"
-                  >
-                    |
-                  </span>
-                  <span>{tr("Deadline {date}", { date: "11.23" })}</span>
+                  <span>{registrationLabel}</span>
+                  {availability === "open" && featured?.registration && (
+                    <>
+                      <span
+                        className="home-registration-divider"
+                        aria-hidden="true"
+                      >
+                        |
+                      </span>
+                      <span>
+                        {tr("Deadline {date}", {
+                          date: formatDate(
+                            featured.registration.closesAt,
+                            featured.timeZone,
+                            tr.locale,
+                          ),
+                        })}
+                      </span>
+                    </>
+                  )}
                 </span>
                 <span className="home-registration-arrow" aria-hidden="true">
                   →
