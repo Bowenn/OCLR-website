@@ -76,8 +76,11 @@ test.describe("scoped player evaluation", () => {
     await expect(
       page.getByRole("region", { name: "Round YumuRating", exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("table").first().getByRole("row")).toHaveCount(
-      2,
-    );
+    await expect(
+      page
+        .getByRole("region", { name: "Round YumuRating", exact: true })
+        .getByRole("table")
+        .getByRole("row"),
+    ).toHaveCount(2);
   });
 });

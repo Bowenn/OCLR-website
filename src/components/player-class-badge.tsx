@@ -14,14 +14,12 @@ export function PlayerClassBadge({
   const tr = useAppTranslations();
   const names = playerClassLabels(tr);
   if (!classification)
-    return (
-      <span className="muted small">{tr("Insufficient comparison data")}</span>
-    );
+    return <span className="small">{tr("Insufficient comparison data")}</span>;
   return (
     <details className={styles.evaluation}>
       <summary className={styles.badge} data-category={classification.category}>
         {names[classification.code]}{" "}
-        <span className="muted small">{classification.category}</span>
+        <span className="small">{classification.category}</span>
       </summary>
       <div className={styles.explanation}>
         <p>
@@ -42,7 +40,7 @@ export function PlayerClassBadge({
               .join(" · ")}
           </p>
         )}
-        <p className="muted small">{classification.policy}</p>
+        <p className="small">{classification.policy}</p>
       </div>
     </details>
   );
