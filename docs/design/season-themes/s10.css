@@ -1,0 +1,116 @@
+:root {
+  --site-background: #f3faff;
+  --site-surface: #ffffff;
+  --site-raised: #eaf5fc;
+  --site-tint: #dcf2fc;
+  --site-foreground: #173c59;
+  --site-muted: #526a7d;
+  --site-secondary-text: #355772;
+  --site-accent: #086d9a;
+  --site-border: #cbdfe9;
+  --site-control-border: #66889d;
+  --site-primary: #0875a3;
+  --site-primary-hover: #075f86;
+  --site-on-primary: #ffffff;
+  --site-focus: #086d9a;
+  --site-selection: #b9e6fa;
+  --hero-background: #eaf7ff;
+  --art-background: transparent;
+  --button-radius: 8px;
+  --radius-panel: 12px;
+}
+:root[data-theme="dark"] {
+  --site-background: #101e2c;
+  --site-surface: #172a3b;
+  --site-raised: #20384d;
+  --site-tint: #204356;
+  --site-foreground: #e7f5ff;
+  --site-muted: #adc5d7;
+  --site-secondary-text: #cae2f2;
+  --site-accent: #79d9ff;
+  --site-border: #345166;
+  --site-control-border: #668da5;
+  --site-primary: #79d9ff;
+  --site-primary-hover: #a0e5ff;
+  --site-on-primary: #102d42;
+  --site-focus: #ffabc5;
+  --site-selection: #355b72;
+  --hero-background: #142c40;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  width: 42%;
+  height: 100%;
+  inset: 0 0 0 auto;
+  background: linear-gradient(155deg, #72dafa33 20%, #ffa6bc55);
+  clip-path: polygon(42% 0, 100% 0, 100% 100%, 0 100%);
+}
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-block: 36px;
+  align-items: center;
+}
+.hero-heading {
+  display: block;
+  grid-column: 1;
+  align-self: end;
+  padding-top: 24px;
+  margin: 0;
+}
+.hero-meta {
+  margin-top: 24px;
+}
+.hero-meta br {
+  display: none;
+}
+.hero-meta .status {
+  margin-left: 12px;
+}
+.hero-summary {
+  display: block;
+  grid-column: 1;
+  align-self: start;
+  padding: 24px 0;
+}
+.hero-summary .eyebrow {
+  color: var(--site-muted);
+}
+.artwork {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  animation-delay: 0.1s;
+}
+.artwork figcaption {
+  background: transparent;
+  text-align: right;
+}
+h1 {
+  font-size: clamp(36px, 4.2vw, 60px);
+}
+@media (max-width: 800px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+    padding-block: 24px;
+  }
+  .hero-heading {
+    padding: 0;
+  }
+  .hero-summary {
+    display: none;
+  }
+  .artwork {
+    grid-column: 1;
+    grid-row: auto;
+    width: min(100%, 400px);
+    justify-self: center;
+    margin-top: 12px;
+  }
+  .hero-meta {
+    margin-top: 12px;
+  }
+  h1 {
+    font-size: 36px;
+  }
+}
