@@ -328,6 +328,13 @@ export function StatisticsExplorer({
           </div>
         </section>
       )}
+      {fixtures.some((f) => f.technicalAdjudication) && (
+        <p className="notice">
+          {tr(
+            "Some matches include confirmed technical adjudication. Historical series results are retained; player statistics reflect actual MP scores, without invented scores for awarded points.",
+          )}
+        </p>
+      )}
       <details className="statistics-method">
         <summary>{tr("Statistics calculation")}</summary>
         <p>
@@ -344,7 +351,17 @@ export function StatisticsExplorer({
               <Link href={"/tournaments/" + data.slug + "/matches/" + f.id}>
                 {f.label} · {f.stage}
               </Link>
-              <span>{f.covered ? tr("Published") : tr("Not yet covered")}</span>
+              <span>
+                {f.covered ? tr("Published") : tr("Not yet covered")}
+                {f.technicalAdjudication && (
+                  <>
+                    {" "}
+                    · {tr("Technical adjudication; recorded series score")}{" "}
+                    {f.score?.join(" : ")}.{" "}
+                    {tr("Player statistics reflect recorded MP scores only.")}
+                  </>
+                )}
+              </span>
             </li>
           ))}
         </ul>

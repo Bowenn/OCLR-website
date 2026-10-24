@@ -124,6 +124,60 @@ describe.skipIf(!url)("historical statistics transactions", () => {
     expect(publicData.plays).toHaveLength(8);
     expect(publicData.plays.some((p) => p.osuId === 999999)).toBe(false);
   });
+  it("reserves exceptional reviews for Admin and retains audited immutable source facts", async () => {
+    const source = statisticsSource();
+    source.games[0].scores[0].team = "red";
+    source.games[0].scores.push({
+      ...structuredClone(source.games[0].scores[0]),
+      osuId: 91005,
+      total: 3,
+    });
+    source.games[1].scores[2].total = 999;
+    vi.mocked(fetchMatchSource).mockResolvedValue(source);
+    await statisticsCommand(referee, "s7", imported);
+    const exceptions = {
+      ...reviewed,
+      rosterTeamGames: [1],
+      technicalAdjudication: true,
+      excludedScores: [{ gameId: 1, osuId: 91005, reason: "non-participant" }],
+    };
+    await expect(
+      statisticsCommand(referee, "s7", exceptions),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      statisticsCommand(admin, "s7", { ...exceptions, rosterTeamGames: [999] }),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      statisticsCommand(admin, "s7", {
+        ...exceptions,
+        excludedScores: [
+          { gameId: 1, osuId: 91001, reason: "non-participant" },
+        ],
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+    await statisticsCommand(admin, "s7", exceptions);
+    expect(
+      (await statisticsWorkspace(admin, "s7", "one")).reviews[0].games[0].game
+        .scores,
+    ).toHaveLength(5);
+    expect((await publicArchiveStatistics("s7")).plays).toEqual([]);
+    await statisticsCommand(admin, "s7", publish);
+    const publicData = await publicArchiveStatistics("s7");
+    expect(publicData.plays).toHaveLength(8);
+    expect(publicData.fixtures[0]).toMatchObject({
+      technicalAdjudication: true,
+      score: [2, 0],
+    });
+    expect(publicData.plays.some((p) => p.osuId === 91005)).toBe(false);
+    const event = (await db().select().from(editionEvents)).find(
+      (e) => e.kind === "statistics_review",
+    );
+    expect(event?.detail).toMatchObject({
+      technicalAdjudication: true,
+      rosterTeamGames: [1],
+      excludedScores: exceptions.excludedScores,
+    });
+  });
   it("imports privately, publishes reviewed games atomically and preserves published data across draft edits", async () => {
     await statisticsCommand(referee, "s7", imported);
     expect((await publicArchiveStatistics("s7")).plays).toEqual([]);

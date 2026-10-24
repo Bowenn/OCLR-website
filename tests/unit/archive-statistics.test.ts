@@ -82,7 +82,7 @@ describe("historical MP statistics", () => {
       s.excludedScores = excludedScores;
       expect(validStatisticsExclusions(s)).toBe(false);
       expect(fixtureStatisticsIssues(a, "one", [s])).toContain(
-        "Only verified zero-score records can be excluded.",
+        "Invalid score exclusions.",
       );
     }
     const p = s.source.games[0].scores[0];
@@ -101,6 +101,64 @@ describe("historical MP statistics", () => {
     expect(validStatisticsExclusions(s)).toBe(true);
     s.excludedScores!.push({ ...s.excludedScores![0] });
     expect(validStatisticsExclusions(s)).toBe(false);
+  });
+  it("requires explicit per-game UID team review and still rejects unknown identities", () => {
+    const s = snapshot();
+    s.source.games[0].scores[0].team = "red";
+    expect(fixtureStatisticsIssues(a, "one", [s])).toContain(
+      "Team colors do not identify both recorded teams.",
+    );
+    s.rosterTeamGames = [1];
+    expect(fixtureStatisticsIssues(a, "one", [s])).toEqual([]);
+    expect(s.source.games[0].scores[0].team).toBe("red");
+    expect(projectStatistics(a, "one", s)[0].teamId).toBe("alpha");
+    s.source.games[0].scores[0].osuId = 999;
+    expect(fixtureStatisticsIssues(a, "one", [s])).toContain(
+      "A score cannot be matched to the recorded roster.",
+    );
+    s.rosterTeamGames = [999];
+    expect(fixtureStatisticsIssues(a, "one", [s])).toContain(
+      "Invalid roster-team review.",
+    );
+  });
+  it("preserves adjudicated results without inventing scores or accepting extra games", () => {
+    const archive = structuredClone(a);
+    archive.matches[0].score = [2, 1];
+    const s = snapshot();
+    expect(fixtureStatisticsIssues(archive, "one", [s])).toContain(
+      "Selected games do not reconcile with the recorded series score.",
+    );
+    s.technicalAdjudication = true;
+    expect(fixtureStatisticsIssues(archive, "one", [s])).toEqual([]);
+    expect(projectStatistics(archive, "one", s)).toHaveLength(8);
+    expect(archive.matches[0].score).toEqual([2, 1]);
+    s.included = [];
+    expect(fixtureStatisticsIssues(archive, "one", [s])).not.toEqual([]);
+    s.included = [1, 4];
+    expect(fixtureStatisticsIssues(archive, "one", [s])).toContain(
+      "Exclude duplicate games and replayed beatmaps.",
+    );
+    s.included = [1, 2];
+    archive.matches[0].score = [1, 0];
+    expect(fixtureStatisticsIssues(archive, "one", [s])).not.toEqual([]);
+  });
+  it("allows explicit non-participant review without excluding real roster scores", () => {
+    const s = snapshot();
+    const game = s.source.games[0];
+    game.scores.push({
+      ...structuredClone(game.scores[0]),
+      osuId: 91005,
+      total: 3,
+    });
+    s.excludedScores = [{ gameId: 1, osuId: 91005, reason: "non-participant" }];
+    expect(validStatisticsExclusions(s)).toBe(false);
+    expect(fixtureStatisticsIssues(a, "one", [s])).toEqual([]);
+    expect(projectStatistics(a, "one", s)).toHaveLength(8);
+    expect(game.scores.at(-1)?.total).toBe(3);
+    s.excludedScores[0].osuId = 91001;
+    expect(validStatisticsExclusions(s, a, "one")).toBe(false);
+    s.excludedScores[0].osuId = 99999;
+    expect(validStatisticsExclusions(s, a, "one")).toBe(false);
   });
   it("requires explicit review for missing historical pools and preserves MP metadata", () => {
     const s = snapshot();

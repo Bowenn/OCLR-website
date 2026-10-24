@@ -19,6 +19,7 @@ import {
   fixtureStatisticsIssues,
   projectStatistics,
   validStatisticsExclusions,
+  canExcludeNonParticipantScore,
   type StatisticsSnapshot,
 } from "./archive-statistics-model";
 
@@ -28,6 +29,7 @@ const excludedScoresSchema = z
       .object({
         gameId: z.number().int().positive(),
         osuId: z.number().int().positive(),
+        reason: z.literal("non-participant").optional(),
       })
       .strict(),
   )
@@ -40,6 +42,8 @@ const snapshotSchema = z
     included: z.array(z.number().int().positive()).max(500),
     allowUnlistedMaps: z.boolean().optional(),
     excludedScores: excludedScoresSchema.optional(),
+    rosterTeamGames: z.array(z.number().int().positive()).max(500).optional(),
+    technicalAdjudication: z.boolean().optional(),
   })
   .strict();
 const integer = z.number().int().nonnegative();
@@ -60,6 +64,8 @@ const commandSchema = z.discriminatedUnion("action", [
       included: z.array(integer.positive()).max(500),
       allowUnlistedMaps: z.boolean().default(false),
       excludedScores: excludedScoresSchema.default([]),
+      rosterTeamGames: z.array(integer.positive()).max(500).default([]),
+      technicalAdjudication: z.boolean().default(false),
     })
     .strict(),
   z
@@ -177,6 +183,9 @@ export async function statisticsWorkspace(
       r.published.allowUnlistedMaps !== r.draft.allowUnlistedMaps ||
       JSON.stringify(r.published.excludedScores ?? []) !==
         JSON.stringify(r.draft.excludedScores ?? []) ||
+      !!r.published.technicalAdjudication !== !!r.draft.technicalAdjudication ||
+      JSON.stringify(r.published.rosterTeamGames ?? []) !==
+        JSON.stringify(r.draft.rosterTeamGames ?? []) ||
       JSON.stringify(r.published.included) !== JSON.stringify(r.draft.included),
     stale: r.draft.archiveKey !== key,
   }));
@@ -204,12 +213,19 @@ export async function statisticsWorkspace(
         poolId: r.draft.poolId,
         allowUnlistedMaps: r.draft.allowUnlistedMaps ?? false,
         excludedScores: r.draft.excludedScores ?? [],
+        rosterTeamGames: r.draft.rosterTeamGames ?? [],
+        technicalAdjudication: r.draft.technicalAdjudication ?? false,
         complete: r.draft.source.complete,
         fetchedAt: r.draft.source.fetchedAt,
         warnings: r.draft.source.warnings,
         games: r.draft.source.games.map((game) => ({
           game,
           included: r.draft.included.includes(game.id),
+          nonParticipantIds: game.scores
+            .filter((score) =>
+              canExcludeNonParticipantScore(archive, r.fixtureId, score),
+            )
+            .map((score) => score.osuId!),
           issues: statisticsGameIssues(
             archive,
             r.fixtureId,
@@ -217,6 +233,7 @@ export async function statisticsWorkspace(
             game,
             r.draft.allowUnlistedMaps,
             r.draft.excludedScores,
+            r.draft.rosterTeamGames?.includes(game.id),
           ),
         })),
       })),
@@ -246,6 +263,13 @@ export async function statisticsCommand(
       ? "approve_results"
       : "record_results";
   await assertCapability(actor, permission, slug);
+  if (
+    c.action === "review" &&
+    (c.technicalAdjudication ||
+      c.rosterTeamGames.length ||
+      c.excludedScores.some((e) => e.reason === "non-participant"))
+  )
+    await assertCapability(actor, "approve_results", slug);
   const archive = await archiveFor(slug);
   const key = statisticsArchiveKey(archive);
   const fixture = statisticsFixtures(archive).find((m) =>
@@ -285,6 +309,13 @@ export async function statisticsCommand(
       .where(eq(editionState.slug, slug))
       .for("update");
     await assertCapability(actor, permission, slug, tx);
+    if (
+      c.action === "review" &&
+      (c.technicalAdjudication ||
+        c.rosterTeamGames.length ||
+        c.excludedScores.some((e) => e.reason === "non-participant"))
+    )
+      await assertCapability(actor, "approve_results", slug, tx);
     const currentArchive = await archiveFor(slug, tx);
     if (statisticsArchiveKey(currentArchive) !== key)
       throw new HttpError(409, "Archive changed. Reload before retrying.");
@@ -341,9 +372,15 @@ export async function statisticsCommand(
         included: c.included,
         allowUnlistedMaps: c.allowUnlistedMaps,
         excludedScores: c.excludedScores,
+        rosterTeamGames: c.rosterTeamGames,
+        technicalAdjudication: c.technicalAdjudication,
       };
       if (
-        !validStatisticsExclusions(draft) ||
+        !validStatisticsExclusions(draft, archive, fixture.id) ||
+        new Set(c.rosterTeamGames).size !== c.rosterTeamGames.length ||
+        c.rosterTeamGames.some(
+          (id) => !draft.source.games.some((g) => g.id === id),
+        ) ||
         (!archive.pools.some((p) => p.id === c.poolId) &&
           !(c.allowUnlistedMaps && c.poolId === "")) ||
         new Set(c.included).size !== c.included.length ||
@@ -358,6 +395,7 @@ export async function statisticsCommand(
               game,
               c.allowUnlistedMaps,
               c.excludedScores,
+              c.rosterTeamGames.includes(id),
             ).length > 0
           );
         })
@@ -426,6 +464,8 @@ export async function statisticsCommand(
                     allowUnlistedMaps: c.allowUnlistedMaps,
                     included: c.included,
                     excludedScores: c.excludedScores,
+                    rosterTeamGames: c.rosterTeamGames,
+                    technicalAdjudication: c.technicalAdjudication,
                   }
                 : {}),
             }
@@ -475,6 +515,10 @@ export async function publicArchiveStatistics(slug: string) {
       label: m.label,
       stage: m.stage,
       covered: published.some((r) => r.fixtureId === m.id),
+      technicalAdjudication: published.some(
+        (r) => r.fixtureId === m.id && r.published?.technicalAdjudication,
+      ),
+      score: m.score,
     })),
     plays,
     publishedAt:

@@ -10,11 +10,13 @@ function SourceReview({
   review,
   pools,
   busy,
+  canReviewExceptions,
   save,
 }: {
   review: Review;
   pools: StatisticsWorkspace["pools"];
   busy: boolean;
+  canReviewExceptions: boolean;
   save: (body: Record<string, unknown>) => Promise<void>;
 }) {
   const tr = useAppTranslations();
@@ -26,12 +28,21 @@ function SourceReview({
     review.allowUnlistedMaps,
   );
   const [excludedScores, setExcludedScores] = useState(review.excludedScores);
+  const [rosterTeamGames, setRosterTeamGames] = useState(
+    review.rosterTeamGames,
+  );
+  const [technicalAdjudication, setTechnicalAdjudication] = useState(
+    review.technicalAdjudication,
+  );
   const exclusionsChanged =
     JSON.stringify(excludedScores) !== JSON.stringify(review.excludedScores);
   const poolChanged =
     poolId !== review.poolId ||
     allowUnlistedMaps !== review.allowUnlistedMaps ||
-    exclusionsChanged;
+    exclusionsChanged ||
+    JSON.stringify(rosterTeamGames) !==
+      JSON.stringify(review.rosterTeamGames) ||
+    technicalAdjudication !== review.technicalAdjudication;
   return (
     <section className="statistics-review stack">
       <h3>MP {review.mpId}</h3>
@@ -83,6 +94,22 @@ function SourceReview({
           "I reviewed the MP beatmaps because the historical mappool is incomplete.",
         )}
       </label>
+      {canReviewExceptions && (
+        <label className="checkbox-field">
+          <input
+            type="checkbox"
+            checked={technicalAdjudication}
+            disabled={busy}
+            onChange={(e) => {
+              setTechnicalAdjudication(e.target.checked);
+              setIncluded([]);
+            }}
+          />
+          {tr(
+            "Organizer confirmed technical adjudication. Keep the recorded series score; statistics use only actual MP scores.",
+          )}
+        </label>
+      )}
       {poolChanged && (
         <p role="status">{tr("Save review settings before choosing games.")}</p>
       )}
@@ -136,7 +163,7 @@ function SourceReview({
             </tr>
           </thead>
           <tbody>
-            {review.games.map(({ game, issues }) => (
+            {review.games.map(({ game, issues, nonParticipantIds }) => (
               <tr key={game.id}>
                 <td>
                   <input
@@ -157,6 +184,35 @@ function SourceReview({
                   {game.id}
                   <br />
                   <small>{game.startTime}</small>
+                  {canReviewExceptions &&
+                    (rosterTeamGames.includes(game.id) ||
+                      issues.includes(
+                        "Team colors do not identify both recorded teams.",
+                      )) && (
+                      <label className="checkbox-field">
+                        <input
+                          type="checkbox"
+                          disabled={busy}
+                          aria-label={
+                            tr("Use verified roster teams") + " " + game.id
+                          }
+                          checked={rosterTeamGames.includes(game.id)}
+                          onChange={(e) => {
+                            setRosterTeamGames(
+                              e.target.checked
+                                ? [...rosterTeamGames, game.id]
+                                : rosterTeamGames.filter(
+                                    (id) => id !== game.id,
+                                  ),
+                            );
+                            setIncluded([]);
+                          }}
+                        />
+                        {tr(
+                          "I verified team membership by UID despite incorrect lobby colors.",
+                        )}
+                      </label>
+                    )}
                 </td>
                 <td>
                   {game.beatmap?.artist} {game.beatmap?.title}
@@ -188,7 +244,9 @@ function SourceReview({
                             : (s.accuracy * 100).toFixed(2) + "%"}
                         </span>
                         <span>{s.mods.join(" ") || "NM"}</span>
-                        {canExcludeStatisticsScore(s) && (
+                        {(canExcludeStatisticsScore(s) ||
+                          (canReviewExceptions &&
+                            nonParticipantIds.includes(s.osuId!))) && (
                           <label className="checkbox-field">
                             <input
                               type="checkbox"
@@ -209,7 +267,16 @@ function SourceReview({
                                   e.target.checked
                                     ? [
                                         ...excludedScores,
-                                        { gameId: game.id, osuId: s.osuId! },
+                                        {
+                                          gameId: game.id,
+                                          osuId: s.osuId!,
+                                          ...(!canExcludeStatisticsScore(s)
+                                            ? {
+                                                reason:
+                                                  "non-participant" as const,
+                                              }
+                                            : {}),
+                                        },
                                       ]
                                     : excludedScores.filter(
                                         (v) =>
@@ -220,7 +287,11 @@ function SourceReview({
                                 setIncluded([]);
                               }}
                             />
-                            {tr("Exclude score")}
+                            {canExcludeStatisticsScore(s)
+                              ? tr("Exclude score")
+                              : tr(
+                                  "I verified this user did not play for either team. Exclude this lobby record.",
+                                )}
                           </label>
                         )}
                       </p>
@@ -244,6 +315,8 @@ function SourceReview({
             included,
             allowUnlistedMaps,
             excludedScores,
+            rosterTeamGames,
+            technicalAdjudication,
           })
         }
       >
@@ -482,6 +555,7 @@ export function StatisticsManager({
               review={review}
               pools={data.pools}
               busy={busy}
+              canReviewExceptions={data.canPublish}
               save={save}
             />
           ))}
@@ -498,7 +572,7 @@ export function StatisticsManager({
                 label={tr("Approve & publish statistics")}
                 title={tr("Approve & publish statistics")}
                 description={tr(
-                  "Publish the reviewed scoring games for this match. All recorded MP links must be imported and selected games must match the historical series score.",
+                  "Publish reviewed scoring games. Every MP link must be imported. Keep the recorded result, including any explicitly confirmed technical adjudication.",
                 )}
                 url={url}
                 payload={{
