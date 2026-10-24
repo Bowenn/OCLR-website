@@ -113,6 +113,8 @@ test.describe("operations presentation batch", () => {
     const stored = (await db().select().from(tournamentStages)).find(
       (s) => s.kind === "group",
     )!.groupConfiguration!.groups[0];
+    // Finish the refresh from the saved mutation before editing the next draft.
+    await page.reload();
     await groups
       .getByLabel("Group name 1", { exact: true })
       .fill("Renamed group");
