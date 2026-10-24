@@ -7,6 +7,7 @@ import {
   editionState,
   editionEvents,
   fixtures,
+  fixtureReferees,
   mappoolEvents,
   mappools,
   matchGames,
@@ -17,7 +18,7 @@ import {
   resultRevisions,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
-import { assertCapability } from "./auth/staff";
+import { assertCapability, hasCapability } from "./auth/staff";
 import {
   fixtureForReview,
   staffFixtures,
@@ -235,7 +236,7 @@ export async function matchReview(
 ) {
   return db().transaction(
     async (tx) => {
-      const context = await fixtureForReview(actor, slug, fixtureId, tx);
+      const context = await fixtureForReview(actor, slug, fixtureId, tx, true);
       const [latest] = context.result?.latestImportId
         ? await tx
             .select()
@@ -336,7 +337,7 @@ export async function matchReview(
         .where(eq(matchImports.fixtureId, fixtureId))
         .orderBy(desc(matchImports.createdAt))
         .limit(50);
-      const all = context.canApprove
+      const all = context.canViewAll
         ? await tx
             .select({
               id: fixtures.id,
@@ -977,6 +978,20 @@ export async function previewFixtureMatch(
   fixtureId: string,
   input: unknown,
 ) {
+  await assertCapability(actor, "record_results", slug);
+  if (!(await hasCapability(actor, "manage_fixtures", slug))) {
+    const [assignment] = await db()
+      .select()
+      .from(fixtureReferees)
+      .where(
+        and(
+          eq(fixtureReferees.fixtureId, fixtureId),
+          eq(fixtureReferees.userId, actor.osuId),
+        ),
+      );
+    if (!assignment)
+      throw new HttpError(403, "You are not assigned to this fixture.");
+  }
   const workspace = await staffFixtures(actor, slug);
   const fixture = workspace.fixtures.find((f) => f.id === fixtureId);
   if (!fixture) throw new HttpError(404, "Fixture not found.");

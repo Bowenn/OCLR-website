@@ -7,6 +7,7 @@ import {
   registrations,
   users,
 } from "@/db/schema";
+import { assertBusinessWrite } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { HttpError } from "./http";
 
@@ -72,7 +73,9 @@ export async function postPlayerMessage(
   const parsed = inputSchema.safeParse(input);
   if (!parsed.success || !Number.isSafeInteger(playerId) || playerId <= 0)
     throw new HttpError(400, "Enter a message of 1 to 1000 characters.");
+  await assertBusinessWrite(actor, edition);
   return db().transaction(async (tx) => {
+    await assertBusinessWrite(actor, edition, tx);
     // Serialize one author's writes across targets; duplicate retries do not count toward the limit.
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(hashtextextended(${`player-message:${actor.osuId}`}, 0))`,

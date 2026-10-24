@@ -1,4 +1,5 @@
 "use client";
+import { useStaffReadOnly } from "./staff-read-only";
 
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -15,6 +16,7 @@ export function RefereeAssignment({
   fixture: FixtureWorkspace["fixtures"][number];
   data: FixtureWorkspace;
 }) {
+  const readOnly = useStaffReadOnly() || !data.canManage;
   const tr = useAppTranslations();
 
   const id = useId(),
@@ -63,6 +65,7 @@ export function RefereeAssignment({
     }
   }
   async function save() {
+    if (readOnly) return;
     setPending(true);
     setError("");
     try {
@@ -172,7 +175,9 @@ export function RefereeAssignment({
                       type="checkbox"
                       checked={selected.includes(u.osuId)}
                       disabled={
-                        pending || (!eligible && !selected.includes(u.osuId))
+                        readOnly ||
+                        pending ||
+                        (!eligible && !selected.includes(u.osuId))
                       }
                       onChange={(e) =>
                         setSelected(
@@ -218,7 +223,7 @@ export function RefereeAssignment({
           </p>
         )}
         <div className="actions">
-          <button disabled={pending} onClick={save}>
+          <button disabled={readOnly || pending} onClick={save}>
             {pending ? tr("Saving…") : tr("Save assignments")}
           </button>
           <button
