@@ -48,6 +48,7 @@ export function StaffRoleForm({
           >
             <option value="mappooler">{tr("Mappooler")}</option>
             <option value="referee">{tr("Referee")}</option>
+            <option value="streamer">{tr("Streamer")}</option>
             {!scopes && (
               <option value="developer">
                 {tr("Developer — global read-only access")}

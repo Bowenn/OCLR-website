@@ -4965,6 +4965,17 @@ body:has([data-broadcast]) .site-shell {
   display: contents;
 }
 
+/* Streaming uses the shared MainSheet panels and form controls in every appearance. */
+.streaming-pairing {
+  overflow-wrap: anywhere;
+}
+.streaming-history {
+  padding-inline-start: 1.5rem;
+}
+.streaming-history li + li {
+  margin-top: 1rem;
+}
+
 .status-deferred {
   color: var(--site-accent);
   border-color: var(--site-control-border);

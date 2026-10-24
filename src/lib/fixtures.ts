@@ -21,6 +21,7 @@ import {
   editionEvents,
   resultRevisions,
   fixtureReferees,
+  fixtureStreams,
   fixtures,
   memberships,
   teams,
@@ -862,6 +863,15 @@ export async function fixtureCommand(
             409,
             "Another fixture uses this match for bracket progression. Clear that fixture's source selection first.",
           );
+        const [stream] = await tx
+          .select()
+          .from(fixtureStreams)
+          .where(eq(fixtureStreams.fixtureId, before!.id));
+        if (stream)
+          throw new HttpError(
+            409,
+            "Cancel the streaming task before deleting this fixture.",
+          );
         const protectedRows = await tx.execute(
           sql`SELECT 1 FROM match_imports WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM match_results WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM result_revisions WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM result_game_claims WHERE fixture_id = ${before!.id} LIMIT 1`,
         );
@@ -1119,6 +1129,7 @@ export async function fixtureCommand(
             editionSlug: slug,
             publishedAt: before?.publishedAt ?? null,
             assignmentRevision: before?.assignmentRevision ?? 0,
+            streamRevision: before?.streamRevision ?? 0,
             version: before?.version ?? 0,
           },
         ],
