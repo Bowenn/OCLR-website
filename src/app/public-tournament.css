@@ -1106,28 +1106,28 @@ body:has(dialog[open].map-dialog) {
 .rules-reading {
   min-width: 0;
 }
-.rules-article {
+:is(.rules-article, [data-handbook]) {
   padding: clamp(1.25rem, 3vw, 2.5rem);
   background: var(--site-surface);
   border: 1px solid var(--site-border);
   border-radius: 1.375rem;
 }
-.rules-article section + section {
+:is(.rules-article, [data-handbook]) section + section {
   border-top: 1px solid var(--site-border);
   margin-top: 2rem;
   padding-top: 2rem;
 }
-.rules-article h2 {
+:is(.rules-article, [data-handbook]) h2 {
   display: flex;
   align-items: baseline;
   gap: 0.8rem;
   font-size: 1.35rem;
 }
-.rules-article h2 span {
+:is(.rules-article, [data-handbook]) h2 span {
   color: var(--site-highlight);
   font-variant-numeric: tabular-nums;
 }
-.rules-article p {
+:is(.rules-article, [data-handbook]) p {
   max-width: 75ch;
   line-height: 1.85;
   margin-bottom: 0;
