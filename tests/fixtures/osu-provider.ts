@@ -53,21 +53,24 @@ globalThis.fetch = async (input, init) => {
           .filter((g) => g.id > after)
           .map((g) => {
             if (g.id === 1)
-              g.scores.push({
-                ...g.scores[0],
-                user_id: 999999,
-                legacy_total_score: 0,
-                total_score: 0,
-                accuracy: 0,
-                max_combo: 0,
-                passed: false,
-                match: { team: "blue", slot: 4, pass: false },
-                statistics: {
-                  count_300: 0,
-                  count_100: 0,
-                  count_50: 0,
-                  count_miss: 100,
-                },
+              return syntheticEvent(g.id, {
+                ...g,
+                scores: [
+                  ...g.scores,
+                  {
+                    ...g.scores[0],
+                    user_id: 999999,
+                    legacy_total_score: 0,
+                    total_score: 0,
+                    accuracy: 0,
+                    max_combo: 0,
+                    passed: false,
+                    match: { team: "blue", slot: 4, pass: false },
+                    statistics: {
+                      count_miss: 100,
+                    },
+                  },
+                ],
               });
             return syntheticEvent(g.id, g);
           }),

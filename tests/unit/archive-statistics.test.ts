@@ -13,6 +13,7 @@ import {
   statisticsFixtures,
   suggestStatisticsPool,
   validStatisticsExclusions,
+  canExcludeStatisticsScore,
   type StatisticsSnapshot,
 } from "../../src/lib/archive-statistics-model";
 const snapshot = (): StatisticsSnapshot => ({
@@ -22,6 +23,28 @@ const snapshot = (): StatisticsSnapshot => ({
   included: [1, 2],
 });
 describe("historical MP statistics", () => {
+  it("permits explicit review of sparse all-miss records without inventing unknown hit counts", () => {
+    const s = statisticsSource().games[0].scores[0];
+    Object.assign(s, {
+      total: 0,
+      accuracy: 0,
+      combo: 0,
+      hitCounts: { great: null, ok: null, meh: null, miss: 642 },
+    });
+    expect(canExcludeStatisticsScore(s)).toBe(true);
+    expect(s.hitCounts).toEqual({
+      great: null,
+      ok: null,
+      meh: null,
+      miss: 642,
+    });
+    s.hitCounts!.great = 1;
+    expect(canExcludeStatisticsScore(s)).toBe(false);
+    s.hitCounts = undefined;
+    expect(canExcludeStatisticsScore(s)).toBe(false);
+    s.hitCounts = { great: null, ok: null, meh: null, miss: null };
+    expect(canExcludeStatisticsScore(s)).toBe(false);
+  });
   it("explicitly excludes reviewed zero-score occupants without changing raw MP or genuine failures", () => {
     const s = snapshot();
     const game = s.source.games[0];

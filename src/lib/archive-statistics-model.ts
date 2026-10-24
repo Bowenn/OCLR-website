@@ -18,9 +18,15 @@ export function canExcludeStatisticsScore(score: MatchScore) {
     score.total === 0 &&
     score.combo === 0 &&
     score.accuracy === 0 &&
-    score.hitCounts?.great === 0 &&
-    score.hitCounts.ok === 0 &&
-    score.hitCounts.meh === 0 &&
+    // Modern ScoreStatistics is sparse. Do not invent missing hit counts as
+    // zero; permit explicit review when misses are recorded and no successful
+    // hits are reported, with independently recorded zero score/ACC/combo.
+    score.hitCounts !== undefined &&
+    score.hitCounts.miss !== null &&
+    score.hitCounts.miss > 0 &&
+    [score.hitCounts.great, score.hitCounts.ok, score.hitCounts.meh].every(
+      (count) => count === null || count === 0,
+    ) &&
     score.problems.length === 0
   );
 }

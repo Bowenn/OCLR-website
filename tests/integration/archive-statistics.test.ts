@@ -96,7 +96,7 @@ describe.skipIf(!url)("historical statistics transactions", () => {
       accuracy: 0,
       combo: 0,
       passed: false,
-      hitCounts: { great: 0, ok: 0, meh: 0, miss: 100 },
+      hitCounts: { great: null, ok: null, meh: null, miss: 100 },
     });
     vi.mocked(fetchMatchSource).mockResolvedValue(source);
     await statisticsCommand(referee, "s7", imported);
