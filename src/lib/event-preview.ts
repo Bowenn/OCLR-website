@@ -14,7 +14,14 @@ export type EventPlayer = {
 export type EventMatch = {
   id: string;
   round: string;
-  stage: "group" | "knockout";
+  stage: string;
+  label?: string;
+  redHref?: string;
+  blueHref?: string;
+  winner?: 0 | 1 | null;
+  forfeit?: boolean;
+  recorded?: boolean;
+  mps?: string[];
   pool: string;
   time: string;
   red: string;
