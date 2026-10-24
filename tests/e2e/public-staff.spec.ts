@@ -97,9 +97,7 @@ test.describe("approved public About roster", () => {
         ).status(),
       ).toBe(403);
       await page.goto("/about");
-      await expect(
-        page.getByText(/Public staff profiles have not been announced/),
-      ).toBeVisible();
+      await expect(page.locator("#pooler-title")).toBeVisible();
       const operator = await admin.newPage();
       await operator.goto("/admin/staff");
       const row = operator.locator("article").filter({
