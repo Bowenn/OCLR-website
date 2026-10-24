@@ -2344,6 +2344,15 @@
     "mc4b122e0bfb6": "Optional organizer-approved numeric rank range. Rank-only failures in this range may submit for review; PP limits still apply. No application is automatically accepted or deferred.",
     "m70587a83ec00": "Grace minimum numeric rank",
     "mddb04b04e7ce": "Grace maximum numeric rank",
-    "m6185aa08b9bf": "Your rank eligibility is awaiting further review. You have not been accepted or rejected."
+    "m6185aa08b9bf": "Your rank eligibility is awaiting further review. You have not been accepted or rejected.",
+    "ma664ade2dd3a": "YumuRating",
+    "m3beaa85bd37c": "MRA combines 70% ERA and 30% DRA. Higher is better. No star weighting is applied.",
+    "m4452d4778885": "{value0} scored games · {value1} players",
+    "me03e72ffc1ec": "Rating unavailable; approved score data needs review.",
+    "m804df89b5190": "No approved scored games available for rating.",
+    "mc0552b46dd91": "Small comparison group; interpret this rating with care.",
+    "mf579e86355ef": "Player ratings; scroll horizontally",
+    "m410b53192130": "Player ratings",
+    "m51296d3267e2": "Game {value0}"
   }
 }
