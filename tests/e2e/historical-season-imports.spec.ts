@@ -183,6 +183,21 @@ test.describe("historical season import handoff", () => {
           });
         }
       }
+      await page.goto(`/tournaments/${slug}`);
+      await expect(page.locator("#rules .rules-article > section")).toHaveCount(
+        7,
+      );
+      await expect(page.locator("#rules .rules-article")).toContainText(
+        sample.ruleText,
+      );
+      await expect(page.locator("#rules .rules-illustration img")).toHaveCount(
+        sample.images,
+      );
+      await page.locator("#rules").scrollIntoViewIfNeeded();
+      await page.screenshot({
+        path: info.outputPath(`${sample.key}-overview-rules.png`),
+        fullPage: false,
+      });
       for (const appearance of ["default", "cute-pastel", "swiss-minimal"])
         for (const theme of ["light", "dark"]) {
           await context.addCookies([
