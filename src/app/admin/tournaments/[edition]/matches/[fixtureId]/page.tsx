@@ -1,6 +1,9 @@
 import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
+import { staffAccess, canRead } from "@/lib/auth/staff";
+import { canViewStreaming, streamingWorkspace } from "@/lib/streaming";
+import { StreamingManager } from "@/components/streaming-manager";
 import { staffFixtures } from "@/lib/fixtures";
 import { fixtureSlot } from "@/lib/fixture-views";
 import { HttpError } from "@/lib/http";
@@ -24,6 +27,28 @@ export default async function FixturePage({
   return authorizedPage(async () => {
     const actor = await requireUser();
     const { edition, fixtureId } = await params;
+    const access = await staffAccess(actor);
+    const streaming = canViewStreaming(access, edition)
+      ? await streamingWorkspace(actor, edition, {}, fixtureId)
+      : null;
+    const streamingPanel = streaming ? (
+      <StreamingManager slug={edition} data={streaming} detail />
+    ) : null;
+    if (
+      streaming &&
+      !canRead(access, "manage_fixtures", edition) &&
+      !canRead(access, "record_results", edition)
+    ) {
+      return (
+        <>
+          <PageHeading
+            eyebrow={tr("COMPETITION")}
+            title={streaming.fixtures[0].label}
+          />
+          {streamingPanel}
+        </>
+      );
+    }
     const review = await matchReview(actor, edition, fixtureId).catch(
       async (error: unknown) => {
         if (!(error instanceof HttpError) || error.status !== 409) throw error;
@@ -46,6 +71,7 @@ export default async function FixturePage({
             {fixtureSlot(workspace, fixture, "home").label} {tr(" vs")}{" "}
             {fixtureSlot(workspace, fixture, "away").label}
           </PageHeading>
+          {streamingPanel}
           <div className="panel form-stack planned-match-panel">
             <p>
               {fixture.scheduledAt
@@ -104,6 +130,7 @@ export default async function FixturePage({
               : tr("No mappool associated")}
           </p>
         </div>
+        {streamingPanel}
         <MatchReviewPanel data={review} slug={edition} />
       </>
     );
