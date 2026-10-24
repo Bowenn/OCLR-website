@@ -146,7 +146,7 @@ export default async function Home() {
               </div>
               <Link className="home-contact home-information-link" href={base}>
                 <EntryIcon kind="info" />
-                <span>{tr("information page")}</span>
+                <span>{tr("Information page")}</span>
                 <span aria-hidden="true">→</span>
               </Link>
               <Link

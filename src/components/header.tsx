@@ -216,7 +216,7 @@ export function Header({
   const links = [
     { href: "/", label: tr("navigation_home") },
     { href: "/news", label: tr("Tournament news") },
-    { href: null, label: tr("OCLR Wiki") },
+    { href: null, label: tr("OCL Wiki") },
     { href: "/about", label: tr("Organizers") },
   ];
   const [open, setOpen] = useState(false);
