@@ -4964,3 +4964,14 @@ body:has([data-broadcast]) .site-shell {
 .staff-readonly-fields {
   display: contents;
 }
+
+/* Streaming uses the shared MainSheet panels and form controls in every appearance. */
+.streaming-pairing {
+  overflow-wrap: anywhere;
+}
+.streaming-history {
+  padding-inline-start: 1.5rem;
+}
+.streaming-history li + li {
+  margin-top: 1rem;
+}
