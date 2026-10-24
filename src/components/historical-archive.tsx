@@ -218,6 +218,29 @@ export async function HistoricalArchiveView({
       )}
     </article>
   );
+  function rulesContent() {
+    const rules = historicalRulebook(a);
+    return rules ? (
+      <>
+        <p className="rules-version muted small">
+          {rules.version ? (
+            <>
+              {tr("Version ")}
+              {rules.version} ·{" "}
+            </>
+          ) : null}
+          {rules.sections.length} {tr("sections")}
+        </p>
+        <RulesHandbook
+          sections={rules.sections}
+          cover={rules.cover}
+          archiveSeason={historicalRulebookSeason(rules)}
+        />
+      </>
+    ) : (
+      <p className="muted">{tr("Not recorded")}</p>
+    );
+  }
   let content;
   let title = edition.name;
   if (section === "overview") {
@@ -256,6 +279,14 @@ export async function HistoricalArchiveView({
             </div>
           ))}
         </dl>
+        <section
+          id="rules"
+          className="archive-overview-rules"
+          aria-labelledby="archive-rules-title"
+        >
+          <h2 id="archive-rules-title">{tr("Tournament rules")}</h2>
+          {rulesContent()}
+        </section>
         {preview && (
           <nav className="actions" aria-label={tr("Archive sections")}>
             {[
@@ -601,27 +632,7 @@ export async function HistoricalArchiveView({
       );
   } else if (section === "rules") {
     title = tr("Rules");
-    const rules = historicalRulebook(a);
-    content = rules ? (
-      <>
-        <p className="rules-version muted small">
-          {rules.version ? (
-            <>
-              {tr("Version ")}
-              {rules.version} ·{" "}
-            </>
-          ) : null}
-          {rules.sections.length} {tr("sections")}
-        </p>
-        <RulesHandbook
-          sections={rules.sections}
-          cover={rules.cover}
-          archiveSeason={historicalRulebookSeason(rules)}
-        />
-      </>
-    ) : (
-      <p className="muted">{tr("Not recorded")}</p>
-    );
+    content = rulesContent();
   } else {
     title = tr("Historical statistics");
     content = <p className="muted">{tr("Not recorded")}</p>;

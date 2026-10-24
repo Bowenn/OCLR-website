@@ -586,6 +586,19 @@ test.describe("historical archive browser workflow", () => {
           });
         }
       }
+    await page.goto(`/tournaments/${slug}`);
+    await expect(page.locator("#rules .rules-article > section")).toHaveCount(
+      8,
+    );
+    await expect(page.locator("#rules .rules-version")).toContainText("v1.2");
+    await expect(page.locator("#rules .rules-article")).toContainText(
+      "没有总决赛reset！",
+    );
+    await expect(page.locator("#rules .rules-illustration img")).toHaveCount(2);
+    await page.screenshot({
+      path: info.outputPath("historical-overview-rules.png"),
+      fullPage: true,
+    });
     await page.goto(`/tournaments/${slug}/rules`);
     if (isMobile) await page.locator(".rules-mobile-contents summary").click();
     const contents = page.locator(
