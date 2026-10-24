@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { EventScore } from "@/lib/event-statistics";
+import { eventMapKey, groupEventMaps } from "@/lib/event-statistics-model";
 const views = [
   "Performance scores",
   "Mappool statistics",
@@ -20,7 +21,7 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
   const [sort, setSort] = useState("Average score"),
     [descending, setDescending] = useState(true);
   const eligible = scores.filter(
-    (s) => (!round || s.round === round) && (!slot || s.slot === slot),
+    (s) => (!round || s.round === round) && (!slot || eventMapKey(s) === slot),
   );
   const plays = eligible.filter((s) => !team || s.team === team);
   const number = (v: number, d = 0) =>
@@ -37,12 +38,16 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
   let rows: Row[] = [];
   const keys = [
     ...new Set(
-      plays.map((s) =>
-        view === 1 ? s.slot : view === 3 || view === 4 ? s.team : s.player,
-      ),
+      plays.map((s) => (view === 3 || view === 4 ? s.team : s.player)),
     ),
   ];
-  const slots = [...new Set(plays.map((s) => s.slot))];
+  const maps = groupEventMaps(plays);
+  const placementLabels = new Map<string, string>(
+    maps.flatMap((map): [string, string][] => [
+      [`${map.key}:rank`, `${map.label} #`],
+      [`${map.key}:score`, `${map.label} ${tr("Score")}`],
+    ]),
+  );
   if (view === 0) {
     columns = [
       "Player",
@@ -108,8 +113,7 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
       "Bans",
       "Ban rate",
     ];
-    rows = keys.map((key) => {
-      const p = plays.filter((s) => s.slot === key);
+    rows = maps.map(({ plays: p }) => {
       const best = [...p].sort((a, b) => b.score - a.score)[0];
       const teams = [...new Set(p.map((s) => s.game + ":" + s.team))]
         .map((g) => {
@@ -123,7 +127,7 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
         .sort((a, b) => b.total - a.total);
       const games = new Set(p.map((s) => s.game)).size;
       return {
-        Map: key,
+        Map: `${best.round} · ${best.slot}`,
         Beatmap: best.title,
         "Map ID": best.mapId,
         "Best player": best.player,
@@ -142,7 +146,12 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
         Picks: games,
         "Pick rate":
           new Set(p.map((s) => s.fixture)).size /
-          (best.poolMatches ?? new Set(eligible.map((s) => s.fixture)).size),
+          (best.poolMatches ??
+            new Set(
+              scores
+                .filter((s) => s.round === best.round)
+                .map((s) => s.fixture),
+            ).size),
         Bans: best.bans ?? null,
         "Ban rate":
           best.bans !== undefined && best.poolMatches
@@ -193,7 +202,7 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
       view === 4 ? "Team" : "Player",
       "Average placement",
       "Average score",
-      ...slots.flatMap((s) => [`${s} #`, `${s} Score`]),
+      ...maps.flatMap((map) => [`${map.key}:rank`, `${map.key}:score`]),
     ];
     rows = keys.map((name) => {
       const p = plays.filter((s) => (view === 4 ? s.team : s.player) === name);
@@ -209,8 +218,8 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
           : null;
       }
       const ranks: number[] = [];
-      slots.forEach((slot) => {
-        const matching = plays.filter((s) => s.slot === slot);
+      maps.forEach((map) => {
+        const matching = map.plays;
         const values = keys
           .map((k) => {
             const a = matching.filter(
@@ -235,8 +244,8 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
           .filter((s) => s.value !== null)
           .sort((a, b) => b.value! - a.value!);
         const index = values.findIndex((s) => s.name === name);
-        row[`${slot} #`] = index < 0 ? null : index + 1;
-        row[`${slot} Score`] = index < 0 ? null : values[index].value;
+        row[`${map.key}:rank`] = index < 0 ? null : index + 1;
+        row[`${map.key}:score`] = index < 0 ? null : values[index].value;
         if (index >= 0) ranks.push(index + 1);
       });
       row["Average placement"] = ranks.length
@@ -310,19 +319,42 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
       </div>
       <div className="event-tools">
         {[
-          ["Rounds", round, setRound, [...new Set(scores.map((s) => s.round))]],
-          ["Team", team, setTeam, [...new Set(scores.map((s) => s.team))]],
-          ["Map", slot, setSlot, [...new Set(scores.map((s) => s.slot))]],
-        ].map(([label, value, set, options]) => (
-          <label key={label as string}>
-            {tr(label as string)}
-            <select
-              value={value as string}
-              onChange={(e) => (set as (v: string) => void)(e.target.value)}
-            >
+          {
+            label: "Rounds",
+            value: round,
+            set: setRound,
+            options: [...new Set(scores.map((s) => s.round))].map((value) => ({
+              value,
+              label: value,
+            })),
+          },
+          {
+            label: "Team",
+            value: team,
+            set: setTeam,
+            options: [...new Set(scores.map((s) => s.team))].map((value) => ({
+              value,
+              label: value,
+            })),
+          },
+          {
+            label: "Map",
+            value: slot,
+            set: setSlot,
+            options: groupEventMaps(scores).map((map) => ({
+              value: map.key,
+              label: map.label,
+            })),
+          },
+        ].map(({ label, value, set, options }) => (
+          <label key={label}>
+            {tr(label)}
+            <select value={value} onChange={(e) => set(e.target.value)}>
               <option value="">{tr("All")}</option>
-              {(options as string[]).map((o) => (
-                <option key={o}>{o}</option>
+              {options.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
               ))}
             </select>
           </label>
@@ -361,10 +393,7 @@ export function EventStatistics({ scores }: { scores: EventScore[] }) {
                       setDescending(sort === c ? !descending : true);
                     }}
                   >
-                    {c.includes(" #") ||
-                    (c.includes(" Score") && c.match(/^[A-Z]+\d/))
-                      ? c
-                      : tr(c)}{" "}
+                    {placementLabels.get(c) ?? tr(c)}{" "}
                     {sort === c ? (descending ? "↓" : "↑") : ""}
                   </button>
                 </th>

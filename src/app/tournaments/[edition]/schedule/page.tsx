@@ -14,7 +14,8 @@ export default async function Schedule({
   if (archive) return archive;
   if (!(await getPublicEdition(slug))) notFound();
   const preview = eventPreview(slug);
-  if (preview) return <EventSchedule matches={preview.matches} />;
+  if (preview)
+    return <EventSchedule edition={slug} matches={preview.matches} />;
   const competition = await publicCompetition(slug);
   const matches: EventMatch[] = (competition?.fixtures ?? []).map((f) => ({
     id: f.id,
@@ -30,10 +31,17 @@ export default async function Schedule({
     red: f.home.team?.name ?? f.home.label,
     blue: f.away.team?.name ?? f.away.label,
     score: f.result ? [f.result.homeWins, f.result.awayWins] : null,
+    status: f.status,
     mp: f.result?.mpUrl,
     sourceRed: f.home.sourceId ?? undefined,
     sourceBlue: f.away.sourceId ?? undefined,
     href: `/tournaments/${slug}/matches/${f.id}`,
   }));
-  return <EventSchedule matches={matches} />;
+  return (
+    <EventSchedule
+      edition={slug}
+      matches={matches}
+      groups={competition?.groups}
+    />
+  );
 }
