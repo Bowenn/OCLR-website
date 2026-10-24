@@ -1,0 +1,13 @@
+.E{--cl:8px 8px 18px rgba(214,120,160,.32),-6px -6px 14px rgba(255,255,255,.95),inset -4px -4px 8px rgba(214,120,160,.14),inset 4px 4px 8px rgba(255,255,255,.8);background:#ffe6ee;color:#5a3345;font-family:Fredoka,"Noto Sans TC",sans-serif;border-radius:32px;font-size:15px}
+.E .nv .on{background:#ffb6d0;border-radius:99px;padding:2px 14px;margin:-2px;box-shadow:inset -3px -3px 6px rgba(214,90,140,.35),inset 3px 3px 6px rgba(255,255,255,.7)}
+.E .se{background:#fff3f7;border-radius:28px;box-shadow:var(--cl)}
+.E .tag{display:inline-block;background:#ffe08a;color:#6b4a00;border-radius:99px;padding:1px 14px;font-weight:600;box-shadow:inset -2px -2px 5px rgba(180,130,0,.25),inset 2px 2px 5px rgba(255,255,255,.7)}
+.E h4{font-weight:600}
+.E .bar{height:18px;background:#f6d3e0;border-radius:99px;box-shadow:inset 3px 3px 6px rgba(214,120,160,.35),inset -3px -3px 6px rgba(255,255,255,.9)}
+.E .bar i{background:#ff8fb8;border-radius:99px;box-shadow:inset -2px -3px 5px rgba(180,50,100,.3),inset 2px 2px 4px rgba(255,255,255,.6)}
+.E .bt{background:#ff8fb8;color:#4a1f33;border-radius:99px;box-shadow:6px 6px 12px rgba(214,120,160,.4),-4px -4px 10px rgba(255,255,255,.9),inset -3px -3px 6px rgba(180,50,100,.3),inset 3px 3px 6px rgba(255,255,255,.55)}
+.E .tb span{background:#fff3f7;border-radius:99px;box-shadow:4px 4px 9px rgba(214,120,160,.28),-3px -3px 8px rgba(255,255,255,.9)}
+.E .tb .on{background:#9be7d3;box-shadow:inset -3px -3px 6px rgba(30,140,110,.3),inset 3px 3px 6px rgba(255,255,255,.6)}
+.E .mp{background:#fff3f7;border-radius:24px;box-shadow:var(--cl)}
+.E .mp em{background:#9fd0ff;margin:10px;border-radius:18px;padding:0 14px;box-shadow:inset -3px -3px 6px rgba(40,110,190,.25),inset 3px 3px 6px rgba(255,255,255,.6)}
+.E .st u{background:#ffe6ee;border-radius:99px;padding:0 10px}

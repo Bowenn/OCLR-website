@@ -1,0 +1,186 @@
+/* REVIEW-ONLY candidate for style E; not registered or imported by OCLR.
+ * source.css preserves the original; this file adapts tokens and safe geometry. */
+html[data-appearance="claymorphism"] .themed-site {
+  --site-background: #fff3f7;
+  --site-surface: #fff8fb;
+  --site-raised: #ffeaf2;
+  --site-tint: #fbd9e7;
+  --site-foreground: #5a3345;
+  --site-muted: #80566a;
+  --site-secondary-text: #704052;
+  --site-accent: #9c2a5d;
+  --site-border: #e8c4d5;
+  --site-control-border: #967080;
+  --site-primary: #ffb4cf;
+  --site-primary-hover: #ffa0c3;
+  --site-on-primary: #4a1f33;
+  --site-header: #fff8fb;
+  --site-accent-strong: #9c2a5d;
+  --site-focus: #9c2a5d;
+  --site-selection: #fbd9e7;
+  --site-highlight: #9c2a5d;
+  --site-connector: #967080;
+  --site-success: #21664c;
+  --site-warning: #805500;
+  --site-danger: #b32343;
+  --site-shadow: #17213725;
+  --site-soft-shadow: #17213714;
+  --site-panel-shadow: #17213720;
+  --site-dialog-shadow: #17213745;
+  --site-backdrop: #10131d80;
+  --style-detail: #226552;
+  --radius-panel: 24px;
+  --button-radius: 18px;
+  color-scheme: light;
+  background: var(--site-background);
+  color: var(--site-foreground);
+}
+html[data-theme="dark"][data-appearance="claymorphism"] .themed-site {
+  --site-background: #261b25;
+  --site-surface: #382530;
+  --site-raised: #442e3c;
+  --site-tint: #553348;
+  --site-foreground: #fff0f7;
+  --site-muted: #d5b1c5;
+  --site-secondary-text: #ecd0df;
+  --site-accent: #ffbad7;
+  --site-border: #674457;
+  --site-control-border: #b4819b;
+  --site-primary: #ffb4cf;
+  --site-primary-hover: #ffc9df;
+  --site-on-primary: #4a1f33;
+  --site-header: #382530;
+  --site-accent-strong: #ffbad7;
+  --site-focus: #ffbad7;
+  --site-selection: #553348;
+  --site-highlight: #ffbad7;
+  --site-connector: #b4819b;
+  --site-success: #91e0bd;
+  --site-warning: #f0ce85;
+  --site-danger: #ffa0b4;
+  --site-shadow: #0006;
+  --site-soft-shadow: #0003;
+  --site-panel-shadow: #0005;
+  --site-dialog-shadow: #0009;
+  --site-backdrop: #050810b3;
+  --style-detail: #b0ead7;
+  color-scheme: dark;
+}
+html[data-appearance="claymorphism"]
+  .themed-site
+  :is(button, .button, input, select, textarea) {
+  border-radius: var(--button-radius);
+}
+html[data-appearance="claymorphism"]
+  .themed-site
+  :is(.panel, .season-overview-hero, .map-browse-card, .public-match-card) {
+  border-radius: var(--radius-panel);
+}
+html[data-appearance="claymorphism"] .themed-site :focus-visible {
+  outline: 3px solid var(--site-focus);
+  outline-offset: 4px;
+}
+html[data-appearance="claymorphism"] .themed-site ::selection {
+  background: var(--site-selection);
+}
+html[data-appearance="claymorphism"] .themed-site .season-overview-hero {
+  box-shadow:
+    8px 8px 18px var(--site-panel-shadow),
+    inset 3px 3px 7px #ffffff28,
+    inset -4px -4px 8px var(--site-soft-shadow);
+}
+html[data-appearance="claymorphism"] .themed-site .button.primary {
+  box-shadow:
+    5px 5px 12px var(--site-shadow),
+    inset 2px 2px 5px #ffffff55,
+    inset -3px -3px 6px #83294f25;
+}
+html[data-appearance="claymorphism"] .themed-site .button.primary:active {
+  box-shadow: inset 2px 2px 5px #83294f35;
+}
+html[data-appearance="claymorphism"] .themed-site progress {
+  accent-color: var(--site-accent);
+  border-radius: 999px;
+  box-shadow: inset 2px 2px 5px var(--site-shadow);
+}
+html[data-appearance="claymorphism"]
+  .themed-site
+  :is(table, .map-browse-card, .public-match-card) {
+  box-shadow: none;
+}
+/* Explicit progress rendering: native accent-color varies across engines. */
+html[data-appearance="claymorphism"] .themed-site progress {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 14px;
+  border: 1px solid var(--site-control-border);
+  border-radius: var(--button-radius);
+  overflow: hidden;
+  background: var(--site-raised);
+}
+html[data-appearance="claymorphism"]
+  .themed-site
+  progress::-webkit-progress-bar {
+  background: var(--site-raised);
+  border-radius: inherit;
+}
+html[data-appearance="claymorphism"]
+  .themed-site
+  progress::-webkit-progress-value {
+  background: var(--site-accent);
+  border-radius: inherit;
+}
+html[data-appearance="claymorphism"] .themed-site progress::-moz-progress-bar {
+  background: var(--site-accent);
+  border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-appearance="claymorphism"] .themed-site *,
+  html[data-appearance="claymorphism"] .themed-site *::before,
+  html[data-appearance="claymorphism"] .themed-site *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  html[data-appearance="claymorphism"] .themed-site {
+    background: Canvas;
+    color: CanvasText;
+  }
+  html[data-appearance="claymorphism"]
+    .themed-site
+    :is(
+      .season-overview-hero,
+      .panel,
+      .button,
+      .map-browse-card,
+      input,
+      select
+    ) {
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: CanvasText;
+  }
+  html[data-appearance="claymorphism"]
+    .themed-site
+    :is(.season-overview-hero, .badge)::before,
+  html[data-appearance="claymorphism"]
+    .themed-site
+    .season-overview-hero::after {
+    display: none;
+  }
+  html[data-appearance="claymorphism"] .themed-site :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-appearance="claymorphism"] .themed-site progress {
+    appearance: auto;
+    -webkit-appearance: auto;
+  }
+}
