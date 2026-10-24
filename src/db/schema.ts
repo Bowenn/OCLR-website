@@ -992,3 +992,38 @@ export const historicalStatistics = pgTable(
     ),
   ],
 );
+
+// Immutable signed public messages; author and timestamp are the transactional write record.
+export const playerMessages = pgTable(
+  "player_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    playerId: bigint("player_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId, { onDelete: "cascade" }),
+    authorId: bigint("author_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId, { onDelete: "cascade" }),
+    requestId: uuid("request_id").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("player_messages_author_request_unique").on(t.authorId, t.requestId),
+    index("player_messages_target_idx").on(
+      t.editionSlug,
+      t.playerId,
+      t.createdAt,
+    ),
+    index("player_messages_author_time_idx").on(t.authorId, t.createdAt),
+    check(
+      "player_messages_body_length",
+      sql`char_length(btrim(${t.body})) BETWEEN 1 AND 1000`,
+    ),
+  ],
+);

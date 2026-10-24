@@ -1,4 +1,6 @@
 "use client";
+import { Avatar } from "./avatar";
+import { PlayerMessageBoard } from "./player-message-board";
 import { PlayerReactions } from "./player-reactions";
 import { useState } from "react";
 import Link from "next/link";
@@ -10,12 +12,14 @@ export function EventPlayers({
   grouped = false,
   preview = false,
   search = true,
+  signedIn = false,
 }: {
   players: EventPlayer[];
   edition: string;
   grouped?: boolean;
   preview?: boolean;
   search?: boolean;
+  signedIn?: boolean;
 }) {
   const tr = useAppTranslations();
   const [query, setQuery] = useState("");
@@ -62,9 +66,13 @@ export function EventPlayers({
               <article className="event-player-row" key={p.id}>
                 <div className="event-player-basic">
                   <div className="event-player-identity">
-                    <div className="event-player-monogram" aria-hidden="true">
-                      {p.name.slice(0, 2)}
-                    </div>
+                    {preview ? (
+                      <div className="event-player-monogram" aria-hidden="true">
+                        {p.name.slice(0, 2)}
+                      </div>
+                    ) : (
+                      <Avatar key={p.id} osuId={p.id} username={p.name} />
+                    )}
                     <div>
                       <h3>
                         {p.href ? (
@@ -121,23 +129,23 @@ export function EventPlayers({
                 </div>
                 <div className="event-player-messages">
                   <h4>{tr("Message board")}</h4>
-                  <div
-                    className="event-message-scroll"
-                    tabIndex={0}
-                    role="region"
-                    aria-label={tr("Messages for {name}", { name: p.name })}
-                  >
-                    {p.messages?.length ? (
-                      p.messages.map((m, i) => (
+                  {preview ? (
+                    <div className="event-message-scroll">
+                      {p.messages?.map((m, i) => (
                         <div key={i}>
                           <strong>{m.author}</strong>
                           <p>{m.text}</p>
                         </div>
-                      ))
-                    ) : (
-                      <p>—</p>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <PlayerMessageBoard
+                      edition={edition}
+                      playerId={p.id}
+                      name={p.name}
+                      signedIn={signedIn}
+                    />
+                  )}
                 </div>
               </article>
             ))}
