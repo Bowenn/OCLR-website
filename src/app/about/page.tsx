@@ -144,7 +144,7 @@ export default async function About() {
           </section>
           <section id="developer" aria-labelledby="developer-title">
             <h2 id="developer-title">{tr("Developer")}</h2>
-            {people(organizerDirectory.developer, [])}
+            {people(organizerDirectory.developer, ["developer"])}
           </section>
           <footer className="organizer-contact">
             <div>
