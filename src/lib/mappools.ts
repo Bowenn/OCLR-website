@@ -1,5 +1,5 @@
 import { assertOperationalEdition } from "./archive-guard";
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
@@ -11,6 +11,7 @@ import {
   mappools,
   mappoolEntries,
   mappoolEvents,
+  mappoolReplays,
 } from "@/db/schema";
 import { assertReadCapability, assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
@@ -53,6 +54,15 @@ const batchRow = z
   })
   .strict();
 const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...confirmation,
+      ...versioned,
+      action: z.literal("replay_window"),
+      showcaseAt: z.iso.datetime({ offset: true }),
+      lockSelection: z.boolean(),
+    })
+    .strict(),
   z
     .object({
       ...confirmation,
@@ -204,10 +214,12 @@ const poolFields = {
   version: mappools.version,
   publishedAt: mappools.publishedAt,
   lockedAt: mappools.lockedAt,
+  selectionLockedAt: mappools.selectionLockedAt,
+  showcaseAt: mappools.showcaseAt,
   updatedAt: mappools.updatedAt,
 };
 export async function mappoolWorkspace(actor: User, slug: string) {
-  await assertReadCapability(actor, "manage_mappools", slug);
+  await assertReadCapability(actor, "view_replays", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {
@@ -291,7 +303,11 @@ export async function previewMappoolBatch(
   const c = parsed.data,
     pool = data.pools.find((p) => p.id === c.poolId);
   if (!pool) throw new HttpError(404, "Mappool not found.");
-  if (pool.version !== c.expectedVersion || pool.lockedAt)
+  if (
+    pool.version !== c.expectedVersion ||
+    pool.lockedAt ||
+    pool.selectionLockedAt
+  )
     throw new HttpError(
       409,
       "Refresh the pool. Stale or completed-fixture pools cannot be edited.",
@@ -410,7 +426,11 @@ export async function mappoolCommand(
       .from(mappools)
       .where(and(eq(mappools.id, c.poolId), eq(mappools.editionSlug, slug)));
     if (!pool) throw new HttpError(404, "Mappool not found.");
-    if (pool.version !== c.expectedVersion || pool.lockedAt)
+    if (
+      pool.version !== c.expectedVersion ||
+      pool.lockedAt ||
+      pool.selectionLockedAt
+    )
       throw new HttpError(
         409,
         "Refresh the pool. Stale or completed-fixture pools cannot be edited.",
@@ -478,7 +498,11 @@ export async function mappoolCommand(
       .from(mappools)
       .where(and(eq(mappools.id, c.poolId), eq(mappools.editionSlug, slug)));
     if (!pool) throw new HttpError(404, "Mappool not found.");
-    if (pool.version !== c.expectedVersion || pool.lockedAt)
+    if (
+      pool.version !== c.expectedVersion ||
+      pool.lockedAt ||
+      pool.selectionLockedAt
+    )
       throw new HttpError(
         409,
         "Refresh the pool. Stale or completed-fixture pools cannot be edited.",
@@ -561,7 +585,11 @@ export async function mappoolCommand(
             "The round changed. Refresh before deleting.",
           );
         const pools = await tx
-          .select({ id: mappools.id, lockedAt: mappools.lockedAt })
+          .select({
+            id: mappools.id,
+            lockedAt: mappools.lockedAt,
+            selectionLockedAt: mappools.selectionLockedAt,
+          })
           .from(mappools)
           .where(eq(mappools.roundId, round.id));
         const [fixture] = await tx
@@ -569,7 +597,7 @@ export async function mappoolCommand(
           .from(fixtures)
           .where(eq(fixtures.roundId, round.id))
           .limit(1);
-        if (pools.some((pool) => pool.lockedAt))
+        if (pools.some((pool) => pool.lockedAt || pool.selectionLockedAt))
           throw new HttpError(
             409,
             "This round has locked competition pools. Keep it and create a new round instead.",
@@ -643,7 +671,10 @@ export async function mappoolCommand(
             .where(
               and(
                 eq(mappools.roundId, before.id),
-                isNotNull(mappools.lockedAt),
+                or(
+                  isNotNull(mappools.lockedAt),
+                  isNotNull(mappools.selectionLockedAt),
+                ),
               ),
             )
             .limit(1);
@@ -728,10 +759,97 @@ export async function mappoolCommand(
           409,
           "A pool used by an approved fixture is immutable; create a new pool instead.",
         );
+      if (pool.selectionLockedAt && c.action !== "pool_publish")
+        throw new HttpError(
+          409,
+          "Map selection is locked. Create a new pool to change maps or the Showcase deadline.",
+        );
       const entries = await tx
         .select()
         .from(mappoolEntries)
         .where(eq(mappoolEntries.poolId, pool.id));
+      if (c.action === "replay_window") {
+        const showcaseAt = new Date(c.showcaseAt);
+        if (showcaseAt.getTime() <= Date.now() || !entries.length)
+          throw new HttpError(
+            400,
+            "Choose a future Showcase deadline and add maps before locking selection.",
+          );
+        const [updated] = await tx
+          .update(mappools)
+          .set({
+            showcaseAt,
+            selectionLockedAt: c.lockSelection ? new Date() : null,
+            version: pool.version + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(mappools.id, pool.id))
+          .returning();
+        await tx
+          .insert(mappoolEvents)
+          .values({
+            editionSlug: slug,
+            poolId: pool.id,
+            actorId: actor.osuId,
+            action: c.lockSelection ? "selection_lock" : "showcase_schedule",
+            before: { pool },
+            after: { pool: updated },
+          });
+        return;
+      }
+      // Stable entry IDs retain attachments through moves. Removal/replacement requires explicit attachment cleanup.
+      const attachments = entries.length
+        ? await tx
+            .select()
+            .from(mappoolReplays)
+            .where(
+              inArray(
+                mappoolReplays.entryId,
+                entries.map((e) => e.id),
+              ),
+            )
+        : [];
+      const removing =
+        c.action === "entry_remove"
+          ? [c.entryId]
+          : c.action === "batch_remove"
+            ? c.entryIds
+            : [];
+      if (attachments.some((r) => removing.includes(r.entryId)))
+        throw new HttpError(
+          409,
+          "Remove replay attachments before removing this map.",
+        );
+      if (
+        c.action === "entry_save" &&
+        c.entryId &&
+        entries.find((e) => e.id === c.entryId)?.beatmapId !== beatmapId &&
+        attachments.some((r) => r.entryId === c.entryId)
+      )
+        throw new HttpError(
+          409,
+          "Remove replay attachments before replacing this beatmap.",
+        );
+      for (const replay of attachments) {
+        const next =
+          c.action === "batch_refresh"
+            ? batchMetadata.get(
+                entries.find((e) => e.id === replay.entryId)!.beatmapId,
+              )?.metadata
+            : (c.action === "entry_save" || c.action === "entry_refresh") &&
+                c.entryId === replay.entryId
+              ? metadata
+              : undefined;
+        if (
+          next?.checksum &&
+          next.checksum.toLowerCase() !== replay.summary.beatmapMd5
+        )
+          throw new HttpError(
+            409,
+            "Updated beatmap checksum conflicts with an attached replay. Saved metadata was preserved.",
+          );
+      }
+
       const before = { pool, entries };
       const [roundConfiguration] = await tx
         .select({ rules: tournamentRounds.scoringRules })

@@ -15,6 +15,8 @@ export const capabilities = [
   "manage_teams",
   "manage_draft",
   "manage_mappools",
+  "view_replays",
+  "manage_replays",
   "manage_fixtures",
   "record_results",
   "approve_results",
@@ -28,12 +30,16 @@ export const roles = [
   "referee",
   "developer",
   "streamer",
+  "tester",
+  "replayer",
 ] as const;
 export type StaffRole = (typeof roles)[number];
 const roleCapabilities: Record<StaffRole, readonly Capability[]> = {
   developer: [],
   admin: capabilities,
-  mappooler: ["manage_mappools"],
+  mappooler: ["manage_mappools", "view_replays"],
+  tester: ["view_replays", "manage_replays"],
+  replayer: ["view_replays", "manage_replays"],
   referee: ["record_results"],
   streamer: ["view_streaming", "select_streaming"],
 };

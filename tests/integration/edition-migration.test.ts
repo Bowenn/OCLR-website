@@ -410,11 +410,21 @@ describe.skipIf(!base)(
                 await pool.query("SELECT attempt FROM registrations")
               ).rows.every((r) => r.attempt === 1),
             ).toBe(true);
+            expect(
+              (
+                await pool.query(
+                  "SELECT selection_locked_at,showcase_at FROM mappools",
+                )
+              ).rows.every(
+                (row) =>
+                  row.selection_locked_at === null && row.showcase_at === null,
+              ),
+            ).toBe(true);
             for (const table of tables)
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source' - 'eligibility_verification' - 'attempt'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision' - 'stream_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source' - 'eligibility_verification' - 'attempt'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision' - 'stream_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : table === "mappools" ? "to_jsonb(t) - 'selection_locked_at' - 'showcase_at'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));

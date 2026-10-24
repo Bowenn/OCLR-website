@@ -28,7 +28,7 @@ export default async function About() {
       id: "tester",
       title: "Tester",
       names: organizerDirectory.tester,
-      roles: [],
+      roles: ["tester"],
     },
     {
       id: "streamer",

@@ -1,0 +1,20 @@
+{
+  "environment": "isolated local synthetic PostgreSQL 17 test databases",
+  "original": {
+    "phase": "seed",
+    "rows": 1,
+    "bytes": 200,
+    "sha256": "2218639f95bcb53a009fc30f20b70ece920cbe2100547b5c4ba0e8f1a446427f",
+    "filename": "backup.osr"
+  },
+  "restored": {
+    "phase": "restored",
+    "rows": 1,
+    "bytes": 200,
+    "sha256": "2218639f95bcb53a009fc30f20b70ece920cbe2100547b5c4ba0e8f1a446427f",
+    "filename": "backup.osr"
+  },
+  "mediaArchiveSha256Verified": true,
+  "completeDownloadBytesEqual": true,
+  "productionRestorePerformed": false
+}

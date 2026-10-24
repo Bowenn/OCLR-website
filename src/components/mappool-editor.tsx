@@ -1,5 +1,6 @@
 "use client";
 import {
+  StaffReadOnlyContext,
   ReadOnlyFields,
   useStaffReadOnly,
   MutationButton,
@@ -25,6 +26,7 @@ import { ConfirmMutation } from "./confirm-mutation";
 import { MappoolOrder } from "./mappool-order";
 import { MappoolBatch } from "./mappool-batch";
 import { BeatmapPreview } from "./beatmap-preview";
+import { MappoolReplays, ReplayWindow } from "./mappool-replays";
 type Pool = MappoolWorkspace["pools"][number];
 type Entry = MappoolWorkspace["entries"][number];
 type Change = { url: string };
@@ -389,9 +391,33 @@ type Task = "maps" | "import" | "batch" | "settings";
 export function MappoolEditor({
   slug,
   data,
+  readOnlyMaps = false,
+  canManageReplays = false,
 }: {
   slug: string;
   data: MappoolWorkspace;
+  readOnlyMaps?: boolean;
+  canManageReplays?: boolean;
+}) {
+  const readOnly = useStaffReadOnly() || readOnlyMaps;
+  return (
+    <StaffReadOnlyContext value={readOnly}>
+      <MappoolEditorContent
+        slug={slug}
+        data={data}
+        canManageReplays={canManageReplays}
+      />
+    </StaffReadOnlyContext>
+  );
+}
+function MappoolEditorContent({
+  slug,
+  data,
+  canManageReplays,
+}: {
+  slug: string;
+  data: MappoolWorkspace;
+  canManageReplays: boolean;
 }) {
   const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
@@ -417,7 +443,7 @@ export function MappoolEditor({
   const pool = pools.find((p) => p.id === poolId) ?? pools[0];
   const poolEntries = data.entries.filter((e) => e.poolId === pool?.id);
   const change = { url: `/api/admin/tournaments/${slug}/mappools` };
-  const editable = Boolean(pool && !pool.lockedAt);
+  const editable = Boolean(pool && !pool.lockedAt && !pool.selectionLockedAt);
   const activeTask = editable ? task : "maps";
   const selectedCategory = category;
   function resetContext() {
@@ -447,12 +473,14 @@ export function MappoolEditor({
               resetContext();
             }}
           />
-          <Link
-            className="button secondary"
-            href={`/admin/tournaments/${slug}/rounds${round ? `?round=${round.id}` : `?stage=${stage}`}`}
-          >
-            {tr("Manage rounds")}
-          </Link>
+          {!readOnly && (
+            <Link
+              className="button secondary"
+              href={`/admin/tournaments/${slug}/rounds${round ? `?round=${round.id}` : `?stage=${stage}`}`}
+            >
+              {tr("Manage rounds")}
+            </Link>
+          )}
         </div>
         <div
           role="tabpanel"
@@ -634,6 +662,12 @@ export function MappoolEditor({
               </p>
             )
           )}
+          <ReplayWindow
+            key={`${pool.id}-${pool.version}`}
+            pool={pool}
+            url={change.url}
+            hasMaps={poolEntries.length > 0}
+          />
           <WorkspaceTabs
             appearance="line"
             id={`${id}-task`}
@@ -705,6 +739,15 @@ export function MappoolEditor({
                           entries={entries}
                           editable={editable && !readOnly}
                           onFeedback={setFeedback}
+                          renderAttachments={(entry) => (
+                            <MappoolReplays
+                              key={entry.id}
+                              slug={slug}
+                              pool={pool}
+                              entry={entry}
+                              canManage={canManageReplays}
+                            />
+                          )}
                           renderActions={(entry) => (
                             <EntryEditor
                               key={`${entry.id}-${pool.version}`}

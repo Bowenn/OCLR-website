@@ -60,6 +60,7 @@ export type BeatmapMetadata = {
   stars: number;
   bpm: number;
   duration: number;
+  checksum?: string | null;
   mode?: "osu" | "taiko" | "fruits" | "mania";
   ar?: number | null;
   od?: number | null;
