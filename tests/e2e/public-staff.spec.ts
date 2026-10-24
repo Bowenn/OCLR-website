@@ -105,14 +105,20 @@ test.describe("approved public About roster", () => {
         await expect(section.locator(".public-staff-list")).toHaveCount(0);
         const operator = await admin.newPage();
         await operator.goto("/admin/staff");
-        const row = operator.locator("article").filter({
-          has: operator.getByText(
-            `${role} · ${role === "developer" ? "Global" : "test-cup"} · Active`,
-            {
+        const row = operator
+          .locator(".staff-role-group")
+          .filter({
+            has: operator.getByRole("heading", {
+              name: `Synthetic Player ${targetId} · ${targetId}`,
               exact: true,
-            },
-          ),
-        });
+            }),
+          })
+          .locator(":scope > div.spaced")
+          .filter({
+            has: operator
+              .locator("p")
+              .filter({ hasText: new RegExp(`^${role} · About:`) }),
+          });
         await row
           .getByRole("button", { name: "Show on About", exact: true })
           .click();

@@ -80,8 +80,10 @@ test.describe("scoped staff roles through real HTTP sessions", () => {
       });
       await page.getByLabel("Verified osu! user ID").fill(String(operatorId));
       await page
-        .getByRole("combobox", { name: /^Role/ })
-        .selectOption("mappooler");
+        .getByRole("group", { name: "Roles (select multiple)" })
+        .first()
+        .getByRole("checkbox", { name: "Mappooler", exact: true })
+        .check();
       await page
         .getByRole("combobox", { name: /^Scope/ })
         .selectOption("test-cup");

@@ -24,7 +24,9 @@ export default async function StaffPage({
     const access = await staffAccess(actor);
     const { grants, scopes, writeScopes } = await listStaffRoles(actor);
     const requested = (await searchParams).edition ?? "";
-    const editions = await getEditions();
+    const editions = (await getEditions()).filter(
+      (edition) => !scopes || scopes.includes(edition.slug),
+    );
     const selected = editions.find(
       (e) => e.slug === requested && (!scopes || scopes.includes(e.slug)),
     );

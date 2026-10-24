@@ -62,12 +62,21 @@ test.describe("Developer private read workspace", () => {
       await adminPage
         .getByLabel("Verified osu! user ID")
         .fill(String(developerId));
-      await adminPage
-        .getByRole("combobox", { name: /^Role/ })
-        .selectOption("developer");
+      const roles = adminPage
+        .getByRole("group", { name: "Roles (select multiple)" })
+        .first();
+      await roles
+        .getByRole("checkbox", { name: "Mappooler", exact: true })
+        .uncheck();
+      await roles
+        .getByRole("checkbox", {
+          name: "Developer — global read-only access",
+          exact: true,
+        })
+        .check();
       await expect(
         adminPage.getByRole("combobox", { name: /^Scope/ }),
-      ).toBeDisabled();
+      ).toHaveValue("");
       await adminPage
         .getByRole("button", { name: "Review role grant" })
         .click();
