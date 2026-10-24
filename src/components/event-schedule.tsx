@@ -168,7 +168,9 @@ export function EventSchedule({
             aria-label={tr("Bracket")}
           >
             {!selected.length ? (
-              <p className="muted">{tr("No matches in this view.")}</p>
+              <p className="event-schedule-empty muted">
+                {tr("No matches in this view.")}
+              </p>
             ) : structured ? (
               <div
                 className="event-knockout"

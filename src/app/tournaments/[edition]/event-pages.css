@@ -152,6 +152,10 @@
   border-radius: 0.6rem;
   scrollbar-color: var(--site-control-border) transparent;
 }
+.event-schedule-empty {
+  margin: 0;
+  padding: 1.5rem;
+}
 .event-bracket {
   display: flex;
   gap: 2rem;
