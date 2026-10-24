@@ -10,12 +10,18 @@ import {
 } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { registrations, users, staffRoles } from "../../src/db/schema";
+import {
+  registrations,
+  users,
+  staffRoles,
+  editionEvents,
+} from "../../src/db/schema";
 import { assertTestDatabase } from "../database";
 import { edition } from "../fixtures/edition";
 import { seedEditions } from "../fixtures/editions";
 import {
   postPlayerMessage,
+  changePlayerMessage,
   publicPlayerIntroductions,
   publicPlayerMessages,
 } from "../../src/lib/player-messages";
@@ -100,14 +106,12 @@ describe.skipIf(!url)(
       ).toBe(0);
     });
     it("preserves the merged Developer read-only restriction", async () => {
-      await db()
-        .insert(staffRoles)
-        .values({
-          userId: actor.osuId,
-          role: "developer",
-          editionSlug: null,
-          grantedBy: actor.osuId,
-        });
+      await db().insert(staffRoles).values({
+        userId: actor.osuId,
+        role: "developer",
+        editionSlug: null,
+        grantedBy: actor.osuId,
+      });
       await expect(
         postPlayerMessage(actor, cup.slug, target, {
           requestId: randomUUID(),
@@ -141,6 +145,124 @@ describe.skipIf(!url)(
           text: "changed",
         }),
       ).rejects.toMatchObject({ status: 409 });
+    });
+    it("allows only the author and rejects stale edits/deletes with transactional audit", async () => {
+      const requestId = randomUUID();
+      const saved = await postPlayerMessage(actor, cup.slug, target, {
+        requestId,
+        text: "original",
+      });
+      const version = saved.version;
+      await expect(
+        changePlayerMessage(
+          { osuId: target, username: "Other" },
+          cup.slug,
+          target,
+          saved.id,
+          "edit",
+          { version, text: "forged" },
+        ),
+      ).rejects.toMatchObject({ status: 404 });
+      await expect(
+        changePlayerMessage(actor, "other-cup", target, saved.id, "delete", {
+          version,
+        }),
+      ).rejects.toMatchObject({ status: 404 });
+      await expect(
+        changePlayerMessage(actor, cup.slug, target + 1, saved.id, "delete", {
+          version,
+        }),
+      ).rejects.toMatchObject({ status: 404 });
+      await expect(
+        changePlayerMessage(actor, cup.slug, target, saved.id, "edit", {
+          version,
+          text: " ",
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      await expect(
+        changePlayerMessage(actor, cup.slug, target, saved.id, "edit", {
+          version,
+          text: "x",
+          authorId: target,
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      const results = await Promise.allSettled([
+        changePlayerMessage(actor, cup.slug, target, saved.id, "edit", {
+          version,
+          text: "first",
+        }),
+        changePlayerMessage(actor, cup.slug, target, saved.id, "edit", {
+          version,
+          text: "second",
+        }),
+      ]);
+      expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+      expect(results.filter((r) => r.status === "rejected")).toMatchObject([
+        { reason: { status: 409 } },
+      ]);
+      const [updated] = await publicPlayerMessages(cup.slug, target);
+      expect(updated.version).not.toBe(version);
+      expect(updated.createdAt).toBe(saved.createdAt);
+      expect(updated.authorId).toBe(actor.osuId);
+      await expect(
+        changePlayerMessage(actor, cup.slug, target, saved.id, "delete", {
+          version,
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      await changePlayerMessage(actor, cup.slug, target, saved.id, "delete", {
+        version: updated.version,
+      });
+      await expect(
+        changePlayerMessage(actor, cup.slug, target, saved.id, "delete", {
+          version: updated.version,
+        }),
+      ).rejects.toMatchObject({ status: 404 });
+      expect(await publicPlayerMessages(cup.slug, target)).toEqual([]);
+      await expect(
+        postPlayerMessage(actor, cup.slug, target, {
+          requestId,
+          text: "original",
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      const events = await db().select().from(editionEvents);
+      expect(events.map((e) => e.kind)).toEqual(
+        expect.arrayContaining([
+          "player_message_posted",
+          "player_message_edited",
+          "player_message_deleted",
+        ]),
+      );
+      expect(events).toHaveLength(3);
+    });
+    it("retains posting rate limits after deletion and blocks mutations when publication is withdrawn", async () => {
+      for (let i = 0; i < 5; i++) {
+        const saved = await postPlayerMessage(actor, cup.slug, target, {
+          requestId: randomUUID(),
+          text: "hello",
+        });
+        await changePlayerMessage(actor, cup.slug, target, saved.id, "delete", {
+          version: saved.version,
+        });
+      }
+      await expect(
+        postPlayerMessage(actor, cup.slug, target, {
+          requestId: randomUUID(),
+          text: "sixth",
+        }),
+      ).rejects.toMatchObject({ status: 429 });
+      // A distinct author is not subject to the first author's limit.
+      const other = { osuId: target, username: "Public Player" };
+      const saved = await postPlayerMessage(other, cup.slug, target, {
+        requestId: randomUUID(),
+        text: "retained",
+      });
+      await seedEditions([{ ...cup, published: false }]);
+      await expect(
+        changePlayerMessage(other, cup.slug, target, saved.id, "edit", {
+          version: saved.version,
+          text: "invisible",
+        }),
+      ).rejects.toMatchObject({ status: 404 });
     });
     it("rejects invisible targets, empty/long content and limits concurrent messages across targets", async () => {
       const input = { requestId: randomUUID(), text: "hello" };

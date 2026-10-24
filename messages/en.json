@@ -2355,6 +2355,22 @@
     "m410b53192130": "Player ratings",
     "m51296d3267e2": "Game {value0}",
     "ma977478fa92a": "Applications are reviewed by tournament staff. Submitting is not acceptance or official osu! validation.\n\nIf accepted, your osu! username, osu! ID and accepted participation in this tournament appear automatically in its public Players directory. Application answers and staff review notes remain private.\n\nRead the",
-    "mfd6b854887bd": "{count, plural, one {# deferred application across your authorized editions.} other {# deferred applications across your authorized editions.}}"
+    "mfd6b854887bd": "{count, plural, one {# deferred application across your authorized editions.} other {# deferred applications across your authorized editions.}}",
+    "m8454b509ac62": "Message navigation",
+    "mbb2231d4c723": "Previous message",
+    "mcc5110a5f3b0": "Recent message {current} of {count}",
+    "m9bcb9a65e0ca": "Next message",
+    "mff13f1ecbe01": "Leave a message",
+    "m9757ccd5ef12": "Edit message",
+    "m87e7176a7ce7": "Delete message",
+    "m8f6e2cda49ca": "Delete this message?",
+    "mda00fa968bd8": "Confirm delete",
+    "m46dc28c24b95": "Save message",
+    "m71b184ce73db": "Reload messages",
+    "m1e5359501c84": "Check the message and try again.",
+    "m6b9f0ba90a37": "Message not found.",
+    "m48a1094e097a": "This message has changed. Refresh before trying again.",
+    "m464c4ffd019e": "Edit",
+    "me2d0a54968ea": "Delete"
   }
 }

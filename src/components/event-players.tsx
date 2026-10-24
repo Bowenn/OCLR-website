@@ -13,6 +13,7 @@ export function EventPlayers({
   preview = false,
   search = true,
   signedIn = false,
+  viewerId,
 }: {
   players: EventPlayer[];
   edition: string;
@@ -20,6 +21,7 @@ export function EventPlayers({
   preview?: boolean;
   search?: boolean;
   signedIn?: boolean;
+  viewerId?: number;
 }) {
   const tr = useAppTranslations();
   const [query, setQuery] = useState("");
@@ -145,6 +147,7 @@ export function EventPlayers({
                       playerId={p.id}
                       name={p.name}
                       signedIn={signedIn}
+                      viewerId={viewerId}
                     />
                   )}
                 </div>

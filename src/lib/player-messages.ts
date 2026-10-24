@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import {
   editionState,
+  editionEvents,
   playerMessages,
   registrations,
   users,
@@ -17,6 +18,7 @@ export type PlayerMessage = {
   author: string;
   text: string;
   createdAt: string;
+  version: string;
 };
 const inputSchema = z
   .object({ requestId: z.uuid(), text: z.string().trim().min(1).max(1000) })
@@ -35,6 +37,7 @@ export async function publicPlayerMessages(
   const rows = await db()
     .select({
       id: playerMessages.id,
+      version: sql<string>`player_messages.xmin::text`,
       authorId: users.osuId,
       author: users.username,
       text: playerMessages.body,
@@ -103,18 +106,41 @@ export async function postPlayerMessage(
         existing.body !== parsed.data.text
       )
         throw new HttpError(409, "This message request has already been used.");
-      return { id: existing.id };
+      const [version] = await tx
+        .select({ version: sql<string>`xmin::text` })
+        .from(playerMessages)
+        .where(eq(playerMessages.id, existing.id));
+      return {
+        id: existing.id,
+        authorId: actor.osuId,
+        author: actor.username,
+        text: existing.body,
+        createdAt: existing.createdAt.toISOString(),
+        version: version.version,
+      };
     }
-    const [recent] = await tx
-      .select({ total: sql<number>`count(*)::int` })
-      .from(playerMessages)
+    // A retry must not resurrect a message that its author already deleted.
+    const [used] = await tx
+      .select({ id: editionEvents.id })
+      .from(editionEvents)
       .where(
         and(
-          eq(playerMessages.authorId, actor.osuId),
-          sql`${playerMessages.createdAt} > now() - interval '1 minute'`,
+          eq(editionEvents.actorId, actor.osuId),
+          eq(editionEvents.kind, "player_message_posted"),
+          sql`${editionEvents.detail}->>'requestId' = ${parsed.data.requestId}`,
         ),
-      );
-    if (recent.total >= 5)
+      )
+      .limit(1);
+    if (used)
+      throw new HttpError(409, "This message request has already been used.");
+    // Keep post limits effective after deletions, without counting idempotent retries.
+    const recent = await tx.execute(sql`
+      SELECT count(*)::int AS total FROM (
+        SELECT id::text FROM player_messages WHERE author_id = ${actor.osuId} AND created_at > now() - interval '1 minute'
+        UNION
+        SELECT detail->'entity'->>'id' FROM edition_events WHERE actor_id = ${actor.osuId} AND kind = 'player_message_posted' AND created_at > now() - interval '1 minute'
+      ) recent_messages`);
+    if (Number(recent.rows[0].total) >= 5)
       throw new HttpError(429, "Please wait before posting another message.");
     const [saved] = await tx
       .insert(playerMessages)
@@ -125,8 +151,120 @@ export async function postPlayerMessage(
         requestId: parsed.data.requestId,
         body: parsed.data.text,
       })
-      .returning({ id: playerMessages.id });
-    return saved;
+      .returning({
+        id: playerMessages.id,
+        createdAt: playerMessages.createdAt,
+        version: sql<string>`xmin::text`,
+      });
+    await tx.insert(editionEvents).values({
+      editionSlug: edition,
+      actorId: actor.osuId,
+      kind: "player_message_posted",
+      detail: {
+        entity: { type: "player_message", id: saved.id },
+        playerId,
+        requestId: parsed.data.requestId,
+      },
+    });
+    return {
+      ...saved,
+      authorId: actor.osuId,
+      author: actor.username,
+      text: parsed.data.text,
+      createdAt: saved.createdAt.toISOString(),
+    };
+  });
+}
+
+/** Row locks and the opaque row version prevent lost edits and stale deletes. */
+export async function changePlayerMessage(
+  actor: User,
+  edition: string,
+  playerId: number,
+  messageId: string,
+  operation: "edit" | "delete",
+  input: unknown,
+) {
+  const schema =
+    operation === "edit"
+      ? z
+          .object({
+            version: z.string().regex(/^\d+$/),
+            text: z.string().trim().min(1).max(1000),
+          })
+          .strict()
+      : z.object({ version: z.string().regex(/^\d+$/) }).strict();
+  const parsed = schema.safeParse(input);
+  if (
+    !parsed.success ||
+    !z.uuid().safeParse(messageId).success ||
+    !Number.isSafeInteger(playerId) ||
+    playerId <= 0
+  )
+    throw new HttpError(400, "Check the message and try again.");
+  await assertBusinessWrite(actor, edition);
+  return db().transaction(async (tx) => {
+    await assertBusinessWrite(actor, edition, tx);
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`player-message:${actor.osuId}`}, 0))`,
+    );
+    const [target] = await tx
+      .select({ id: registrations.id })
+      .from(registrations)
+      .innerJoin(editionState, eq(editionState.slug, registrations.editionSlug))
+      .where(visible(edition, playerId))
+      .for("share");
+    if (!target) throw new HttpError(404, "Published player not found.");
+    const [current] = await tx
+      .select({
+        id: playerMessages.id,
+        body: playerMessages.body,
+        createdAt: playerMessages.createdAt,
+        version: sql<string>`xmin::text`,
+      })
+      .from(playerMessages)
+      .where(
+        and(
+          eq(playerMessages.id, messageId),
+          eq(playerMessages.editionSlug, edition),
+          eq(playerMessages.playerId, playerId),
+          eq(playerMessages.authorId, actor.osuId),
+        ),
+      )
+      .for("update");
+    if (!current) throw new HttpError(404, "Message not found.");
+    if (current.version !== parsed.data.version)
+      throw new HttpError(
+        409,
+        "This message has changed. Refresh before trying again.",
+      );
+    let result = null;
+    if (operation === "edit" && "text" in parsed.data) {
+      const [saved] = await tx
+        .update(playerMessages)
+        .set({ body: parsed.data.text as string })
+        .where(eq(playerMessages.id, messageId))
+        .returning({ version: sql<string>`xmin::text` });
+      result = {
+        id: messageId,
+        authorId: actor.osuId,
+        author: actor.username,
+        text: parsed.data.text as string,
+        createdAt: current.createdAt.toISOString(),
+        version: saved.version,
+      };
+    } else
+      await tx.delete(playerMessages).where(eq(playerMessages.id, messageId));
+    await tx.insert(editionEvents).values({
+      editionSlug: edition,
+      actorId: actor.osuId,
+      kind:
+        operation === "edit"
+          ? "player_message_edited"
+          : "player_message_deleted",
+      detail: { entity: { type: "player_message", id: messageId }, playerId },
+    });
+    return result;
   });
 }
 

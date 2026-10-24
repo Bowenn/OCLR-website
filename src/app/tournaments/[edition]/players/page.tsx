@@ -123,6 +123,7 @@ export default async function Players({
         edition={edition}
         search={false}
         signedIn={Boolean(viewer)}
+        viewerId={viewer?.osuId}
         grouped={rows.some((p) => p.participation === "finalized_roster")}
         players={rows.map((p) => ({
           id: p.osuId,
