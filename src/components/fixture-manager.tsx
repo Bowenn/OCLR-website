@@ -1,4 +1,9 @@
 "use client";
+import {
+  ReadOnlyFields,
+  StaffReadOnlyContext,
+  useStaffReadOnly,
+} from "./staff-read-only";
 
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -140,151 +145,156 @@ function FixtureForm({
     );
   }
   return (
-    <div className="form-stack fixture-form">
-      <div className="form-grid">
-        <label className="field">
-          <span>{tr("Fixture label")}</span>
-          <input
-            value={label}
-            maxLength={100}
-            onChange={(e) => setLabel(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>{tr("Competition round")}</span>
-          <select
-            value={roundId}
-            onChange={(e) => {
-              setRound(e.target.value);
-              setPool("");
-              if (!fixture) setPosition(nextPosition(e.target.value));
-            }}
-          >
-            {!data.rounds.length && (
-              <option value="">{tr("No rounds configured")}</option>
-            )}
-            {data.rounds.map((r) => (
-              <option key={r.round.id} value={r.round.id}>
-                {r.stage === "group" ? tr("Group") : tr("Knockout")} /{" "}
-                {r.round.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <fieldset className="fixture-form-section">
-        <legend>{tr("Teams")}</legend>
+    <ReadOnlyFields>
+      <div className="form-stack fixture-form">
         <div className="form-grid">
           <label className="field">
-            <span>{tr("Home team")}</span>
-            <select
-              value={homeTeamId}
-              onChange={(e) => setHome(e.target.value)}
-            >
-              <option value="">{tr("Team TBD")}</option>
-              {teamOptions}
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Away team")}</span>
-            <select
-              value={awayTeamId}
-              onChange={(e) => setAway(e.target.value)}
-            >
-              <option value="">{tr("Team TBD")}</option>
-              {teamOptions}
-            </select>
-          </label>
-        </div>
-      </fieldset>
-      {(!homeTeamId || !awayTeamId) && (
-        <p className="muted small">
-          {tr("Reporting needs two finalized, published teams.")}
-        </p>
-      )}
-      <ZonedDateInput
-        label={tr("Scheduled date and time")}
-        value={time}
-        timeZone={timeZone}
-        onChange={setTime}
-        onValidityChange={setTimeValid}
-        optional
-      />
-      <fieldset className="fixture-form-section">
-        <legend>{tr("Match options")}</legend>
-        <div className="form-grid">
-          <label className="field">
-            <span>{tr("Fixture order within round")}</span>
+            <span>{tr("Fixture label")}</span>
             <input
-              type="number"
-              min={1}
-              max={999}
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
+              value={label}
+              maxLength={100}
+              onChange={(e) => setLabel(e.target.value)}
             />
           </label>
           <label className="field">
-            <span>{tr("Associated mappool")}</span>
-            <select value={mappoolId} onChange={(e) => setPool(e.target.value)}>
-              <option value="">{tr("No pool associated")}</option>
-              {data.pools
-                .filter((p) => p.roundId === roundId)
-                .map((p) => (
-                  <option value={p.id} key={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <TimeZonePicker value={timeZone} onChange={setZone} />
-          <p className="muted small">
-            {tr(
-              "Changing the time zone keeps the scheduled instant and updates the displayed local time.",
-            )}
-          </p>
-
-          <label className="field">
-            <span>{tr("Fixture status")}</span>
+            <span>{tr("Competition round")}</span>
             <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Fixture["status"])}
+              value={roundId}
+              onChange={(e) => {
+                setRound(e.target.value);
+                setPool("");
+                if (!fixture) setPosition(nextPosition(e.target.value));
+              }}
             >
-              <option value="scheduled">{tr("Scheduled")}</option>
-              <option value="in_progress">{tr("In progress")}</option>
-              <option value="cancelled">{tr("Cancelled")}</option>
+              {!data.rounds.length && (
+                <option value="">{tr("No rounds configured")}</option>
+              )}
+              {data.rounds.map((r) => (
+                <option key={r.round.id} value={r.round.id}>
+                  {r.stage === "group" ? tr("Group") : tr("Knockout")} /{" "}
+                  {r.round.name}
+                </option>
+              ))}
             </select>
           </label>
-          {round?.stage === "knockout" && (
-            <fieldset className="settings-card form-stack">
-              <legend>{tr("Explicit bracket progression")}</legend>
-              <p className="muted">
-                {tr(
-                  "Link planned slots to a previous match. Confirm the official teams before reporting results.",
-                )}
-              </p>
-              {sourceSelect("home")}
-              {sourceSelect("away")}
-            </fieldset>
-          )}
         </div>
-      </fieldset>
-      <ConfirmMutation
-        requireConfirmation={false}
-        onSuccess={onSaved}
-        disabled={!timeValid}
-        canConfirm={
-          Boolean(label.trim() && roundId) &&
-          (!homeTeamId || !awayTeamId || homeTeamId !== awayTeamId) &&
-          Number.isInteger(Number(position)) &&
-          Number(position) >= 1 &&
-          Number(position) <= 999
-        }
-        label={fixture ? tr("Save fixture amendment") : tr("Create fixture")}
-        title={fixture ? tr("Amend fixture?") : tr("Create fixture?")}
-        url={`/api/admin/tournaments/${slug}/matches`}
-        payload={payload}
-      />
-    </div>
+        <fieldset className="fixture-form-section">
+          <legend>{tr("Teams")}</legend>
+          <div className="form-grid">
+            <label className="field">
+              <span>{tr("Home team")}</span>
+              <select
+                value={homeTeamId}
+                onChange={(e) => setHome(e.target.value)}
+              >
+                <option value="">{tr("Team TBD")}</option>
+                {teamOptions}
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Away team")}</span>
+              <select
+                value={awayTeamId}
+                onChange={(e) => setAway(e.target.value)}
+              >
+                <option value="">{tr("Team TBD")}</option>
+                {teamOptions}
+              </select>
+            </label>
+          </div>
+        </fieldset>
+        {(!homeTeamId || !awayTeamId) && (
+          <p className="muted small">
+            {tr("Reporting needs two finalized, published teams.")}
+          </p>
+        )}
+        <ZonedDateInput
+          label={tr("Scheduled date and time")}
+          value={time}
+          timeZone={timeZone}
+          onChange={setTime}
+          onValidityChange={setTimeValid}
+          optional
+        />
+        <fieldset className="fixture-form-section">
+          <legend>{tr("Match options")}</legend>
+          <div className="form-grid">
+            <label className="field">
+              <span>{tr("Fixture order within round")}</span>
+              <input
+                type="number"
+                min={1}
+                max={999}
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>{tr("Associated mappool")}</span>
+              <select
+                value={mappoolId}
+                onChange={(e) => setPool(e.target.value)}
+              >
+                <option value="">{tr("No pool associated")}</option>
+                {data.pools
+                  .filter((p) => p.roundId === roundId)
+                  .map((p) => (
+                    <option value={p.id} key={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <TimeZonePicker value={timeZone} onChange={setZone} />
+            <p className="muted small">
+              {tr(
+                "Changing the time zone keeps the scheduled instant and updates the displayed local time.",
+              )}
+            </p>
+
+            <label className="field">
+              <span>{tr("Fixture status")}</span>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as Fixture["status"])}
+              >
+                <option value="scheduled">{tr("Scheduled")}</option>
+                <option value="in_progress">{tr("In progress")}</option>
+                <option value="cancelled">{tr("Cancelled")}</option>
+              </select>
+            </label>
+            {round?.stage === "knockout" && (
+              <fieldset className="settings-card form-stack">
+                <legend>{tr("Explicit bracket progression")}</legend>
+                <p className="muted">
+                  {tr(
+                    "Link planned slots to a previous match. Confirm the official teams before reporting results.",
+                  )}
+                </p>
+                {sourceSelect("home")}
+                {sourceSelect("away")}
+              </fieldset>
+            )}
+          </div>
+        </fieldset>
+        <ConfirmMutation
+          requireConfirmation={false}
+          onSuccess={onSaved}
+          disabled={!timeValid}
+          canConfirm={
+            Boolean(label.trim() && roundId) &&
+            (!homeTeamId || !awayTeamId || homeTeamId !== awayTeamId) &&
+            Number.isInteger(Number(position)) &&
+            Number(position) >= 1 &&
+            Number(position) <= 999
+          }
+          label={fixture ? tr("Save fixture amendment") : tr("Create fixture")}
+          title={fixture ? tr("Amend fixture?") : tr("Create fixture?")}
+          url={`/api/admin/tournaments/${slug}/matches`}
+          payload={payload}
+        />
+      </div>
+    </ReadOnlyFields>
   );
 }
 function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
@@ -334,288 +344,299 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
     standings?.tiebreakers.join(", ") ?? "",
   );
   return (
-    <div className="form-stack">
-      <p className="notice small">
-        {tr(
-          "Only save organizer-approved rules. Unconfigured scoring cannot produce an official result; unconfigured standings cannot produce a ranking.",
-        )}
-      </p>
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => setEnabled(e.target.checked)}
-        />
-        <span>{tr("Configure approved scoring rules")}</span>
-      </label>
-      {enabled && (
-        <>
-          <label className="field">
-            <span>{tr("Game mode")}</span>
-            <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value as typeof mode)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              {["osu", "taiko", "fruits", "mania"].map((m) => (
-                <option value={m} key={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p className="small muted">
-            {tr(
-              "Automatic scoring supports configured roster aggregation with Score or Score v2. Other provider modes require review and cannot silently produce winners.",
-            )}
-          </p>
-          <label className="field">
-            <span>{tr("Multiplayer team mode")}</span>
-            <select
-              value={teamType}
-              onChange={(e) => setTeamType(e.target.value)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="team-vs">{tr("Team vs")}</option>
-              <option value="head-to-head">
-                {tr("Head-to-head with explicit roster aggregation")}
-              </option>
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Scoring type")}</span>
-            <select
-              value={scoreType}
-              onChange={(e) => setScoreType(e.target.value as typeof scoreType)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="score">{tr("Score")}</option>
-              <option value="scorev2">{tr("Score v2")}</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Team score aggregation")}</span>
-            <select
-              value={aggregation}
-              onChange={(e) =>
-                setAggregation(e.target.value as typeof aggregation)
-              }
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="sum">{tr("Sum")}</option>
-              <option value="average">{tr("Average")}</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Players per team per game")}</span>
-            <input
-              type="number"
-              min={1}
-              max={16}
-              value={players}
-              onChange={(e) => setPlayers(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            <span>{tr("Series format")}</span>
-            <select
-              value={series}
-              onChange={(e) => setSeries(e.target.value as typeof series)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="first_to">
-                {tr("First to a configured number of map wins")}
-              </option>
-              <option value="fixed_maps">{tr("Fixed number of maps")}</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>
-              {series === "first_to"
-                ? tr("Map wins required")
-                : tr("Maps to play")}
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={maps}
-              onChange={(e) => setMaps(e.target.value)}
-            />
-          </label>
-          {series === "fixed_maps" && (
+    <ReadOnlyFields>
+      <div className="form-stack">
+        <p className="notice small">
+          {tr(
+            "Only save organizer-approved rules. Unconfigured scoring cannot produce an official result; unconfigured standings cannot produce a ranking.",
+          )}
+        </p>
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+          />
+          <span>{tr("Configure approved scoring rules")}</span>
+        </label>
+        {enabled && (
+          <>
             <label className="field">
-              <span>{tr("Tied series policy")}</span>
-              <select value={draws} onChange={(e) => setDraws(e.target.value)}>
+              <span>{tr("Game mode")}</span>
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as typeof mode)}
+              >
                 <option value="">{tr("Unconfirmed")}</option>
-                <option value="true">{tr("Draw permitted")}</option>
-                <option value="false">{tr("Draw not permitted")}</option>
+                {["osu", "taiko", "fruits", "mania"].map((m) => (
+                  <option value={m} key={m}>
+                    {m}
+                  </option>
+                ))}
               </select>
             </label>
-          )}
-          <label className="field">
-            <span>{tr("Failed player scores")}</span>
-            <select
-              value={failure}
-              onChange={(e) => setFailure(e.target.value)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="include">{tr("Count the recorded score")}</option>
-              <option value="zero">{tr("Count failed scores as zero")}</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Tied map policy")}</span>
-            <select
-              value={mapTies}
-              onChange={(e) => setMapTies(e.target.value)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="require_replay">
-                {tr("Require replay; exclude the tied original")}
-              </option>
-              <option value="count_as_draw">
-                {tr("Count as a drawn map, without a map win")}
-              </option>
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Understrength teams")}</span>
-            <select
-              value={shortHanded}
-              onChange={(e) => setShortHanded(e.target.value)}
-            >
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="false">
-                {tr("Require the configured player count")}
-              </option>
-              <option value="true">
-                {tr("Allow fewer players with explicit review")}
-              </option>
-            </select>
-          </label>
-          <label className="field">
-            <span>{tr("Substitution policy")}</span>
-            <select value={subs} onChange={(e) => setSubs(e.target.value)}>
-              <option value="">{tr("Unconfirmed")}</option>
-              <option value="true">
-                {tr("Allow explicitly reviewed substitutions")}
-              </option>
-              <option value="false">{tr("No substitutions")}</option>
-            </select>
-          </label>
-        </>
-      )}
-      {stage === "group" && (
-        <>
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={ranked}
-              onChange={(e) => setRanked(e.target.checked)}
-            />
-            <span>{tr("Configure approved group ranking rules")}</span>
-          </label>
-          {ranked && (
-            <>
+            <p className="small muted">
+              {tr(
+                "Automatic scoring supports configured roster aggregation with Score or Score v2. Other provider modes require review and cannot silently produce winners.",
+              )}
+            </p>
+            <label className="field">
+              <span>{tr("Multiplayer team mode")}</span>
+              <select
+                value={teamType}
+                onChange={(e) => setTeamType(e.target.value)}
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="team-vs">{tr("Team vs")}</option>
+                <option value="head-to-head">
+                  {tr("Head-to-head with explicit roster aggregation")}
+                </option>
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Scoring type")}</span>
+              <select
+                value={scoreType}
+                onChange={(e) =>
+                  setScoreType(e.target.value as typeof scoreType)
+                }
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="score">{tr("Score")}</option>
+                <option value="scorev2">{tr("Score v2")}</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Team score aggregation")}</span>
+              <select
+                value={aggregation}
+                onChange={(e) =>
+                  setAggregation(e.target.value as typeof aggregation)
+                }
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="sum">{tr("Sum")}</option>
+                <option value="average">{tr("Average")}</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Players per team per game")}</span>
+              <input
+                type="number"
+                min={1}
+                max={16}
+                value={players}
+                onChange={(e) => setPlayers(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>{tr("Series format")}</span>
+              <select
+                value={series}
+                onChange={(e) => setSeries(e.target.value as typeof series)}
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="first_to">
+                  {tr("First to a configured number of map wins")}
+                </option>
+                <option value="fixed_maps">{tr("Fixed number of maps")}</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>
+                {series === "first_to"
+                  ? tr("Map wins required")
+                  : tr("Maps to play")}
+              </span>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={maps}
+                onChange={(e) => setMaps(e.target.value)}
+              />
+            </label>
+            {series === "fixed_maps" && (
               <label className="field">
-                <span>{tr("Points for a win")}</span>
-                <input
-                  type="number"
-                  value={winPoints}
-                  onChange={(e) => setWinPoints(e.target.value)}
-                  min={-100}
-                  max={100}
-                />
+                <span>{tr("Tied series policy")}</span>
+                <select
+                  value={draws}
+                  onChange={(e) => setDraws(e.target.value)}
+                >
+                  <option value="">{tr("Unconfirmed")}</option>
+                  <option value="true">{tr("Draw permitted")}</option>
+                  <option value="false">{tr("Draw not permitted")}</option>
+                </select>
               </label>
-              <label className="field">
-                <span>{tr("Points for a loss")}</span>
-                <input
-                  type="number"
-                  value={lossPoints}
-                  onChange={(e) => setLossPoints(e.target.value)}
-                  min={-100}
-                  max={100}
-                />
-              </label>
-              <label className="field">
-                <span>
-                  {tr("Points for a draw (leave blank if unconfirmed)")}
-                </span>
-                <input
-                  type="number"
-                  min={-100}
-                  max={100}
-                  value={drawPoints}
-                  onChange={(e) => setDrawPoints(e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span>{tr("Ranking criteria, in order")}</span>
-                <input
-                  value={tiebreakers}
-                  onChange={(e) => setTiebreakers(e.target.value)}
-                  maxLength={100}
-                  placeholder={tr("Approved criteria only")}
-                />
-              </label>
-              <p className="small muted">
-                {tr(
-                  "Supported explicit criteria: points, wins, map_difference, maps_won. Separate by commas. Unresolved ties remain tied.",
-                )}
-              </p>
-            </>
-          )}
-        </>
-      )}
-      <ConfirmMutation
-        label={tr("Save approved round rules")}
-        title={tr("Confirm competition rules?")}
-        description={tr(
-          "Save the explicitly configured rules for {value0}. This does not publish any imported score.",
-          { value0: round.name },
+            )}
+            <label className="field">
+              <span>{tr("Failed player scores")}</span>
+              <select
+                value={failure}
+                onChange={(e) => setFailure(e.target.value)}
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="include">
+                  {tr("Count the recorded score")}
+                </option>
+                <option value="zero">
+                  {tr("Count failed scores as zero")}
+                </option>
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Tied map policy")}</span>
+              <select
+                value={mapTies}
+                onChange={(e) => setMapTies(e.target.value)}
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="require_replay">
+                  {tr("Require replay; exclude the tied original")}
+                </option>
+                <option value="count_as_draw">
+                  {tr("Count as a drawn map, without a map win")}
+                </option>
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Understrength teams")}</span>
+              <select
+                value={shortHanded}
+                onChange={(e) => setShortHanded(e.target.value)}
+              >
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="false">
+                  {tr("Require the configured player count")}
+                </option>
+                <option value="true">
+                  {tr("Allow fewer players with explicit review")}
+                </option>
+              </select>
+            </label>
+            <label className="field">
+              <span>{tr("Substitution policy")}</span>
+              <select value={subs} onChange={(e) => setSubs(e.target.value)}>
+                <option value="">{tr("Unconfirmed")}</option>
+                <option value="true">
+                  {tr("Allow explicitly reviewed substitutions")}
+                </option>
+                <option value="false">{tr("No substitutions")}</option>
+              </select>
+            </label>
+          </>
         )}
-        url={`/api/admin/tournaments/${slug}/matches`}
-        payload={{
-          action: "round_rules",
-          roundId: round.id,
-          expectedVersion: round.version,
-          scoringRules: enabled
-            ? {
-                mode,
-                teamType,
-                scoringType: scoreType,
-                aggregation,
-                playersPerTeam: Number(players),
-                series: !series
-                  ? null
-                  : series === "first_to"
-                    ? { type: "first_to", wins: Number(maps) }
-                    : {
-                        type: "fixed_maps",
-                        count: Number(maps),
-                        allowDraw: draws === "" ? null : draws === "true",
-                      },
-                allowSubstitutions: subs === "" ? null : subs === "true",
-                allowShortHanded:
-                  shortHanded === "" ? null : shortHanded === "true",
-                failedScorePolicy: failure,
-                tiedMapPolicy: mapTies,
-              }
-            : null,
-          standingsRules:
-            stage === "group" && ranked
+        {stage === "group" && (
+          <>
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={ranked}
+                onChange={(e) => setRanked(e.target.checked)}
+              />
+              <span>{tr("Configure approved group ranking rules")}</span>
+            </label>
+            {ranked && (
+              <>
+                <label className="field">
+                  <span>{tr("Points for a win")}</span>
+                  <input
+                    type="number"
+                    value={winPoints}
+                    onChange={(e) => setWinPoints(e.target.value)}
+                    min={-100}
+                    max={100}
+                  />
+                </label>
+                <label className="field">
+                  <span>{tr("Points for a loss")}</span>
+                  <input
+                    type="number"
+                    value={lossPoints}
+                    onChange={(e) => setLossPoints(e.target.value)}
+                    min={-100}
+                    max={100}
+                  />
+                </label>
+                <label className="field">
+                  <span>
+                    {tr("Points for a draw (leave blank if unconfirmed)")}
+                  </span>
+                  <input
+                    type="number"
+                    min={-100}
+                    max={100}
+                    value={drawPoints}
+                    onChange={(e) => setDrawPoints(e.target.value)}
+                  />
+                </label>
+                <label className="field">
+                  <span>{tr("Ranking criteria, in order")}</span>
+                  <input
+                    value={tiebreakers}
+                    onChange={(e) => setTiebreakers(e.target.value)}
+                    maxLength={100}
+                    placeholder={tr("Approved criteria only")}
+                  />
+                </label>
+                <p className="small muted">
+                  {tr(
+                    "Supported explicit criteria: points, wins, map_difference, maps_won. Separate by commas. Unresolved ties remain tied.",
+                  )}
+                </p>
+              </>
+            )}
+          </>
+        )}
+        <ConfirmMutation
+          label={tr("Save approved round rules")}
+          title={tr("Confirm competition rules?")}
+          description={tr(
+            "Save the explicitly configured rules for {value0}. This does not publish any imported score.",
+            { value0: round.name },
+          )}
+          url={`/api/admin/tournaments/${slug}/matches`}
+          payload={{
+            action: "round_rules",
+            roundId: round.id,
+            expectedVersion: round.version,
+            scoringRules: enabled
               ? {
-                  winPoints: winPoints.trim() ? Number(winPoints) : null,
-                  lossPoints: lossPoints.trim() ? Number(lossPoints) : null,
-                  drawPoints: drawPoints.trim() ? Number(drawPoints) : null,
-                  tiebreakers: tiebreakers.split(",").map((v) => v.trim()),
+                  mode,
+                  teamType,
+                  scoringType: scoreType,
+                  aggregation,
+                  playersPerTeam: Number(players),
+                  series: !series
+                    ? null
+                    : series === "first_to"
+                      ? { type: "first_to", wins: Number(maps) }
+                      : {
+                          type: "fixed_maps",
+                          count: Number(maps),
+                          allowDraw: draws === "" ? null : draws === "true",
+                        },
+                  allowSubstitutions: subs === "" ? null : subs === "true",
+                  allowShortHanded:
+                    shortHanded === "" ? null : shortHanded === "true",
+                  failedScorePolicy: failure,
+                  tiedMapPolicy: mapTies,
                 }
               : null,
-          confirmed: true,
-        }}
-      />
-    </div>
+            standingsRules:
+              stage === "group" && ranked
+                ? {
+                    winPoints: winPoints.trim() ? Number(winPoints) : null,
+                    lossPoints: lossPoints.trim() ? Number(lossPoints) : null,
+                    drawPoints: drawPoints.trim() ? Number(drawPoints) : null,
+                    tiebreakers: tiebreakers.split(",").map((v) => v.trim()),
+                  }
+                : null,
+            confirmed: true,
+          }}
+        />
+      </div>
+    </ReadOnlyFields>
   );
 }
 function StageGroups({
@@ -634,103 +655,107 @@ function StageGroups({
   >(stage.groupConfiguration?.groups ?? []);
   const [published, setPublished] = useState(Boolean(stage.groupsPublishedAt));
   return (
-    <section className="settings-card form-stack">
-      <h3>{tr("Approved Group Stage assignments")}</h3>
-      <p className="muted">
-        {tr(
-          "Configure the actual groups and team membership. Unpublished assignments never appear in standings. Each team may belong to one group in this stage.",
-        )}
-      </p>
-      {groups.map((group, index) => (
-        <fieldset key={index}>
-          <legend>
-            {tr("Group ")}
-            {index + 1}
-          </legend>
-          <label className="field">
-            <span>
-              {tr("Group name ")}
+    <ReadOnlyFields>
+      <section className="settings-card form-stack">
+        <h3>{tr("Approved Group Stage assignments")}</h3>
+        <p className="muted">
+          {tr(
+            "Configure the actual groups and team membership. Unpublished assignments never appear in standings. Each team may belong to one group in this stage.",
+          )}
+        </p>
+        {groups.map((group, index) => (
+          <fieldset key={index}>
+            <legend>
+              {tr("Group ")}
               {index + 1}
-            </span>
-            <input
-              value={group.name}
-              maxLength={80}
-              onChange={(e) =>
-                setGroups((old) =>
-                  old.map((g, i) =>
-                    i === index ? { ...g, name: e.target.value } : g,
-                  ),
-                )
-              }
-            />
-          </label>
-          {data.teams.map((t) => (
-            <label className="checkbox-row" key={t.id}>
+            </legend>
+            <label className="field">
+              <span>
+                {tr("Group name ")}
+                {index + 1}
+              </span>
               <input
-                type="checkbox"
-                checked={group.teamIds.includes(t.id)}
+                value={group.name}
+                maxLength={80}
                 onChange={(e) =>
                   setGroups((old) =>
                     old.map((g, i) =>
-                      i === index
-                        ? {
-                            ...g,
-                            teamIds: e.target.checked
-                              ? [...g.teamIds, t.id]
-                              : g.teamIds.filter((id) => id !== t.id),
-                          }
-                        : g,
+                      i === index ? { ...g, name: e.target.value } : g,
                     ),
                   )
                 }
               />
-              <span>{t.name}</span>
             </label>
-          ))}
-          <button
-            type="button"
-            className="secondary"
-            onClick={() =>
-              setGroups((old) => old.filter((_, i) => i !== index))
-            }
-          >
-            {tr("Remove group ")}
-            {index + 1}
-          </button>
-        </fieldset>
-      ))}
-      <button
-        type="button"
-        className="secondary"
-        onClick={() => setGroups((old) => [...old, { name: "", teamIds: [] }])}
-      >
-        {tr("Add group")}
-      </button>
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={published}
-          onChange={(e) => setPublished(e.target.checked)}
+            {data.teams.map((t) => (
+              <label className="checkbox-row" key={t.id}>
+                <input
+                  type="checkbox"
+                  checked={group.teamIds.includes(t.id)}
+                  onChange={(e) =>
+                    setGroups((old) =>
+                      old.map((g, i) =>
+                        i === index
+                          ? {
+                              ...g,
+                              teamIds: e.target.checked
+                                ? [...g.teamIds, t.id]
+                                : g.teamIds.filter((id) => id !== t.id),
+                            }
+                          : g,
+                      ),
+                    )
+                  }
+                />
+                <span>{t.name}</span>
+              </label>
+            ))}
+            <button
+              type="button"
+              className="secondary"
+              onClick={() =>
+                setGroups((old) => old.filter((_, i) => i !== index))
+              }
+            >
+              {tr("Remove group ")}
+              {index + 1}
+            </button>
+          </fieldset>
+        ))}
+        <button
+          type="button"
+          className="secondary"
+          onClick={() =>
+            setGroups((old) => [...old, { name: "", teamIds: [] }])
+          }
+        >
+          {tr("Add group")}
+        </button>
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+          />
+          <span>{tr("Publish approved group assignments")}</span>
+        </label>
+        <ConfirmMutation
+          label={tr("Save group assignments")}
+          title={tr("Save approved Group Stage configuration?")}
+          description={tr(
+            "This updates the group membership used by public standings when published. Scores remain governed by reviewed results and the configured round ranking rules.",
+          )}
+          url={`/api/admin/tournaments/${slug}/matches`}
+          payload={{
+            action: "stage_groups",
+            stageId: stage.id,
+            expectedVersion: stage.version,
+            configuration: groups.length ? { groups } : null,
+            published,
+            confirmed: true,
+          }}
         />
-        <span>{tr("Publish approved group assignments")}</span>
-      </label>
-      <ConfirmMutation
-        label={tr("Save group assignments")}
-        title={tr("Save approved Group Stage configuration?")}
-        description={tr(
-          "This updates the group membership used by public standings when published. Scores remain governed by reviewed results and the configured round ranking rules.",
-        )}
-        url={`/api/admin/tournaments/${slug}/matches`}
-        payload={{
-          action: "stage_groups",
-          stageId: stage.id,
-          expectedVersion: stage.version,
-          configuration: groups.length ? { groups } : null,
-          published,
-          confirmed: true,
-        }}
-      />
-    </section>
+      </section>
+    </ReadOnlyFields>
   );
 }
 export function FixtureManager({
@@ -740,6 +765,8 @@ export function FixtureManager({
   slug: string;
   data: FixtureWorkspace;
 }) {
+  const readOnly = useStaffReadOnly();
+  const viewManagement = data.canManage || data.canViewAll;
   const tr = useAppTranslations();
 
   const router = useRouter(),
@@ -748,7 +775,7 @@ export function FixtureManager({
   const view =
     requested === "groups" ||
     requested === "bracket" ||
-    (requested === "configuration" && data.canManage)
+    (requested === "configuration" && viewManagement)
       ? requested
       : "schedule";
   const [roundId, setRound] = useState("");
@@ -849,7 +876,7 @@ export function FixtureManager({
           >
             {tr("Open match")}
           </Link>
-          {data.canManage && (
+          {viewManagement && (
             <>
               <RefereeAssignment slug={slug} fixture={f} data={data} />
               <button
@@ -897,7 +924,7 @@ export function FixtureManager({
             { value: "schedule", label: "Schedule" },
             { value: "groups", label: "Groups" },
             { value: "bracket", label: "Bracket" },
-            ...(data.canManage
+            ...(viewManagement
               ? [{ value: "configuration", label: "Competition configuration" }]
               : []),
           ]}
@@ -907,7 +934,7 @@ export function FixtureManager({
             router.replace(`?${next}`, { scroll: false });
           }}
         />
-        {data.canManage && (
+        {viewManagement && (
           <button
             type="button"
             className="secondary"
@@ -919,7 +946,7 @@ export function FixtureManager({
           </button>
         )}
       </div>
-      {data.canManage && !data.rounds.length && (
+      {viewManagement && !data.rounds.length && (
         <p className="muted small">
           {tr("No rounds configured")} ·{" "}
           <Link
@@ -941,7 +968,7 @@ export function FixtureManager({
             cards(data.fixtures)
           ) : (
             <p className="muted">
-              {data.canManage
+              {viewManagement
                 ? tr("No fixtures yet.")
                 : tr("No matches assigned to you.")}
             </p>
@@ -987,7 +1014,7 @@ export function FixtureManager({
           ) : (
             <p className="muted">{tr("No knockout fixtures yet.")}</p>
           ))}
-        {data.canManage && (
+        {viewManagement && (
           <section
             hidden={view !== "configuration"}
             className="fixture-configuration settings-card form-stack"
@@ -997,12 +1024,12 @@ export function FixtureManager({
               {data.stages
                 .filter((s) => s.kind === "group")
                 .map((s) => (
-                  <StageGroups
+                  <StaffReadOnlyContext
                     key={`${s.id}-${s.version}`}
-                    stage={s}
-                    slug={slug}
-                    data={data}
-                  />
+                    value={readOnly || !data.canManage}
+                  >
+                    <StageGroups stage={s} slug={slug} data={data} />
+                  </StaffReadOnlyContext>
                 ))}
               {data.rounds.map((r) => (
                 <section className="settings-card form-stack" key={r.round.id}>
@@ -1010,18 +1037,20 @@ export function FixtureManager({
                     {r.round.name}
                     {tr(": approved competition rules")}
                   </h3>
-                  <RoundRules
-                    key={`${r.round.id}-${r.round.version}`}
-                    slug={slug}
-                    entry={r}
-                  />
+                  <StaffReadOnlyContext value={readOnly || !data.canManage}>
+                    <RoundRules
+                      key={`${r.round.id}-${r.round.version}`}
+                      slug={slug}
+                      entry={r}
+                    />
+                  </StaffReadOnlyContext>
                 </section>
               ))}
             </div>
           </section>
         )}
       </div>
-      {data.canManage && (
+      {viewManagement && (
         <>
           <dialog
             className="fixture-editor-dialog"
@@ -1049,48 +1078,54 @@ export function FixtureManager({
                       )
                     : tr("Changes are private until publication.")}
                 </p>
-                <ConfirmMutation
-                  label={
-                    editing.publishedAt
-                      ? tr("Unpublish fixture")
-                      : tr("Publish fixture")
+                <StaffReadOnlyContext value={readOnly || !data.canManage}>
+                  <ConfirmMutation
+                    label={
+                      editing.publishedAt
+                        ? tr("Unpublish fixture")
+                        : tr("Publish fixture")
+                    }
+                    title={
+                      editing.publishedAt
+                        ? tr("Withdraw fixture publication?")
+                        : tr("Publish fixture schedule?")
+                    }
+                    description={tr(
+                      "This controls fixture visibility. Scores still require a separately approved and published result.",
+                    )}
+                    url={`/api/admin/tournaments/${slug}/matches`}
+                    payload={{
+                      action: "publish",
+                      fixtureId: editing.id,
+                      expectedVersion: editing.version,
+                      published: !editing.publishedAt,
+                      confirmed: true,
+                    }}
+                    onSuccess={() => {
+                      editor.current?.close();
+                      setEditing(null);
+                    }}
+                  />
+                </StaffReadOnlyContext>
+              </div>
+            )}
+            {editing && (
+              <StaffReadOnlyContext value={readOnly || !data.canManage}>
+                <FixtureForm
+                  key={
+                    editing === "new"
+                      ? "new"
+                      : `${editing.id}-${editing.version}`
                   }
-                  title={
-                    editing.publishedAt
-                      ? tr("Withdraw fixture publication?")
-                      : tr("Publish fixture schedule?")
-                  }
-                  description={tr(
-                    "This controls fixture visibility. Scores still require a separately approved and published result.",
-                  )}
-                  url={`/api/admin/tournaments/${slug}/matches`}
-                  payload={{
-                    action: "publish",
-                    fixtureId: editing.id,
-                    expectedVersion: editing.version,
-                    published: !editing.publishedAt,
-                    confirmed: true,
-                  }}
-                  onSuccess={() => {
+                  slug={slug}
+                  data={data}
+                  fixture={editing === "new" ? undefined : editing}
+                  onSaved={() => {
                     editor.current?.close();
                     setEditing(null);
                   }}
                 />
-              </div>
-            )}
-            {editing && (
-              <FixtureForm
-                key={
-                  editing === "new" ? "new" : `${editing.id}-${editing.version}`
-                }
-                slug={slug}
-                data={data}
-                fixture={editing === "new" ? undefined : editing}
-                onSaved={() => {
-                  editor.current?.close();
-                  setEditing(null);
-                }}
-              />
+              </StaffReadOnlyContext>
             )}
             {editing && editing !== "new" && (
               <div className="fixture-delete-section">

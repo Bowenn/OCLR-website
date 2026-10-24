@@ -1,4 +1,5 @@
 "use client";
+import { useStaffReadOnly } from "./staff-read-only";
 
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -127,6 +128,7 @@ export function StaffDraftRoom({
   slug: string;
   initial: StaffDraft;
 }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
 
   const [feedback, setFeedback] = useState<{
@@ -184,7 +186,7 @@ export function StaffDraftRoom({
         pool: null,
       }
     : null;
-  const canPick = Boolean(connected && session?.state === "live");
+  const canPick = Boolean(!readOnly && connected && session?.state === "live");
   return (
     <>
       <p role="status" className="connection-state small">

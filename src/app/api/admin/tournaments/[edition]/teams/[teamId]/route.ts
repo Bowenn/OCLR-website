@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { teams } from "@/db/schema";
 import { NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth/staff";
+import { assertCapability, requireStaff } from "@/lib/auth/staff";
 import { staffTeams, updateTeams } from "@/lib/teams";
 import {
   storeTeamImage,
@@ -19,6 +19,7 @@ export async function PATCH(
     requireSameOrigin(request);
     const actor = await requireStaff(),
       { edition, teamId } = await context.params;
+    await assertCapability(actor, "manage_teams", edition);
     const before = (await staffTeams(actor, edition)).teams.find(
       (t) => t.id === teamId,
     );

@@ -3,7 +3,7 @@ import { cache } from "react";
 import { z } from "zod";
 import { db } from "@/db";
 import { siteSettings, siteSettingEvents } from "@/db/schema";
-import { assertCapability } from "./auth/staff";
+import { assertReadCapability, assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { HttpError } from "./http";
 import { appearances, readAppearance } from "./preferences";
@@ -39,7 +39,7 @@ export const defaultSiteAppearance = cache(async () => {
 
 export async function siteSettingsForAdmin(actor: User) {
   // No edition argument deliberately requires a global Admin grant.
-  await assertCapability(actor, "configure_tournament");
+  await assertReadCapability(actor, "configure_tournament");
   return readSiteSettings();
 }
 

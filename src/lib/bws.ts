@@ -9,10 +9,16 @@ import {
   registrations,
   userProfileCache,
 } from "@/db/schema";
-import { assertCapability } from "./auth/staff";
+import {
+  assertReadCapability,
+  assertCapability,
+  isDeveloper,
+  staffAccess,
+  hasCapability,
+} from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { badgeClassifications, summarizeBws } from "./bws-model";
-import { getOsuUserProfile } from "./osu-profiles";
+import { cachedOsuUserProfile, getOsuUserProfile } from "./osu-profiles";
 import { type ProfileSnapshot } from "./osu-profile-model";
 import { HttpError } from "./http";
 const choices = z.array(z.enum(badgeClassifications)).max(100);
@@ -60,8 +66,10 @@ async function applicant(
   slug: string,
   id: string,
   reader: Pick<ReturnType<typeof db>, "select"> = db(),
+  readOnly = false,
 ) {
-  await assertCapability(actor, "manage_registrations", slug, reader);
+  const assert = readOnly ? assertReadCapability : assertCapability;
+  await assert(actor, "manage_registrations", slug, reader);
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Application not found.");
   const [row] = await reader
@@ -77,11 +85,18 @@ export async function staffBws(
   id: string,
   mode: unknown,
 ) {
-  const registration = await applicant(actor, slug, id);
+  const registration = await applicant(actor, slug, id, db(), true);
   const parsed = z.literal("osu").safeParse(mode ?? "osu");
   if (!parsed.success) throw new HttpError(400, "Select a ruleset for BWS.");
-  const snapshot = await getOsuUserProfile(registration.userId, parsed.data);
-  await applicant(actor, slug, id);
+  const developer =
+    isDeveloper(await staffAccess(actor)) &&
+    !(await hasCapability(actor, "manage_registrations", slug));
+  const snapshot = await (developer ? cachedOsuUserProfile : getOsuUserProfile)(
+    registration.userId,
+    parsed.data,
+  );
+  if (!snapshot) throw new HttpError(404, "No saved profile is available.");
+  await applicant(actor, slug, id, db(), true);
   const [review] = await db()
     .select()
     .from(badgeReviews)
