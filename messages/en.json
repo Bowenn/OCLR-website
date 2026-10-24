@@ -2283,6 +2283,15 @@
     "m9aee944dd455": "Developer — global read-only access",
     "m262ded489c30": "Developer can read private applications and unpublished editions. Other roles retain their existing write permissions and export access within scope.",
     "m09c8d8ae6a6a": "No saved profile is available.",
-    "m0f8518c83227": "Developer must be granted globally."
+    "m0f8518c83227": "Developer must be granted globally.",
+    "ma664ade2dd3a": "YumuRating",
+    "m3beaa85bd37c": "MRA combines 70% ERA and 30% DRA. Higher is better. No star weighting is applied.",
+    "m4452d4778885": "{value0} scored games · {value1} players",
+    "me03e72ffc1ec": "Rating unavailable; approved score data needs review.",
+    "m804df89b5190": "No approved scored games available for rating.",
+    "mc0552b46dd91": "Small comparison group; interpret this rating with care.",
+    "mf579e86355ef": "Player ratings; scroll horizontally",
+    "m410b53192130": "Player ratings",
+    "m51296d3267e2": "Game {value0}"
   }
 }

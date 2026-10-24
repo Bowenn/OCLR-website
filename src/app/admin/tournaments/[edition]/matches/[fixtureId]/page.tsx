@@ -1,3 +1,5 @@
+import { matchRatingWorkspace } from "@/lib/ratings";
+import { PlayerRatings } from "@/components/player-ratings";
 import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
@@ -72,6 +74,12 @@ export default async function FixturePage({
       );
     }
     const data = review.context;
+    const rating = await matchRatingWorkspace(actor, edition, fixtureId).catch(
+      (error: unknown) => {
+        if (error instanceof HttpError && error.status === 403) return null;
+        throw error;
+      },
+    );
     return (
       <>
         <PageHeading
@@ -105,6 +113,7 @@ export default async function FixturePage({
           </p>
         </div>
         <MatchReviewPanel data={review} slug={edition} />
+        {rating && <PlayerRatings report={rating} slug={edition} />}
       </>
     );
   });
