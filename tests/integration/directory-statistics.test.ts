@@ -142,7 +142,7 @@ describe.skipIf(!url)("bounded public directory statistics", () => {
   });
   it("does not read a private applicant's cached stats through search or other statuses", async () => {
     await cache(base + 2, 12345, 7890.45);
-    for (const status of ["pending", "rejected", "withdrawn"] as const) {
+    for (const status of ["pending", "deferred", "rejected", "withdrawn"] as const) {
       await db()
         .update(registrations)
         .set({ status })

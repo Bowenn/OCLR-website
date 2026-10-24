@@ -94,7 +94,7 @@ export function informationPreview(slug: string): TournamentInformation | null {
         href: "https://qm.qq.com/q/sqIoPulwUo",
       },
       {
-        label: "Discord · OCLRfanclube",
+        label: "Discord · OCL Series",
         href: "https://discord.gg/graS4RJHjM",
       },
       { label: "选秀直播间", href: `${base}/draft` },

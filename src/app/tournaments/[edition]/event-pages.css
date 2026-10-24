@@ -224,6 +224,13 @@
   text-align: center;
   color: var(--site-accent);
 }
+.event-match-side[data-winner="true"] {
+  background: var(--site-tint);
+  border-inline-start: 3px solid var(--site-accent);
+}
+.event-match-side[data-winner="true"] strong {
+  font-weight: 700;
+}
 .event-match-card footer {
   padding: 0.4rem 0.7rem;
   font-size: 0.6rem;

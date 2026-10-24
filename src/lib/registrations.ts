@@ -11,7 +11,7 @@ import {
   memberships,
 } from "@/db/schema";
 import { readTournament } from "./tournaments";
-import { ELIGIBILITY_FRESH_MS } from "./eligibility-model";
+import { withinRankGrace, ELIGIBILITY_FRESH_MS } from "./eligibility-model";
 import { verifyEligibility } from "./eligibility";
 import { storedEdition } from "./tournaments";
 import { enrollmentState, type Edition } from "./editions";
@@ -196,7 +196,10 @@ export async function submitRegistration(
         503,
         "Unable to verify eligibility. Retry or contact staff.",
       );
-    if (verification?.status === "fail")
+    if (
+      verification?.status === "fail" &&
+      !withinRankGrace(verification, edition.rankGraceRange)
+    )
       throw new HttpError(
         400,
         "Your osu!standard statistics do not meet the configured eligibility limits.",
@@ -242,7 +245,10 @@ export async function submitRegistration(
       source: "player" as const,
       status: "pending" as const,
       configurationVersion: state.configurationVersion,
-      eligibilityVerification: verification,
+      eligibilityVerification:
+        verification && withinRankGrace(verification, edition.rankGraceRange)
+          ? { ...verification, rankGraceRange: edition.rankGraceRange! }
+          : verification,
       createdAt: now,
       updatedAt: now,
       statusReason: null,
@@ -304,7 +310,7 @@ export function canWithdraw(
   return Boolean(
     edition?.published &&
     !locked &&
-    ["pending", "accepted"].includes(registration.status) &&
+    ["pending", "deferred", "accepted"].includes(registration.status) &&
     edition.registration?.withdrawUntil &&
     now.getTime() < Date.parse(edition.registration.withdrawUntil),
   );
