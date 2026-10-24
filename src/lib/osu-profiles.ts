@@ -154,6 +154,17 @@ function saved(
       }
     : null;
 }
+/** Saved profile only, for private read-only diagnostics. No provider I/O or claims. */
+export async function cachedOsuUserProfile(osuId: number, mode: ProfileMode) {
+  const [row] = await db()
+    .select()
+    .from(userProfileCache)
+    .where(
+      and(eq(userProfileCache.osuId, osuId), eq(userProfileCache.mode, mode)),
+    );
+  if (!row || row.errorStatus === 404) return null;
+  return saved(row);
+}
 function unavailable(status: number) {
   return new HttpError(
     status,

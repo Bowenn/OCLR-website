@@ -13,7 +13,7 @@ import {
   fixtures,
 } from "@/db/schema";
 import { getEdition, getPublicEdition } from "./content";
-import { assertCapability } from "./auth/staff";
+import { assertReadCapability, assertCapability } from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { draftSetupProtection } from "./draft-setup";
 import { refreshDraftSnapshot } from "./draft";
@@ -56,7 +56,7 @@ const commandSchema = z
   })
   .strict();
 export async function captainSetup(actor: User, slug: string) {
-  await assertCapability(actor, "manage_captains", slug);
+  await assertReadCapability(actor, "manage_captains", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {

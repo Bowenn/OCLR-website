@@ -2276,6 +2276,13 @@
     "mb1c4342373f8": "Paste between 1 and 20 non-empty lines (maximum 8192 characters).",
     "mc28ac54a8e42": "Enter a current osu! username, preserving spaces and special characters.",
     "mf85e6fc892eb": "The username does not match the current official name. Use the current username or numeric ID and verify again.",
-    "m96be8741531c": "Connection interrupted. Retry the unfinished list to check existing entries; completed registrations will not be overwritten."
+    "m96be8741531c": "Connection interrupted. Retry the unfinished list to check existing entries; completed registrations will not be overwritten.",
+    "m35621b5e9f30": "Developer access is read-only.",
+    "m9cd625bf9408": "Existing write roles remain active.",
+    "m5539de138339": "Developer grants no business writes or sensitive bulk exports. Other roles retain their existing permissions within scope.",
+    "m9aee944dd455": "Developer — global read-only access",
+    "m262ded489c30": "Developer can read private applications and unpublished editions. Other roles retain their existing write permissions and export access within scope.",
+    "m09c8d8ae6a6a": "No saved profile is available.",
+    "m0f8518c83227": "Developer must be granted globally."
   }
 }

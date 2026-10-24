@@ -14,7 +14,7 @@ import {
   draftSessions,
 } from "@/db/schema";
 import type { User } from "./auth/sessions";
-import { assertCapability } from "./auth/staff";
+import { assertReadCapability, assertCapability } from "./auth/staff";
 import { getEdition, getPublicEdition } from "./content";
 import { draftSetupProtection } from "./draft-setup";
 import { refreshDraftSnapshot } from "./draft";
@@ -73,7 +73,7 @@ const commandSchema = z
   })
   .strict();
 export async function staffTeams(actor: User, slug: string) {
-  await assertCapability(actor, "manage_teams", slug);
+  await assertReadCapability(actor, "manage_teams", slug);
   if (!(await getEdition(slug))) throw new HttpError(404, "Edition not found.");
   return db().transaction(
     async (tx) => {

@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { teams, captains } from "@/db/schema";
 import { getPublicEdition } from "@/lib/content";
 import { currentUser } from "@/lib/auth/user";
-import { hasCapability } from "@/lib/auth/staff";
+import { assertReadCapability } from "@/lib/auth/staff";
 import { readTeamImage } from "@/lib/team-media";
 export async function GET(
   _request: Request,
@@ -32,11 +32,8 @@ export async function GET(
       !!(await getPublicEdition(row.team.editionSlug));
     if (!publicIdentity) {
       const user = await currentUser();
-      if (
-        !user ||
-        !(await hasCapability(user, "manage_teams", row.team.editionSlug))
-      )
-        return new Response(null, { status: 404 });
+      if (!user) return new Response(null, { status: 404 });
+      await assertReadCapability(user, "manage_teams", row.team.editionSlug);
     }
     return new Response(
       new Uint8Array(await readTeamImage(row.team.avatarKey)),

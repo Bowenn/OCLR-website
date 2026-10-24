@@ -1,4 +1,5 @@
 "use client";
+import { useStaffReadOnly } from "./staff-read-only";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import { modeNames } from "@/lib/osu-profile-model";
@@ -6,6 +7,7 @@ import { type BadgeClassification } from "@/lib/bws-model";
 import type { staffBws } from "@/lib/bws";
 import { BwsSummary } from "./bws-summary";
 export function BwsReview({ slug, id }: { slug: string; id: string }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
   const mode = "osu";
   const [data, setData] = useState<Awaited<ReturnType<typeof staffBws>> | null>(
@@ -96,7 +98,7 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
                       </span>
                       <select
                         value={classifications[i]}
-                        disabled={pending}
+                        disabled={readOnly || pending}
                         onChange={(e) =>
                           setClassifications(
                             classifications.map((c, j) =>
@@ -126,7 +128,10 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
               <button
                 type="button"
                 disabled={
-                  pending || data.snapshot.stale || !!data.snapshot.notice
+                  readOnly ||
+                  pending ||
+                  data.snapshot.stale ||
+                  !!data.snapshot.notice
                 }
                 onClick={() => request(true)}
               >

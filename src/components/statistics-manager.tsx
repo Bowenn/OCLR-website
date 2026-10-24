@@ -1,4 +1,5 @@
 "use client";
+import { ReadOnlyFields, MutationButton } from "./staff-read-only";
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useAppTranslations } from "@/i18n/shared";
@@ -44,285 +45,289 @@ function SourceReview({
       JSON.stringify(review.rosterTeamGames) ||
     technicalAdjudication !== review.technicalAdjudication;
   return (
-    <section className="statistics-review stack">
-      <h3>MP {review.mpId}</h3>
-      <a href={"https://osu.ppy.sh/community/matches/" + review.mpId}>
-        {tr("Open MP history")}
-      </a>
-      {!review.complete && (
-        <p className="notice">
-          {tr("Complete, closed MP history is required.")}
-        </p>
-      )}
-      {review.warnings.map((w) => (
-        <p className="muted" key={w}>
-          {tr(w)}
-        </p>
-      ))}
-      <label className="field">
-        <span>{tr("Recorded mappool")}</span>
-        <select
-          aria-label={tr("Recorded mappool")}
-          value={poolId}
-          disabled={busy}
-          onChange={(e) => {
-            setPool(e.target.value);
-            setIncluded([]);
-          }}
-        >
-          <option value="">
-            {tr("MP beatmaps; historical mappool unavailable")}
-          </option>
-          {pools.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="checkbox-field">
-        <input
-          type="checkbox"
-          checked={allowUnlistedMaps}
-          disabled={busy}
-          onChange={(e) => {
-            setAllowUnlisted(e.target.checked);
-            setIncluded([]);
-          }}
-        />
-        {tr(
-          "I reviewed the MP beatmaps because the historical mappool is incomplete.",
+    <ReadOnlyFields>
+      <section className="statistics-review stack">
+        <h3>MP {review.mpId}</h3>
+        <a href={"https://osu.ppy.sh/community/matches/" + review.mpId}>
+          {tr("Open MP history")}
+        </a>
+        {!review.complete && (
+          <p className="notice">
+            {tr("Complete, closed MP history is required.")}
+          </p>
         )}
-      </label>
-      {canReviewExceptions && (
+        {review.warnings.map((w) => (
+          <p className="muted" key={w}>
+            {tr(w)}
+          </p>
+        ))}
+        <label className="field">
+          <span>{tr("Recorded mappool")}</span>
+          <select
+            aria-label={tr("Recorded mappool")}
+            value={poolId}
+            disabled={busy}
+            onChange={(e) => {
+              setPool(e.target.value);
+              setIncluded([]);
+            }}
+          >
+            <option value="">
+              {tr("MP beatmaps; historical mappool unavailable")}
+            </option>
+            {pools.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="checkbox-field">
           <input
             type="checkbox"
-            checked={technicalAdjudication}
+            checked={allowUnlistedMaps}
             disabled={busy}
             onChange={(e) => {
-              setTechnicalAdjudication(e.target.checked);
+              setAllowUnlisted(e.target.checked);
               setIncluded([]);
             }}
           />
           {tr(
-            "Organizer confirmed technical adjudication. Keep the recorded series score; statistics use only actual MP scores.",
+            "I reviewed the MP beatmaps because the historical mappool is incomplete.",
           )}
         </label>
-      )}
-      {poolChanged && (
-        <p role="status">{tr("Save review settings before choosing games.")}</p>
-      )}
-      <p className="muted">
-        {tr(
-          "Select official scoring games only. Exclude warmups, aborted games and superseded replays.",
+        {(canReviewExceptions || review.technicalAdjudication) && (
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={technicalAdjudication}
+              disabled={busy || !canReviewExceptions}
+              onChange={(e) => {
+                setTechnicalAdjudication(e.target.checked);
+                setIncluded([]);
+              }}
+            />
+            {tr(
+              "Organizer confirmed technical adjudication. Keep the recorded series score; statistics use only actual MP scores.",
+            )}
+          </label>
         )}
-      </p>
-      <p className="muted">
-        {tr(
-          "Exclude zero-score lobby records only after confirming that the user did not play. Keep genuine failed scores.",
+        {poolChanged && (
+          <p role="status">
+            {tr("Save review settings before choosing games.")}
+          </p>
         )}
-      </p>
-      <div className="actions">
-        <button
-          type="button"
-          className="secondary"
-          disabled={busy || poolChanged}
-          onClick={() =>
-            setIncluded(
-              review.games
-                .filter((g) => !g.issues.length)
-                .map((g) => g.game.id),
-            )
-          }
+        <p className="muted">
+          {tr(
+            "Select official scoring games only. Exclude warmups, aborted games and superseded replays.",
+          )}
+        </p>
+        <p className="muted">
+          {tr(
+            "Exclude zero-score lobby records only after confirming that the user did not play. Keep genuine failed scores.",
+          )}
+        </p>
+        <div className="actions">
+          <MutationButton
+            type="button"
+            className="secondary"
+            disabled={busy || poolChanged}
+            onClick={() =>
+              setIncluded(
+                review.games
+                  .filter((g) => !g.issues.length)
+                  .map((g) => g.game.id),
+              )
+            }
+          >
+            {tr("Select eligible games")}
+          </MutationButton>
+          <MutationButton
+            className="secondary"
+            type="button"
+            disabled={busy}
+            onClick={() => setIncluded([])}
+          >
+            {tr("Clear selection")}
+          </MutationButton>
+        </div>
+        <div
+          className="table-scroll"
+          tabIndex={0}
+          role="region"
+          aria-label={tr("Review MP games")}
         >
-          {tr("Select eligible games")}
-        </button>
-        <button
-          className="secondary"
-          type="button"
-          disabled={busy}
-          onClick={() => setIncluded([])}
-        >
-          {tr("Clear selection")}
-        </button>
-      </div>
-      <div
-        className="table-scroll"
-        tabIndex={0}
-        role="region"
-        aria-label={tr("Review MP games")}
-      >
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">{tr("Include")}</th>
-              <th scope="col">{tr("Game")}</th>
-              <th scope="col">{tr("Beatmap")}</th>
-              <th scope="col">{tr("Score records")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {review.games.map(({ game, issues, nonParticipantIds }) => (
-              <tr key={game.id}>
-                <td>
-                  <input
-                    type="checkbox"
-                    aria-label={tr("Include game") + " " + game.id}
-                    checked={included.includes(game.id)}
-                    disabled={busy || poolChanged || issues.length > 0}
-                    onChange={(e) =>
-                      setIncluded(
-                        e.target.checked
-                          ? [...included, game.id]
-                          : included.filter((id) => id !== game.id),
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  {game.id}
-                  <br />
-                  <small>{game.startTime}</small>
-                  {canReviewExceptions &&
-                    (rosterTeamGames.includes(game.id) ||
-                      issues.includes(
-                        "Team colors do not identify both recorded teams.",
-                      )) && (
-                      <label className="checkbox-field">
-                        <input
-                          type="checkbox"
-                          disabled={busy}
-                          aria-label={
-                            tr("Use verified roster teams") + " " + game.id
-                          }
-                          checked={rosterTeamGames.includes(game.id)}
-                          onChange={(e) => {
-                            setRosterTeamGames(
-                              e.target.checked
-                                ? [...rosterTeamGames, game.id]
-                                : rosterTeamGames.filter(
-                                    (id) => id !== game.id,
-                                  ),
-                            );
-                            setIncluded([]);
-                          }}
-                        />
-                        {tr(
-                          "I verified team membership by UID despite incorrect lobby colors.",
-                        )}
-                      </label>
-                    )}
-                </td>
-                <td>
-                  {game.beatmap?.artist} {game.beatmap?.title}
-                  <br />
-                  <a href={"https://osu.ppy.sh/beatmaps/" + game.beatmapId}>
-                    #{game.beatmapId}
-                  </a>
-                  {issues.map((s) => (
-                    <p className="muted" key={s}>
-                      {tr(s)}
-                    </p>
-                  ))}
-                </td>
-                <td>
-                  <details>
-                    <summary>
-                      {game.scores.length} · {tr("Players")}
-                    </summary>
-                    {game.scores.map((s, i) => (
-                      <p className="statistics-game-score" key={i}>
-                        <span>
-                          {tr("osu! ID")} {s.osuId ?? "—"}
-                        </span>
-                        <span>{s.team ?? "—"}</span>
-                        <span>{s.total?.toLocaleString() ?? "—"}</span>
-                        <span>
-                          {s.accuracy === null
-                            ? "—"
-                            : (s.accuracy * 100).toFixed(2) + "%"}
-                        </span>
-                        <span>{s.mods.join(" ") || "NM"}</span>
-                        {(canExcludeStatisticsScore(s) ||
-                          (canReviewExceptions &&
-                            nonParticipantIds.includes(s.osuId!))) && (
-                          <label className="checkbox-field">
-                            <input
-                              type="checkbox"
-                              aria-label={
-                                tr("Exclude score") +
-                                " " +
-                                game.id +
-                                " · " +
-                                s.osuId
-                              }
-                              checked={excludedScores.some(
-                                (e) =>
-                                  e.gameId === game.id && e.osuId === s.osuId,
-                              )}
-                              disabled={busy}
-                              onChange={(e) => {
-                                setExcludedScores(
-                                  e.target.checked
-                                    ? [
-                                        ...excludedScores,
-                                        {
-                                          gameId: game.id,
-                                          osuId: s.osuId!,
-                                          ...(!canExcludeStatisticsScore(s)
-                                            ? {
-                                                reason:
-                                                  "non-participant" as const,
-                                              }
-                                            : {}),
-                                        },
-                                      ]
-                                    : excludedScores.filter(
-                                        (v) =>
-                                          v.gameId !== game.id ||
-                                          v.osuId !== s.osuId,
-                                      ),
-                                );
-                                setIncluded([]);
-                              }}
-                            />
-                            {canExcludeStatisticsScore(s)
-                              ? tr("Exclude score")
-                              : tr(
-                                  "I verified this user did not play for either team. Exclude this lobby record.",
-                                )}
-                          </label>
-                        )}
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{tr("Include")}</th>
+                <th scope="col">{tr("Game")}</th>
+                <th scope="col">{tr("Beatmap")}</th>
+                <th scope="col">{tr("Score records")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {review.games.map(({ game, issues, nonParticipantIds }) => (
+                <tr key={game.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      aria-label={tr("Include game") + " " + game.id}
+                      checked={included.includes(game.id)}
+                      disabled={busy || poolChanged || issues.length > 0}
+                      onChange={(e) =>
+                        setIncluded(
+                          e.target.checked
+                            ? [...included, game.id]
+                            : included.filter((id) => id !== game.id),
+                        )
+                      }
+                    />
+                  </td>
+                  <td>
+                    {game.id}
+                    <br />
+                    <small>{game.startTime}</small>
+                    {canReviewExceptions &&
+                      (rosterTeamGames.includes(game.id) ||
+                        issues.includes(
+                          "Team colors do not identify both recorded teams.",
+                        )) && (
+                        <label className="checkbox-field">
+                          <input
+                            type="checkbox"
+                            disabled={busy}
+                            aria-label={
+                              tr("Use verified roster teams") + " " + game.id
+                            }
+                            checked={rosterTeamGames.includes(game.id)}
+                            onChange={(e) => {
+                              setRosterTeamGames(
+                                e.target.checked
+                                  ? [...rosterTeamGames, game.id]
+                                  : rosterTeamGames.filter(
+                                      (id) => id !== game.id,
+                                    ),
+                              );
+                              setIncluded([]);
+                            }}
+                          />
+                          {tr(
+                            "I verified team membership by UID despite incorrect lobby colors.",
+                          )}
+                        </label>
+                      )}
+                  </td>
+                  <td>
+                    {game.beatmap?.artist} {game.beatmap?.title}
+                    <br />
+                    <a href={"https://osu.ppy.sh/beatmaps/" + game.beatmapId}>
+                      #{game.beatmapId}
+                    </a>
+                    {issues.map((s) => (
+                      <p className="muted" key={s}>
+                        {tr(s)}
                       </p>
                     ))}
-                  </details>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() =>
-          void save({
-            action: "review",
-            mpId: review.mpId,
-            expectedVersion: review.version,
-            poolId,
-            included,
-            allowUnlistedMaps,
-            excludedScores,
-            rosterTeamGames,
-            technicalAdjudication,
-          })
-        }
-      >
-        {tr("Save statistics review")}
-      </button>
-    </section>
+                  </td>
+                  <td>
+                    <details>
+                      <summary>
+                        {game.scores.length} · {tr("Players")}
+                      </summary>
+                      {game.scores.map((s, i) => (
+                        <p className="statistics-game-score" key={i}>
+                          <span>
+                            {tr("osu! ID")} {s.osuId ?? "—"}
+                          </span>
+                          <span>{s.team ?? "—"}</span>
+                          <span>{s.total?.toLocaleString() ?? "—"}</span>
+                          <span>
+                            {s.accuracy === null
+                              ? "—"
+                              : (s.accuracy * 100).toFixed(2) + "%"}
+                          </span>
+                          <span>{s.mods.join(" ") || "NM"}</span>
+                          {(canExcludeStatisticsScore(s) ||
+                            (canReviewExceptions &&
+                              nonParticipantIds.includes(s.osuId!))) && (
+                            <label className="checkbox-field">
+                              <input
+                                type="checkbox"
+                                aria-label={
+                                  tr("Exclude score") +
+                                  " " +
+                                  game.id +
+                                  " · " +
+                                  s.osuId
+                                }
+                                checked={excludedScores.some(
+                                  (e) =>
+                                    e.gameId === game.id && e.osuId === s.osuId,
+                                )}
+                                disabled={busy}
+                                onChange={(e) => {
+                                  setExcludedScores(
+                                    e.target.checked
+                                      ? [
+                                          ...excludedScores,
+                                          {
+                                            gameId: game.id,
+                                            osuId: s.osuId!,
+                                            ...(!canExcludeStatisticsScore(s)
+                                              ? {
+                                                  reason:
+                                                    "non-participant" as const,
+                                                }
+                                              : {}),
+                                          },
+                                        ]
+                                      : excludedScores.filter(
+                                          (v) =>
+                                            v.gameId !== game.id ||
+                                            v.osuId !== s.osuId,
+                                        ),
+                                  );
+                                  setIncluded([]);
+                                }}
+                              />
+                              {canExcludeStatisticsScore(s)
+                                ? tr("Exclude score")
+                                : tr(
+                                    "I verified this user did not play for either team. Exclude this lobby record.",
+                                  )}
+                            </label>
+                          )}
+                        </p>
+                      ))}
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <MutationButton
+          type="button"
+          disabled={busy}
+          onClick={() =>
+            void save({
+              action: "review",
+              mpId: review.mpId,
+              expectedVersion: review.version,
+              poolId,
+              included,
+              allowUnlistedMaps,
+              excludedScores,
+              rosterTeamGames,
+              technicalAdjudication,
+            })
+          }
+        >
+          {tr("Save statistics review")}
+        </MutationButton>
+      </section>
+    </ReadOnlyFields>
   );
 }
 export function StatisticsManager({
@@ -431,15 +436,15 @@ export function StatisticsManager({
         <Link href={"/tournaments/" + data.slug + "/statistics"}>
           {tr("Open public statistics")}
         </Link>
-        <button
+        <MutationButton
           type="button"
           disabled={busy || !missing.length}
           onClick={() => void importSources(missing)}
         >
           {tr("Import missing MP histories")} ({missing.length})
-        </button>
+        </MutationButton>
         {busy && (
-          <button
+          <MutationButton
             type="button"
             className="secondary"
             onClick={() => {
@@ -447,7 +452,7 @@ export function StatisticsManager({
             }}
           >
             {tr("Stop after current MP")}
-          </button>
+          </MutationButton>
         )}
       </div>
       <p role="status">{message}</p>
@@ -527,14 +532,14 @@ export function StatisticsManager({
                       )}
                     </td>
                     <td>
-                      <button
+                      <MutationButton
                         className="secondary"
                         type="button"
                         disabled={busy}
                         onClick={() => void importSources([mpId])}
                       >
                         {s ? tr("Refresh MP") : tr("Import MP")}
-                      </button>
+                      </MutationButton>
                     </td>
                   </tr>
                 );

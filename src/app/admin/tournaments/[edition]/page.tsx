@@ -1,7 +1,7 @@
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
 import { authorizedPage } from "@/lib/auth/page";
-import { requireStaff, staffAccess, permits } from "@/lib/auth/staff";
+import { requireStaff, staffAccess, canRead } from "@/lib/auth/staff";
 import { tournamentForAdmin, tournamentList } from "@/lib/tournaments";
 import { HttpError } from "@/lib/http";
 import { formatDate } from "@/lib/editions";
@@ -23,7 +23,7 @@ export default async function Tournament({
     const grants = await staffAccess(actor);
     const row = (await tournamentList(actor)).rows.find((r) => r.slug === slug);
     if (!row) throw new HttpError(404, "Tournament not found.");
-    const data = permits(grants, "configure_tournament", slug)
+    const data = canRead(grants, "configure_tournament", slug)
       ? await tournamentForAdmin(actor, slug)
       : null;
     const primary = data

@@ -4,7 +4,11 @@ import { z } from "zod";
 import { db } from "@/db";
 import { editionEvents, editionState, historicalStatistics } from "@/db/schema";
 import { readTournament } from "./tournaments";
-import { assertCapability, hasCapability } from "./auth/staff";
+import {
+  assertReadCapability,
+  assertCapability,
+  hasCapability,
+} from "./auth/staff";
 import type { User } from "./auth/sessions";
 import type { HistoricalArchive } from "./historical-archive";
 import { HttpError } from "./http";
@@ -159,7 +163,7 @@ export async function statisticsWorkspace(
   slug: string,
   fixtureId = "",
 ) {
-  await assertCapability(actor, "record_results", slug);
+  await assertReadCapability(actor, "record_results", slug);
   const archive = await archiveFor(slug);
   const key = statisticsArchiveKey(archive);
   const rows = (await stored(slug)).filter((r) =>
