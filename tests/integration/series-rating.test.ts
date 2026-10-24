@@ -128,6 +128,25 @@ describe.skipIf(!url)("round ratings and versioned awards", () => {
       publishedFixtures: 2,
       ratedFixtures: 1,
     });
+    const workspace = await awardCommand(admin, "test-cup", {
+      action: "configure",
+      confirmed: true,
+      expectedVersion: 0,
+      weeks: awardWeeks,
+      policy: "yumu-mra-v1",
+    });
+    expect(workspace.reports[0].issues).toContain(
+      "This award week still has fixtures awaiting approved published game data.",
+    );
+    await expect(
+      awardCommand(admin, "test-cup", {
+        action: "publish",
+        confirmed: true,
+        expectedVersion: 1,
+        week: 1,
+        fingerprint: workspace.reports[0].fingerprint,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
     expect(await publicRoundRatings("private-test-cup")).toEqual([]);
     await db()
       .update(fixtures)

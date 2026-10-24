@@ -1,10 +1,11 @@
 import { approvedRatingGames } from "./approved-rating-games";
 import { createHash } from "node:crypto";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
   awardSettings,
+  fixtures,
   captains,
   teams,
   draftSessions,
@@ -98,6 +99,18 @@ async function calculation(slug: string, reader: Reader) {
     .innerJoin(users, eq(users.osuId, registrations.userId))
     .where(eq(registrations.editionSlug, slug));
   const games = await approvedRatingGames(slug, reader);
+  const scheduledFixtures =
+    configuration.policy === YUMU_POLICY
+      ? await reader
+          .select({ id: fixtures.id, at: fixtures.scheduledAt })
+          .from(fixtures)
+          .where(
+            and(
+              eq(fixtures.editionSlug, slug),
+              ne(fixtures.status, "cancelled"),
+            ),
+          )
+      : [];
   const reports = weeklyStandings(
     configuration.weeks,
     tiers,
@@ -132,6 +145,18 @@ async function calculation(slug: string, reader: Reader) {
       identities,
       issues: [
         ...standing.issues,
+        ...(configuration.policy === YUMU_POLICY &&
+        scheduledFixtures.some(
+          (f) =>
+            f.at &&
+            f.at.getTime() >= Date.parse(standing.startsAt) &&
+            f.at.getTime() < Date.parse(standing.endsAt) &&
+            !games.some((g) => g.fixtureId === f.id && !g.problem),
+        )
+          ? [
+              "This award week still has fixtures awaiting approved published game data.",
+            ]
+          : []),
         ...(standing.candidates.some(
           (c) =>
             c.tier !== null &&

@@ -2353,6 +2353,7 @@
     "mc31587af5f22": "Round YumuRating",
     "m0bb12eec78f1": "All fixtures in this scope have approved rating data.",
     "m9e018ed76d39": "Provisional: this round has incomplete or unavailable rating data.",
-    "mb23c458f1b42": "{value0} of {value1} published fixtures have rating data."
+    "mb23c458f1b42": "{value0} of {value1} published fixtures have rating data.",
+    "m1c06c0997ac5": "This award week still has fixtures awaiting approved published game data."
   }
 }
