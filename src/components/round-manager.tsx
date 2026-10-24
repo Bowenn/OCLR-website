@@ -1,4 +1,5 @@
 "use client";
+import { ReadOnlyFields } from "./staff-read-only";
 import { useId, useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { MappoolWorkspace } from "@/lib/mappools";
@@ -29,61 +30,63 @@ function RoundForm({
   );
   const label = round ? tr("Save round") : tr("Create round");
   return (
-    <div className="form-stack">
-      <label className="field">
-        <span>{tr("Round name")}</span>
-        <input
-          value={name}
-          maxLength={80}
-          onChange={(event) => setName(event.target.value)}
-          placeholder={tr("Approved round label")}
-        />
-      </label>
-      <label className="field">
-        <span>{tr("Round order")}</span>
-        <input
-          type="number"
-          min={1}
-          max={999}
-          value={position}
-          onChange={(event) => setPosition(event.target.value)}
-        />
-      </label>
-      <div className="actions">
-        <ConfirmMutation
-          label={label}
-          title={label}
-          requireConfirmation={false}
-          canConfirm={
-            Boolean(name.trim()) &&
-            Number.isInteger(Number(position)) &&
-            Number(position) >= 1 &&
-            Number(position) <= 999
-          }
-          url={url}
-          onSuccess={onSuccess}
-          onError={onError}
-          payload={
-            round
-              ? {
-                  action: "round_edit",
-                  roundId: round.id,
-                  expectedVersion: round.version,
-                  name,
-                  position: Number(position),
-                  confirmed: true,
-                }
-              : {
-                  action: "round_create",
-                  stage,
-                  name,
-                  position: Number(position),
-                  confirmed: true,
-                }
-          }
-        />
+    <ReadOnlyFields>
+      <div className="form-stack">
+        <label className="field">
+          <span>{tr("Round name")}</span>
+          <input
+            value={name}
+            maxLength={80}
+            onChange={(event) => setName(event.target.value)}
+            placeholder={tr("Approved round label")}
+          />
+        </label>
+        <label className="field">
+          <span>{tr("Round order")}</span>
+          <input
+            type="number"
+            min={1}
+            max={999}
+            value={position}
+            onChange={(event) => setPosition(event.target.value)}
+          />
+        </label>
+        <div className="actions">
+          <ConfirmMutation
+            label={label}
+            title={label}
+            requireConfirmation={false}
+            canConfirm={
+              Boolean(name.trim()) &&
+              Number.isInteger(Number(position)) &&
+              Number(position) >= 1 &&
+              Number(position) <= 999
+            }
+            url={url}
+            onSuccess={onSuccess}
+            onError={onError}
+            payload={
+              round
+                ? {
+                    action: "round_edit",
+                    roundId: round.id,
+                    expectedVersion: round.version,
+                    name,
+                    position: Number(position),
+                    confirmed: true,
+                  }
+                : {
+                    action: "round_create",
+                    stage,
+                    name,
+                    position: Number(position),
+                    confirmed: true,
+                  }
+            }
+          />
+        </div>
       </div>
-    </div>
+    </ReadOnlyFields>
   );
 }
 

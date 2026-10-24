@@ -2,7 +2,12 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { editionState, staffRoles, staffRoleEvents, users } from "@/db/schema";
-import { assertCapability, capabilityScope, roles } from "./auth/staff";
+import {
+  assertCapability,
+  capabilityScope,
+  readCapabilityScope,
+  roles,
+} from "./auth/staff";
 import type { User } from "./auth/sessions";
 import { getEdition } from "./content";
 import { HttpError } from "./http";
@@ -37,7 +42,7 @@ const command = z.discriminatedUnion("action", [
     .strict(),
 ]);
 export async function listStaffRoles(actor: User) {
-  const scopes = await capabilityScope(actor, "manage_staff");
+  const scopes = await readCapabilityScope(actor, "manage_staff");
   const where = scopes ? inArray(staffRoles.editionSlug, scopes) : undefined;
   const grants = await db()
     .select({ grant: staffRoles, username: users.username })
@@ -46,13 +51,22 @@ export async function listStaffRoles(actor: User) {
     .where(where)
     .orderBy(desc(staffRoles.grantedAt))
     .limit(500);
-  return { grants, scopes };
+  const writeScopes = await capabilityScope(actor, "manage_staff").catch(
+    (error: unknown) => {
+      if (error instanceof HttpError && error.status === 403)
+        return [] as string[];
+      throw error;
+    },
+  );
+  return { grants, scopes, writeScopes };
 }
 export async function changeStaffRole(actor: User, input: unknown) {
   await capabilityScope(actor, "manage_staff");
   const parsed = command.safeParse(input);
   if (!parsed.success) throw new HttpError(400, "Confirm a valid role change.");
   const c = parsed.data;
+  if (c.action === "grant" && c.role === "developer" && c.editionSlug !== null)
+    throw new HttpError(400, "Developer must be granted globally.");
   return db().transaction(async (tx) => {
     // Serialize grants/revocations so duplicate requests cannot create competing active grants.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(17301)`);
@@ -147,18 +161,16 @@ export async function changeStaffRole(actor: User, input: unknown) {
         .set({ aboutPublished: c.published })
         .where(eq(staffRoles.id, grant.id))
         .returning();
-      await tx
-        .insert(staffRoleEvents)
-        .values({
-          grantId: grant.id,
-          actorId: actor.osuId,
-          targetId: grant.userId,
-          role: grant.role,
-          editionSlug: grant.editionSlug,
-          action: c.published ? "publish_profile" : "hide_profile",
-          before: grant,
-          after: updated,
-        });
+      await tx.insert(staffRoleEvents).values({
+        grantId: grant.id,
+        actorId: actor.osuId,
+        targetId: grant.userId,
+        role: grant.role,
+        editionSlug: grant.editionSlug,
+        action: c.published ? "publish_profile" : "hide_profile",
+        before: grant,
+        after: updated,
+      });
       return updated;
     }
     const [updated] = await tx

@@ -1,6 +1,6 @@
 import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
-import { requireStaff, assertCapability } from "@/lib/auth/staff";
+import { requireStaff, assertReadCapability } from "@/lib/auth/staff";
 import { RegistrationList } from "@/components/registration-list";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
@@ -17,7 +17,7 @@ export default async function Registrations({
   return authorizedPage(async () => {
     const actor = await requireStaff();
     const { edition } = await params;
-    await assertCapability(actor, "manage_registrations", edition);
+    await assertReadCapability(actor, "manage_registrations", edition);
     return (
       <RegistrationList
         actor={actor}

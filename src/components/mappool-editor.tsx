@@ -1,4 +1,9 @@
 "use client";
+import {
+  ReadOnlyFields,
+  useStaffReadOnly,
+  MutationButton,
+} from "./staff-read-only";
 
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -69,22 +74,24 @@ function CreatePool({
 
   const [name, setName] = useState("");
   return (
-    <div className="form-stack">
-      <label className="field">
-        <span>{tr("New pool name")}</span>
-        <input
-          value={name}
-          maxLength={80}
-          onChange={(e) => setName(e.target.value)}
+    <ReadOnlyFields>
+      <div className="form-stack">
+        <label className="field">
+          <span>{tr("New pool name")}</span>
+          <input
+            value={name}
+            maxLength={80}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <Save
+          change={change}
+          label={tr("Create draft pool")}
+          onSuccess={onSuccess}
+          payload={{ action: "pool_create", roundId, name }}
         />
-      </label>
-      <Save
-        change={change}
-        label={tr("Create draft pool")}
-        onSuccess={onSuccess}
-        payload={{ action: "pool_create", roundId, name }}
-      />
-    </div>
+      </div>
+    </ReadOnlyFields>
   );
 }
 function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
@@ -94,46 +101,48 @@ function PoolSettings({ change, pool }: { change: Change; pool: Pool }) {
   const [fmMode, setFmMode] = useState<string>(pool.fmMode ?? "");
   const [fmRestrictions, setRestrictions] = useState(pool.fmRestrictions);
   return (
-    <div className="form-stack">
-      <label className="field">
-        <span>{tr("Pool name")}</span>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={80}
-        />
-      </label>
-      <label className="field">
-        <span>{tr("FM policy")}</span>
-        <select value={fmMode} onChange={(e) => setFmMode(e.target.value)}>
-          <option value="">{tr("Disabled")}</option>
-          <option value="free_mod">{fmModeNames.free_mod}</option>
-          <option value="force_mod">{fmModeNames.force_mod}</option>
-        </select>
-      </label>
-      {(fmMode || fmRestrictions) && (
+    <ReadOnlyFields>
+      <div className="form-stack">
         <label className="field">
-          <span>{tr("Approved FM restrictions")}</span>
-          <textarea
-            value={fmRestrictions}
-            onChange={(e) => setRestrictions(e.target.value)}
-            maxLength={2000}
+          <span>{tr("Pool name")}</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={80}
           />
         </label>
-      )}
-      <Save
-        change={change}
-        label={tr("Save pool settings")}
-        payload={{
-          action: "pool_settings",
-          poolId: pool.id,
-          expectedVersion: pool.version,
-          name,
-          fmMode: fmMode || null,
-          fmRestrictions,
-        }}
-      />
-    </div>
+        <label className="field">
+          <span>{tr("FM policy")}</span>
+          <select value={fmMode} onChange={(e) => setFmMode(e.target.value)}>
+            <option value="">{tr("Disabled")}</option>
+            <option value="free_mod">{fmModeNames.free_mod}</option>
+            <option value="force_mod">{fmModeNames.force_mod}</option>
+          </select>
+        </label>
+        {(fmMode || fmRestrictions) && (
+          <label className="field">
+            <span>{tr("Approved FM restrictions")}</span>
+            <textarea
+              value={fmRestrictions}
+              onChange={(e) => setRestrictions(e.target.value)}
+              maxLength={2000}
+            />
+          </label>
+        )}
+        <Save
+          change={change}
+          label={tr("Save pool settings")}
+          payload={{
+            action: "pool_settings",
+            poolId: pool.id,
+            expectedVersion: pool.version,
+            name,
+            fmMode: fmMode || null,
+            fmRestrictions,
+          }}
+        />
+      </div>
+    </ReadOnlyFields>
   );
 }
 function EntryForm({
@@ -151,6 +160,7 @@ function EntryForm({
   entries?: Entry[];
   onSuccess?: () => void;
 }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
 
   const [difficultyConfiguration, setDifficultyConfiguration] =
@@ -179,108 +189,112 @@ function EntryForm({
     String(entry?.position ?? nextPosition(category)),
   );
   return (
-    <div className="form-stack">
-      <label className="field">
-        <span>{tr("Beatmap URL or ID")}</span>
-        <input
-          ref={input}
-          value={beatmap}
-          onChange={(e) => {
-            const next = e.target.value;
-            if (parseBeatmapId(next) !== id) setPreview(null);
-            setBeatmap(next);
-          }}
-          aria-invalid={Boolean(beatmap.trim() && !id)}
-          autoComplete="off"
-          maxLength={250}
-        />
-      </label>
-      {beatmap.trim() && !id && (
-        <p role="alert" className="notice error-text">
-          {tr("Enter a numeric beatmap ID or an official osu! difficulty URL.")}
-        </p>
-      )}
-      <fieldset className="mappool-attributes">
-        <legend>{tr("Official mod attributes")}</legend>
+    <ReadOnlyFields>
+      <div className="form-stack">
         <label className="field">
-          <span>{tr("Difficulty calculation mods")}</span>
-          <select
-            aria-label={tr("Difficulty calculation mods")}
-            value={difficultyConfiguration ?? ""}
+          <span>{tr("Beatmap URL or ID")}</span>
+          <input
+            ref={input}
+            value={beatmap}
             onChange={(e) => {
-              setPreview(null);
-              setDifficultyConfiguration(
-                (e.target.value as DifficultyConfiguration) || null,
-              );
+              const next = e.target.value;
+              if (parseBeatmapId(next) !== id) setPreview(null);
+              setBeatmap(next);
+            }}
+            aria-invalid={Boolean(beatmap.trim() && !id)}
+            autoComplete="off"
+            maxLength={250}
+          />
+        </label>
+        {beatmap.trim() && !id && (
+          <p role="alert" className="notice error-text">
+            {tr(
+              "Enter a numeric beatmap ID or an official osu! difficulty URL.",
+            )}
+          </p>
+        )}
+        <fieldset className="mappool-attributes">
+          <legend>{tr("Official mod attributes")}</legend>
+          <label className="field">
+            <span>{tr("Difficulty calculation mods")}</span>
+            <select
+              aria-label={tr("Difficulty calculation mods")}
+              value={difficultyConfiguration ?? ""}
+              onChange={(e) => {
+                setPreview(null);
+                setDifficultyConfiguration(
+                  (e.target.value as DifficultyConfiguration) || null,
+                );
+              }}
+            >
+              <option value="">{tr("Variable / unconfigured")}</option>
+              {difficultyConfigurations.map((mods) => (
+                <option key={mods} value={mods}>
+                  {mods}
+                  {mods.includes("DT")
+                    ? tr(" · standard DT speed")
+                    : mods === "HT"
+                      ? tr(" · standard HT speed")
+                      : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        </fieldset>
+        {id && !readOnly && (
+          <BeatmapPreview
+            key={`${id}-${difficultyConfiguration}`}
+            difficultyConfiguration={difficultyConfiguration}
+            id={id}
+            url={`${change.url}/preview`}
+            onReady={setPreview}
+          />
+        )}
+        <label className="field">
+          <span>{tr("Mod category")}</span>
+          <select
+            value={mod}
+            onChange={(e) => {
+              setMod(e.target.value);
+              if (!entry) setPosition(nextPosition(e.target.value));
             }}
           >
-            <option value="">{tr("Variable / unconfigured")}</option>
-            {difficultyConfigurations.map((mods) => (
-              <option key={mods} value={mods}>
-                {mods}
-                {mods.includes("DT")
-                  ? tr(" · standard DT speed")
-                  : mods === "HT"
-                    ? tr(" · standard HT speed")
-                    : ""}
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c} — {categoryNames[c]}
               </option>
             ))}
           </select>
         </label>
-      </fieldset>
-      {id && (
-        <BeatmapPreview
-          key={`${id}-${difficultyConfiguration}`}
-          difficultyConfiguration={difficultyConfiguration}
-          id={id}
-          url={`${change.url}/preview`}
-          onReady={setPreview}
-        />
-      )}
-      <label className="field">
-        <span>{tr("Mod category")}</span>
-        <select
-          value={mod}
-          onChange={(e) => {
-            setMod(e.target.value);
-            if (!entry) setPosition(nextPosition(e.target.value));
+        <label className="field">
+          <span>{tr("Slot number")}</span>
+          <input
+            type="number"
+            min={1}
+            max={999}
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+          />
+        </label>
+        <Save
+          change={change}
+          label={entry ? tr("Save map slot") : tr("Add beatmap")}
+          onSuccess={onSuccess}
+          disabled={!id || preview?.beatmapId !== id}
+          payload={{
+            action: "entry_save",
+            difficultyConfiguration,
+            expectedMetadataFingerprint: preview?.fingerprint,
+            poolId: pool.id,
+            expectedVersion: pool.version,
+            entryId: entry?.id ?? null,
+            beatmap,
+            category: mod,
+            position: Number(position),
           }}
-        >
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {c} — {categoryNames[c]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="field">
-        <span>{tr("Slot number")}</span>
-        <input
-          type="number"
-          min={1}
-          max={999}
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
         />
-      </label>
-      <Save
-        change={change}
-        label={entry ? tr("Save map slot") : tr("Add beatmap")}
-        onSuccess={onSuccess}
-        disabled={!id || preview?.beatmapId !== id}
-        payload={{
-          action: "entry_save",
-          difficultyConfiguration,
-          expectedMetadataFingerprint: preview?.fingerprint,
-          poolId: pool.id,
-          expectedVersion: pool.version,
-          entryId: entry?.id ?? null,
-          beatmap,
-          category: mod,
-          position: Number(position),
-        }}
-      />
-    </div>
+      </div>
+    </ReadOnlyFields>
   );
 }
 function EntryEditor({
@@ -379,6 +393,7 @@ export function MappoolEditor({
   slug: string;
   data: MappoolWorkspace;
 }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
 
   const id = useId();
@@ -467,7 +482,7 @@ export function MappoolEditor({
                   </button>
                 ))}
               </div>
-              <button
+              <MutationButton
                 type="button"
                 className="secondary"
                 aria-expanded={creatingPool}
@@ -478,7 +493,7 @@ export function MappoolEditor({
                 }}
               >
                 {tr("+ New pool")}
-              </button>
+              </MutationButton>
             </div>
           ) : (
             <p className="muted small mappool-empty">
@@ -688,7 +703,7 @@ export function MappoolEditor({
                           pool={pool}
                           category={category}
                           entries={entries}
-                          editable={editable}
+                          editable={editable && !readOnly}
                           onFeedback={setFeedback}
                           renderActions={(entry) => (
                             <EntryEditor
@@ -710,62 +725,66 @@ export function MappoolEditor({
                           {category} {tr(" slots configured.")}
                         </p>
                       )}
-                      {editable && (category !== "FM" || pool.fmMode) && (
-                        <div className="mappool-add-map">
-                          <button
-                            type="button"
-                            className="secondary"
-                            ref={active ? addButton : undefined}
-                            aria-expanded={editingEntry === "new"}
-                            aria-label={tr("Add a {category} beatmap", {
-                              category,
-                            })}
-                            onClick={() =>
-                              setEditingEntry(
-                                editingEntry === "new" ? null : "new",
-                              )
-                            }
-                          >
-                            {tr("Add beatmap")}
-                          </button>
-                          {editingEntry === "new" && (
-                            <section
-                              className="mappool-inline-editor"
-                              aria-label={tr("Add beatmap")}
+                      {editable &&
+                        !readOnly &&
+                        (category !== "FM" || pool.fmMode) && (
+                          <div className="mappool-add-map">
+                            <button
+                              type="button"
+                              className="secondary"
+                              ref={active ? addButton : undefined}
+                              aria-expanded={editingEntry === "new"}
+                              aria-label={tr("Add a {category} beatmap", {
+                                category,
+                              })}
+                              onClick={() =>
+                                setEditingEntry(
+                                  editingEntry === "new" ? null : "new",
+                                )
+                              }
                             >
-                              <div className="mappool-inline-heading">
-                                <h4>
-                                  {tr("Add a {category} beatmap", { category })}
-                                </h4>
-                                <button
-                                  type="button"
-                                  className="secondary"
-                                  onClick={() => {
+                              {tr("Add beatmap")}
+                            </button>
+                            {editingEntry === "new" && (
+                              <section
+                                className="mappool-inline-editor"
+                                aria-label={tr("Add beatmap")}
+                              >
+                                <div className="mappool-inline-heading">
+                                  <h4>
+                                    {tr("Add a {category} beatmap", {
+                                      category,
+                                    })}
+                                  </h4>
+                                  <button
+                                    type="button"
+                                    className="secondary"
+                                    onClick={() => {
+                                      setEditingEntry(null);
+                                      addButton.current?.focus();
+                                    }}
+                                  >
+                                    {tr("Cancel")}
+                                  </button>
+                                </div>
+                                <EntryForm
+                                  key={`${pool.id}-${category}-${pool.version}`}
+                                  change={change}
+                                  pool={pool}
+                                  category={category}
+                                  entries={poolEntries}
+                                  onSuccess={() => {
                                     setEditingEntry(null);
-                                    addButton.current?.focus();
+                                    setFeedback(tr("Map slot saved."));
+                                    requestAnimationFrame(() =>
+                                      addButton.current?.focus(),
+                                    );
                                   }}
-                                >
-                                  {tr("Cancel")}
-                                </button>
-                              </div>
-                              <EntryForm
-                                key={`${pool.id}-${category}-${pool.version}`}
-                                change={change}
-                                pool={pool}
-                                category={category}
-                                entries={poolEntries}
-                                onSuccess={() => {
-                                  setEditingEntry(null);
-                                  setFeedback(tr("Map slot saved."));
-                                  requestAnimationFrame(() =>
-                                    addButton.current?.focus(),
-                                  );
-                                }}
-                              />
-                            </section>
-                          )}
-                        </div>
-                      )}
+                                />
+                              </section>
+                            )}
+                          </div>
+                        )}
                       {category === "FM" && !pool.fmMode && (
                         <p className="muted">
                           {tr(
