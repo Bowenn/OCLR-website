@@ -20,7 +20,6 @@ export type EventMatch = {
   red: string;
   blue: string;
   score: [number, number] | null;
-  status?: "scheduled" | "in_progress" | "cancelled";
   first?: string;
   redBan?: string;
   blueBan?: string;
