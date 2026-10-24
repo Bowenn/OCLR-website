@@ -1,3 +1,5 @@
+import { StaffReadOnlyContext } from "@/components/staff-read-only";
+import { staffAccess, permits } from "@/lib/auth/staff";
 import { getAppTranslations } from "@/i18n/server";
 import { notFound } from "next/navigation";
 import { authorizedPage } from "@/lib/auth/page";
@@ -18,7 +20,9 @@ export default async function StaffPage({
   const tr = await getAppTranslations();
 
   return authorizedPage(async () => {
-    const { grants, scopes } = await listStaffRoles(await requireUser());
+    const actor = await requireUser();
+    const access = await staffAccess(actor);
+    const { grants, scopes, writeScopes } = await listStaffRoles(actor);
     const requested = (await searchParams).edition ?? "";
     const editions = await getEditions();
     const selected = editions.find(
@@ -33,11 +37,15 @@ export default async function StaffPage({
         />
         <StaffRoleForm
           key={selected?.slug ?? "all"}
-          initialEdition={selected?.slug ?? ""}
+          initialEdition={
+            selected && (!writeScopes || writeScopes.includes(selected.slug))
+              ? selected.slug
+              : ""
+          }
           editions={editions
             .filter((e) => !scopes || scopes.includes(e.slug))
             .map((e) => ({ slug: e.slug, name: e.name }))}
-          scopes={scopes}
+          scopes={writeScopes}
         />
         <section className="spaced">
           <h2>{tr("Role assignments")}</h2>
@@ -80,21 +88,31 @@ export default async function StaffPage({
                   {g.grantedBy} {tr(" on")} {g.grantedAt.toISOString()}
                 </p>
                 {!g.revokedAt && (
-                  <div className="staff-role-actions">
-                    <StaffPublicVisibility
-                      id={g.id}
-                      username={username}
-                      role={g.role}
-                      scope={g.editionSlug}
-                      published={g.aboutPublished}
-                    />
-                    <RevokeRole
-                      id={g.id}
-                      username={username}
-                      role={g.role}
-                      scope={g.editionSlug}
-                    />
-                  </div>
+                  <StaffReadOnlyContext
+                    value={
+                      !permits(
+                        access,
+                        "manage_staff",
+                        g.editionSlug ?? undefined,
+                      )
+                    }
+                  >
+                    <div className="staff-role-actions">
+                      <StaffPublicVisibility
+                        id={g.id}
+                        username={username}
+                        role={g.role}
+                        scope={g.editionSlug}
+                        published={g.aboutPublished}
+                      />
+                      <RevokeRole
+                        id={g.id}
+                        username={username}
+                        role={g.role}
+                        scope={g.editionSlug}
+                      />
+                    </div>
+                  </StaffReadOnlyContext>
                 )}
               </article>
             ))}

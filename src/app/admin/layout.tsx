@@ -2,9 +2,9 @@ import { getAppTranslations } from "@/i18n/server";
 import { StaffNavigation } from "@/components/staff-navigation";
 import { notFound, redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/user";
-import { staffAccess, permits } from "@/lib/auth/staff";
+import { staffAccess, canRead, isDeveloper, permits } from "@/lib/auth/staff";
 import { tournamentList } from "@/lib/tournaments";
-import { globalNavigation } from "@/lib/admin-navigation";
+import { globalNavigation, tournamentNavigation } from "@/lib/admin-navigation";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
   return {
@@ -23,13 +23,49 @@ export default async function StaffLayout({
   const grants = await staffAccess(user);
   if (!grants.length) notFound();
   const data = await tournamentList(user);
+  const writablePaths = [
+    ...globalNavigation
+      .filter(
+        (link) =>
+          link.capability &&
+          (link.globalOnly
+            ? permits(grants, link.capability)
+            : grants.some((grant) =>
+                permits(
+                  [grant],
+                  link.capability!,
+                  grant.editionSlug ?? undefined,
+                ),
+              )),
+      )
+      .map((link) => link.href),
+    ...(permits(grants, "configure_tournament")
+      ? ["/admin/tournaments/new"]
+      : []),
+    ...(grants.some((grant) =>
+      permits([grant], "manage_registrations", grant.editionSlug ?? undefined),
+    )
+      ? ["/admin/registrations"]
+      : []),
+    ...data.rows.flatMap((row) =>
+      tournamentNavigation.flatMap((group) =>
+        group.items
+          .filter((item) =>
+            item.capabilities?.some((capability) =>
+              permits(grants, capability, row.slug),
+            ),
+          )
+          .map((item) => `/admin/tournaments/${row.slug}/${item.path}`),
+      ),
+    ),
+  ];
   const globalLinks = globalNavigation.filter(
     (link) =>
       !link.capability ||
       (link.globalOnly
-        ? permits(grants, link.capability)
+        ? canRead(grants, link.capability)
         : grants.some((grant) =>
-            permits([grant], link.capability!, grant.editionSlug ?? undefined),
+            canRead([grant], link.capability!, grant.editionSlug ?? undefined),
           )),
   );
   return (
@@ -42,6 +78,8 @@ export default async function StaffLayout({
         published,
         links,
       }))}
+      readOnly={isDeveloper(grants)}
+      writablePaths={writablePaths}
       username={user.username}
     >
       {children}

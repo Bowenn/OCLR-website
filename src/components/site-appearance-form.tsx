@@ -1,4 +1,5 @@
 "use client";
+import { ReadOnlyFields } from "./staff-read-only";
 import { appearanceLabel } from "@/i18n/appearance";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -52,57 +53,59 @@ export function SiteAppearanceForm({
     }
   }
   return (
-    <form className="form-stack" onSubmit={save} aria-busy={busy}>
-      <fieldset className="settings-card form-stack" disabled={busy}>
-        <legend>{tr("Default website appearance")}</legend>
-        <p className="muted" id="site-appearance-description">
-          {tr(
-            "Used when no tournament default is configured. Explicit visitor appearance and light/dark preferences remain independent.",
-          )}
-        </p>
-        <label className="field">
-          <span>{tr("Design")}</span>
-          <select
-            aria-label={tr("Design")}
-            value={appearance}
-            onChange={(event) =>
-              setAppearance(event.target.value as Appearance)
-            }
-            aria-describedby="site-appearance-description"
-          >
-            {appearances.map((value) => (
-              <option key={value} value={value}>
-                {appearanceLabel(value, tr)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="actions">
-          <button
-            type="submit"
-            disabled={busy || appearance === saved.appearance}
-          >
-            {busy ? tr("Saving…") : tr("Save")}
-          </button>
-        </div>
-      </fieldset>
-      {feedback && (
-        <p role="status" className="notice">
-          {feedback}
-        </p>
-      )}
-      {error && (
-        <div role="alert" className="notice error-text">
-          <p>{error}</p>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => window.location.reload()}
-          >
-            {tr("Refresh")}
-          </button>
-        </div>
-      )}
-    </form>
+    <ReadOnlyFields>
+      <form className="form-stack" onSubmit={save} aria-busy={busy}>
+        <fieldset className="settings-card form-stack" disabled={busy}>
+          <legend>{tr("Default website appearance")}</legend>
+          <p className="muted" id="site-appearance-description">
+            {tr(
+              "Used when no tournament default is configured. Explicit visitor appearance and light/dark preferences remain independent.",
+            )}
+          </p>
+          <label className="field">
+            <span>{tr("Design")}</span>
+            <select
+              aria-label={tr("Design")}
+              value={appearance}
+              onChange={(event) =>
+                setAppearance(event.target.value as Appearance)
+              }
+              aria-describedby="site-appearance-description"
+            >
+              {appearances.map((value) => (
+                <option key={value} value={value}>
+                  {appearanceLabel(value, tr)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="actions">
+            <button
+              type="submit"
+              disabled={busy || appearance === saved.appearance}
+            >
+              {busy ? tr("Saving…") : tr("Save")}
+            </button>
+          </div>
+        </fieldset>
+        {feedback && (
+          <p role="status" className="notice">
+            {feedback}
+          </p>
+        )}
+        {error && (
+          <div role="alert" className="notice error-text">
+            <p>{error}</p>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => window.location.reload()}
+            >
+              {tr("Refresh")}
+            </button>
+          </div>
+        )}
+      </form>
+    </ReadOnlyFields>
   );
 }

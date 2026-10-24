@@ -1,9 +1,14 @@
 import { profileBws } from "./bws";
 import { z } from "zod";
 import type { User } from "./auth/sessions";
-import { capabilityScope } from "./auth/staff";
+import {
+  readCapabilityScope,
+  isDeveloper,
+  staffAccess,
+  permits,
+} from "./auth/staff";
 import { publicPlayer } from "./players";
-import { getOsuUserProfile } from "./osu-profiles";
+import { cachedOsuUserProfile, getOsuUserProfile } from "./osu-profiles";
 import { parseOsuProfile } from "./osu-profile-model";
 import { HttpError } from "./http";
 export async function publishedPlayerProfile(
@@ -41,11 +46,25 @@ const lookup = z
   .strict();
 export async function staffPlayerProfile(user: User, input: unknown) {
   // Operational lookup doesn't grant applicant, captain or draft access.
-  await capabilityScope(user, "manage_registrations");
+  await readCapabilityScope(user, "manage_registrations");
   const parsed = lookup.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Enter a valid profile ID or URL and ruleset.");
   const identity = parseOsuProfile(parsed.data.input, parsed.data.mode);
+  const grants = await staffAccess(user);
+  if (
+    isDeveloper(grants) &&
+    !grants.some((grant) =>
+      permits([grant], "manage_registrations", grant.editionSlug ?? undefined),
+    )
+  ) {
+    if (parsed.data.refresh)
+      throw new HttpError(403, "Developer access is read-only.");
+    const snapshot = await cachedOsuUserProfile(identity.osuId, identity.mode);
+    await readCapabilityScope(user, "manage_registrations");
+    if (!snapshot) throw new HttpError(404, "No saved profile is available.");
+    return snapshot;
+  }
   return getOsuUserProfile(identity.osuId, identity.mode, {
     refresh: parsed.data.refresh,
   });

@@ -2,7 +2,7 @@ import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import type { User } from "./auth/sessions";
-import { capabilityScope } from "./auth/staff";
+import { readCapabilityScope } from "./auth/staff";
 import { HttpError } from "./http";
 export const auditModules = [
   "site",
@@ -172,7 +172,7 @@ type AuditRow = {
   created_at: Date | string;
 };
 export async function auditLog(actor: User, input: unknown) {
-  const scopes = await capabilityScope(actor, "manage_staff");
+  const scopes = await readCapabilityScope(actor, "manage_staff");
   const parsed = filtersSchema.safeParse(input);
   if (!parsed.success)
     throw new HttpError(400, "Check the audit filters and UTC date range.");

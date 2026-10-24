@@ -34,6 +34,9 @@ import {
 } from "@/db/schema";
 import {
   assertCapability,
+  assertReadCapability,
+  canRead,
+  isDeveloper,
   bootstrapAdminIds,
   hasCapability,
   permits,
@@ -322,7 +325,8 @@ export async function assignFixtureReferees(
 export async function staffFixtures(actor: User, slug: string) {
   const access = await staffAccess(actor);
   const canManage = permits(access, "manage_fixtures", slug);
-  if (!canManage && !permits(access, "record_results", slug))
+  const viewAll = canRead(access, "manage_fixtures", slug);
+  if (!viewAll && !canRead(access, "record_results", slug))
     throw new HttpError(403, "Fixture access is required.");
   const edition = await configuredEdition(slug);
   return db().transaction(
@@ -337,7 +341,7 @@ export async function staffFixtures(actor: User, slug: string) {
         .where(
           and(
             eq(fixtures.editionSlug, slug),
-            canManage
+            viewAll
               ? undefined
               : inArray(
                   fixtures.id,
@@ -356,7 +360,7 @@ export async function staffFixtures(actor: User, slug: string) {
         .where(
           and(
             eq(tournamentRounds.editionSlug, slug),
-            canManage
+            viewAll
               ? undefined
               : inArray(
                   tournamentRounds.id,
@@ -377,7 +381,7 @@ export async function staffFixtures(actor: User, slug: string) {
               ),
             )
         : [];
-      const pools = canManage
+      const pools = viewAll
         ? await tx
             .select({
               id: mappools.id,
@@ -405,7 +409,7 @@ export async function staffFixtures(actor: User, slug: string) {
         .where(
           and(
             eq(tournamentStages.editionSlug, slug),
-            canManage
+            viewAll
               ? undefined
               : inArray(
                   tournamentStages.id,
@@ -416,7 +420,7 @@ export async function staffFixtures(actor: User, slug: string) {
       const visibleTeams = new Set(
         rows.flatMap((f) => [f.homeTeamId, f.awayTeamId]),
       );
-      const stages = canManage
+      const stages = viewAll
         ? stageRows
         : stageRows.map((s) => ({
             ...s,
@@ -444,9 +448,10 @@ export async function staffFixtures(actor: User, slug: string) {
             )
         : [];
       return {
-        eligibleReferees: canManage ? await eligibleReferees(tx, slug) : [],
+        eligibleReferees: viewAll ? await eligibleReferees(tx, slug) : [],
         stages,
         canManage,
+        canViewAll: viewAll,
         timeZone: edition.timeZone,
         fixtures: rows.map((f) => ({
           ...f,
@@ -464,7 +469,7 @@ export async function staffFixtures(actor: User, slug: string) {
           result: results.find((r) => r.fixtureId === f.id) ?? null,
         })),
         rounds,
-        teams: canManage
+        teams: viewAll
           ? official
           : official.filter((t) =>
               rows.some((f) => f.homeTeamId === t.id || f.awayTeamId === t.id),
@@ -482,12 +487,16 @@ export async function fixtureForReview(
   slug: string,
   id: string,
   reader?: Reader,
+  readOnly = false,
 ) {
-  await assertCapability(actor, "record_results", slug, reader);
+  if (readOnly)
+    await assertReadCapability(actor, "record_results", slug, reader);
+  else await assertCapability(actor, "record_results", slug, reader);
   await configuredEdition(slug);
   if (!z.uuid().safeParse(id).success)
     throw new HttpError(404, "Fixture not found.");
   const admin = await hasCapability(actor, "manage_fixtures", slug, reader);
+  const developer = readOnly && isDeveloper(await staffAccess(actor, reader));
   const read = async (tx: Reader) => {
     const [fixture] = await tx
       .select()
@@ -503,7 +512,7 @@ export async function fixtureForReview(
           eq(fixtureReferees.userId, actor.osuId),
         ),
       );
-    if (!admin && !assignment)
+    if (!admin && !developer && !assignment)
       throw new HttpError(403, "You are not assigned to this fixture.");
     const [round] = await tx
       .select({
@@ -560,6 +569,11 @@ export async function fixtureForReview(
         : null,
       result: result ?? null,
       canApprove: admin,
+      canRecord:
+        admin ||
+        (Boolean(assignment) &&
+          (await hasCapability(actor, "record_results", slug, tx))),
+      canViewAll: admin || developer,
     };
   };
   return reader

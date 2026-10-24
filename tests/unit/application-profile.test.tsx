@@ -3,10 +3,17 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Application from "../../src/app/admin/tournaments/[edition]/registrations/[id]/page";
-import { requireStaff } from "../../src/lib/auth/staff";
+import {
+  requireStaff,
+  isDeveloper,
+  hasCapability,
+} from "../../src/lib/auth/staff";
 import { applicationDetails } from "../../src/lib/staff";
 import { readTournament } from "../../src/lib/tournaments";
-import { getOsuUserProfile } from "../../src/lib/osu-profiles";
+import {
+  getOsuUserProfile,
+  cachedOsuUserProfile,
+} from "../../src/lib/osu-profiles";
 import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
 import {
   evaluateEligibility,
@@ -20,10 +27,18 @@ import messages from "../../messages/en.json";
 vi.mock("../../src/i18n/server", () => ({
   getAppTranslations: async () => english,
 }));
-vi.mock("../../src/lib/auth/staff", () => ({ requireStaff: vi.fn() }));
+vi.mock("../../src/lib/auth/staff", () => ({
+  requireStaff: vi.fn(),
+  staffAccess: vi.fn(async () => [{ role: "admin", editionSlug: null }]),
+  isDeveloper: vi.fn(() => false),
+  hasCapability: vi.fn(async () => true),
+}));
 vi.mock("../../src/lib/staff", () => ({ applicationDetails: vi.fn() }));
 vi.mock("../../src/lib/tournaments", () => ({ readTournament: vi.fn() }));
-vi.mock("../../src/lib/osu-profiles", () => ({ getOsuUserProfile: vi.fn() }));
+vi.mock("../../src/lib/osu-profiles", () => ({
+  getOsuUserProfile: vi.fn(),
+  cachedOsuUserProfile: vi.fn(),
+}));
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NOT_FOUND");
@@ -181,6 +196,19 @@ describe("authorized applicant profile summary", () => {
     expect(page).toContain("#12,345");
     expect(page).toContain("54321");
     expect(data.registration.eligibilityVerification).toEqual(saved);
+  });
+  it("renders saved Developer evidence without refreshing provider profiles", async () => {
+    vi.mocked(isDeveloper).mockReturnValueOnce(true);
+    vi.mocked(hasCapability).mockResolvedValueOnce(false);
+    vi.mocked(cachedOsuUserProfile).mockResolvedValueOnce({
+      profile: profile(),
+      stale: true,
+      notice: null,
+    });
+    const page = await html();
+    expect(page).toContain("#12,345");
+    expect(cachedOsuUserProfile).toHaveBeenCalledWith(userId, "osu");
+    expect(getOsuUserProfile).not.toHaveBeenCalled();
   });
   it.each([401, 403])(
     "does not request stats when staff authorization fails (%s)",
