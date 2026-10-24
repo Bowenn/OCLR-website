@@ -7,6 +7,7 @@ import { permits, staffAccess } from "@/lib/auth/staff";
 import { listApplications } from "@/lib/staff";
 import { getEditions } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
+import { BulkManualRegistration } from "./bulk-manual-registration";
 import { ManualRegistration } from "./manual-registration";
 import { PageHeading } from "@/components/ui";
 export async function RegistrationList({
@@ -61,9 +62,14 @@ export async function RegistrationList({
             aria-label={tr("Registration actions")}
           >
             {editionSlug && editions.find((e) => e.slug === editionSlug) && (
-              <ManualRegistration
-                edition={editions.find((e) => e.slug === editionSlug)!}
-              />
+              <>
+                <ManualRegistration
+                  edition={editions.find((e) => e.slug === editionSlug)!}
+                />
+                <BulkManualRegistration
+                  edition={editions.find((e) => e.slug === editionSlug)!}
+                />
+              </>
             )}
             {total > 0 && (
               <a

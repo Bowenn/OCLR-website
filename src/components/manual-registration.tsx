@@ -18,6 +18,7 @@ export function ManualRegistration({
   const generation = useRef(0);
   const request = useRef<AbortController | null>(null);
   const [input, setInput] = useState("");
+  const [inputType, setInputType] = useState<"id" | "username">("id");
   const [preview, setPreview] = useState<Preview | null>(null);
   const [status, setStatus] = useState<"pending" | "accepted">("pending");
   const [published, setPublished] = useState(false);
@@ -31,6 +32,7 @@ export function ManualRegistration({
     generation.current++;
     request.current?.abort();
     setInput("");
+    setInputType("id");
     setPreview(null);
     setPending(null);
     setError("");
@@ -67,7 +69,7 @@ export function ManualRegistration({
                   overrideEligibility: eligibilityOverride,
                   exceptionReason: reason,
                 }
-              : { input },
+              : { input, inputType },
           ),
         },
       );
@@ -148,7 +150,32 @@ export function ManualRegistration({
             </>
           )}
           <label className="field">
-            <span>{tr("osu! profile ID or URL")}</span>
+            <span>{tr("Input type")}</span>
+            <select
+              value={inputType}
+              disabled={!!pending}
+              onChange={(event) => {
+                setInputType(event.target.value as typeof inputType);
+                setPreview(null);
+                setError("");
+                setPublished(false);
+                setOverride(false);
+                setEligibilityOverride(false);
+                setReason("");
+              }}
+            >
+              <option value="id">{tr("Numeric ID or profile URL")}</option>
+              <option value="username">
+                {tr("osu! username (including numeric names)")}
+              </option>
+            </select>
+          </label>
+          <label className="field">
+            <span>
+              {inputType === "username"
+                ? tr("Current osu! username")
+                : tr("osu! profile ID or URL")}
+            </span>
             <input
               required
               maxLength={300}
@@ -177,12 +204,30 @@ export function ManualRegistration({
                   avatarUrl={preview.profile.avatarUrl ?? undefined}
                 />
                 <div>
-                  <strong>{preview.profile.username}</strong>
+                  <a
+                    href={preview.profile.canonicalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {preview.profile.username}
+                  </a>
                   <p className="small muted">
                     {tr("osu! ID")} {preview.profile.osuId}
                   </p>
                 </div>
               </div>
+              {preview.existing && (
+                <p className="notice">
+                  {tr(
+                    "This player already has a registration for this tournament. Review the existing entry.",
+                  )}{" "}
+                  <a
+                    href={`/admin/tournaments/${edition.slug}/registrations?q=${preview.profile.osuId}`}
+                  >
+                    {tr("View existing registration")}
+                  </a>
+                </p>
+              )}
               <p className="small muted">
                 {tr(
                   "Staff-assisted entry. No player answers or acknowledgments are recorded.",
@@ -246,6 +291,13 @@ export function ManualRegistration({
               )}
             </>
           )}
+          {inputType === "username" && (
+            <p className="small muted">
+              {tr(
+                "Use the current official username. Previous names are not accepted; use the numeric ID if the name changed.",
+              )}
+            </p>
+          )}
           {error && (
             <p role="alert" className="notice error-text">
               {tr(error)}
@@ -256,6 +308,7 @@ export function ManualRegistration({
               disabled={
                 !!pending ||
                 !input.trim() ||
+                !!preview?.existing ||
                 (!!preview &&
                   ((status === "accepted" && !published) ||
                     (preview.edition.outsideWindow &&

@@ -22,6 +22,8 @@ import {
 import {
   addManualRegistration,
   previewManualRegistration,
+  previewManualRegistrations,
+  addManualRegistrations,
 } from "../../src/lib/manual-registrations";
 import {
   ownRegistrations,
@@ -43,6 +45,34 @@ const provider = vi.mocked(osuApi);
 const url = process.env.TEST_DATABASE_URL;
 const admin = { osuId: 979999, username: "Synthetic manual Admin" };
 const playerId = profileResponse.id;
+function bulkProvider() {
+  provider.mockImplementation(async (path) => {
+    const name = /^\/users\/@(.+)\/osu$/.exec(path);
+    const named = name ? decodeURIComponent(name[1]) : null;
+    const namedId =
+      named === "260001"
+        ? 260002
+        : named?.toLowerCase() === "[space name]"
+          ? 260003
+          : null;
+    const id = named ? namedId : Number(/^\/users\/(\d+)\//.exec(path)?.[1]);
+    if (!id)
+      throw new (await import("../../src/lib/http")).HttpError(
+        404,
+        "This osu! profile is unavailable.",
+      );
+    return {
+      ...profileResponse,
+      id,
+      username:
+        id === 260002
+          ? "260001"
+          : id === 260003
+            ? "[Space Name]"
+            : `Synthetic ${id}`,
+    };
+  });
+}
 const command = {
   input: String(playerId),
   expectedRevision: 0,
@@ -451,5 +481,373 @@ describe.skipIf(!url)("staff-assisted registration integrity", () => {
         .where(eq(registrations.id, old.id)),
     ).rejects.toThrow();
     expect((await ownRegistrations(playerId))[0].rulesVersion).toBe("test-v1");
+  });
+  it("disambiguates numeric usernames, preserves spaces/special characters and rejects historical-name guesses", async () => {
+    bulkProvider();
+    const numericName = await previewManualRegistration(admin, edition.slug, {
+      input: "260001",
+      inputType: "username",
+    });
+    expect(numericName.profile.osuId).toBe(260002);
+    expect(
+      (
+        await previewManualRegistration(admin, edition.slug, {
+          input: "260001",
+          inputType: "id",
+        })
+      ).profile.osuId,
+    ).toBe(260001);
+    const spaced = await previewManualRegistration(admin, edition.slug, {
+      input: " [space NAME] ",
+      inputType: "username",
+    });
+    expect(spaced.profile.username).toBe("[Space Name]");
+    expect(provider).toHaveBeenCalledWith("/users/@%5Bspace%20NAME%5D/osu");
+    provider.mockResolvedValue({
+      ...profileResponse,
+      username: "Renamed Player",
+      previous_usernames: ["Old Player"],
+    });
+    await expect(
+      previewManualRegistration(admin, edition.slug, {
+        input: "Old Player",
+        inputType: "username",
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(await db().select().from(registrations)).toEqual([]);
+  });
+  it("previews mixed lines without writes and deduplicates by stable ID across name, ID and URL", async () => {
+    bulkProvider();
+    const result = await previewManualRegistrations(admin, edition.slug, {
+      text: "\nname: [Space Name]\nid: 260003\nhttps://osu.ppy.sh/users/260003\nname: missing\nname: 260001",
+      inputType: "username",
+    });
+    expect(result.rows.map((r) => [r.line, r.state])).toEqual([
+      [2, "ready"],
+      [3, "duplicate"],
+      [4, "duplicate"],
+      [5, "failed"],
+      [6, "ready"],
+    ]);
+    expect(result.rows[0].raw).toBe("name: [Space Name]");
+    expect(result.rows[0].preview?.profile.osuId).toBe(260003);
+    expect(await db().select().from(registrations)).toEqual([]);
+    expect(await db().select().from(registrationEvents)).toEqual([]);
+    expect(await db().select().from(users)).toEqual([
+      expect.objectContaining({ osuId: admin.osuId }),
+    ]);
+  });
+  it("preserves all existing statuses and links their records without restoring or overwriting", async () => {
+    bulkProvider();
+    for (const [index, status] of (
+      ["pending", "accepted", "rejected", "withdrawn"] as const
+    ).entries()) {
+      const id = 270001 + index;
+      await db()
+        .insert(users)
+        .values({ osuId: id, username: `Existing ${id}` });
+      await db()
+        .insert(registrations)
+        .values({ editionSlug: edition.slug, userId: id, status, answers: {} });
+    }
+    const before = await db().select().from(registrations);
+    const preview = await previewManualRegistrations(admin, edition.slug, {
+      text: "270001\n270002\n270003\n270004",
+      inputType: "id",
+    });
+    expect(
+      preview.rows.every(
+        (r) => r.state === "existing" && r.preview?.existing?.id,
+      ),
+    ).toBe(true);
+    const replay = await addManualRegistrations(admin, edition.slug, {
+      expectedRevision: 0,
+      status: "pending",
+      confirmed: true,
+      rows: before.map((r, index) => ({ line: index + 1, osuId: r.userId })),
+    });
+    expect(replay.counts).toEqual({ added: 0, skipped: 4, failed: 0 });
+    expect(await db().select().from(registrations)).toEqual(before);
+    expect(await db().select().from(registrationEvents)).toEqual([]);
+  });
+  it("reports a 20-player batch accurately, serializes lookups, skips duplicate retries and commits one event per player", async () => {
+    bulkProvider();
+    let active = 0,
+      peak = 0;
+    const resolve = provider.getMockImplementation()!;
+    provider.mockImplementation(async (...args) => {
+      peak = Math.max(peak, ++active);
+      try {
+        return await resolve(...args);
+      } finally {
+        active--;
+      }
+    });
+    const ids = Array.from({ length: 20 }, (_, i) => 280001 + i);
+    const preview = await previewManualRegistrations(admin, edition.slug, {
+      text: ids.join("\n"),
+      inputType: "id",
+    });
+    expect(preview.rows.every((r) => r.state === "ready")).toBe(true);
+    expect(peak).toBe(1);
+    const payload = {
+      expectedRevision: 0,
+      status: "pending",
+      confirmed: true,
+      rows: ids.map((osuId, i) => ({ line: i + 1, osuId })),
+    };
+    const results = await Promise.all([
+      addManualRegistrations(admin, edition.slug, payload),
+      addManualRegistrations(admin, edition.slug, payload),
+    ]);
+    expect(results.reduce((n, r) => n + r.counts.added, 0)).toBe(20);
+    expect(results.reduce((n, r) => n + r.counts.skipped, 0)).toBe(20);
+    expect(await db().select().from(registrations)).toHaveLength(20);
+    expect(await db().select().from(registrationEvents)).toHaveLength(20);
+    expect(
+      (await addManualRegistrations(admin, edition.slug, payload)).counts,
+    ).toEqual({ added: 0, skipped: 20, failed: 0 });
+  });
+  it("keeps partial successes and rolls back a failed player's identity, enrollment and audit together", async () => {
+    bulkProvider();
+    await db().execute(
+      sql`CREATE FUNCTION test_batch_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF (SELECT user_id FROM registrations WHERE id = NEW.registration_id) = 290002 THEN RAISE EXCEPTION 'Synthetic row failure'; END IF; RETURN NEW; END $$`,
+    );
+    await db().execute(
+      sql`CREATE TRIGGER test_batch_audit_failure BEFORE INSERT ON registration_events FOR EACH ROW EXECUTE FUNCTION test_batch_audit()`,
+    );
+    const payload = {
+      expectedRevision: 0,
+      status: "pending",
+      confirmed: true,
+      rows: [
+        { line: 1, osuId: 290001 },
+        { line: 2, osuId: 290002 },
+      ],
+    };
+    try {
+      const result = await addManualRegistrations(admin, edition.slug, payload);
+      expect(result.counts).toEqual({ added: 1, skipped: 0, failed: 1 });
+      expect(result.results.map((r) => r.state)).toEqual(["added", "failed"]);
+      expect(
+        await db().select().from(users).where(eq(users.osuId, 290002)),
+      ).toEqual([]);
+      expect(await db().select().from(registrationEvents)).toHaveLength(1);
+    } finally {
+      await db().execute(
+        sql`DROP TRIGGER test_batch_audit_failure ON registration_events`,
+      );
+      await db().execute(sql`DROP FUNCTION test_batch_audit()`);
+    }
+    const retry = await addManualRegistrations(admin, edition.slug, payload);
+    expect(retry.counts).toEqual({ added: 1, skipped: 1, failed: 0 });
+    expect(await db().select().from(registrationEvents)).toHaveLength(2);
+  });
+  it("rejects stale batch revisions before identity I/O and never writes during a changed preview", async () => {
+    bulkProvider();
+    await expect(
+      addManualRegistrations(admin, edition.slug, {
+        expectedRevision: 9,
+        status: "pending",
+        confirmed: true,
+        rows: [{ line: 1, osuId: 300001 }],
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(provider).not.toHaveBeenCalled();
+    const resolve = provider.getMockImplementation()!;
+    provider.mockImplementationOnce(async (...args) => {
+      await db()
+        .update(editionState)
+        .set({ configurationVersion: 1 })
+        .where(eq(editionState.slug, edition.slug));
+      return resolve(...args);
+    });
+    await expect(
+      previewManualRegistrations(admin, edition.slug, {
+        text: "300001\n300002",
+        inputType: "id",
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(await db().select().from(registrations)).toEqual([]);
+  });
+  it("retains batch publication, late-window and per-player eligibility confirmations", async () => {
+    bulkProvider();
+    await seedEditions([
+      {
+        ...edition,
+        automaticEligibility: {
+          minPp: null,
+          maxPp: 100,
+          minRank: null,
+          maxRank: null,
+        },
+        registration: {
+          ...edition.registration,
+          closesAt: "2025-02-01T00:00:00Z",
+        },
+      },
+    ]);
+    const payload = {
+      expectedRevision: 0,
+      status: "accepted",
+      confirmed: true,
+      rows: [
+        { line: 1, osuId: 310001 },
+        { line: 2, osuId: 310002, overrideEligibility: true },
+      ],
+    };
+    await expect(
+      addManualRegistrations(admin, edition.slug, payload),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      addManualRegistrations(admin, edition.slug, {
+        ...payload,
+        publicationAcknowledged: true,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const preview = await previewManualRegistrations(admin, edition.slug, {
+      text: "310001\n310002",
+      inputType: "id",
+    });
+    expect(preview.rows[0].preview?.verification?.status).toBe("fail");
+    const result = await addManualRegistrations(admin, edition.slug, {
+      ...payload,
+      publicationAcknowledged: true,
+      overrideWindow: true,
+      exceptionReason: "Synthetic approved late entry",
+    });
+    expect(result.counts).toEqual({ added: 1, skipped: 0, failed: 1 });
+    const [saved] = await db().select().from(registrations);
+    expect(saved).toMatchObject({
+      userId: 310002,
+      source: "staff",
+      rulesVersion: null,
+      eligibilityAcknowledged: null,
+      answers: {},
+      eligibilityVerification: { status: "staff_override" },
+    });
+    expect(await publicPlayer(310001, edition.slug)).toHaveLength(0);
+    expect(await publicPlayer(310002, edition.slug)).toHaveLength(1);
+  });
+  it("bounds batch inputs and rejects unauthorized/cross-edition, locked and completed requests", async () => {
+    const actor = { osuId: 320001, username: "Synthetic non-admin" };
+    await db().insert(users).values(actor);
+    for (const slug of [edition.slug, "other-test-cup"])
+      await expect(
+        previewManualRegistrations(actor, slug, { text: "1", inputType: "id" }),
+      ).rejects.toMatchObject({ status: 403 });
+    for (const text of ["", "1\n".repeat(21), "a".repeat(8193)])
+      await expect(
+        previewManualRegistrations(admin, edition.slug, {
+          text,
+          inputType: "id",
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+    const payload = {
+      expectedRevision: 0,
+      status: "pending",
+      confirmed: true,
+      rows: [{ line: 1, osuId: 320002 }],
+    };
+    await expect(
+      addManualRegistrations(actor, edition.slug, payload),
+    ).rejects.toMatchObject({ status: 403 });
+    for (const status of ["locked", "completed"]) {
+      if (status === "locked")
+        await db().update(editionState).set({ lockedAt: new Date() });
+      else {
+        await db().update(editionState).set({ lockedAt: null });
+        await seedEditions([{ ...edition, status: "completed" }]);
+      }
+      await expect(
+        addManualRegistrations(admin, edition.slug, payload),
+      ).rejects.toMatchObject({ status: 409 });
+      await expect(
+        previewManualRegistrations(admin, edition.slug, {
+          text: "1",
+          inputType: "id",
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+    }
+    expect(provider).not.toHaveBeenCalled();
+  });
+  it("keeps rate limits, timeouts and unavailable profiles as per-row failures without unverified enrollment", async () => {
+    bulkProvider();
+    const resolve = provider.getMockImplementation()!;
+    provider.mockImplementation(async (...args) => {
+      const { HttpError } = await import("../../src/lib/http");
+      if (args[0].includes("330002"))
+        throw new HttpError(
+          429,
+          "Profile refresh is busy. Please retry in a few minutes.",
+        );
+      if (args[0].includes("330003"))
+        throw new HttpError(
+          502,
+          "osu! is temporarily unreachable. Saved data has not changed.",
+        );
+      if (args[0].includes("330004"))
+        return { ...profileResponse, id: 330004, is_restricted: true };
+      return resolve(...args);
+    });
+    const preview = await previewManualRegistrations(admin, edition.slug, {
+      text: "330001\n330002\n330003\n330004",
+      inputType: "id",
+    });
+    expect(preview.rows.map((r) => r.state)).toEqual([
+      "ready",
+      "failed",
+      "failed",
+      "failed",
+    ]);
+    expect(await db().select().from(registrations)).toEqual([]);
+    const saved = await addManualRegistrations(admin, edition.slug, {
+      expectedRevision: 0,
+      status: "pending",
+      confirmed: true,
+      rows: [330001, 330002, 330003, 330004].map((osuId, i) => ({
+        line: i + 1,
+        osuId,
+      })),
+    });
+    expect(saved.counts).toEqual({ added: 1, skipped: 0, failed: 3 });
+    expect(await db().select().from(registrationEvents)).toHaveLength(1);
+  });
+  it("stops later writes after a scoped operator loses permission during a batch", async () => {
+    const actor = { osuId: 340000, username: "Synthetic batch Admin" };
+    await db().insert(users).values(actor);
+    const [grant] = await db()
+      .insert(staffRoles)
+      .values({
+        userId: actor.osuId,
+        editionSlug: edition.slug,
+        role: "admin",
+        grantedBy: admin.osuId,
+      })
+      .returning();
+    bulkProvider();
+    const resolve = provider.getMockImplementation()!;
+    provider.mockImplementation(async (...args) => {
+      if (args[0].includes("340002"))
+        await db()
+          .update(staffRoles)
+          .set({ revokedAt: new Date() })
+          .where(eq(staffRoles.id, grant.id));
+      return resolve(...args);
+    });
+    const result = await addManualRegistrations(actor, edition.slug, {
+      expectedRevision: 0,
+      status: "pending",
+      confirmed: true,
+      rows: [340001, 340002, 340003].map((osuId, i) => ({
+        line: i + 1,
+        osuId,
+      })),
+    });
+    expect(result.counts).toEqual({ added: 1, skipped: 0, failed: 2 });
+    expect(
+      (await db().select().from(registrations)).map((r) => r.userId),
+    ).toEqual([340001]);
+    expect(await db().select().from(registrationEvents)).toHaveLength(1);
   });
 });

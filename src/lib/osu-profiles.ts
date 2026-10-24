@@ -235,3 +235,74 @@ export async function getOsuUserProfile(
     pending.delete(key);
   }
 }
+
+// Short, bounded resolution cache. The authoritative ID profile still uses the
+// shared database cache/claims/backoff above; no fuzzy search or alias guessing.
+const usernameLookups = new Map<
+  string,
+  {
+    expiresAt: number;
+    request: Promise<number>;
+  }
+>();
+let usernamePending = 0;
+export async function getOsuProfileByUsername(input: string) {
+  const username = input.trim();
+  if (
+    !username ||
+    username.length > 100 ||
+    /[\p{Cc}\p{Cs}]/u.test(username) ||
+    [".", ".."].includes(username)
+  )
+    throw new HttpError(
+      400,
+      "Enter a current osu! username, preserving spaces and special characters.",
+    );
+  const key = username.toLowerCase();
+  const now = Date.now();
+  let entry = usernameLookups.get(key);
+  if (!entry || entry.expiresAt <= now) {
+    if (usernamePending >= 8)
+      throw new HttpError(429, "osu! lookup is busy. Please retry shortly.");
+    for (const [name, cached] of usernameLookups)
+      if (cached.expiresAt <= now) usernameLookups.delete(name);
+    if (usernameLookups.size >= 1000)
+      usernameLookups.delete(usernameLookups.keys().next().value!);
+    usernamePending++;
+    const request = (async () => {
+      try {
+        // Current API uses @ to disambiguate numeric names; key=username is deprecated.
+        const value = await osuApi(
+          `/users/@${encodeURIComponent(username)}/osu`,
+        );
+        const id =
+          typeof value === "object" && value !== null && "id" in value
+            ? value.id
+            : null;
+        if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0)
+          throw new HttpError(
+            502,
+            "osu! returned invalid profile data. The saved snapshot was preserved.",
+          );
+        const profile = normalizeOsuProfile(value, id, "osu");
+        if (profile.username.toLowerCase() !== key)
+          throw new HttpError(
+            409,
+            "The username does not match the current official name. Use the current username or numeric ID and verify again.",
+          );
+        return id;
+      } finally {
+        usernamePending--;
+      }
+    })();
+    entry = { request, expiresAt: now + 60000 };
+    usernameLookups.set(key, entry);
+  }
+  const snapshot = await getOsuUserProfile(await entry.request, "osu");
+  if (snapshot.profile.username.toLowerCase() !== key)
+    throw new HttpError(
+      409,
+      "The username does not match the current official name. Use the current username or numeric ID and verify again.",
+    );
+  return snapshot;
+}
