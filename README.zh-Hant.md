@@ -98,6 +98,7 @@ Playwright 會在本機回送位址的 3100 連接埠啟動正式建置。若要
 ## 貢獻者
 
 - [qi_e](https://osu.ppy.sh/users/6963321)
+- [Muziyami](https://osu.ppy.sh/users/7003013)
 
 ## 授權
 

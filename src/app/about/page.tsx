@@ -166,6 +166,14 @@ export default async function About() {
                   </h4>
                 </div>
               </li>
+              <li>
+                <Avatar osuId={7003013} username="Muziyami" />
+                <div>
+                  <h4>
+                    <a href="https://osu.ppy.sh/users/7003013">Muziyami</a>
+                  </h4>
+                </div>
+              </li>
             </ul>
           </section>
           <footer className="organizer-contact">

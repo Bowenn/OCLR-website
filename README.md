@@ -96,6 +96,7 @@ Artwork and tournament dates shown in [design references](docs/design/) are exam
 ## Contributors
 
 - [qi_e](https://osu.ppy.sh/users/6963321)
+- [Muziyami](https://osu.ppy.sh/users/7003013)
 
 ## License
 
