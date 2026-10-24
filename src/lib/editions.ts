@@ -67,10 +67,13 @@ export const editionSchema = z
             "/archive/s10/thumbnail.png",
             "/archive/s9/thumbnail.png",
             "/archive/s8/thumbnail.jpg",
+            "/archive/s7/key-visual.jpg",
           ])
           .nullable(),
         background: z.enum(["/oclr-s11-website-background.webp"]).nullable(),
-        keyVisual: z.enum(["/oclr-s11-key-visual.webp"]).nullable(),
+        keyVisual: z
+          .enum(["/oclr-s11-key-visual.webp", "/archive/s7/key-visual.jpg"])
+          .nullable(),
       })
       .strict()
       .default({ logo: null, background: null, keyVisual: null }),

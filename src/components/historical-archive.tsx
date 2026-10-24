@@ -1,6 +1,7 @@
 import { archiveArtworkSetIds } from "@/lib/archive-artwork";
 import { deriveS8Standings } from "@/lib/s8-standings";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { ArchivePlayerSearch } from "./archive-player-search";
 import { ArchiveMappools } from "./archive-mappools";
@@ -222,6 +223,24 @@ export async function HistoricalArchiveView({
     const counts = archiveCounts(a);
     content = (
       <>
+        {edition.branding.keyVisual && (
+          <Image
+            className="edition-key-visual"
+            src={edition.branding.keyVisual}
+            alt={tr("{value0} key visual", { value0: edition.name })}
+            width={
+              edition.branding.keyVisual === "/archive/s7/key-visual.jpg"
+                ? 1920
+                : 1672
+            }
+            height={
+              edition.branding.keyVisual === "/archive/s7/key-visual.jpg"
+                ? 1080
+                : 941
+            }
+            unoptimized
+          />
+        )}
         <dl className="archive-counts">
           {[
             [tr("Teams"), counts.teams],
