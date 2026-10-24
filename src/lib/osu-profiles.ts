@@ -242,10 +242,7 @@ const usernameLookups = new Map<
   string,
   {
     expiresAt: number;
-    request: Promise<{
-      id: number;
-      profile: ReturnType<typeof normalizeOsuProfile>;
-    }>;
+    request: Promise<number>;
   }
 >();
 let usernamePending = 0;
@@ -293,7 +290,7 @@ export async function getOsuProfileByUsername(input: string) {
             409,
             "The username does not match the current official name. Use the current username or numeric ID and verify again.",
           );
-        return { id, profile };
+        return id;
       } finally {
         usernamePending--;
       }
@@ -301,12 +298,18 @@ export async function getOsuProfileByUsername(input: string) {
     entry = { request, expiresAt: now + 60000 };
     usernameLookups.set(key, entry);
   }
-  const resolved = await entry.request;
-  let snapshot = await getOsuUserProfile(resolved.id, "osu");
+  const osuId = await entry.request;
+  let snapshot = await getOsuUserProfile(osuId, "osu");
   if (snapshot.profile.username.toLowerCase() !== key) {
-    snapshot = await getOsuUserProfile(resolved.id, "osu", { refresh: true });
-    if (snapshot.profile.username.toLowerCase() !== key)
-      return { profile: resolved.profile, stale: false, notice: null };
+    // The 30-minute ID cache may still contain a former name.
+    // Reconcile through the shared refresh claims/backoff before rejecting it.
+    snapshot = await getOsuUserProfile(osuId, "osu", { refresh: true });
+    if (snapshot.stale || snapshot.notice) throw unavailable(503);
   }
+  if (snapshot.profile.username.toLowerCase() !== key)
+    throw new HttpError(
+      409,
+      "The username does not match the current official name. Use the current username or numeric ID and verify again.",
+    );
   return snapshot;
 }

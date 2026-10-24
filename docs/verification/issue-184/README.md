@@ -38,6 +38,16 @@ Checks performed:
 
 The first full-suite run exposed a local `pg_dump` PATH mismatch; the deployment test passed with the PostgreSQL 17 client directory on PATH. The first cold-cache desktop preview exceeded Playwright's default 5-second assertion wait; its bounded wait is now 45 seconds to accommodate the real sequential provider pacer. The affected desktop matrix passed after that test adjustment.
 
+## PR #190 rename-cache follow-up (2026-10-24)
+
+A current-username lookup can resolve successfully while the shared 30-minute ID cache still contains the player's former name. The lookup now refreshes that ID snapshot before rejecting a name mismatch. Refresh claims, provider backoff and unavailable-profile checks remain enforced; a refreshed official identity that still differs is rejected.
+
+Five added integration cases cover single/batch previews after a rename, transient refresh failure and retry backoff, an active refresh cooldown, and a genuine mismatch after refresh. Successful previews persist the refreshed cache without creating users, registrations or events.
+
+Verification used the isolated **`oclr_pr190_review_test`** database in a disposable loopback-only PostgreSQL cluster on port 55490. `npm run check`, the full unit/integration suite (**100 files, 756 passed, 1 existing skip**), production build, all **8** affected desktop/mobile Playwright scenarios and the production dependency audit (**0 vulnerabilities**) passed. The first sandboxed build stalled during compilation and was stopped; the normal build passed outside that sandbox. No interface messages changed. No live provider enrollment or deployment was performed; CI and organizer wording review remain separate gates.
+
+A concurrent PR update added another profile-cache regression test. After incorporating that update, the registration and profile-cache integration suites passed again (**38 tests**), as did lint for the affected TypeScript files. The verified application code is unchanged by that integration. Failed refreshes retain their unavailable result instead of substituting the earlier username response; a genuine mismatch after a successful refresh still returns a conflict.
+
 ## Screenshots
 
 Baseline single-entry UI: [existing #165 local desktop evidence](../issue-165/after-local-desktop.png). That baseline is an earlier committed verification image, not a new capture of this branch's parent.

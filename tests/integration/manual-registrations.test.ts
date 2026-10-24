@@ -38,6 +38,8 @@ import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 import { applicationQuestions } from "../fixtures/application-questions";
 import { profileResponse } from "../fixtures/osu-profile";
+import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
+import { HttpError } from "../../src/lib/http";
 import { assertTestDatabase } from "../database";
 vi.mock("../../src/lib/osu-api", () => ({ osuApi: vi.fn() }));
 import { osuApi } from "../../src/lib/osu-api";
@@ -72,6 +74,23 @@ function bulkProvider() {
             : `Synthetic ${id}`,
     };
   });
+}
+async function cacheFormerName(osuId: number, retryAt?: Date) {
+  const fetchedAt = new Date(Date.now() - 2 * 60_000);
+  await db()
+    .insert(userProfileCache)
+    .values({
+      osuId,
+      mode: "osu",
+      profile: normalizeOsuProfile(
+        { ...profileResponse, id: osuId, username: "Former Name" },
+        osuId,
+        "osu",
+        fetchedAt.toISOString(),
+      ),
+      attemptedAt: fetchedAt,
+      retryAt: retryAt ?? fetchedAt,
+    });
 }
 const command = {
   input: String(playerId),
@@ -514,6 +533,93 @@ describe.skipIf(!url)("staff-assisted registration integrity", () => {
         inputType: "username",
       }),
     ).rejects.toMatchObject({ status: 409 });
+    expect(await db().select().from(registrations)).toEqual([]);
+  });
+  it.each(["single", "batch"] as const)(
+    "refreshes a cached former name before returning a %s preview of the current name",
+    async (kind) => {
+      const osuId = kind === "single" ? 350001 : 350002;
+      const username = `${kind} Current Name`;
+      await cacheFormerName(osuId);
+      provider.mockResolvedValue({ ...profileResponse, id: osuId, username });
+      const preview =
+        kind === "single"
+          ? await previewManualRegistration(admin, edition.slug, {
+              input: username,
+              inputType: "username",
+            })
+          : (
+              await previewManualRegistrations(admin, edition.slug, {
+                text: `name: ${username}`,
+                inputType: "username",
+              })
+            ).rows[0].preview;
+      expect(preview?.profile).toMatchObject({ osuId, username });
+      expect(provider.mock.calls.map(([path]) => path)).toEqual([
+        `/users/@${encodeURIComponent(username)}/osu`,
+        `/users/${osuId}/osu?key=id`,
+      ]);
+      const [cached] = await db().select().from(userProfileCache);
+      expect(cached.profile?.username).toBe(username);
+      expect(await db().select().from(registrations)).toEqual([]);
+      expect(await db().select().from(registrationEvents)).toEqual([]);
+      expect(await db().select().from(users)).toEqual([
+        expect.objectContaining({ osuId: admin.osuId }),
+      ]);
+    },
+  );
+  it("keeps rename refresh failures unavailable and respects shared retry backoff", async () => {
+    const osuId = 350003;
+    const username = "Unavailable Rename";
+    await cacheFormerName(osuId);
+    provider.mockImplementation(async (path) => {
+      if (path.startsWith("/users/@"))
+        return { ...profileResponse, id: osuId, username };
+      throw new HttpError(502, "Synthetic provider outage");
+    });
+    const lookup = { input: username, inputType: "username" };
+    await expect(
+      previewManualRegistration(admin, edition.slug, lookup),
+    ).rejects.toMatchObject({ status: 503 });
+    await expect(
+      previewManualRegistration(admin, edition.slug, lookup),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(provider).toHaveBeenCalledTimes(2);
+    const [cached] = await db().select().from(userProfileCache);
+    expect(cached.profile?.username).toBe("Former Name");
+    expect(cached.errorStatus).toBe(502);
+    expect(await db().select().from(registrations)).toEqual([]);
+  });
+  it("respects a recent profile refresh cooldown for a renamed player", async () => {
+    const osuId = 350004;
+    const username = "Busy Rename";
+    await cacheFormerName(osuId, new Date(Date.now() + 60_000));
+    provider.mockResolvedValue({ ...profileResponse, id: osuId, username });
+    await expect(
+      previewManualRegistration(admin, edition.slug, {
+        input: username,
+        inputType: "username",
+      }),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(provider).toHaveBeenCalledTimes(1);
+    expect(await db().select().from(registrations)).toEqual([]);
+  });
+  it("still rejects a name that differs from the refreshed official identity", async () => {
+    const osuId = 350005;
+    const username = "Changed Again";
+    await cacheFormerName(osuId);
+    provider.mockImplementation(async (path) => ({
+      ...profileResponse,
+      id: osuId,
+      username: path.startsWith("/users/@") ? username : "Newest Name",
+    }));
+    await expect(
+      previewManualRegistration(admin, edition.slug, {
+        input: username,
+        inputType: "username",
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(provider).toHaveBeenCalledTimes(2);
     expect(await db().select().from(registrations)).toEqual([]);
   });
   it("previews mixed lines without writes and deduplicates by stable ID across name, ID and URL", async () => {
