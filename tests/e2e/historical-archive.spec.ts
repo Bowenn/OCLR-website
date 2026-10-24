@@ -270,6 +270,7 @@ test.describe("historical archive browser workflow", () => {
       page.getByText("Unconfirmed alternative", { exact: true }),
     ).toHaveCount(0);
     await page
+      .locator(".event-matches")
       .getByRole("link", { name: "Historical Final", exact: true })
       .click();
     await expect(page.getByRole("link", { name: "MP 1" })).toHaveAttribute(
