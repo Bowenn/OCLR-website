@@ -290,6 +290,12 @@ export async function streamingCommand(
   fixtureId: string,
   input: unknown,
 ) {
+  const access = await staffAccess(actor);
+  if (
+    !permits(access, "select_streaming", slug) &&
+    !permits(access, "manage_streaming", slug)
+  )
+    throw new HttpError(403, "You do not have permission for this operation.");
   const parsed = commandSchema.safeParse(input);
   if (!parsed.success || !z.uuid().safeParse(fixtureId).success)
     throw new HttpError(400, "Confirm a valid streaming task change.");
