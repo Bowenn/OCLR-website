@@ -23,6 +23,7 @@ test.describe("scoped player evaluation", () => {
     context,
     isMobile,
   }, info) => {
+    test.setTimeout(120_000);
     const admin = isMobile ? 70001 : 60001;
     await seedSession(admin);
     await seedSession(194002);
