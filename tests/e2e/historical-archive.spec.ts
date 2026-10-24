@@ -241,6 +241,23 @@ test.describe("historical archive browser workflow", () => {
         );
       }
     }
+    const staffLink = page
+      .getByRole("navigation", { name: "Tournament navigation" })
+      .getByRole("link", { name: "Staff", exact: true });
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
+    await expect(staffLink).toHaveAttribute(
+      "href",
+      `/tournaments/${slug}/staff`,
+    );
+    await staffLink.click();
+    if (isMobile)
+      await page.getByRole("button", { name: /Tournament menu/ }).click();
+    await expect(staffLink).toHaveAttribute("aria-current", "page");
+    await expect(page.locator(".archive-staff")).toContainText(
+      "Historical Host",
+    );
+    await page.goto(`/tournaments/${slug}`);
     await captureResponsiveLayout(page, info, "archive-overview");
     await page.goto(`/tournaments/${slug}/teams/alpha`);
     await expect(page.locator(".historical-archive")).not.toContainText(
