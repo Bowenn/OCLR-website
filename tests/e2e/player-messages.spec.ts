@@ -132,6 +132,10 @@ test.describe("player identity, introduction and signed messages", () => {
             () => document.documentElement.scrollWidth <= innerWidth,
           ),
         ).toBe(true);
+        await page.evaluate(() => {
+          (document.activeElement as HTMLElement | null)?.blur();
+          window.scrollTo(0, 0);
+        });
         await page.screenshot({
           path: info.outputPath(`player-${appearance}-${theme}.png`),
           fullPage: true,
