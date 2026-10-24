@@ -1,0 +1,511 @@
+{
+  "date": "2026-10-24",
+  "scope": "Offline CSS specimens/provenance only; not production appearance integration",
+  "browser": "Headless Google Chrome",
+  "evidence": [
+    {
+      "style": "esports-broadcast",
+      "sourceHash": "18734eb84d865c9c3c03fe45f5d122c88d8139d1c77693c29c85d818106b66d6",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    },
+    {
+      "style": "retro-arcade",
+      "sourceHash": "9a39e41201735f82c804be2314f451927b525845dd1081346fad2f6c44362e8a",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    },
+    {
+      "style": "claymorphism",
+      "sourceHash": "31f7d1083f1dbebe392b555bfe4614acc1b6d578ada27fbebf2f0d701f15f73e",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    },
+    {
+      "style": "manga-halftone",
+      "sourceHash": "6c1c5fb8cd9cb8dc5fbb64723a6e8a9733d13321be908654069f1bbb95e6bc27",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    },
+    {
+      "style": "frutiger-aero",
+      "sourceHash": "0e20f5f12dea2f35dbe0b81467831ee14c6b4bab74cb5692620afd6ff3a827d8",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    },
+    {
+      "style": "glassmorphism",
+      "sourceHash": "606630c51e41d51031988e798467b392237cc809241d144e8bc4e9b854f54f22",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    }
+  ],
+  "cases": [
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "claymorphism",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "manga-halftone",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "frutiger-aero",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "glassmorphism",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    }
+  ],
+  "fallbacks": [
+    {
+      "style": "esports-broadcast",
+      "forcedColors": "passed"
+    },
+    {
+      "style": "retro-arcade",
+      "forcedColors": "passed"
+    },
+    {
+      "style": "claymorphism",
+      "forcedColors": "passed"
+    },
+    {
+      "style": "manga-halftone",
+      "forcedColors": "passed"
+    },
+    {
+      "style": "frutiger-aero",
+      "forcedColors": "passed"
+    },
+    {
+      "style": "glassmorphism",
+      "forcedColors": "passed"
+    },
+    {
+      "style": "glassmorphism",
+      "reducedTransparency": "passed",
+      "reduced": true,
+      "blur": "none",
+      "background": "rgb(48, 41, 60)"
+    }
+  ],
+  "errors": []
+}
