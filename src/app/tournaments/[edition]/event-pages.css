@@ -604,9 +604,15 @@
   font-size: 0.9rem;
   line-height: 1.2;
   cursor: pointer;
+  transform: none;
+}
+.themed-site .player-reactions button:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: -3px;
 }
 .themed-site .player-reactions button[aria-pressed="true"],
 .themed-site .player-reactions button:hover {
+  transform: none;
   border-color: var(--site-accent);
   background: var(--site-tint);
 }
@@ -681,6 +687,7 @@
   scrollbar-width: thin;
 }
 .themed-site .player-reactions .reaction-add {
+  flex: none;
   border-style: dashed;
   color: var(--site-muted);
 }
