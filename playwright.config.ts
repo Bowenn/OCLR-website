@@ -46,6 +46,15 @@ export default defineConfig({
         channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
       },
     },
+    {
+      name: "firefox-header",
+      testMatch: "header-overlap.spec.ts",
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+      },
+    },
   ],
   webServer: {
     command: process.env.TEST_DATABASE_URL
