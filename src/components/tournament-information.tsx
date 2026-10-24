@@ -36,18 +36,6 @@ export async function InformationDocument({
   ];
   return (
     <div className="information-page">
-      <TournamentStageScroll
-        stages={stages ?? [{ ...active, id: "active", state: "current" }]}
-        labels={{
-          title: tr("Tournament stages"),
-          previous: tr("Scroll to earlier stages"),
-          next: tr("Scroll to later stages"),
-          current: tr("Current phase"),
-          past: tr("Earlier"),
-          upcoming: tr("Upcoming"),
-          planned: tr("Planned"),
-        }}
-      />
       <div className="information-layout">
         <article
           className="information-document"
@@ -70,6 +58,18 @@ export async function InformationDocument({
               <span>{document.name}</span>
             </div>
           )}
+          <TournamentStageScroll
+            stages={stages ?? [{ ...active, id: "active", state: "current" }]}
+            labels={{
+              title: tr("Tournament stages"),
+              previous: tr("Scroll to earlier stages"),
+              next: tr("Scroll to later stages"),
+              current: tr("Current phase"),
+              past: tr("Earlier"),
+              upcoming: tr("Upcoming"),
+              planned: tr("Planned"),
+            }}
+          />
           {document.intro && (
             <p className="information-intro">{document.intro}</p>
           )}
