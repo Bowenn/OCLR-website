@@ -202,7 +202,7 @@ test.describe("historical season import handoff", () => {
           for (const path of ["schedule", "mappools", "rules"]) {
             await page.goto(`/tournaments/${slug}/${path}`);
             if (path === "schedule") {
-              await expect(page.locator(".archive-match")).toHaveCount(
+              await expect(page.locator(".event-matches tbody tr")).toHaveCount(
                 sample.results,
               );
               await expect(page.locator(".historical-archive")).toContainText(

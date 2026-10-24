@@ -311,7 +311,13 @@ export function EventSchedule({
               {listed
                 .filter((m) => !filter || m.round === filter)
                 .map((m) => (
-                  <tr key={m.id} id={`row-${m.id}`} data-status={m.status}>
+                  <tr
+                    key={m.id}
+                    id={`row-${m.id}`}
+                    data-status={m.status}
+                    data-forfeit={m.forfeit || undefined}
+                    data-recorded={m.recorded}
+                  >
                     <td>
                       <strong>{m.pool}</strong>
                       <small>{m.round}</small>
@@ -335,7 +341,9 @@ export function EventSchedule({
                     </td>
                     <td className="event-score">
                       {m.forfeit
-                        ? tr("Forfeit")
+                        ? m.winner === 0
+                          ? `${tr("Winner")} : ${tr("Forfeit")}`
+                          : `${tr("Forfeit")} : ${tr("Winner")}`
                         : m.score
                           ? m.score.join(" : ")
                           : "—"}
