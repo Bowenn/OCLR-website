@@ -25,6 +25,7 @@ import {
   type AwardWeek,
   type AwardStanding,
 } from "./award-model";
+import { classifyPlayer, PLAYER_CLASS_POLICY } from "./player-class";
 import { staffRoundRatings } from "./ratings";
 import { YUMU_POLICY } from "./yumu-rating";
 import { draftAwardTiers } from "./award-tiers";
@@ -115,6 +116,13 @@ async function calculation(slug: string, reader: Reader) {
       ...standing,
       ...(configuration.policy === YUMU_POLICY
         ? {
+            classificationPolicy: PLAYER_CLASS_POLICY,
+            candidates: standing.candidates.map((c) => ({
+              ...c,
+              ratingClass: c.rating
+                ? classifyPlayer(c.rating, c.ratingPlayerCount ?? 0)
+                : null,
+            })),
             ratingContext: games
               .filter((g) =>
                 standing.evidence.some((e) => e.gameId === g.gameId),
