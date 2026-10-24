@@ -4975,3 +4975,9 @@ body:has([data-broadcast]) .site-shell {
 .streaming-history li + li {
   margin-top: 1rem;
 }
+
+.status-deferred {
+  color: var(--site-accent);
+  border-color: var(--site-control-border);
+  background: var(--site-tint);
+}

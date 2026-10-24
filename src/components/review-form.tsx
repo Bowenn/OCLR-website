@@ -7,13 +7,17 @@ import { ConfirmMutation } from "./confirm-mutation";
 export function ReviewForm({
   id,
   updatedAt,
+  status: currentStatus = "pending",
 }: {
   id: string;
   updatedAt: string;
+  status?: "pending" | "deferred";
 }) {
   const tr = useAppTranslations();
 
-  const [status, setStatus] = useState<"accepted" | "rejected">("accepted");
+  const [status, setStatus] = useState<
+    "accepted" | "rejected" | "deferred" | "pending"
+  >("accepted");
   const [reason, setReason] = useState("");
   return (
     <ReadOnlyFields>
@@ -22,13 +26,22 @@ export function ReviewForm({
         <label className="field">
           <span>{tr("Decision")}</span>
           <select
+            aria-label={tr("Decision")}
             value={status}
             onChange={(event) =>
-              setStatus(event.target.value as "accepted" | "rejected")
+              setStatus(
+                event.target.value as
+                  "accepted" | "rejected" | "deferred" | "pending",
+              )
             }
           >
             <option value="accepted">{tr("Accept")}</option>
             <option value="rejected">{tr("Reject")}</option>
+            {currentStatus === "pending" ? (
+              <option value="deferred">{tr("deferred")}</option>
+            ) : (
+              <option value="pending">{tr("Return to pending review")}</option>
+            )}
           </select>
         </label>
         <label className="field">
@@ -51,7 +64,14 @@ export function ReviewForm({
         <ConfirmMutation
           label={tr("Review decision")}
           title={tr("{value0} this application?", {
-            value0: status === "accepted" ? "Accept" : "Reject",
+            value0:
+              status === "accepted"
+                ? tr("Accept")
+                : status === "rejected"
+                  ? tr("Reject")
+                  : status === "deferred"
+                    ? tr("deferred")
+                    : tr("Return to pending review"),
           })}
           description={tr(
             "The player will see this decision and your explanation. The action is recorded in the staff audit trail.",

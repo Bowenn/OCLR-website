@@ -189,8 +189,13 @@ export default async function Application({
           />
         )}
         {r.status !== "withdrawn" && <BwsReview slug={slug} id={r.id} />}
-        {r.status === "pending" && (
-          <ReviewForm id={r.id} updatedAt={r.updatedAt.toISOString()} />
+        {["pending", "deferred"].includes(r.status) && (
+          <ReviewForm
+            key={r.updatedAt.toISOString()}
+            id={r.id}
+            status={r.status as "pending" | "deferred"}
+            updatedAt={r.updatedAt.toISOString()}
+          />
         )}
         <RegistrationRemoval
           id={r.id}

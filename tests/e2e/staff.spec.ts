@@ -153,6 +153,29 @@ test.describe("staff registration review", () => {
     await expect(
       page.getByText("Private test answer", { exact: true }),
     ).toBeVisible();
+    await page.getByLabel("Decision", { exact: true }).selectOption("deferred");
+    await page.getByRole("button", { name: "Review decision" }).click();
+    await page.getByRole("button", { name: "Confirm", exact: true }).click();
+    await expect(page.locator("section .badge").first()).toHaveText("deferred");
+    await page.screenshot({
+      path: testInfo.outputPath("deferred-application.png"),
+      fullPage: true,
+    });
+    const ownStatus = await other.request.get(
+      "http://127.0.0.1:3100/dashboard",
+    );
+    expect(await ownStatus.text()).toContain(
+      "Your rank eligibility is awaiting further review.",
+    );
+    await page.goto(`/admin/registrations?status=deferred&q=${playerId}`);
+    await expect(page.locator("tbody tr")).toHaveCount(1);
+    await expect(page.locator("tbody .badge")).toHaveText("deferred");
+    await page
+      .getByRole("link", {
+        name: new RegExp(`Review Synthetic Player ${playerId}`),
+      })
+      .click();
+    await page.getByLabel("Decision", { exact: true }).selectOption("accepted");
     await page.getByRole("button", { name: "Review decision" }).click();
     await page.getByRole("button", { name: "Confirm", exact: true }).click();
     await expect(page.locator("section .badge").first()).toHaveText("accepted");
