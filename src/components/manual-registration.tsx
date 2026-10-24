@@ -222,7 +222,7 @@ export function ManualRegistration({
                     "This player already has a registration for this tournament. Review the existing entry.",
                   )}{" "}
                   <a
-                    href={`/admin/tournaments/${edition.slug}/registrations?q=${preview.profile.osuId}`}
+                    href={`/admin/tournaments/${edition.slug}/registrations?status=&q=${preview.profile.osuId}`}
                   >
                     {tr("View existing registration")}
                   </a>
