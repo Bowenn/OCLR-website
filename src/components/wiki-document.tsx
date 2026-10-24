@@ -29,7 +29,24 @@ export async function WikiDocument({ article }: { article: WikiArticle }) {
             <section key={section.id} id={section.id}>
               <h2>{section.title}</h2>
               {section.paragraphs?.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
+                <p key={i}>
+                  {typeof paragraph === "string"
+                    ? paragraph
+                    : paragraph.map((part, j) =>
+                        typeof part === "string" ? (
+                          part
+                        ) : (
+                          <a
+                            key={j}
+                            href={part.href}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {part.label}
+                          </a>
+                        ),
+                      )}
+                </p>
               ))}
               {section.items && (
                 <ul>

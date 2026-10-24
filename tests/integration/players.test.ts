@@ -41,7 +41,7 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
     expect(await publicParticipantCount("test-cup")).toBe(3);
     expect(await publicParticipantCount("private-test-cup")).toBeNull();
     expect(await publicParticipantCount("missing-cup")).toBeNull();
-    for (const status of ["pending", "rejected", "withdrawn"] as const) {
+    for (const status of ["pending", "deferred", "rejected", "withdrawn"] as const) {
       await db()
         .update(registrations)
         .set({ status })
@@ -153,7 +153,7 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
     expect(
       (await publicPlayers({ edition: "second-cup" })).rows.map((p) => p.osuId),
     ).toEqual([fixture.privateId]);
-    for (const status of ["pending", "rejected", "withdrawn"] as const) {
+    for (const status of ["pending", "deferred", "rejected", "withdrawn"] as const) {
       await db()
         .update(registrations)
         .set({ status })

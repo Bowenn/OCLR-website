@@ -122,6 +122,7 @@ export const oauthStates = pgTable(
 
 export const registrationStatus = pgEnum("registration_status", [
   "pending",
+  "deferred",
   "accepted",
   "rejected",
   "withdrawn",

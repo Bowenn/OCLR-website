@@ -544,7 +544,7 @@ describe.skipIf(!base)("Yumu award policy upgrade", () => {
         const file = join(folder, "meta/_journal.json");
         const journal = JSON.parse(readFileSync(file, "utf8"));
         journal.entries = journal.entries.filter(
-          (entry: { idx: number }) => entry.idx < 33,
+          (entry: { idx: number }) => entry.idx < 34,
         );
         writeFileSync(file, JSON.stringify(journal));
         await migrate(drizzle(pool), { migrationsFolder: folder });

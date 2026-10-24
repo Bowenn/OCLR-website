@@ -192,7 +192,11 @@ export default async function Dashboard({
                           ? tr(
                               "Staff withdrew this registration. Your application history is retained.",
                             )
-                          : tr(statusCopy[r.status])}
+                          : r.status === "deferred"
+                            ? tr(
+                                "Your rank eligibility is awaiting further review. You have not been accepted or rejected.",
+                              )
+                            : tr(statusCopy[r.status])}
                       </p>
                       <p className="small muted">
                         {tr("Submitted")}{" "}

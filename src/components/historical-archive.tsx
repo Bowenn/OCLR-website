@@ -6,7 +6,8 @@ import { notFound, redirect } from "next/navigation";
 import { ArchivePlayerSearch } from "./archive-player-search";
 import { ArchiveMappools } from "./archive-mappools";
 import { Avatar } from "./avatar";
-import { ArchiveMatchList } from "./archive-match-list";
+import { EventSchedule } from "./event-schedule";
+import { archiveEventMatches } from "@/lib/archive-event-matches";
 import { BracketView } from "./bracket-view";
 import { archiveBracket } from "@/lib/archive-bracket";
 import { getAppTranslations } from "@/i18n/server";
@@ -217,6 +218,29 @@ export async function HistoricalArchiveView({
       )}
     </article>
   );
+  function rulesContent() {
+    const rules = historicalRulebook(a);
+    return rules ? (
+      <>
+        <p className="rules-version muted small">
+          {rules.version ? (
+            <>
+              {tr("Version ")}
+              {rules.version} ·{" "}
+            </>
+          ) : null}
+          {rules.sections.length} {tr("sections")}
+        </p>
+        <RulesHandbook
+          sections={rules.sections}
+          cover={rules.cover}
+          archiveSeason={historicalRulebookSeason(rules)}
+        />
+      </>
+    ) : (
+      <p className="muted">{tr("Not recorded")}</p>
+    );
+  }
   let content;
   let title = edition.name;
   if (section === "overview") {
@@ -255,6 +279,14 @@ export async function HistoricalArchiveView({
             </div>
           ))}
         </dl>
+        <section
+          id="rules"
+          className="archive-overview-rules"
+          aria-labelledby="archive-rules-title"
+        >
+          <h2 id="archive-rules-title">{tr("Tournament rules")}</h2>
+          {rulesContent()}
+        </section>
         {preview && (
           <nav className="actions" aria-label={tr("Archive sections")}>
             {[
@@ -391,15 +423,21 @@ export async function HistoricalArchiveView({
       section === "match" ? (
         match(matches[0])
       ) : (
-        <ArchiveMatchList
+        <EventSchedule
+          edition={edition.slug}
+          heading={false}
           reviewMode={preview}
-          recordedOnly={section === "results"}
-          matches={matches.map((m) => ({
-            id: m.id,
-            stage: m.stage,
-            recorded: recordedArchiveMatch(m),
-            content: match(m),
+          phases={[...new Set(matches.map((m) => m.stage))].map((stage) => ({
+            id: stage,
+            label: stage,
           }))}
+          matches={archiveEventMatches(
+            a,
+            matches,
+            href,
+            edition.timeZone,
+            tr.locale,
+          )}
         />
       );
   } else if (section === "mappools" || section === "pool") {
@@ -594,27 +632,7 @@ export async function HistoricalArchiveView({
       );
   } else if (section === "rules") {
     title = tr("Rules");
-    const rules = historicalRulebook(a);
-    content = rules ? (
-      <>
-        <p className="rules-version muted small">
-          {rules.version ? (
-            <>
-              {tr("Version ")}
-              {rules.version} ·{" "}
-            </>
-          ) : null}
-          {rules.sections.length} {tr("sections")}
-        </p>
-        <RulesHandbook
-          sections={rules.sections}
-          cover={rules.cover}
-          archiveSeason={historicalRulebookSeason(rules)}
-        />
-      </>
-    ) : (
-      <p className="muted">{tr("Not recorded")}</p>
-    );
+    content = rulesContent();
   } else {
     title = tr("Historical statistics");
     content = <p className="muted">{tr("Not recorded")}</p>;
