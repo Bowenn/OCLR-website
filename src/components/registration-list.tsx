@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { authorizedPage } from "@/lib/auth/page";
 import type { User } from "@/lib/auth/sessions";
-import { permits, staffAccess } from "@/lib/auth/staff";
+import { canRead, permits, staffAccess } from "@/lib/auth/staff";
 import { listApplications } from "@/lib/staff";
 import { getEditions } from "@/lib/content";
 import { formatDate } from "@/lib/editions";
@@ -37,7 +37,7 @@ export async function RegistrationList({
       status: filters.status,
     });
     const editions = (await getEditions()).filter((e) =>
-      permits(access, "manage_registrations", e.slug),
+      canRead(access, "manage_registrations", e.slug),
     );
     return (
       <section
@@ -61,24 +61,33 @@ export async function RegistrationList({
             role="group"
             aria-label={tr("Registration actions")}
           >
-            {editionSlug && editions.find((e) => e.slug === editionSlug) && (
-              <>
-                <ManualRegistration
-                  edition={editions.find((e) => e.slug === editionSlug)!}
-                />
-                <BulkManualRegistration
-                  edition={editions.find((e) => e.slug === editionSlug)!}
-                />
-              </>
-            )}
-            {total > 0 && (
-              <a
-                className="button secondary"
-                href={`/api/admin/registrations/export?${query}`}
-              >
-                {tr("Export CSV ↓")}
-              </a>
-            )}
+            {editionSlug &&
+              permits(access, "manage_registrations", editionSlug) &&
+              editions.find((e) => e.slug === editionSlug) && (
+                <>
+                  <ManualRegistration
+                    edition={editions.find((e) => e.slug === editionSlug)!}
+                  />
+                  <BulkManualRegistration
+                    edition={editions.find((e) => e.slug === editionSlug)!}
+                  />
+                </>
+              )}
+            {total > 0 &&
+              access.some((grant) =>
+                permits(
+                  [grant],
+                  "manage_registrations",
+                  grant.editionSlug ?? undefined,
+                ),
+              ) && (
+                <a
+                  className="button secondary"
+                  href={`/api/admin/registrations/export?${query}`}
+                >
+                  {tr("Export CSV ↓")}
+                </a>
+              )}
           </div>
         </div>
         <form className="filters" action={basePath} method="get">

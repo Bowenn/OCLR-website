@@ -1,4 +1,5 @@
 "use client";
+import { ReadOnlyFields } from "./staff-read-only";
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useState } from "react";
@@ -19,66 +20,90 @@ export function StaffRoleForm({
   const [scope, setScope] = useState(initialEdition || scopes?.[0] || "");
 
   return (
-    <div className="panel form-stack">
-      <h2>{tr("Grant a role")}</h2>
-      <p className="muted">
-        {tr(
-          "The user must have signed in. Verify their osu! ID before granting access.",
-        )}
-      </p>
-      <label className="field">
-        <span>{tr("Verified osu! user ID")}</span>
-        <input
-          inputMode="numeric"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          maxLength={16}
-        />
-      </label>
-      <label className="field">
-        <span>{tr("Role")}</span>
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="mappooler">{tr("Mappooler")}</option>
-          <option value="referee">{tr("Referee")}</option>
-          <option value="admin">
-            {tr("Admin — full access within scope")}
-          </option>
-        </select>
-      </label>
-      <label className="field">
-        <span>{tr("Scope")}</span>
-        <select value={scope} onChange={(e) => setScope(e.target.value)}>
-          {!scopes && <option value="">{tr("Global — all editions")}</option>}
-          {editions
-            .filter((e) => !scopes || scopes.includes(e.slug))
-            .map((e) => (
-              <option key={e.slug} value={e.slug}>
-                {e.name}
+    <ReadOnlyFields>
+      <div className="panel form-stack">
+        <h2>{tr("Grant a role")}</h2>
+        <p className="muted">
+          {tr(
+            "The user must have signed in. Verify their osu! ID before granting access.",
+          )}
+        </p>
+        <label className="field">
+          <span>{tr("Verified osu! user ID")}</span>
+          <input
+            inputMode="numeric"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            maxLength={16}
+          />
+        </label>
+        <label className="field">
+          <span>{tr("Role")}</span>
+          <select
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value);
+              if (e.target.value === "developer") setScope("");
+            }}
+          >
+            <option value="mappooler">{tr("Mappooler")}</option>
+            <option value="referee">{tr("Referee")}</option>
+            {!scopes && (
+              <option value="developer">
+                {tr("Developer — global read-only access")}
               </option>
-            ))}
-        </select>
-      </label>
-      <ConfirmMutation
-        label={tr("Review role grant")}
-        title={tr("Grant staff access?")}
-        description={tr(
-          "Grant {value0} to osu! ID {value1} for {value2}. This change takes effect immediately.",
-          {
-            value0: role,
-            value1: userId || "(missing)",
-            value2: scope || "all editions",
-          },
+            )}
+            <option value="admin">
+              {tr("Admin — full access within scope")}
+            </option>
+          </select>
+        </label>
+        <label className="field">
+          <span>{tr("Scope")}</span>
+          <select
+            disabled={role === "developer"}
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+          >
+            {!scopes && <option value="">{tr("Global — all editions")}</option>}
+            {editions
+              .filter((e) => !scopes || scopes.includes(e.slug))
+              .map((e) => (
+                <option key={e.slug} value={e.slug}>
+                  {e.name}
+                </option>
+              ))}
+          </select>
+        </label>
+        {role === "developer" && (
+          <p className="notice">
+            {tr(
+              "Developer can read private applications and unpublished editions. Other roles retain their existing write permissions and export access within scope.",
+            )}
+          </p>
         )}
-        url="/api/admin/staff"
-        payload={{
-          action: "grant",
-          userId: Number(userId),
-          role,
-          editionSlug: scope || null,
-          confirmed: true,
-        }}
-      />
-    </div>
+        <ConfirmMutation
+          label={tr("Review role grant")}
+          title={tr("Grant staff access?")}
+          description={tr(
+            "Grant {value0} to osu! ID {value1} for {value2}. This change takes effect immediately.",
+            {
+              value0: role,
+              value1: userId || "(missing)",
+              value2: scope || "all editions",
+            },
+          )}
+          url="/api/admin/staff"
+          payload={{
+            action: "grant",
+            userId: Number(userId),
+            role,
+            editionSlug: scope || null,
+            confirmed: true,
+          }}
+        />
+      </div>
+    </ReadOnlyFields>
   );
 }
 export function RevokeRole({

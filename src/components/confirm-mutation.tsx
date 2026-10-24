@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffReadOnly } from "./staff-read-only";
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useId, useRef, useState } from "react";
@@ -32,6 +33,7 @@ export function ConfirmMutation({
   disabled?: boolean;
   children?: ReactNode;
 }) {
+  const readOnly = useStaffReadOnly();
   const tr = useAppTranslations();
 
   const dialog = useRef<HTMLDialogElement>(null);
@@ -40,6 +42,7 @@ export function ConfirmMutation({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function confirm() {
+    if (readOnly) return;
     setPending(true);
     setError("");
     try {
@@ -73,7 +76,12 @@ export function ConfirmMutation({
       <button
         type="button"
         className={className}
-        disabled={disabled || pending || (!requireConfirmation && !canConfirm)}
+        disabled={
+          readOnly ||
+          disabled ||
+          pending ||
+          (!requireConfirmation && !canConfirm)
+        }
         onClick={() => {
           setError("");
           if (requireConfirmation) dialog.current?.showModal();
@@ -109,7 +117,10 @@ export function ConfirmMutation({
             </p>
           )}
           <div className="actions">
-            <button disabled={pending || !canConfirm} onClick={confirm}>
+            <button
+              disabled={readOnly || pending || !canConfirm}
+              onClick={confirm}
+            >
               {pending ? tr("Saving…") : tr("Confirm")}
             </button>
             <button
