@@ -18,6 +18,69 @@ export type DirectoryStatistics = {
   fetchedAt: string;
   stale: boolean;
 };
+export type ExportStatistics = {
+  globalRank: number | null;
+  pp: number | null;
+  fetchedAt: string;
+  status: "fresh" | "stale";
+};
+/** Private export only: callers must first filter registrations by staff scope.
+ * Read saved statistics in bounded batches, without refreshing provider data. */
+export async function cachedExportStatistics(osuIds: number[]) {
+  const ids = [...new Set(osuIds)];
+  if (ids.length > 10000)
+    throw new HttpError(
+      413,
+      "Narrow the export filters to at most 10,000 applications.",
+    );
+  for (const id of ids) parseOsuProfile(String(id), "osu");
+  const statistics = new Map<number, ExportStatistics>();
+  if (!ids.length || !process.env.DATABASE_URL) return statistics;
+  const now = Date.now();
+  for (let offset = 0; offset < ids.length; offset += 500) {
+    const rows = await db()
+      .select({
+        osuId: userProfileCache.osuId,
+        globalRank: sql<unknown>`${userProfileCache.profile}->'statistics'->'globalRank'`,
+        pp: sql<unknown>`${userProfileCache.profile}->'statistics'->'pp'`,
+        fetchedAt: sql<unknown>`${userProfileCache.profile}->>'fetchedAt'`,
+        errorStatus: userProfileCache.errorStatus,
+      })
+      .from(userProfileCache)
+      .where(
+        and(
+          inArray(userProfileCache.osuId, ids.slice(offset, offset + 500)),
+          eq(userProfileCache.mode, "osu"),
+          sql`${userProfileCache.errorStatus} IS DISTINCT FROM 404`,
+          sql`${userProfileCache.profile}->>'osuId' = ${userProfileCache.osuId}::text`,
+          sql`${userProfileCache.profile}->>'ruleset' = 'osu'`,
+        ),
+      );
+    for (const row of rows) {
+      const fetched =
+        typeof row.fetchedAt === "string" ? Date.parse(row.fetchedAt) : NaN;
+      if (!Number.isFinite(fetched)) continue;
+      statistics.set(row.osuId, {
+        globalRank:
+          typeof row.globalRank === "number" &&
+          Number.isSafeInteger(row.globalRank) &&
+          row.globalRank > 0
+            ? row.globalRank
+            : null,
+        pp:
+          typeof row.pp === "number" && Number.isFinite(row.pp) && row.pp >= 0
+            ? row.pp
+            : null,
+        fetchedAt: new Date(fetched).toISOString(),
+        status:
+          row.errorStatus !== null || now - fetched >= PROFILE_TTL_MS
+            ? "stale"
+            : "fresh",
+      });
+    }
+  }
+  return statistics;
+}
 /** Only call after publication filtering, with the current directory page's IDs. */
 export async function cachedDirectoryStatistics(osuIds: number[]) {
   const ids = [...new Set(osuIds)];
