@@ -142,7 +142,12 @@ describe.skipIf(!url)("bounded public directory statistics", () => {
   });
   it("does not read a private applicant's cached stats through search or other statuses", async () => {
     await cache(base + 2, 12345, 7890.45);
-    for (const status of ["pending", "deferred", "rejected", "withdrawn"] as const) {
+    for (const status of [
+      "pending",
+      "deferred",
+      "rejected",
+      "withdrawn",
+    ] as const) {
       await db()
         .update(registrations)
         .set({ status })
@@ -161,14 +166,18 @@ describe.skipIf(!url)("bounded public directory statistics", () => {
     );
     expect(provider).not.toHaveBeenCalled();
   });
-  it("bounds reads to 24, deduplicates IDs and avoids DB calls for an empty page", async () => {
+  it("reads beyond 24, deduplicates IDs and avoids DB calls for an empty directory", async () => {
     await cache(base, 12345, 7890.45);
     expect(
       (await cachedDirectoryStatistics([base, base])).statistics.size,
     ).toBe(1);
-    await expect(
-      cachedDirectoryStatistics(Array.from({ length: 25 }, (_, i) => base + i)),
-    ).rejects.toMatchObject({ status: 400 });
+    expect(
+      (
+        await cachedDirectoryStatistics(
+          Array.from({ length: 25 }, (_, i) => base + i),
+        )
+      ).statistics.size,
+    ).toBe(1);
     const query = vi.spyOn(getPool(), "query");
     expect((await cachedDirectoryStatistics([])).refreshIds).toEqual([]);
     expect(query).not.toHaveBeenCalled();

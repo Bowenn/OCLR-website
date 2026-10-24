@@ -81,24 +81,27 @@ export async function cachedExportStatistics(osuIds: number[]) {
   }
   return statistics;
 }
-/** Only call after publication filtering, with the current directory page's IDs. */
+/** Only call after publication filtering. Read the complete directory in bounded batches. */
 export async function cachedDirectoryStatistics(osuIds: number[]) {
   const ids = [...new Set(osuIds)];
-  if (ids.length > 24)
-    throw new HttpError(400, "Choose a valid player search and page.");
   for (const id of ids) parseOsuProfile(String(id), "osu");
   const statistics = new Map<number, DirectoryStatistics>();
   if (!ids.length || !process.env.DATABASE_URL)
     return { statistics, refreshIds: [] as number[] };
-  const rows = await db()
-    .select()
-    .from(userProfileCache)
-    .where(
-      and(
-        inArray(userProfileCache.osuId, ids),
-        eq(userProfileCache.mode, "osu"),
-      ),
+  const rows: (typeof userProfileCache.$inferSelect)[] = [];
+  for (let offset = 0; offset < ids.length; offset += 500) {
+    rows.push(
+      ...(await db()
+        .select()
+        .from(userProfileCache)
+        .where(
+          and(
+            inArray(userProfileCache.osuId, ids.slice(offset, offset + 500)),
+            eq(userProfileCache.mode, "osu"),
+          ),
+        )),
     );
+  }
   const byId = new Map(rows.map((row) => [row.osuId, row]));
   const now = Date.now();
   for (const row of rows) {

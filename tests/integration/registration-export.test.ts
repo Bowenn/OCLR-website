@@ -254,16 +254,16 @@ describe.skipIf(!url)("private registration export statistics", () => {
     expect(osuApi).not.toHaveBeenCalled();
   });
 
-  it("deduplicates and batches cache reads without changing the public directory limit", async () => {
+  it("deduplicates and batches cache reads while retaining the export limit", async () => {
     await cache(0);
     const ids = Array.from({ length: 501 }, (_, i) => base + i);
     const query = vi.spyOn(getPool(), "query");
     const statistics = await cachedExportStatistics([...ids, ...ids]);
     expect(cacheQueries(query)).toHaveLength(2);
     expect(statistics.size).toBe(1);
-    await expect(
-      cachedDirectoryStatistics(ids.slice(0, 25)),
-    ).rejects.toMatchObject({ status: 400 });
+    expect(
+      (await cachedDirectoryStatistics(ids.slice(0, 25))).statistics.size,
+    ).toBe(1);
     await expect(
       cachedExportStatistics(Array.from({ length: 10001 }, (_, i) => base + i)),
     ).rejects.toMatchObject({ status: 413 });

@@ -13,6 +13,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { registrations, userProfileCache, users } from "../../src/db/schema";
 import {
+  cachedDirectoryStatistics,
   getOsuProfileByUsername,
   getOsuUserProfile,
   PROFILE_TTL_MS,
@@ -22,6 +23,7 @@ import {
   publishedPlayerProfile,
   staffPlayerProfile,
 } from "../../src/lib/player-profiles";
+import { normalizeOsuProfile } from "../../src/lib/osu-profile-model";
 import { HttpError } from "../../src/lib/http";
 import { edition } from "../fixtures/edition";
 import { seedPublicDirectory } from "../fixtures/players";
@@ -59,6 +61,54 @@ describe.skipIf(!url)(
         sql`UPDATE user_profile_cache SET profile = jsonb_set(profile, '{fetchedAt}', to_jsonb(${new Date(Date.now() - PROFILE_TTL_MS - 1000).toISOString()}::text)), retry_at = NOW() - INTERVAL '1 minute'`,
       );
     };
+    it("reads every cached directory statistic beyond the old 24-player limit and batch boundary", async () => {
+      const ids = Array.from({ length: 503 }, (_, i) => base + i);
+      const fetchedAt = new Date().toISOString();
+      await db()
+        .insert(userProfileCache)
+        .values(
+          ids.map((id, i) => ({
+            osuId: id,
+            mode: "osu" as const,
+            profile: normalizeOsuProfile(
+              {
+                ...profileResponse,
+                id,
+                statistics: {
+                  ...profileResponse.statistics,
+                  global_rank: i === 0 ? null : i,
+                  pp: i,
+                },
+              },
+              id,
+              "osu",
+              fetchedAt,
+            ),
+            attemptedAt: new Date(),
+            retryAt: new Date(Date.now() + 60000),
+          })),
+        );
+      const { statistics, refreshIds } = await cachedDirectoryStatistics([
+        ...ids,
+        ids[0],
+      ]);
+      expect(statistics.size).toBe(503);
+      expect(statistics.get(ids[0])).toMatchObject({ globalRank: null, pp: 0 });
+      expect(statistics.get(ids[26])).toMatchObject({ globalRank: 26, pp: 26 });
+      expect(statistics.get(ids[502])).toMatchObject({
+        globalRank: 502,
+        pp: 502,
+      });
+      expect(refreshIds).toEqual([]);
+      expect(provider).not.toHaveBeenCalled();
+      await db()
+        .update(userProfileCache)
+        .set({ errorStatus: 502 })
+        .where(eq(userProfileCache.osuId, ids[26]));
+      expect(
+        (await cachedDirectoryStatistics(ids)).statistics.get(ids[26]),
+      ).toMatchObject({ pp: 26, stale: true });
+    });
     it("deduplicates simultaneous reads, persists compact snapshots and refreshes mutable usernames only", async () => {
       const [a, b] = await Promise.all([
         getOsuUserProfile(base),
