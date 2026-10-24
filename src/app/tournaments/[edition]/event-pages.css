@@ -740,7 +740,6 @@
   max-height: 6rem;
   height: auto;
   overflow-y: auto;
-  overscroll-behavior: contain;
   scrollbar-width: thin;
 }
 .event-player-messages time {
