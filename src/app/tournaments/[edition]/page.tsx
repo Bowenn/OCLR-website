@@ -15,6 +15,7 @@ import {
   type TournamentInformation,
 } from "@/lib/tournament-information";
 import "./information.css";
+import { tournamentStages } from "@/lib/tournament-stages";
 
 export async function generateMetadata({
   params,
@@ -47,6 +48,26 @@ export default async function Overview({
     return (
       <InformationDocument
         document={preview}
+        stages={preview.schedule
+          .filter((_, index) => index !== 1)
+          .map((row, index) => ({
+            id: `preview-${index}`,
+            label: index === 0 ? tr("Registration phase") : row.event,
+            detail: row.date,
+            href:
+              index === 0
+                ? `${base}/register`
+                : index === 1
+                  ? `${base}/draft`
+                  : `${base}/schedule`,
+            action:
+              index === 0
+                ? tr("Register individually")
+                : index === 1
+                  ? tr("Live draft")
+                  : tr("View schedule"),
+            state: index === 0 ? "current" : "upcoming",
+          }))}
         active={{
           label: tr("Registration phase"),
           detail: tr("Deadline {date}", { date: "11.23 · 23:59 (UTC+8)" }),
@@ -192,6 +213,7 @@ export default async function Overview({
   const active =
     state === "open"
       ? {
+          phaseId: "registration",
           label: tr("Registration phase"),
           detail: edition.registration
             ? tr("Deadline {date}", {
@@ -233,7 +255,37 @@ export default async function Overview({
           )}
         </p>
       )}
-      <InformationDocument document={document} active={active} />
+      <InformationDocument
+        document={document}
+        active={active}
+        stages={tournamentStages(
+          [
+            ...(edition.registration
+              ? [
+                  {
+                    id: "registration",
+                    label: tr("Registration phase"),
+                    detail: `${formatDate(edition.registration.opensAt, edition.timeZone, tr.locale)} — ${formatDate(edition.registration.closesAt, edition.timeZone, tr.locale)}`,
+                    at: edition.registration.closesAt,
+                    href: `${base}/register`,
+                    action: tr("View registration"),
+                  },
+                ]
+              : []),
+            ...edition.schedule.map((event, index) => ({
+              id: `schedule-${index}`,
+              label: event.label,
+              detail: event.at
+                ? formatDate(event.at, edition.timeZone, tr.locale)
+                : undefined,
+              at: event.at ?? undefined,
+              href: `${base}/schedule`,
+              action: tr("View schedule"),
+            })),
+          ],
+          active,
+        )}
+      />
     </>
   );
 }

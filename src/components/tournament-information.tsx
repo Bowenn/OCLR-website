@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { TournamentStageScroll } from "@/components/tournament-stage-scroll";
+import type { TournamentStage } from "@/lib/tournament-stages";
 import Image from "next/image";
 import { getAppTranslations } from "@/i18n/server";
 import type { TournamentInformation } from "@/lib/tournament-information";
@@ -6,7 +8,9 @@ import type { TournamentInformation } from "@/lib/tournament-information";
 export async function InformationDocument({
   document,
   active,
+  stages,
 }: {
+  stages?: TournamentStage[];
   document: TournamentInformation;
   active: { label: string; detail?: string; href: string; action: string };
 }) {
@@ -32,17 +36,18 @@ export async function InformationDocument({
   ];
   return (
     <div className="information-page">
-      <Link href={active.href} className="information-active">
-        <span className="information-active-dot" aria-hidden="true" />
-        <span className="information-active-label">{active.label}</span>
-        {active.detail && (
-          <span className="information-active-detail">{active.detail}</span>
-        )}
-        <span className="information-active-action">
-          {active.action}
-          <span aria-hidden="true"> →</span>
-        </span>
-      </Link>
+      <TournamentStageScroll
+        stages={stages ?? [{ ...active, id: "active", state: "current" }]}
+        labels={{
+          title: tr("Tournament stages"),
+          previous: tr("Scroll to earlier stages"),
+          next: tr("Scroll to later stages"),
+          current: tr("Current phase"),
+          past: tr("Earlier"),
+          upcoming: tr("Upcoming"),
+          planned: tr("Planned"),
+        }}
+      />
       <div className="information-layout">
         <article
           className="information-document"
