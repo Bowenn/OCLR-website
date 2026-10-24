@@ -100,6 +100,24 @@ test.describe("staff registration review", () => {
       }
       await page.setViewportSize(original);
     }
+    for (const path of [
+      "/admin/registrations",
+      "/admin/tournaments/test-cup/registrations",
+    ]) {
+      await page.goto(`${path}?q=${playerId}`);
+      for (const name of [`Synthetic Player ${playerId}`, String(playerId)]) {
+        const link = page
+          .locator(".registration-review table")
+          .getByRole("link", { name, exact: true });
+        await expect(link).toHaveAttribute(
+          "href",
+          `https://osu.ppy.sh/users/${playerId}`,
+        );
+        await expect(link).toHaveAttribute("target", "_blank");
+        await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+      }
+    }
+    await page.goto("/admin/registrations");
     await page.getByLabel("Search player or osu! ID").fill(String(playerId));
     await page.getByRole("button", { name: "Filter", exact: true }).click();
     await expect(
