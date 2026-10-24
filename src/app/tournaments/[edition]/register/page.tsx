@@ -82,7 +82,9 @@ export default async function Register({
           {edition.eligibility && (
             <section className="notice spaced">
               <h2>{tr("Eligibility")}</h2>
-              <p>{edition.eligibility}</p>
+              <p className="preserve-lines registration-eligibility">
+                {edition.eligibility}
+              </p>
             </section>
           )}
           <ApplicationForm

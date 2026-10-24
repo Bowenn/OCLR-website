@@ -4981,3 +4981,13 @@ body:has([data-broadcast]) .site-shell {
   border-color: var(--site-control-border);
   background: var(--site-tint);
 }
+
+/* Preserve authored eligibility lines and locale punctuation without forcing wide text. */
+.registration-eligibility,
+.application-disclosure {
+  line-break: strict;
+  overflow-wrap: anywhere;
+}
+.application-privacy-link {
+  white-space: nowrap;
+}

@@ -216,14 +216,18 @@ export function ApplicationForm({
           </span>
         </label>
       )}
-      <p className="small muted">
+      <p className="small muted preserve-lines application-disclosure">
         {tr(
-          "Applications are reviewed by tournament staff. Submitting is not acceptance or official osu! validation. If accepted, your osu! username, osu! ID and accepted participation in this tournament appear automatically in its public Players directory. Application answers and staff review notes remain private. Read the",
-        )}{" "}
-        <Link href="/privacy" className="text-link">
-          {tr("privacy notice")}
-        </Link>{" "}
-        {tr("before applying.")}
+          "Applications are reviewed by tournament staff. Submitting is not acceptance or official osu! validation.\n\nIf accepted, your osu! username, osu! ID and accepted participation in this tournament appear automatically in its public Players directory. Application answers and staff review notes remain private.\n\nRead the",
+        )}
+        {tr.locale === "en" ? " " : ""}
+        <span className="application-privacy-link">
+          <Link href="/privacy" className="text-link">
+            {tr("privacy notice")}
+          </Link>
+          {tr.locale === "en" ? " " : ""}
+          {tr("before applying.")}
+        </span>
       </p>
       {error && (
         <p className="notice error-text" role="alert">
