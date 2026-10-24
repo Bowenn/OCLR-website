@@ -81,7 +81,7 @@ test.describe("season overview composition", () => {
           "Captain announcement",
         );
         await expect(
-          page.locator('#links a[href="/tournaments/s11/register"]'),
+          page.locator('.stage-scroll a[href="/tournaments/s11/register"]'),
         ).toBeVisible();
         expect(
           await page.evaluate(
@@ -152,7 +152,7 @@ test.describe("season overview composition", () => {
     await page.reload();
     await expect(page.locator(".information-pool")).not.toHaveCount(0);
   });
-  test("registration links follow server-authorized open, closed and paused windows", async ({
+  test("registration stays discoverable while the server enforces open, closed and paused windows", async ({
     page,
   }) => {
     for (const state of ["open", "future", "closed", "paused"] as const) {
@@ -175,8 +175,8 @@ test.describe("season overview composition", () => {
       ]);
       await page.goto("/tournaments/test-cup");
       await expect(
-        page.locator('#links a[href="/tournaments/test-cup/register"]'),
-      ).toHaveCount(state === "open" ? 1 : 0);
+        page.locator('.stage-scroll a[href="/tournaments/test-cup/register"]'),
+      ).toHaveCount(1);
       await page.goto("/tournaments/test-cup/register");
       await expect(
         page.getByRole("heading", {

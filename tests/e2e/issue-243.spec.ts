@@ -64,7 +64,15 @@ test("243 historical presentation", async ({
           expect(data!.y).toBeGreaterThanOrEqual(box!.y + box!.height);
         } else {
           expect(data!.x).toBeGreaterThanOrEqual(box!.x + box!.width);
-          expect(Math.abs(data!.width - box!.width)).toBeLessThan(2);
+          // #265 intentionally caps the five compact metric rows inside the
+          // equal-width data column instead of stretching them to the artwork.
+          const summary = (await page
+            .locator(".archive-overview-summary")
+            .boundingBox())!;
+          expect(data!.width).toBeLessThanOrEqual(box!.width + 1);
+          expect(data!.x + data!.width).toBeLessThanOrEqual(
+            summary.x + summary.width + 1,
+          );
           expect(data!.y).toBeLessThan(box!.y + box!.height);
         }
         await expect(page.locator(".archive-counts dd")).toHaveText([
@@ -96,11 +104,9 @@ test("243 historical presentation", async ({
             path: info.outputPath(`s${season}-${theme}.png`),
             fullPage: false,
           });
-          await page
-            .locator(".archive-overview-summary")
-            .screenshot({
-              path: info.outputPath(`s${season}-${theme}-summary.png`),
-            });
+          await page.locator(".archive-overview-summary").screenshot({
+            path: info.outputPath(`s${season}-${theme}-summary.png`),
+          });
         }
       }
       expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(2);
