@@ -66,6 +66,9 @@ test.describe("focused workflow improvements", () => {
         published: false,
       },
     ]);
+    await db().execute(
+      sql`UPDATE edition_state SET configuration = configuration || '{"published":false}'::jsonb WHERE slug <> 'test-cup'`,
+    );
     for (const locale of ["en", "zh-Hans", "zh-Hant"])
       for (const theme of ["light", "dark"]) {
         await preferences(context, locale, theme);
@@ -84,8 +87,10 @@ test.describe("focused workflow improvements", () => {
           height: 900,
         });
         if (isMobile) await page.locator(".menu-toggle").click();
-        await page.locator('.main-nav > a[href="/tournaments"]').click();
-        await expect(page).toHaveURL(/\/tournaments$/);
+        await page
+          .locator('.main-nav > a[href="/tournaments/test-cup"]')
+          .click();
+        await expect(page).toHaveURL(/\/tournaments\/test-cup$/);
         await expect(page.locator(".header-tournaments")).toHaveCount(0);
         await expect(page.locator("main")).not.toContainText("PRIVATE_EDITION");
         await page.screenshot({

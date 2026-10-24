@@ -173,17 +173,11 @@ test.describe("#106–#115 shared presentation", () => {
             })
             .where(eq(editionState.slug, "test-cup"));
           await page.goto("/");
-          await expect(page.locator(".hero-status")).toHaveAttribute(
-            "data-state",
-            status,
+          await expect(page.locator(".home-information-link")).toHaveAttribute(
+            "href",
+            status === "completed" ? "/tournaments" : "/tournaments/test-cup",
           );
-          await expect(
-            page.locator(".hero-status button, .hero-status a"),
-          ).toHaveCount(0);
-          const meta = await page.locator(".hero-meta").boundingBox(),
-            title = await page.locator("#hero-title").boundingBox();
-          expect(meta!.y).toBeLessThan(title!.y);
-          await expect(page.locator(".hero-enrollment")).toBeVisible();
+          await expect(page.locator(".home-registration-link")).toBeVisible();
         }
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),

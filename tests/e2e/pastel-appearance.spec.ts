@@ -43,6 +43,7 @@ async function noOverflow(page: Page) {
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
+    `${page.url()} at ${page.viewportSize()?.width}px`,
   ).toBe(true);
 }
 async function accessible(page: Page) {

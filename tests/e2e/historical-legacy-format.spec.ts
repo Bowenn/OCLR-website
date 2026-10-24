@@ -133,7 +133,14 @@ test.describe("legacy historical evidence", () => {
           await expect(page.locator(".archive-map-item")).toHaveCount(1);
           await expect(page.locator(".map-slot-badge")).toHaveText("ACE1");
         } else {
+          await page
+            .getByRole("button", { name: "Knockout", exact: true })
+            .click();
           await expect(page.locator(".match-card")).toHaveCount(10);
+          await page
+            .locator(".archive-competition > .event-tabs button")
+            .first()
+            .click();
           await page.getByRole("button", { name: "A", exact: true }).click();
           await expect(page.locator(".match-card")).toHaveCount(6);
           await expect(

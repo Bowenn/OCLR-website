@@ -73,7 +73,7 @@ for (const locale of ["zh-Hans", "zh-Hant", "en"])
         const account = header.locator("button.account-control");
         const appearanceTrigger = header.locator(".appearance-trigger");
         const language = header.locator(".language-control > button");
-        for (const width of [320, 360, 390, 412, 1440]) {
+        for (const width of [320, 360, 390, 412, 951, 1024, 1440]) {
           await page.setViewportSize({ width, height: 900 });
           await unobstructed(header.locator("button:visible"));
           await activate(account);

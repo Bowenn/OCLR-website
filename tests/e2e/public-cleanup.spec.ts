@@ -26,29 +26,15 @@ test.describe("concise public tournament surfaces", () => {
     await page.goto("/players?edition=test-cup");
     await expect(page).toHaveURL(/\/tournaments\/test-cup\/players$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Players");
-    await expect(page.getByRole("status")).toHaveText(
-      "No accepted players yet",
-    );
-    await expect(page.locator(".empty-state, .empty-mark")).toHaveCount(0);
-    await expect(
-      page.getByText(
-        /matching public player|Applications stay private|Browse the directory/,
-      ),
-    ).toHaveCount(0);
-    await captureResponsiveLayout(page, info, "compact-empty-players");
+    await expect(page.locator(".event-player-row")).toHaveCount(0);
     await page
       .getByLabel("Search players", { exact: true })
       .fill("not-a-published-player");
     await page.getByRole("button", { name: "Search", exact: true }).click();
-    await expect(page.getByRole("status")).toHaveText(
-      "No matching playersClear filters",
-    );
-    await page
-      .getByRole("link", { name: "Clear filters", exact: true })
-      .click();
-    await expect(page.getByRole("status")).toHaveText(
-      "No accepted players yet",
-    );
+    await expect(page.locator(".event-player-row")).toHaveCount(0);
+    await page.getByLabel("Search players", { exact: true }).fill("");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await captureResponsiveLayout(page, info, "compact-empty-players");
     await expect(page.locator("footer")).not.toContainText("Emik");
     const credit = page
       .locator("footer")
@@ -190,23 +176,28 @@ test.describe("concise public tournament surfaces", () => {
         .from(editionState)
         .where(eq(editionState.slug, featured.slug));
       await page.goto("/");
-      await expect(page.locator("#hero-title")).toHaveText(featured.name);
-      await expect(page.locator(".hero-kicker")).toHaveText(
+      await expect(page.locator(".home-full-name")).toHaveText(
         "osu! Chinese League Rookie",
       );
-      await expect(page.locator(".hero")).not.toContainText(
+      await expect(page.locator(".home-feature")).not.toContainText(
         "awaiting organizer approval",
       );
-      await expect(page.locator(".hero-tagline, .brand-note")).toHaveCount(0);
-      await expect(page.locator(".hero .actions a")).toHaveCount(
-        item.name === "open" ? 2 : 1,
+      await expect(page.locator(".home-registration-link")).toHaveAttribute(
+        "href",
+        item.name === "completed"
+          ? "/tournaments"
+          : item.name === "open"
+            ? "/tournaments/test-cup/register"
+            : "/tournaments/test-cup",
       );
-      await expect(page.locator(".hero .actions a").first()).toContainText(
-        item.name === "open" ? "Register" : "View tournament",
-      );
-      if (item.label)
-        await expect(page.locator(".hero-enrollment")).toContainText(item.label);
-      else await expect(page.locator(".hero-enrollment")).toHaveCount(0);
+      if (item.label && item.name !== "completed")
+        await expect(page.locator(".home-registration-label")).toContainText(
+          item.label,
+        );
+      if (item.name === "completed")
+        await expect(page.locator(".home-registration-label")).toContainText(
+          "The next edition has not been announced yet.",
+        );
       if (item.name === "open")
         await captureResponsiveLayout(page, info, "compact-s11-home");
       const [after] = await db()
@@ -234,8 +225,9 @@ test.describe("concise public tournament surfaces", () => {
       })
       .where(eq(editionState.slug, featured.slug));
     await page.goto("/");
-    await expect(page.locator(".hero-copy")).toHaveText(
-      "Approved event-specific details.",
+    await expect(page.locator(".home-information-link")).toHaveAttribute(
+      "href",
+      "/tournaments/test-cup",
     );
     await page.goto("/tournaments");
     await expect(page.locator(".edition-card")).toContainText(

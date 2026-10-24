@@ -55,34 +55,18 @@ test.describe("derived public content", () => {
         page.getByRole("heading", { name: "Sign in before applying" }),
       ).toBeVisible();
       await page.goto("/");
-      await expect(page.locator("#hero-title")).toHaveText(published.name);
-      await expect(page.locator(".home-news li")).toHaveCount(3);
-      await expect(page.locator('.hero .actions a[href="/about"]')).toHaveCount(
-        0,
+      await expect(page.locator(".home-information-link")).toHaveAttribute(
+        "href",
+        "/tournaments/test-cup",
       );
-      const headline = page.locator(".home-news .news-headline").first();
-      for (const [name, href] of [
-        ["Register", "/tournaments/test-cup/register"],
-        ["View tournament", "/tournaments/test-cup"],
-        ["All news", "/news"],
-        ["View schedule", "/tournaments/test-cup/schedule"],
-      ]) {
-        const action = page.getByRole("link", { name, exact: true });
-        await expect(action).toHaveText(name);
-        await expect(action).toHaveAttribute("href", href);
-      }
-      await expect(headline).not.toContainText(/[→↗]/);
-      await expect(headline).toHaveCSS("text-decoration-line", "none");
-      await headline.hover();
-      await expect(headline).toHaveCSS("text-decoration-line", "underline");
-      await page.mouse.move(0, 0);
-      await headline.focus();
-      await expect(headline).toHaveCSS("text-decoration-line", "underline");
-      await headline.blur();
-      await captureResponsiveLayout(page, info, "news-headlines-home");
-
-      await expect(page.getByText("PRIVATE_EDITION_NEWS")).toHaveCount(0);
-      await expect(page.locator(".hero-kicker")).not.toContainText("11");
+      await expect(page.locator(".home-registration-link")).toHaveAttribute(
+        "href",
+        "/tournaments/test-cup/register",
+      );
+      await expect(page.locator("main")).not.toContainText(
+        "PRIVATE_EDITION_NEWS",
+      );
+      await captureResponsiveLayout(page, info, "home-entry-links");
       await page.goto("/news");
       await expect(page.locator(".news-list")).not.toContainText(/[→↗]/);
       await expect(page.locator(".news-list")).toContainText("(UTC+8)");

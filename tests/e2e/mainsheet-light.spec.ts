@@ -38,7 +38,7 @@ test.describe("MainSheet Light public experience", () => {
         season: "Test",
         branding: {
           logo: "/oclr-s11-square-logo.webp",
-          background: null,
+          background: "/oclr-s11-website-background.webp",
           keyVisual: "/oclr-s11-key-visual.webp",
         },
         rules: {
@@ -108,11 +108,13 @@ test.describe("MainSheet Light public experience", () => {
     const poolUrl = `/api/tournaments/test-cup/mappools/${seed.poolId}`;
     const before = await (await context.request.get(poolUrl)).json();
     await page.goto(base);
-    await expect(page.locator(".event-artwork img")).toBeVisible();
-    await expect(page.locator(".event-milestones")).toContainText(
-      "To be announced",
+    await expect(page.locator(".information-banner img")).toBeVisible();
+    await expect(page.locator(".stage-scroll")).toContainText(
+      "Published test milestone",
     );
-    await expect(page.locator(".event-intro")).toContainText("OCLR 公開測試賽");
+    await expect(page.locator("#information-title")).toContainText(
+      "OCLR 公開測試賽",
+    );
     await expect(page.locator(".public-tournament")).toBeVisible();
     for (const section of ["", "/schedule", "/mappools", "/teams", "/rules"]) {
       await page.goto(base + section);
@@ -172,19 +174,12 @@ test.describe("MainSheet Light public experience", () => {
     expect(decodeURIComponent(new URL(page.url()).hash)).toBe("#" + ids[1]);
     expect((await headings.nth(1).boundingBox())!.y).toBeGreaterThanOrEqual(65);
     await page.goto(base + "/schedule");
-    await expect(page.locator(".public-match-card")).toHaveCount(1);
-    await page.getByRole("button", { name: "Compact", exact: true }).click();
-    await expect(
-      page.locator(
-        '.public-match-list[data-view="compact"] .public-match-card',
-      ),
-    ).toHaveCount(1);
-    await page
-      .getByRole("searchbox", { name: "Search matches" })
-      .fill("NO_MATCH");
-    await expect(page.locator(".public-match-card")).toHaveCount(0);
-    await page.getByRole("searchbox", { name: "Search matches" }).fill("");
-    await expect(page.locator(".public-match-card")).toHaveCount(1);
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
+    const round = page.getByRole("combobox", { name: "Rounds", exact: true });
+    await round.selectOption({ index: 1 });
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
+    await round.selectOption("");
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(1);
     await page.goto(base + `/mappools/${seed.poolId}`);
     await page.getByRole("button", { name: "DT", exact: true }).click();
     await expect(page.locator(".map-browse-card")).toHaveCount(1);
@@ -264,11 +259,13 @@ test.describe("MainSheet Light public experience", () => {
         await context.request.get("/api/tournaments/private-test-cup/mappools")
       ).json(),
     ).toEqual([]);
-    await context.route(/\/oclr-s11-key-visual-enhanced-\d+\.webp$/, (route) =>
+    await context.route("**/oclr-s11-website-background.webp", (route) =>
       route.abort(),
     );
     await page.goto(base);
-    await expect(page.locator(".event-artwork-fallback")).toBeVisible();
+    await expect(page.locator("#information-title")).toContainText(
+      "OCLR 公開測試賽",
+    );
     const admin = await browser.newContext({
       storageState: englishStorage,
       baseURL: "http://127.0.0.1:3100",

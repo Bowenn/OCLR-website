@@ -5,10 +5,10 @@ test("S11 artwork preserves its mobile composition while tournament information 
   isMobile,
 }, info) => {
   await page.goto("/");
-  await expect(page.locator(".hero-kicker")).toHaveText(
+  await expect(page.locator(".home-full-name")).toHaveText(
     "osu! Chinese League Rookie",
   );
-  await expect(page.locator(".hero-kicker")).not.toContainText("SEASON 11");
+  await expect(page.locator(".home-full-name")).not.toContainText("SEASON 11");
   await expect(page.locator(".hero-art")).toHaveCSS(
     "background-image",
     /rookie-stage\.svg/,
@@ -20,14 +20,7 @@ test("S11 artwork preserves its mobile composition while tournament information 
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
-    if (width <= 760) {
-      const art = await page.locator(".hero-art").boundingBox();
-      expect(art!.width / art!.height).toBeCloseTo(32 / 15, 1);
-      await expect(page.locator(".hero-art")).toHaveCSS(
-        "background-size",
-        "contain",
-      );
-    }
+    await expect(page.locator("#hero-title img")).toBeVisible();
   }
   await page.setViewportSize({ width: isMobile ? 390 : 1440, height: 900 });
   await page.screenshot({

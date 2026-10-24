@@ -76,7 +76,7 @@ test.describe("PR 191 public data regressions", () => {
         await expect(
           page.getByText(/Public staff profiles have not been announced/),
         ).toBeVisible();
-        await expect(page.locator(".organizer-people")).toHaveCount(0);
+        await expect(page.locator(".public-staff-list > li")).toHaveCount(0);
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
@@ -100,7 +100,7 @@ test.describe("PR 191 public data regressions", () => {
       await expect(
         page.locator(".organizer-directory > p.muted"),
       ).toBeVisible();
-      await expect(page.locator(".organizer-people")).toHaveCount(0);
+      await expect(page.locator(".public-staff-list > li")).toHaveCount(0);
     }
     await context.addCookies([
       { name: "oclr-locale", value: "en", url: "http://127.0.0.1:3100" },

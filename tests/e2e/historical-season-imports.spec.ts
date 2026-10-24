@@ -19,7 +19,7 @@ const samples = [
     picks: 96,
     coaches: 16,
     pools: 4,
-    staff: 0,
+    staff: 33,
     images: 4,
     searchId: "1176704",
     searchName: "Lapis",
@@ -304,7 +304,7 @@ test.describe("historical season import handoff", () => {
       ).toHaveCount(sample.staff);
       if (sample.key === "s8") {
         await expect(page.locator(".historical-archive")).toContainText(
-          "Not recorded",
+          "Sonoboi",
         );
         await page.goto(`/tournaments/${slug}/bracket`);
         await expect(

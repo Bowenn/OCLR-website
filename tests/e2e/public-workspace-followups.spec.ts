@@ -152,7 +152,7 @@ test.describe("public and operational follow-ups", () => {
           });
           if ([0, 3, 10].includes(index)) await accessible(page);
           if (index === 3) {
-            const heading = await page.locator(".page-heading").boundingBox();
+            const heading = await page.locator("main h1").boundingBox();
             expect(heading!.height).toBeLessThan(160);
             if (!isMobile)
               expect(
@@ -182,7 +182,7 @@ test.describe("public and operational follow-ups", () => {
         ]) {
           await page.goto(`/tournaments/polish-empty-test/${section}`);
           expect(
-            (await page.locator(".page-heading").boundingBox())!.height,
+            (await page.locator("main h1").boundingBox())!.height,
           ).toBeLessThan(160);
           await noOverflow(page);
           await page.screenshot({
@@ -241,13 +241,14 @@ test.describe("public and operational follow-ups", () => {
           page.locator('.tournament-navigation a[href$="/participants"]'),
         ).toHaveCount(0);
         await expect(page.locator('a[href$="/teams"]')).not.toHaveCount(0);
-        await expect(page.locator(".edition-players li")).toHaveCount(3);
-        const captain =
-          locale === "en" ? "Captain" : locale === "zh-Hans" ? "队长" : "隊長";
+        await expect(
+          page.locator(".edition-players .event-player-row"),
+        ).toHaveCount(3);
+        const captain = "Captain";
         await expect(
           page
-            .locator(".edition-players .badge")
-            .filter({ hasText: new RegExp(`^${captain}$`) }),
+            .locator(".edition-players .event-player-identity .muted")
+            .filter({ hasText: new RegExp(`^${captain}`) }),
         ).toHaveCount(1);
         expect(await page.locator("main").innerText()).not.toMatch(
           /PRIVATE_CONTACT|INTERNAL_REASON|Private Applicant/,
@@ -274,12 +275,19 @@ test.describe("public and operational follow-ups", () => {
         await expect(
           page
             .locator(".public-roster-grid .badge")
-            .filter({ hasText: captain }),
+            .filter({
+              hasText:
+                locale === "en"
+                  ? "Captain"
+                  : locale === "zh-Hans"
+                    ? "队长"
+                    : "隊長",
+            }),
         ).toHaveCount(1);
         await page.goto("/tournaments/empty-followup-test/teams");
         await expect(page.locator(".page-heading")).toBeVisible();
         expect(
-          (await page.locator(".page-heading").boundingBox())!.height,
+          (await page.locator("main h1").boundingBox())!.height,
         ).toBeLessThan(160);
         expect(
           (await page.locator(".empty-state").boundingBox())!.height,
@@ -303,7 +311,9 @@ test.describe("public and operational follow-ups", () => {
     await preferences(context, "en");
     await page.goto("/tournaments/test-cup/players");
     await expect(
-      page.locator(".edition-players .badge").filter({ hasText: /^Captain$/ }),
+      page
+        .locator(".edition-players .event-player-identity .muted")
+        .filter({ hasText: /^Captain$/ }),
     ).toHaveCount(0);
     expect(
       (

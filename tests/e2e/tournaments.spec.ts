@@ -338,15 +338,10 @@ test.describe("browser-managed authoritative tournament editions", () => {
       await expect(
         guestPage.getByRole("heading", { name: "Original synthetic rules" }),
       ).toBeVisible();
-      await guestPage.goto(`/tournaments/${slug}/schedule`);
-      await expect(
-        guestPage.getByRole("heading", {
-          name: "Synthetic captain announcement",
-        }),
-      ).toBeVisible();
-      await expect(
-        guestPage.getByText("To be announced", { exact: true }),
-      ).toBeVisible();
+      await guestPage.goto(`/tournaments/${slug}`);
+      await expect(guestPage.locator(".stage-scroll")).toContainText(
+        "Synthetic captain announcement",
+      );
       await guestPage.goto(`/tournaments/${slug}/register`);
       await expect(
         guestPage.getByRole("heading", { name: "Registration is not open" }),

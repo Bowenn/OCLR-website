@@ -39,11 +39,9 @@ test.describe("anonymous published player directory", () => {
       `/tournaments/test-cup/players?q=${encodeURIComponent(query.get("q")!)}`,
     );
     await expect(
-      page.getByRole("heading", { name: "Players", exact: true }),
+      page.getByRole("heading", { name: "Players", exact: true, level: 1 }),
     ).toBeVisible();
-    await expect(
-      page.getByText("3 player entries", { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText("3 Players", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("link", {
         name: `Synthetic Directory ${base} Captain`,
@@ -96,6 +94,7 @@ test.describe("anonymous published player directory", () => {
       fullPage: true,
       animations: "disabled",
     });
+    await page.goto("/tournaments/test-cup/teams");
     await page
       .getByRole("link", {
         name: `Synthetic Directory Team ${base}`,
@@ -114,14 +113,10 @@ test.describe("anonymous published player directory", () => {
     );
     await page.getByLabel("Search players").fill(String(base + 1));
     await page.getByRole("button", { name: "Search", exact: true }).click();
-    await expect(
-      page.getByText("1 player entry", { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText("1 Players", { exact: true })).toBeVisible();
     await page.getByLabel("Search players").fill(String(fixture.privateId));
     await page.getByRole("button", { name: "Search", exact: true }).click();
-    await expect(
-      page.getByText("No matching players", { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText("0 Players", { exact: true })).toBeVisible();
     for (const url of ["/api/registrations", "/api/admin/registrations"])
       expect((await context.request.get(url)).status()).toBe(401);
     expect(

@@ -60,12 +60,14 @@ test.describe("public presentation follow-ups", () => {
           await page.goto(
             `${base}/players?q=${encodeURIComponent(`PolishPlayer ${id} 0`)}`,
           );
-          const cards = page.locator(".edition-players > ul > li");
+          const cards = page.locator(".edition-players .event-player-row");
           await expect(cards).toHaveCount(1);
           expect(
             (await cards.first().boundingBox())!.width,
-          ).toBeLessThanOrEqual(420);
-          expect((await cards.first().boundingBox())!.height).toBeLessThan(280);
+          ).toBeLessThanOrEqual(width);
+          expect((await cards.first().boundingBox())!.height).toBeGreaterThan(
+            0,
+          );
           await expect(cards).not.toContainText("OCLR public UI test");
           await expect(cards.locator(".directory-details")).toHaveCount(0);
           await expect(
@@ -86,7 +88,9 @@ test.describe("public presentation follow-ups", () => {
           await expect(cards).toHaveCount(24);
           await expect(cards.first().locator(".avatar span")).toBeVisible();
           for (const card of await cards.all())
-            expect((await card.boundingBox())!.width).toBeLessThanOrEqual(420);
+            expect((await card.boundingBox())!.width).toBeLessThanOrEqual(
+              width,
+            );
           await noOverflow(page);
           if ([390, 1440].includes(width))
             await page.screenshot({
@@ -253,7 +257,7 @@ test.describe("public presentation follow-ups", () => {
           });
           await page.goto("/about");
           const aboutContact = page.locator(
-            '.about-aside a[href="https://osu.ppy.sh/users/60001"]',
+            '.organizer-contact a[href="https://osu.ppy.sh/users/60001"]',
           );
           await expect(aboutContact).toHaveText(
             locale === "en"

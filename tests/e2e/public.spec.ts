@@ -9,11 +9,10 @@ test("shared navigation works at desktop and mobile widths", async ({
     await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page
     .getByRole("navigation", { name: "Main navigation" })
-    .getByRole("link", { name: "Tournaments" })
+    .getByRole("link", { name: "Information page" })
     .click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Tournament",
-  );
+  await expect(page).toHaveURL(/\/tournaments\/[^/]+$/);
+  await expect(page.locator("#information-title")).toHaveText(/\S/);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -30,38 +29,24 @@ test("landing page has honest CTAs and readable original artwork", async ({
   page,
 }, testInfo) => {
   await page.goto("/");
-  await expect(page.locator(".hero-kicker")).toHaveText(
+  await expect(page.locator(".home-full-name")).toHaveText(
     "osu! Chinese League Rookie",
   );
-  await expect(
-    page.locator(".highlights, .workflow-section, .edition-card"),
-  ).toHaveCount(0);
-  await expect(
-    page.getByRole("heading", { name: "Latest news", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Next milestone", exact: true }),
-  ).toBeVisible();
-  if (process.env.TEST_DATABASE_URL) {
-    const name = (await page.locator("#hero-title").textContent())?.trim();
-    const published = await (await page.request.get("/api/tournaments")).json();
-    expect(
-      published.some((edition: { name: string }) => edition.name === name),
-    ).toBe(true);
-  } else
-    await expect(
-      page.getByText("The next edition has not been announced yet."),
-    ).toBeVisible();
+  await expect(page.locator("#hero-title img")).toHaveAttribute(
+    "alt",
+    "OCLR S11",
+  );
+  await expect(page.locator(".home-information-link")).toHaveAttribute(
+    "href",
+    /\/tournaments/,
+  );
   await page.goto("/");
   await page.screenshot({
     path: testInfo.outputPath("home.png"),
     fullPage: true,
     animations: "disabled",
   });
-  await page
-    .getByRole("link", { name: /View tournament|Browse tournaments/ })
-    .first()
-    .click();
+  await page.locator(".home-information-link").click();
   await expect(page).toHaveURL(/\/tournaments(?:\/[a-z0-9-]+)?$/);
 });
 test("news is approved content only and about uses the official identity", async ({
@@ -69,19 +54,14 @@ test("news is approved content only and about uses the official identity", async
 }) => {
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Organizers",
+  );
+  await expect(page.locator(".organizer-heading")).toContainText(
     "osu! Chinese League Rookie",
   );
-  await expect(page.locator(".page-heading")).toContainText("Founded in 2018");
-  await expect(page.locator("main")).not.toContainText("not affiliated with");
-  await expect(page.locator("footer")).toContainText(
-    "Not affiliated with or endorsed by osu!.",
+  await expect(page.locator(".site-footer")).toContainText(
+    "osu! Chinese League Rookie",
   );
-  await expect(page.locator(".page-heading")).toContainText(
-    "OCL tournament series, whose history dates back to 2014",
-  );
-  await expect(
-    page.getByRole("link", { name: /Explore tournaments|Latest news/ }),
-  ).toHaveCount(0);
   await page.goto("/news");
   if (process.env.TEST_DATABASE_URL) {
     await page

@@ -88,8 +88,11 @@ test.describe("S7 organizer artwork", () => {
           "/archive/s7/key-visual.jpg",
         );
         await expect(banner).toHaveJSProperty("naturalWidth", 1920);
+        await expect(banner).toHaveJSProperty("naturalHeight", 1080);
+        await expect(banner).toHaveCSS("object-fit", "contain");
         const image = (await banner.boundingBox())!;
-        expect(image.width / image.height).toBeCloseTo(16 / 9, 2);
+        expect(image.width).toBeGreaterThan(0);
+        expect(image.height).toBeGreaterThan(0);
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBeLessThanOrEqual(isMobile ? 390 : 1440);

@@ -312,6 +312,7 @@ test.describe("historical archive browser workflow", () => {
     await expect(page.locator(".archive-draft-picks li")).toHaveCount(1);
     await captureResponsiveLayout(page, info, "archive-draft");
     await page.goto(`/tournaments/${slug}/bracket`);
+    await page.getByRole("button", { name: "Knockout", exact: true }).click();
     await expect(page.locator(".bracket-round")).toHaveCount(1);
     await expect(
       page.locator('.bracket-frame [data-match-id="one"]'),
@@ -537,6 +538,9 @@ test.describe("historical archive browser workflow", () => {
             ).toHaveCount(4);
             await expect(page.locator(".archive-pool-source")).toHaveCount(0);
           } else {
+            await page
+              .getByRole("button", { name: "Knockout", exact: true })
+              .click();
             await expect(page.locator(".bracket-round")).toHaveCount(5);
             await expect(
               page.locator(".bracket-frame .match-card"),
@@ -544,6 +548,10 @@ test.describe("historical archive browser workflow", () => {
             await expect
               .poll(() => page.locator(".bracket-connectors path").count())
               .toBeGreaterThan(0);
+            await page
+              .locator(".archive-competition > .event-tabs button")
+              .first()
+              .click();
             for (const label of ["A", "B"]) {
               await page
                 .getByRole("button", { name: label, exact: true })
@@ -571,7 +579,7 @@ test.describe("historical archive browser workflow", () => {
               });
             }
             await page
-              .getByRole("button", { name: "Match path", exact: true })
+              .getByRole("button", { name: "Knockout", exact: true })
               .click();
           }
           expect((await new AxeBuilder({ page }).analyze()).violations).toEqual(

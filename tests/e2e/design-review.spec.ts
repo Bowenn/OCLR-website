@@ -178,7 +178,7 @@ test.describe("concept-aligned tournament surfaces", () => {
             page
               .getByRole("navigation", { name: "Tournament navigation" })
               .locator('[aria-current="page"]'),
-          ).toHaveText("Overview");
+          ).toHaveText("Main page");
         }
         expect(await page.locator("main").innerText()).not.toContain(
           "VISUAL_PRIVATE_ANSWER",
@@ -191,7 +191,7 @@ test.describe("concept-aligned tournament surfaces", () => {
         name: "Tournament navigation",
       });
       await expect(tournamentNav.locator('[aria-current="page"]')).toHaveText(
-        "Bracket",
+        "Schedule",
       );
       await expect(
         tournamentNav.locator('[aria-current="page"]'),

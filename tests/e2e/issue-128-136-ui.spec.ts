@@ -250,24 +250,35 @@ test.describe("operations presentation batch", () => {
       .update(editionState)
       .set({ configuration: config })
       .where(eq(editionState.slug, "test-cup"));
+    // The homepage selects one public edition; unrelated session fixtures
+    // must not replace the edition whose registration window is under test.
+    await db().execute(
+      sql`UPDATE edition_state SET configuration = configuration || '{"published":false}'::jsonb WHERE slug <> 'test-cup'`,
+    );
     for (const [locale, expected] of [
-      ["en", "Registration window begins"],
-      ["zh-Hans", "报名开放"],
-      ["zh-Hant", "報名開放"],
+      ["en", "Registration opens"],
+      ["zh-Hans", "报名将于"],
+      ["zh-Hant", "報名將於"],
     ]) {
       await context.addCookies([
         { name: "oclr-locale", value: locale, url: origin },
       ]);
       await page.goto("/");
-      await expect(page.locator("aside")).toContainText(expected);
+      await expect(page.locator(".home-registration-label")).toContainText(
+        expected,
+      );
+      await expect(page.locator(".home-registration-label")).toContainText(
+        "2098",
+      );
       await page.reload();
-      await expect(page.locator("aside")).toContainText(expected);
-      await page.goto("/tournaments/test-cup/schedule");
+      await expect(page.locator(".home-registration-label")).toContainText(
+        expected,
+      );
+      await page.goto("/tournaments/test-cup");
       await expect(
-        page.getByRole("heading", {
-          name: "Registration window ends",
-          exact: true,
-        }),
+        page
+          .locator("#schedule")
+          .getByText("Registration window ends", { exact: true }),
       ).toBeVisible();
       for (const theme of ["light", "dark"])
         for (const appearance of ["default", "cute-pastel"]) {

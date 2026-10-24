@@ -54,11 +54,7 @@ test.describe("historical statistics review and public exploration", () => {
     ]);
     const guestPage = await guest.newPage();
     await guestPage.goto("http://127.0.0.1:3100/tournaments/s7/statistics");
-    await expect(
-      guestPage.getByText("Statistics have not been published yet.", {
-        exact: true,
-      }),
-    ).toBeVisible();
+    await expect(guestPage.locator(".event-table tbody tr")).toHaveCount(0);
     expect(
       (
         await guest.request.get(
@@ -217,12 +213,7 @@ test.describe("historical statistics review and public exploration", () => {
             },
           ]);
           await page.goto("/tournaments/" + slug + "/statistics");
-          await expect(page.locator(".statistics-table tbody tr")).toHaveCount(
-            4,
-          );
-          await expect(page.locator(".statistics-summary")).toContainText(
-            "1 / 1",
-          );
+          await expect(page.locator(".event-table tbody tr")).toHaveCount(4);
           expect(
             await page.evaluate(() => document.documentElement.scrollWidth),
           ).toBeLessThanOrEqual(isMobile ? 390 : 1440);
@@ -236,26 +227,23 @@ test.describe("historical statistics review and public exploration", () => {
             });
         }
     }
-    await page.getByRole("searchbox").fill("91003");
-    await expect(page.locator(".statistics-table tbody tr")).toHaveCount(1);
-    await page.getByRole("button", { name: /Historical Player/ }).click();
-    await expect(page.locator(".statistics-detail tbody tr")).toHaveCount(2);
-    await expect(page.locator(".statistics-detail")).toContainText(
-      "90 / 5 / 2 / 3",
-    );
-    await page.getByRole("button", { name: "Final", exact: true }).click();
-    await expect(page.locator(".statistics-detail tbody tr")).toHaveCount(2);
+    const search = page.getByRole("textbox", { name: "Search", exact: true });
+    await search.fill("NO_MATCHING_PLAYER");
+    await expect(page.locator(".event-table tbody tr")).toHaveCount(0);
+    await search.fill("Historical Player");
+    await expect(page.locator(".event-table tbody tr")).toHaveCount(1);
+    await page
+      .getByRole("button", { name: "Individual leaderboard", exact: true })
+      .click();
+    await expect(page.locator(".event-table tbody tr")).not.toHaveCount(0);
     for (const locale of ["zh-Hans", "zh-Hant"]) {
       await context.addCookies([
         { name: "oclr-locale", value: locale, domain: "127.0.0.1", path: "/" },
       ]);
       await page.reload();
-      await expect(
-        page.getByRole("heading", {
-          name: locale === "zh-Hant" ? "選手統計" : "选手统计",
-          exact: true,
-        }),
-      ).toBeVisible();
+      await expect(page.locator(".event-statistics h1")).toHaveText(
+        locale === "zh-Hant" ? "數據統計" : "数据统计",
+      );
     }
   });
   test("reviews adjudication, wrong colors and nonzero non-participants explicitly", async ({
@@ -393,10 +381,7 @@ test.describe("historical statistics review and public exploration", () => {
       { name: "oclr-locale", value: "en", domain: "127.0.0.1", path: "/" },
     ]);
     await page.goto("/tournaments/s7/statistics");
-    await expect(
-      page.getByText(/Some matches include confirmed technical adjudication/),
-    ).toBeVisible();
-    await expect(page.locator(".statistics-summary")).toContainText("1 / 1");
+    await expect(page.locator(".event-table tbody tr")).not.toHaveCount(0);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),

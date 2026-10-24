@@ -178,12 +178,16 @@ test.describe("private replay workflow", () => {
     await dialog
       .getByRole("button", { name: "Delete replay", exact: true })
       .click();
-    await expect(dialog.getByRole("alert")).toBeVisible();
-    await expect(dialog.getByRole("alert")).toHaveText(
-      "This pool changed. Refresh before confirming.",
-    );
+    await expect(dialog).not.toBeVisible();
+    await expect(
+      page.locator(".mappool-replays").getByRole("alert"),
+    ).toHaveText("This pool changed. Refresh before confirming.");
     await expect(page.locator(".replay-item")).toHaveCount(1);
     await page.unroute(deleteUrl);
+    await page
+      .getByRole("button", { name: "Delete replay", exact: true })
+      .click();
+    await expect(dialog).toBeVisible();
     await dialog
       .getByRole("button", { name: "Delete replay", exact: true })
       .click();

@@ -28,6 +28,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       closesAt: "2026-10-31T15:10:23.456+08:00",
       withdrawUntil: "2026-10-30T15:10:17.789+08:00",
       questions: [],
+      publicIntroductionQuestionId: null,
     };
     await db().delete(editionState).where(eq(editionState.slug, slug));
     await seedEditions([
@@ -53,6 +54,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
       await page.getByRole("button", { name, exact: true }).click();
       expect((await response).status()).toBe(200);
       await expect(page.getByRole("status")).toContainText("saved");
+      await page.reload();
     }
     async function zone(timeZone: string) {
       const state = await current();
@@ -370,6 +372,7 @@ test.describe("compact zoned date and 24-hour time editing", () => {
         .click();
       expect((await response).status()).toBe(200);
       await expect(page.getByRole("status")).toContainText("saved");
+      await page.reload();
       await tab("Registration");
     }
     await page.goto(`/admin/tournaments/${slug}/settings?section=registration`);

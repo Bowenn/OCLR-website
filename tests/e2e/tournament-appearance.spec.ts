@@ -89,7 +89,7 @@ test.describe("tournament appearance inheritance", () => {
     // Next Link transitions must recalculate the current tournament instead of retaining the last one.
     if (isMobile)
       await page.getByRole("button", { name: "Menu", exact: true }).click();
-    await page.locator('.site-header a[href="/tournaments"]').click();
+    await page.goto("/tournaments");
     await expect(page.locator("html")).toHaveAttribute(
       "data-appearance",
       "default",

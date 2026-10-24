@@ -125,9 +125,9 @@ test.describe("compact operational UI in both designs and brightness modes", () 
         }
         if (section === "registrations") {
           const actions = page.locator(".registration-review-actions");
-          expect(await actions.getByRole("button").count()).toBe(1);
+          expect(await actions.getByRole("button").count()).toBe(2);
           expect(await actions.getByRole("link").count()).toBe(1);
-          const add = await actions.getByRole("button").boundingBox(),
+          const add = await actions.getByRole("button").first().boundingBox(),
             csv = await actions.getByRole("link").boundingBox();
           expect(add!.y).toBeLessThanOrEqual(csv!.y);
           if (!isMobile) {
@@ -147,7 +147,7 @@ test.describe("compact operational UI in both designs and brightness modes", () 
           await expect(cards.locator(".country-flag")).toHaveCount(2);
           const first = cards.first();
           const avatar = await first.locator(".avatar").boundingBox(),
-            name = await first.locator("h3 a").boundingBox();
+            name = await first.locator("h4 a").boundingBox();
           expect(Math.abs(avatar!.y - name!.y)).toBeLessThan(5);
         }
         expect(
