@@ -10,7 +10,7 @@ import {
 } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { registrations, users } from "../../src/db/schema";
+import { registrations, users, staffRoles } from "../../src/db/schema";
 import { assertTestDatabase } from "../database";
 import { edition } from "../fixtures/edition";
 import { seedEditions } from "../fixtures/editions";
@@ -98,6 +98,23 @@ describe.skipIf(!url)(
       expect(
         (await publicPlayerIntroductions(cup.slug, [target], "intro")).size,
       ).toBe(0);
+    });
+    it("preserves the merged Developer read-only restriction", async () => {
+      await db()
+        .insert(staffRoles)
+        .values({
+          userId: actor.osuId,
+          role: "developer",
+          editionSlug: null,
+          grantedBy: actor.osuId,
+        });
+      await expect(
+        postPlayerMessage(actor, cup.slug, target, {
+          requestId: randomUUID(),
+          text: "blocked",
+        }),
+      ).rejects.toMatchObject({ status: 403 });
+      expect(await publicPlayerMessages(cup.slug, target)).toEqual([]);
     });
     it("signs from the authenticated author, safely stores literal text and deduplicates concurrent retries", async () => {
       const input = {

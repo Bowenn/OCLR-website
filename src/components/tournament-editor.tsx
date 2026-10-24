@@ -776,6 +776,7 @@ function Registration({ data, saved }: EditorProps) {
             <label className="field">
               <span>{tr("Public self introduction question")}</span>
               <select
+                aria-label={tr("Public self introduction question")}
                 value={publicIntroductionQuestionId}
                 onChange={(e) =>
                   setPublicIntroductionQuestionId(e.target.value)
