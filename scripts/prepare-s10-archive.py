@@ -138,7 +138,10 @@ for pool_id, heading, first, last in [("gs1",113,117,135),("gs2",87,91,109),("sf
                     conflicts.append({"slot":m["slot"],"field":key,"stage":v,"combined":m[key]})
                 m[key] = v
         maps.append(m)
-    pools.append({"id":pool_id,"name":value("Mappools",f"D{heading}").strip(),"source":f"Mappools!D{heading}:Q{last}","maps":maps})
+    # Organizer-approved #261: the pool name excludes the Bo/Ban heading suffix.
+    name = value("Mappools",f"D{heading}").split("//", 1)[0].strip()
+    assert name, (pool_id, "Missing pool name before //")
+    pools.append({"id":pool_id,"name":name,"source":f"Mappools!D{heading}:Q{last}","maps":maps})
 for row in range(2,17):
     staff.append({**identity("Staff",f"B{row}"),"position":value("Staff",f"C{row}"),"source":f"Staff!B{row}:C{row}"})
 links = [{"label":value("Landing",f"O{row}"),"url":link("Landing",f"O{row}")} for row in [6,10,14]]

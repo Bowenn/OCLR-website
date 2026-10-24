@@ -83,6 +83,17 @@ describe("S10 historical source package", () => {
     });
   });
   it("uses the independent GS1 table and preserves all five historical pools", () => {
+    // Check the prepared data itself; schema parsing must not hide stale values.
+    const prepared = JSON.parse(
+      readFileSync("docs/imports/s10-archive.json", "utf8"),
+    );
+    expect(prepared.pools.map((p: { name: string }) => p.name)).toEqual([
+      "Group Stage 1",
+      "Group Stage 2",
+      "Semifinals",
+      "Finals",
+      "Grand Finals",
+    ]);
     expect(archive.pools.map((p) => [p.id, p.maps.length])).toEqual([
       ["gs1", 19],
       ["gs2", 19],

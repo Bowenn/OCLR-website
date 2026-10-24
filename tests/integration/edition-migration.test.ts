@@ -17,7 +17,194 @@ import { closeDb } from "../../src/db";
 import { importLegacyEditions } from "../../scripts/import-editions";
 import { edition } from "../fixtures/edition";
 import bootstrap from "../../drizzle/legacy-editions.json" with { type: "json" };
+import s10Archive from "../../docs/imports/s10-archive.json" with { type: "json" };
 const base = process.env.TEST_DATABASE_URL;
+
+describe.skipIf(!base)("S10 stored pool-name correction (#261)", () => {
+  const correction = readFileSync("drizzle/0036_s10_pool_names.sql", "utf8");
+  const legacyArchive = {
+    ...s10Archive,
+    pools: s10Archive.pools.map((pool, index) => ({
+      ...pool,
+      name: ` \t${pool.name}  // Bo${index < 3 ? 11 : 13} - 2 Bans // source note`,
+    })),
+  };
+  const { slug: _slug, ...configuration } = {
+    ...edition,
+    slug: "s10",
+    status: "completed",
+    registration: null,
+    archive: legacyArchive,
+  };
+  void _slug;
+
+  it("upgrades raw stored names once, preserving all other data and immutable history", async () =>
+    isolated(async (pool) => {
+      const folder = mkdtempSync(join(tmpdir(), "oclr-before-s10-names-"));
+      try {
+        cpSync("drizzle", folder, { recursive: true });
+        const file = join(folder, "meta/_journal.json");
+        const journal = JSON.parse(readFileSync(file, "utf8"));
+        journal.entries = journal.entries.filter(
+          (entry: { idx: number }) => entry.idx < 36,
+        );
+        writeFileSync(file, JSON.stringify(journal));
+        await migrate(drizzle(pool), { migrationsFolder: folder });
+        // No-delimiter names must remain literal. Reuse a map-free extra pool.
+        const unchangedPool = {
+          id: "extra",
+          name: "  Literal name  ",
+          source: "Synthetic",
+          maps: [],
+        };
+        const before = {
+          ...configuration,
+          archive: {
+            ...legacyArchive,
+            pools: [...legacyArchive.pools, unchangedPool],
+          },
+        };
+        await pool.query(
+          "INSERT INTO edition_state (slug,configuration,configuration_version,locked_at,setup_version,pool_published) VALUES ('s10',$1,7,now(),4,true),('s9',$1,7,null,0,false),('s10-copy',$1,7,null,0,false)",
+          [JSON.stringify(before)],
+        );
+        await pool.query(
+          "INSERT INTO edition_revisions (edition_slug,version,configuration) VALUES ('s10',7,$1)",
+          [JSON.stringify(before)],
+        );
+        const stateBefore = (
+          await pool.query("SELECT * FROM edition_state ORDER BY slug")
+        ).rows;
+        const historyBefore = (
+          await pool.query(
+            "SELECT * FROM edition_revisions WHERE edition_slug='s10'",
+          )
+        ).rows;
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        const expected = {
+          ...before,
+          archive: {
+            ...before.archive,
+            pools: [...s10Archive.pools, unchangedPool],
+          },
+        };
+        const stateAfter = (
+          await pool.query("SELECT * FROM edition_state ORDER BY slug")
+        ).rows;
+        expect(stateAfter).toEqual(
+          stateBefore.map((row) =>
+            row.slug === "s10"
+              ? {
+                  ...row,
+                  configuration: expected,
+                  configuration_version: 8,
+                  configuration_updated_at: expect.any(Date),
+                }
+              : row,
+          ),
+        );
+        expect(
+          (
+            await pool.query(
+              "SELECT * FROM edition_revisions WHERE edition_slug='s10' AND version=7",
+            )
+          ).rows,
+        ).toEqual(historyBefore);
+        expect(
+          (
+            await pool.query(
+              "SELECT configuration FROM edition_revisions WHERE edition_slug='s10' AND version=8",
+            )
+          ).rows,
+        ).toEqual([{ configuration: expected }]);
+        const audit = (
+          await pool.query(
+            "SELECT * FROM edition_events WHERE edition_slug='s10'",
+          )
+        ).rows;
+        expect(audit).toHaveLength(1);
+        expect(audit[0]).toMatchObject({
+          actor_id: null,
+          kind: "tournament_archive",
+          detail: {
+            source: "0036_s10_pool_names",
+            entity: { type: "tournament", id: "s10" },
+            before: { configuration: before, revision: 7 },
+            after: { configuration: expected, revision: 8 },
+          },
+        });
+        // Replay both the migrator and SQL itself: no extra revision/event/timestamp.
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        await pool.query(correction);
+        expect(
+          (await pool.query("SELECT * FROM edition_state ORDER BY slug")).rows,
+        ).toEqual(stateAfter);
+        expect(
+          (
+            await pool.query(
+              "SELECT * FROM edition_events WHERE edition_slug='s10'",
+            )
+          ).rows,
+        ).toEqual(audit);
+        expect(
+          (
+            await pool.query(
+              "SELECT version FROM edition_revisions WHERE edition_slug='s10' ORDER BY version",
+            )
+          ).rows,
+        ).toEqual([{ version: 7 }, { version: 8 }]);
+      } finally {
+        rmSync(folder, { recursive: true, force: true });
+      }
+    }));
+
+  for (const failure of ["empty name", "revision conflict"]) {
+    it(`fails atomically on ${failure}`, async () =>
+      isolated(async (pool) => {
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        const invalid = structuredClone(configuration);
+        if (failure === "empty name")
+          invalid.archive.pools[0].name = " \t // Bo11 - 2 Bans";
+        await pool.query(
+          "INSERT INTO edition_state (slug,configuration,configuration_version) VALUES ('s10',$1,7)",
+          [JSON.stringify(invalid)],
+        );
+        await pool.query(
+          "INSERT INTO edition_revisions (edition_slug,version,configuration) VALUES ('s10',$1,$2)",
+          [failure === "revision conflict" ? 8 : 7, JSON.stringify(invalid)],
+        );
+        const before = (
+          await pool.query("SELECT * FROM edition_state WHERE slug='s10'")
+        ).rows;
+        const history = (
+          await pool.query(
+            "SELECT * FROM edition_revisions WHERE edition_slug='s10'",
+          )
+        ).rows;
+        await expect(pool.query(correction)).rejects.toThrow(
+          failure === "empty name" ? /must not be empty/ : /duplicate key/,
+        );
+        expect(
+          (await pool.query("SELECT * FROM edition_state WHERE slug='s10'"))
+            .rows,
+        ).toEqual(before);
+        expect(
+          (
+            await pool.query(
+              "SELECT * FROM edition_revisions WHERE edition_slug='s10'",
+            )
+          ).rows,
+        ).toEqual(history);
+        expect(
+          (
+            await pool.query(
+              "SELECT * FROM edition_events WHERE edition_slug='s10'",
+            )
+          ).rows,
+        ).toEqual([]);
+      }));
+  }
+});
 afterEach(async () => {
   await closeDb();
   vi.unstubAllEnvs();
@@ -553,6 +740,7 @@ describe.skipIf(!base)("replay upgrade after the merged Yumu migration", () => {
         cpSync("drizzle", folder, { recursive: true });
         const file = join(folder, "meta/_journal.json");
         const journal = JSON.parse(readFileSync(file, "utf8"));
+        const expectedMigrationCount = journal.entries.length;
         journal.entries = journal.entries.filter(
           (entry: { idx: number }) => entry.idx <= 34,
         );
@@ -580,7 +768,7 @@ describe.skipIf(!base)("replay upgrade after the merged Yumu migration", () => {
               "SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
             )
           ).rows[0].count,
-        ).toBe(journal.entries.length + 1);
+        ).toBe(expectedMigrationCount);
       } finally {
         rmSync(folder, { recursive: true, force: true });
       }

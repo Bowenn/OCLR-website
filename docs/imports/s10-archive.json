@@ -2042,7 +2042,7 @@
   "pools": [
     {
       "id": "gs1",
-      "name": "Group Stage 1 // Bo11 - 2 Bans",
+      "name": "Group Stage 1",
       "source": "Mappools!D113:Q135",
       "maps": [
         {
@@ -2296,7 +2296,7 @@
     },
     {
       "id": "gs2",
-      "name": "Group Stage 2 // Bo11 - 2 Bans",
+      "name": "Group Stage 2",
       "source": "Mappools!D87:Q109",
       "maps": [
         {
@@ -2550,7 +2550,7 @@
     },
     {
       "id": "sf",
-      "name": "Semifinals // Bo11 - 2 Bans",
+      "name": "Semifinals",
       "source": "Mappools!D60:Q82",
       "maps": [
         {
@@ -2804,7 +2804,7 @@
     },
     {
       "id": "f",
-      "name": "Finals // Bo13 - 2 Bans",
+      "name": "Finals",
       "source": "Mappools!D32:Q55",
       "maps": [
         {
@@ -3071,7 +3071,7 @@
     },
     {
       "id": "gf",
-      "name": "Grand Finals // Bo13 - 2 Bans",
+      "name": "Grand Finals",
       "source": "Mappools!D4:Q27",
       "maps": [
         {

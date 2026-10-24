@@ -49,6 +49,14 @@ Apply the organizer's existing instruction **「以各階段獨立圖池表為�
 
 The script reports every override. Independent titles include mapper names in parentheses; preserve them verbatim. The explicit combined mapper field is used only after verifying that it matches the independent title suffix. No source stats are overwritten with live osu! API values. Drain fractions become seconds. Source set links are not mistaken for beatmap IDs. Existing S9-style archive cards, filters, sorting and detail dialogs are reused; without imported beatmapset IDs they retain the existing unavailable-cover fallback.
 
+## Pool name correction (#261)
+
+The organizer requested the five S10 pool names without the `// Bo… - … Bans` suffix. The prepared JSON and extractor now store `Group Stage 1`, `Group Stage 2`, `Semifinals`, `Finals` and `Grand Finals` directly. This is a name correction; historical match rules, bans, IDs, order and all 97 map slots retain their original values.
+
+Migration `0036_s10_pool_names` updates existing completed `s10` archives in `edition_state.configuration.archive.pools`. It locks the edition row, keeps the first `//` prefix with surrounding whitespace removed, and atomically creates the next configuration revision plus an automatic `tournament_archive` audit event identifying the migration (no human actor is invented). Names without `//` and all earlier revisions remain untouched. Missing/already corrected archives are a no-op; an empty prefix or revision conflict fails without partial changes.
+
+Apply this migration through the normal reviewed, backed-up deployment/update workflow in [deployment.md](deployment.md). No unpublish/reimport cycle is needed for an existing archive. A fresh S10 import uses the corrected JSON above. Shared schema parsing does not rename stored data; rolling application code back does not restore the old names or remove history. This repository change does not itself apply the migration to production.
+
 ## Original S10 thumbnail (#166)
 
 `public/archive/s10/thumbnail.png` is the unchanged 1024×1024 transparent PNG embedded at Landing!C3 (gid=11421858), extracted from the captured XLSX's `xl/media/image1.png` through Landing's drawing relationship. SHA-256: `6a9fb71945c4b38e1d76c5e62292b85e4206b191970a9c0617e85b2a53db5f4d`. It retains the complete artwork and transparency; the spreadsheet's blue cell background is not part of the image.
