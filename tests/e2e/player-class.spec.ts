@@ -57,10 +57,13 @@ test.describe("scoped player evaluation", () => {
             ),
           ).toBe(true);
           if (locale === "en") {
-            await page.screenshot({
-              path: info.outputPath(`player-class-${theme}-${appearance}.png`),
-              fullPage: true,
-            });
+            await page
+              .getByRole("region", { name: "YumuRating", exact: true })
+              .screenshot({
+                path: info.outputPath(
+                  `player-class-${theme}-${appearance}.png`,
+                ),
+              });
             const results = await new AxeBuilder({ page })
               .include("table")
               .analyze();
