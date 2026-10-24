@@ -25,7 +25,7 @@ function Navigation({
   const trigger = useRef<HTMLButtonElement>(null);
   const id = useId();
   const base = `/tournaments/${slug}`;
-  const links = [
+  const legacyLinks = [
     ["", "Overview"],
     ["schedule", archived ? "Matches & results" : "Schedule"],
     ["mappools", "Mappools"],
@@ -41,7 +41,24 @@ function Navigation({
       ? [["statistics", "Player statistics"]]
       : []),
   ];
-  const active = publicTournamentSection(pathname, base);
+  const links = mobileMenu
+    ? [
+        ["", "Main page"],
+        ["players", "Players"],
+        ["schedule", "Schedule"],
+        ["statistics", "Statistics"],
+      ]
+    : legacyLinks;
+  const section = publicTournamentSection(pathname, base);
+  const active = mobileMenu
+    ? ["teams", "draft"].includes(section ?? "")
+      ? "players"
+      : ["bracket", "results", "mappools"].includes(section ?? "")
+        ? "schedule"
+        : ["rules", "staff"].includes(section ?? "")
+          ? ""
+          : section
+    : section;
   return (
     <div
       className="tournament-navigation"

@@ -1,8 +1,10 @@
+import "./event-pages.css";
 import { getAppTranslations } from "@/i18n/server";
 import { TournamentShell } from "@/components/tournament-navigation";
 import { notFound } from "next/navigation";
 import { publicDraft } from "@/lib/draft";
 import { getPublicEdition } from "@/lib/content";
+import { informationPreview } from "@/lib/tournament-information";
 export const dynamic = "force-dynamic";
 export default async function EditionLayout({
   children,
@@ -20,7 +22,7 @@ export default async function EditionLayout({
     return (
       <TournamentShell
         slug={slug}
-        name={edition.name}
+        name={informationPreview(slug)?.name ?? edition.name}
         liveDraft={false}
         archived
       >
@@ -31,7 +33,11 @@ export default async function EditionLayout({
   const draft = draftResult.status === "fulfilled" ? draftResult.value : null;
   const liveUnavailable = draftResult.status === "rejected";
   return (
-    <TournamentShell slug={slug} name={edition.name} liveDraft={Boolean(draft)}>
+    <TournamentShell
+      slug={slug}
+      name={informationPreview(slug)?.name ?? edition.name}
+      liveDraft={Boolean(draft)}
+    >
       {liveUnavailable && (
         <p className="notice" role="status">
           {tr(

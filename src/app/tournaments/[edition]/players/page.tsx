@@ -1,3 +1,5 @@
+import { EventPlayers } from "@/components/event-players";
+import { eventPreview } from "@/lib/event-preview";
 import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
 import Link from "next/link";
@@ -6,15 +8,12 @@ import { getPublicEdition } from "@/lib/content";
 import { notFound } from "next/navigation";
 import { HttpError } from "@/lib/http";
 import { Action, PageHeading } from "@/components/ui";
-import styles from "./players.module.css";
-import { PublicPlayerIdentity } from "@/components/public-player-identity";
 import { after } from "next/server";
 import {
   cachedDirectoryStatistics,
   refreshDirectoryStatistics,
   type DirectoryStatistics,
 } from "@/lib/osu-profiles";
-import { formatDate } from "@/lib/editions";
 import { z } from "zod";
 export async function generateMetadata() {
   const tr = await getAppTranslations();
@@ -39,6 +38,14 @@ export default async function Players({
   const archivePage = await historicalPage(edition, "players");
   if (archivePage) return archivePage;
   if (!(await getPublicEdition(edition))) notFound();
+  const preview = eventPreview(edition);
+  if (preview)
+    return (
+      <>
+        <PageHeading title={tr("Players")} />
+        <EventPlayers edition={edition} players={preview.players} preview />
+      </>
+    );
   const base = `/tournaments/${edition}/players`;
   let result;
   let view: "cards" | "list" = "cards";
@@ -86,178 +93,40 @@ export default async function Players({
         // Stats refresh must never prevent an otherwise usable public directory.
       }
     });
-  const number = new Intl.NumberFormat(tr.locale, { maximumFractionDigits: 2 });
   const query = new URLSearchParams({ q: filters.q, view });
-  const viewHref = (value: "cards" | "list") => {
-    const next = new URLSearchParams(query);
-    next.set("view", value);
-    next.set("page", String(filters.page));
-    return `${base}?${next}`;
-  };
   return (
     <div className="directory-page edition-players">
       <PageHeading title={tr("Players")} />
-      <div className={styles.toolbar}>
-        <form action={base} method="get" className={`filters ${styles.search}`}>
-          <input type="hidden" name="view" value={view} />
-          <label className="field">
-            <span>{tr("Search players")}</span>
-            <input
-              name="q"
-              defaultValue={filters.q}
-              maxLength={100}
-              placeholder={tr("Username or osu! ID")}
-            />
-          </label>
-          <button type="submit">{tr("Search")}</button>
-        </form>
-        <nav className={styles.views} aria-label={tr("Player view")}>
-          {(["cards", "list"] as const).map((value) => (
-            <Link
-              key={value}
-              href={viewHref(value)}
-              prefetch={false}
-              scroll={false}
-              aria-current={view === value ? "page" : undefined}
-            >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                {value === "cards" ? (
-                  <path d="M3 3h5v5H3zM12 3h5v5h-5zM3 12h5v5H3zM12 12h5v5h-5z" />
-                ) : (
-                  <path d="M3 4h14M3 10h14M3 16h14" />
-                )}
-              </svg>
-              {value === "cards" ? tr("Cards") : tr("List")}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      {total > 0 && (
-        <p className="muted small" role="status">
-          {total} {tr(" player ")}
-          {total === 1 ? tr("entry") : tr("entries")}
-        </p>
-      )}
-      {rows.length ? (
-        <>
-          <ul className={view === "list" ? styles.list : styles.grid}>
-            {rows.map((p) => {
-              const stats = statistics.get(p.osuId);
-              const updated = stats
-                ? tr("Updated {value0}{value1}", {
-                    value0: formatDate(stats.fetchedAt, "UTC", tr.locale),
-                    value1: "",
-                  })
-                : tr("osu! statistics are temporarily unavailable.");
-              return (
-                <li
-                  className={view === "list" ? styles.row : styles.card}
-                  key={p.osuId}
-                >
-                  <div className={styles.identity}>
-                    <PublicPlayerIdentity
-                      osuId={p.osuId}
-                      username={p.username}
-                    />
-                    <Link
-                      className={`context-link ${styles.profile}`}
-                      href={`/players/${p.osuId}?edition=${edition}`}
-                      prefetch={false}
-                      aria-label={tr("OCLR profile")}
-                      title={tr("OCLR profile")}
-                    >
-                      <span aria-hidden="true">↗</span>
-                    </Link>
-                  </div>
-                  <div className={styles.stats} title={updated}>
-                    {stats && (
-                      <time className="sr-only" dateTime={stats.fetchedAt}>
-                        {updated}
-                      </time>
-                    )}
-                    <dl>
-                      <div>
-                        <dt>{tr("Global rank")}</dt>
-                        <dd>
-                          {stats?.globalRank != null && stats.globalRank > 0
-                            ? `#${number.format(stats.globalRank)}`
-                            : "—"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>PP</dt>
-                        <dd>
-                          {stats?.pp != null ? number.format(stats.pp) : "—"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                  <div className={styles.footer}>
-                    <span className={styles.status}>
-                      <span className="badge">
-                        {p.participation === "coach"
-                          ? tr("Coach")
-                          : p.participation === "finalized_roster"
-                            ? tr("Finalized roster")
-                            : p.captain
-                              ? tr("Captain")
-                              : tr("Accepted player")}
-                      </span>
-                      {p.coachedTeams?.length && p.participation !== "coach" ? (
-                        <span className="badge">{tr("Coach")}</span>
-                      ) : null}
-                      {p.captain && p.participation === "finalized_roster" && (
-                        <span className="badge">{tr("Captain")}</span>
-                      )}
-                    </span>
-                    {p.team ? (
-                      <Link
-                        className={`context-link ${styles.team}`}
-                        href={`/tournaments/${edition}/teams/${p.team.id}`}
-                      >
-                        {p.team.name}
-                      </Link>
-                    ) : (
-                      <span
-                        className={`muted ${styles.team}`}
-                        title={tr("Team")}
-                      >
-                        {tr("Not announced")}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
-      ) : (
-        <div className="directory-empty" role="status">
-          <p className="muted">
-            {filters.q
-              ? tr("No matching players")
-              : tr("No accepted players yet")}
-          </p>
-          {filters.q && (
-            <Link className="context-link" href={`${base}?view=${view}`}>
-              {tr("Clear filters")}
-            </Link>
-          )}
-        </div>
-      )}
+      <form action={base} className="event-tools">
+        <label>
+          {tr("Search players")}
+          <input
+            name="q"
+            defaultValue={filters.q}
+            placeholder={tr("Username or osu! ID")}
+          />
+        </label>
+        <button>{tr("Search")}</button>
+      </form>
+      <EventPlayers
+        edition={edition}
+        search={false}
+        grouped={rows.some((p) => p.participation === "finalized_roster")}
+        players={rows.map((p) => ({
+          id: p.osuId,
+          name: p.username,
+          team: p.team?.name ?? null,
+          captain: p.captain,
+          rank: statistics.get(p.osuId)?.globalRank ?? null,
+          pp: statistics.get(p.osuId)?.pp ?? null,
+          href: `/players/${p.osuId}?edition=${edition}`,
+          fetchedAt: statistics.get(p.osuId)?.fetchedAt,
+        }))}
+      />
       <nav className="actions spaced" aria-label={tr("Player directory pages")}>
         {filters.page > 1 && (
           <Link
             className="button secondary"
-            prefetch={false}
             href={`${base}?${query}&page=${filters.page - 1}`}
           >
             {tr("← Previous")}
@@ -266,7 +135,6 @@ export default async function Players({
         {filters.page * 24 < total && (
           <Link
             className="button secondary"
-            prefetch={false}
             href={`${base}?${query}&page=${filters.page + 1}`}
           >
             {tr("Next →")}
