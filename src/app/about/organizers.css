@@ -181,7 +181,7 @@
 }
 .organizer-page .organizer-people > li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
 }
 .organizer-people > li > div:last-child {
