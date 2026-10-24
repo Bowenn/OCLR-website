@@ -70,13 +70,20 @@ describe.skipIf(!url)("round ratings and versioned awards", () => {
       weeks: awardWeeks,
       policy: "yumu-mra-v1",
     });
+    d = await awardCommand(admin, "test-cup", {
+      action: "configure",
+      confirmed: true,
+      expectedVersion: 2,
+      weeks: awardWeeks,
+    });
+    expect(d.policy).toBe("yumu-mra-v1");
     expect((await publicAwards("test-cup"))?.[0].stale).toBe(true);
     expect(d.reports[0].policy).toBe("yumu-mra-v1");
     expect(d.reports[0].candidates[0].rating).toBeDefined();
     await awardCommand(admin, "test-cup", {
       action: "publish",
       confirmed: true,
-      expectedVersion: 2,
+      expectedVersion: 3,
       week: 1,
       fingerprint: d.reports[0].fingerprint,
     });

@@ -21,6 +21,7 @@ import { HttpError } from "./http";
 import { readTournament } from "./tournaments";
 import {
   awardConfigurationSchema,
+  awardPolicySchema,
   weeklyStandings,
   type AwardWeek,
   type AwardStanding,
@@ -195,6 +196,7 @@ const command = z.discriminatedUnion("action", [
       ...common,
       action: z.literal("configure"),
       ...awardConfigurationSchema.shape,
+      policy: awardPolicySchema.optional(),
     })
     .strict(),
   z
@@ -246,7 +248,7 @@ export async function awardCommand(actor: User, slug: string, input: unknown) {
     if (c.action === "configure") {
       const config = awardConfigurationSchema.safeParse({
         weeks: c.weeks,
-        policy: c.policy,
+        policy: c.policy ?? current.policy,
       });
       if (!config.success)
         throw new HttpError(

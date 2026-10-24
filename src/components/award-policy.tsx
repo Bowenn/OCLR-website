@@ -12,6 +12,9 @@ export function AwardPolicy({
   return (
     <section className={styles.policy} aria-labelledby={id}>
       <h2 id={id}>{tr("Award policy and calculation")}</h2>
+      <p className="muted small">
+        <code>{policy}</code>
+      </p>
       <p>
         {policy === "yumu-mra-v1"
           ? tr(

@@ -35,6 +35,7 @@ test.describe("weekly awards review", () => {
         await context.request.post(endpoint, {
           data: {
             action: "configure",
+            policy: "relative-game-mean-v1",
             confirmed: true,
             expectedVersion: 0,
             weeks: awardWeeks,
