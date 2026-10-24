@@ -464,9 +464,11 @@ test.describe("isolated multi-captain rehearsal", () => {
     }
     await spectator.page.goto(`/tournaments/${slug}/draft?presenter=1`);
     await expect(spectator.page).toHaveURL(/\/login/);
-    await staff.page.goto(`/tournaments/${slug}/draft?presenter=1`);
-    await expect(staff.page.locator(".site-header")).toBeHidden();
-    await expect(staff.page.locator(".draft-picks > li")).toHaveCount(2);
+    const presenterPage = await staff.context.newPage();
+    await presenterPage.goto(`/tournaments/${slug}/draft?presenter=1`);
+    await expect(presenterPage.locator(".site-header")).toBeHidden();
+    await expect(presenterPage.locator(".draft-picks > li")).toHaveCount(2);
+    await presenterPage.close();
     const payload = JSON.stringify(
       await (
         await spectator.context.request.get(`/api/tournaments/${slug}/draft`)
