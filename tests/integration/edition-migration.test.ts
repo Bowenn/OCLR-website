@@ -563,7 +563,7 @@ describe.skipIf(!base)("replay upgrade after the merged Yumu migration", () => {
         );
         const before = (
           await pool.query(
-            "INSERT INTO award_settings (edition_slug,version,weeks,policy) VALUES ('replay-upgrade-test',7,'[]','yumu-v1') RETURNING *",
+            "INSERT INTO award_settings (edition_slug,version,weeks,policy) VALUES ('replay-upgrade-test',7,'[]','yumu-mra-v1') RETURNING *",
           )
         ).rows;
         await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });

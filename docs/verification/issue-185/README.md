@@ -59,3 +59,21 @@ The before/after images below represent workflow states in this implementation, 
 Apply migration `0035_mappool_replays`, provision private durable media and Python 3/LZMA on the intended app host, and adapt the existing separate Nginx's 9 MiB body limit before using the feature. Existing media backups include replays; cleanup requires stopped writes. [Mappool operation guide](../../mappools.md#internal-replay-workflow-185) and [Rocky/storage/backup instructions](../../deployment.md#private-mappool-replay-storage-185) describe the limits and recovery order.
 
 No real account uploads, real osu! playback, live OAuth, official deployment or organizer wording acceptance is claimed. The PR's actual GitHub Checks remain authoritative; no pending CI run is described as passed.
+
+## PR #246 review follow-up (2026-10-25)
+
+Reviewed PR head `5c336ea` and integrated the subsequently merged `origin/main` at `30e7aa2` without rewriting either history. The review fixed:
+
+- A concurrent committed deletion could unlink a replay between the quota scan's directory listing and `lstat`, causing an unrelated upload to return 500. Quota accounting now tolerates only that missing-file case; permission/storage errors still block writes. The new regression test reproduced the original failure before the fix and checks byte equality after the fix.
+- Deletion failures appeared behind the modal instead of inside its accessible confirmation dialog. The dialog now displays the failure and clears earlier unrelated upload errors when opened. Desktop/mobile tests inject a 409, verify the dialog's visible alert and retained attachment, then retry successfully.
+- Main's newly merged `0034_yumu_award_policy` conflicted with the replay migration number and snapshot. Main's migration and snapshot remain unchanged; replay is now `0035_mappool_replays`, generated from the combined schema. A dedicated upgrade test starts at main's migration 0034, preserves an existing Yumu policy and verifies that replay migration applies once even when invoked twice.
+
+Final local checks on the combined application sources:
+
+- `npm run check` and production build passed.
+- Full unit/integration suite: **122 files, 877 tests passed, 1 existing skip**. The final 0034-to-0035 upgrade case also passed separately.
+- i18n extraction and all **4 localization checks** passed; this review adds no interface messages.
+- **16 desktop/mobile Playwright scenarios passed** across replay, mappool ordering/editing and Developer permissions, including the existing three-appearance, two-theme, three-locale replay matrix.
+- Production dependency audit: **0 vulnerabilities**; the dependency lockfile is unchanged.
+
+These runs used a dedicated temporary PostgreSQL 17 cluster on loopback port 15466, databases `oclr_pr246_test` and `oclr_pr246_browser_test`, and separate temporary media storage. The initial browser run could not launch the missing bundled Chromium; the successful run used installed Chrome via `PLAYWRIGHT_CHANNEL=chrome`. No demo/production database or service was used. CI and the original organizer review/deployment boundaries above remain independent of these local results.
