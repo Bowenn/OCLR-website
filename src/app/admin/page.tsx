@@ -33,6 +33,9 @@ export default async function Admin({
     const pending = isAdmin
       ? await listApplications(actor, { status: "pending" })
       : null;
+    const deferred = isAdmin
+      ? await listApplications(actor, { status: "deferred" })
+      : null;
     return (
       <>
         <PageHeading
@@ -63,6 +66,20 @@ export default async function Admin({
             <Link
               className="button secondary"
               href="/admin/registrations?status=pending"
+            >
+              {tr("Review applications")}
+            </Link>
+          </section>
+        )}
+        {deferred && (
+          <section className="panel spaced admin-task">
+            <div>
+              <h2>{tr("deferred")}</h2>
+              <p>{deferred.total}</p>
+            </div>
+            <Link
+              className="button secondary"
+              href="/admin/registrations?status=deferred"
             >
               {tr("Review applications")}
             </Link>

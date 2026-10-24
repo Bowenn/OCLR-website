@@ -125,6 +125,7 @@ const commandSchema = z.discriminatedUnion("action", [
       rules: shape.rules,
       eligibility: shape.eligibility,
       automaticEligibility: shape.automaticEligibility,
+      rankGraceRange: shape.rankGraceRange,
     })
     .strict(),
   z
@@ -419,6 +420,8 @@ export async function tournamentCommand(
         rules: c.rules,
         eligibility: c.eligibility,
         automaticEligibility: c.automaticEligibility ?? null,
+        rankGraceRange:
+          c.rankGraceRange === undefined ? e.rankGraceRange : c.rankGraceRange,
       };
     }
     if (c.action === "registration") {
@@ -500,6 +503,7 @@ export function publicEditionSummary(
     rules: e.rules,
     eligibility: e.eligibility,
     automaticEligibility: e.automaticEligibility ?? null,
+    rankGraceRange: e.rankGraceRange ?? null,
     schedule: e.schedule,
     registration: e.registration
       ? {

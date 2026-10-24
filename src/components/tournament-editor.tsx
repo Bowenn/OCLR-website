@@ -404,6 +404,12 @@ function Rules({ data, saved }: EditorProps) {
   const [limits, setLimits] = useState(
     data.edition.automaticEligibility ?? noEligibilityLimits,
   );
+  const [graceMin, setGraceMin] = useState(
+    String(data.edition.rankGraceRange?.minRank ?? ""),
+  );
+  const [graceMax, setGraceMax] = useState(
+    String(data.edition.rankGraceRange?.maxRank ?? ""),
+  );
   const [eligibility, setEligibility] = useState(
     data.edition.eligibility ?? "",
   );
@@ -581,6 +587,36 @@ function Rules({ data, saved }: EditorProps) {
           ))}
         </div>
       </fieldset>
+      <fieldset className="settings-card form-stack">
+        <legend>{tr("Rank grace range (manual review)")}</legend>
+        <p className="small muted">
+          {tr(
+            "Optional organizer-approved numeric rank range. Rank-only failures in this range may submit for review; PP limits still apply. No application is automatically accepted or deferred.",
+          )}
+        </p>
+        <div className="form-grid">
+          <label className="field">
+            <span>{tr("Grace minimum numeric rank")}</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={graceMin}
+              onChange={(e) => setGraceMin(e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>{tr("Grace maximum numeric rank")}</span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={graceMax}
+              onChange={(e) => setGraceMax(e.target.value)}
+            />
+          </label>
+        </div>
+      </fieldset>
       <EligibilityLimitsSummary limits={limits} />
       <Save
         data={data}
@@ -590,6 +626,10 @@ function Rules({ data, saved }: EditorProps) {
           rules: configured ? { version, sections } : null,
           eligibility: eligibility.trim() || null,
           automaticEligibility: limits,
+          rankGraceRange:
+            graceMin || graceMax
+              ? { minRank: Number(graceMin), maxRank: Number(graceMax) }
+              : null,
         }}
         label={tr("Save rules & eligibility")}
       />

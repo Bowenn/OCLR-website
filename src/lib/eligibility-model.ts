@@ -30,6 +30,7 @@ export function hasEligibilityLimits(limits?: EligibilityLimits | null) {
 }
 export const ELIGIBILITY_FRESH_MS = 5 * 60 * 1000;
 export type EligibilityVerification = {
+  rankGraceRange?: { minRank: number; maxRank: number };
   userId: number;
   mode: "osu";
   source: "osu-api-v2";
@@ -107,4 +108,25 @@ export function evaluateEligibility(
     limits,
     comparisons,
   };
+}
+
+/** An explicit organizer range allows rank-only failures to reach human review. */
+export function withinRankGrace(
+  value: EligibilityVerification,
+  range?: { minRank: number; maxRank: number } | null,
+) {
+  return Boolean(
+    range &&
+    value.status === "fail" &&
+    value.rank !== null &&
+    Number.isSafeInteger(value.rank) &&
+    value.rank >= range.minRank &&
+    value.rank <= range.maxRank &&
+    value.comparisons.some(
+      (c) => c.field.endsWith("Rank") && c.passed === false,
+    ) &&
+    value.comparisons.every((c) =>
+      c.field.endsWith("Rank") ? c.passed !== null : c.passed === true,
+    ),
+  );
 }

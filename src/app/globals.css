@@ -4959,3 +4959,9 @@ body:has([data-broadcast]) .site-shell {
 .manual-batch-row .registration-player > div {
   min-width: 0;
 }
+
+.status-deferred {
+  color: var(--site-accent);
+  border-color: var(--site-control-border);
+  background: var(--site-tint);
+}

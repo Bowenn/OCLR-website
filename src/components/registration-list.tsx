@@ -109,7 +109,7 @@ export async function RegistrationList({
             <select name="status" defaultValue={filters.status}>
               <option value="active">{tr("Active registrations")}</option>
               <option value="">{tr("All statuses")}</option>
-              {["pending", "accepted", "rejected", "withdrawn"].map(
+              {["pending", "deferred", "accepted", "rejected", "withdrawn"].map(
                 (status) => (
                   <option key={status} value={status}>
                     {tr(status)}

@@ -2288,6 +2288,14 @@
     "m53c6d1954f9a": "Enter a message of 1 to 1000 characters.",
     "m69728f1dbfbd": "This message request has already been used.",
     "md4bfce56416a": "Please wait before posting another message.",
-    "m3da57e084a89": "An explicitly designated self introduction is public after application acceptance; other questionnaire answers remain private. Signed player messages are public and identify the authenticated author's osu! account."
+    "m3da57e084a89": "An explicitly designated self introduction is public after application acceptance; other questionnaire answers remain private. Signed player messages are public and identify the authenticated author's osu! account.",
+    "mbfceca359a57": "Submitted within the rank grace range for manual review. This is not an eligibility pass.",
+    "ma706016085b2": "deferred",
+    "mf9f04fd7fa99": "Return to pending review",
+    "m8eca9f7aaf5a": "Rank grace range (manual review)",
+    "mc4b122e0bfb6": "Optional organizer-approved numeric rank range. Rank-only failures in this range may submit for review; PP limits still apply. No application is automatically accepted or deferred.",
+    "m70587a83ec00": "Grace minimum numeric rank",
+    "mddb04b04e7ce": "Grace maximum numeric rank",
+    "m6185aa08b9bf": "Your rank eligibility is awaiting further review. You have not been accepted or rejected."
   }
 }
