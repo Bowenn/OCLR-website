@@ -162,7 +162,7 @@ export default async function About() {
                 <Avatar osuId={6963321} username="qi_e" />
                 <div>
                   <h4>
-                    <a href="https://osu.ppy.sh/users/6963321/osu">qi_e</a>
+                    <a href="https://osu.ppy.sh/users/6963321">qi_e</a>
                   </h4>
                 </div>
               </li>

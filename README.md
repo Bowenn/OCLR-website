@@ -1,12 +1,25 @@
 # OCLR — osu! Chinese League Rookie
 
+[English](README.md) | [繁體中文](README.zh-Hant.md)
+
 Official community tournament website for **osu! Chinese League Rookie (OCLR)**. OCLR is a community event and is not affiliated with or endorsed by osu!.
 
-This Next.js application supports individual tournament registration, staff-managed competition setup, captain-led team drafting, released mappools, fixtures/results and public tournament pages. PostgreSQL is the source of truth for tournament and account data.
+One Next.js App Router application built with TypeScript, React, Tailwind CSS, next-intl, PostgreSQL and Drizzle. PostgreSQL is the source of truth for tournament and account data.
+
+## Features
+
+- Individual registration, configurable questions and eligibility, staff review and staff-assisted enrollment.
+- Captain/team setup, live drafting, spectator/OBS views and separately published rosters.
+- Mappool editing and official beatmap metadata, plus private staff Replay attachments with a selection lock and Showcase deadline.
+- Fixtures, multiplayer imports, reviewed and approved results, brackets, standings, statistics and weekly player awards.
+- Tournament archives, news, accepted-player directories, osu! profile snapshots and community information pages.
+- Simplified Chinese (default), Traditional Chinese and English; independent light/dark and default, cute-pastel or swiss-minimal appearance choices.
+
+Permissions and publication are enforced on the server. Drafts, private registration answers and Replay files do not become public merely because an edition or mappool is published. See the guides below for each workflow's release rules.
 
 ## Quick start
 
-Use **Node.js 24 LTS** (minimum supported version: 22.13) and npm. Start a local PostgreSQL database and configure the required settings in a private environment file:
+Use **Node.js 24 LTS** (minimum supported version: 22.13.0) and npm. CI uses PostgreSQL 17. With an existing local PostgreSQL database:
 
 ```sh
 npm ci
@@ -16,17 +29,42 @@ npm run db:migrate
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Authentication and registration require valid osu! OAuth, admin/privacy configuration and PostgreSQL. Never commit secrets or production data. See the [development guide](docs/development.md) for setup, testing and environment details.
+Open [http://localhost:3000](http://localhost:3000). Configure `APP_URL`, `DATABASE_URL`, `OSU_CLIENT_ID`, `OSU_CLIENT_SECRET`, `ADMIN_OSU_IDS` and the approved `PRIVACY_CONTACT_OSU_ID` as described in [.env.example](.env.example) and the [development guide](docs/development.md). The osu! OAuth callback must be exactly `APP_URL/auth/osu/callback`. Authentication and registration need the corresponding services and configuration; there is no development login bypass.
+
+For a fresh frontend checkout with Docker and no existing `.env.local`, the optional local demo workflow is:
+
+```sh
+npm ci
+npm run db:local
+npm run db:migrate
+npm run db:seed:dev
+npm run dev
+```
+
+This creates a dedicated loopback-only PostgreSQL container and synthetic demo content at `/tournaments/dev-s11` and `/tournaments/dev-archive`. An existing configured checkout should keep its current settings. Automated tests need a **different isolated database** because their fixtures can truncate data. See [local demo setup](docs/development.md#local-frontend-database-and-demo-content).
+
+Team images and private Replays require durable storage configured through `OCLR_MEDIA_DIR`; Replay validation also needs **Python 3 with standard-library LZMA support**. See [Replay deployment requirements](docs/deployment.md#private-mappool-replay-storage-185). Never commit local environment files, credentials, uploaded files or database dumps.
 
 ## Checks
 
 ```sh
-npm run check      # ESLint and TypeScript
-npm run build      # Production build
-npm run test:i18n  # Localization checks
+npm run check        # ESLint and TypeScript
+npm run test:i18n    # Localization checks
+npm run build        # Production build
+npm audit --omit=dev # Production dependency audit
 ```
 
-Database-backed tests require an explicitly configured, **isolated** `TEST_DATABASE_URL` (database name containing `test`). See [development](docs/development.md) for unit/integration and browser test prerequisites.
+For unit/integration and desktop/mobile Playwright tests, explicitly export `TEST_DATABASE_URL` for a disposable database whose name includes a separate `test` segment, such as `oclr_test`. Do not use the demo or production database:
+
+```sh
+: "${TEST_DATABASE_URL:?Export an isolated test database URL first}"
+DATABASE_URL="$TEST_DATABASE_URL" npm run db:migrate
+DATABASE_URL="$TEST_DATABASE_URL" npm test
+npx playwright install chromium
+DATABASE_URL="$TEST_DATABASE_URL" npm run test:e2e
+```
+
+Playwright serves the production build on loopback port 3100. Use `PLAYWRIGHT_CHANNEL=chrome` with an installed Chrome if needed. See [development](docs/development.md) for test prerequisites. Local checks do not establish the current release's CI or production deployment status.
 
 ## Documentation
 
@@ -34,14 +72,17 @@ Database-backed tests require an explicitly configured, **isolated** `TEST_DATAB
 - [Development](docs/development.md) — local setup, checks, OAuth, PostgreSQL and design notes
 - [Tournament administration](docs/tournament-management.md) — editions, registration, staff roles and audits
 - [Competition workflows](docs/competition-operations.md) — captains, teams, drafting, fixtures and results
-- [Mappools](docs/mappools.md) — beatmap metadata, mod slots, publication and editing
+- [Mappools](docs/mappools.md) — beatmap metadata, mod slots, publication, editing and private Replays
 - [Public features](docs/public-features.md) — news, player directory/profiles, standings and public views
+- [Rating model](docs/yumu-rating.md) — yumu-bot attribution, formulas and OCLR adaptations
 - [Localization](docs/localization.md) — English, Simplified/Traditional Chinese and appearance
 - [Deployment and operations](docs/deployment.md) — Rocky Linux, production updates, migrations, backups and recovery
 
 ## Production deployment
 
-Use the reviewed [production deployment runbook](docs/deployment.md) before deploying or updating a live site. On the documented Rocky Linux host, the entry points are `sudo bash scripts/oclr.sh deploy` for first installation and `sudo oclr update` for subsequent releases. Production upgrades must follow the runbook's **backup → pending migrations → release activation → health check** sequence; never use development schema push or test fixtures against production.
+The deployment target is **Rocky Linux 10 with systemd**, an **existing separate PostgreSQL server** and an **existing separate Nginx HTTPS proxy**. The scripts do not install replacement database/proxy services. Prepare the approved `/etc/oclr/runtime.env` and follow the [production deployment runbook](docs/deployment.md). From a reviewed installer checkout, use `sudo bash scripts/oclr.sh deploy` for first installation and `sudo oclr update` for subsequent releases.
+
+Use a reviewed commit with passing CI. Updates build a separate release, verify a private backup, apply pending migrations, activate the release and check the exact local/public release. Advanced updates use `bash scripts/update.sh --ref FULL_REVIEWED_COMMIT_SHA --apply` from the documented operator environment. `npm run production:start` serves a prebuilt release without migrations. Never build over the serving release or run development schema push/test fixtures against production.
 
 Use `sudo oclr cleanup` to preview old release cleanup, then `sudo oclr cleanup --apply` to remove eligible versions. The newest 3 releases and the `current`/`previous` targets are retained. See the runbook for retention options and upgrading the installed command.
 
@@ -54,8 +95,8 @@ Artwork and tournament dates shown in [design references](docs/design/) are exam
 
 ## Contributors
 
-- [qi_e](https://osu.ppy.sh/users/6963321/osu)
+- [qi_e](https://osu.ppy.sh/users/6963321)
 
 ## License
 
-Licensed under the [MIT License](LICENSE).
+Project code is licensed under the [MIT License](LICENSE). Adapted yumu-bot components retain their [Apache-2.0 license](LICENSES/yumu-bot-Apache-2.0.txt) and [attribution](docs/yumu-rating.md).
