@@ -77,7 +77,12 @@ export default async function Admin({
           <section className="panel spaced admin-task">
             <div>
               <h2>{tr("deferred")}</h2>
-              <p>{deferred.total}</p>
+              <p className="muted small">
+                {tr(
+                  "{count, plural, one {# deferred application across your authorized editions.} other {# deferred applications across your authorized editions.}}",
+                  { count: deferred.total },
+                )}
+              </p>
             </div>
             <Link
               className="button secondary"
