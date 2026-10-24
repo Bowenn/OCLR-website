@@ -199,12 +199,14 @@ function AccountControl({
   );
 }
 export function Header({
+  informationHref = "/tournaments",
   user,
   theme,
   appearance = "default",
   defaultAppearance = "default",
   appearancePreference,
 }: {
+  informationHref?: string;
   user: Account | null;
   theme: Theme;
   appearance?: Appearance;
@@ -215,8 +217,9 @@ export function Header({
 
   const links = [
     { href: "/", label: tr("navigation_home") },
+    { href: informationHref, label: tr("Information page") },
     { href: "/news", label: tr("Tournament news") },
-    { href: null, label: tr("OCL Wiki") },
+    { href: "/wiki", label: tr("OCL Wiki") },
     { href: "/about", label: tr("Organizers") },
   ];
   const [open, setOpen] = useState(false);

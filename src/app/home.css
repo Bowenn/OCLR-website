@@ -382,3 +382,75 @@ html[data-theme="dark"]
     padding-left: 0.4rem;
   }
 }
+.home-painted-wordmark {
+  filter: saturate(0.82);
+}
+.home-feature .home-entry-links :is(.home-contact, .home-registration-link) {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transform: skewX(-25deg);
+  border: 1px solid #edb9f3b3;
+  border-radius: 4px;
+  background: linear-gradient(
+    120deg,
+    #d8a5ec45,
+    #27203536 35%,
+    #ca95d72b 80%,
+    #f2bfdd40
+  );
+  backdrop-filter: blur(9px) saturate(1.1);
+  -webkit-backdrop-filter: blur(9px) saturate(1.1);
+  box-shadow:
+    inset 0 1px 5px #ffe4ff50,
+    inset 0 -1px 4px #efb0f040,
+    0 3px 12px #0b071b30;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link):hover::before,
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link):focus-visible::before {
+  border-color: #f9d4ff;
+  background: linear-gradient(
+    120deg,
+    #d8a5ec60,
+    #30243e50 35%,
+    #ca95d740 80%,
+    #f2bfdd60
+  );
+  box-shadow:
+    inset 0 1px 6px #ffe4ff70,
+    inset 0 -1px 5px #efb0f060,
+    0 3px 14px #b86be826;
+}
+.home-feature
+  .home-entry-links
+  :is(.home-contact, .home-registration-link)
+  > span:last-child {
+  border-left: 0;
+}
+@media (max-width: 760px) {
+  .home-feature
+    .home-entry-links
+    :is(.home-contact, .home-registration-link)::before {
+    transform: skewX(-18deg);
+  }
+}

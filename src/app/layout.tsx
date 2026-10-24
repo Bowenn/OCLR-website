@@ -1,3 +1,4 @@
+import { getPublicEditions } from "@/lib/content";
 import { getAppTranslations } from "@/i18n/server";
 import type { Metadata } from "next";
 import { isStaff } from "@/lib/auth/staff";
@@ -96,7 +97,16 @@ export default async function RootLayout({
   } catch {
     authUnavailable = true;
   }
-  const scopes = await tournamentAppearanceScopes(user);
+  const [scopes, editions] = await Promise.all([
+    tournamentAppearanceScopes(user),
+    getPublicEditions().catch(() => []),
+  ]);
+  const featured =
+    editions.find((edition) => edition.status === "live") ??
+    editions.find((edition) => edition.status === "upcoming");
+  const informationHref = featured
+    ? `/tournaments/${featured.slug}`
+    : "/tournaments";
   const route = await headers();
   const inherited = inheritedAppearance(
     route.get("x-oclr-pathname") ?? "/",
@@ -119,6 +129,7 @@ export default async function RootLayout({
                 {tr("Skip to content")}
               </a>
               <Header
+                informationHref={informationHref}
                 theme={theme}
                 appearance={appearance}
                 defaultAppearance={defaultAppearance}

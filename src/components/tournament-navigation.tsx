@@ -46,6 +46,7 @@ function Navigation({
         ["", "Main page"],
         ["players", "Players"],
         ["schedule", "Schedule"],
+        ["mappools", "Mappools"],
         ["statistics", "Statistics"],
       ]
     : legacyLinks;
@@ -53,7 +54,7 @@ function Navigation({
   const active = mobileMenu
     ? ["teams", "draft"].includes(section ?? "")
       ? "players"
-      : ["bracket", "results", "mappools"].includes(section ?? "")
+      : ["bracket", "results"].includes(section ?? "")
         ? "schedule"
         : ["rules", "staff"].includes(section ?? "")
           ? ""

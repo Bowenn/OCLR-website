@@ -15,6 +15,15 @@ export async function InformationDocument({
   active: { label: string; detail?: string; href: string; action: string };
 }) {
   const tr = await getAppTranslations();
+  const timeZoneLabel = document.timeZone.includes("UTC")
+    ? document.timeZone.slice(document.timeZone.indexOf("UTC"))
+    : new Intl.DateTimeFormat("en", {
+        timeZone: document.timeZone,
+        timeZoneName: "shortOffset",
+      })
+        .formatToParts(new Date())
+        .find((part) => part.type === "timeZoneName")!
+        .value.replace("GMT", "UTC");
   const sections = [
     ...(document.schedule.length
       ? [{ id: "schedule", title: tr("Tournament schedule") }]
@@ -38,7 +47,7 @@ export async function InformationDocument({
     <div className="information-page">
       <div className="information-layout">
         <article
-          className="information-document"
+          className="information-document document-typeset"
           aria-labelledby="information-title"
         >
           <header className="information-heading">
@@ -76,13 +85,14 @@ export async function InformationDocument({
           {document.schedule.length > 0 && (
             <section id="schedule">
               <h2>{tr("Tournament schedule")}</h2>
-              <p className="information-timezone">{document.timeZone}</p>
               <div className="information-table-scroll" tabIndex={0}>
                 <table>
                   <thead>
                     <tr>
                       <th scope="col">{tr("Event")}</th>
-                      <th scope="col">{tr("Date")}</th>
+                      <th scope="col">
+                        {tr("Date ({zone})", { zone: timeZoneLabel })}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

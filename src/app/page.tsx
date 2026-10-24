@@ -114,7 +114,7 @@ export default async function Home() {
             <p className="home-full-name">{"osu! Chinese League Rookie"}</p>
             <h1 id="hero-title" className="home-wordmark">
               <Image
-                src="/oclr-s11-swirl-wordmark.png"
+                src="/oclr-s11-classic-wordmark-soft.png"
                 alt="OCLR S11"
                 width={2086}
                 height={754}

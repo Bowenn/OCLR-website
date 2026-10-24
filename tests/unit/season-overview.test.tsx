@@ -81,7 +81,7 @@ describe("overview partial data failures", () => {
       expect(html).toContain(edition.eligibility!);
       expect(html).not.toContain("PRIVATE_DATABASE_DETAILS");
       expect(html).not.toContain('class="event-overview-main"');
-      expect(html).toContain('class="information-document"');
+      expect(html).toContain('class="information-document document-typeset"');
     },
   );
 });
