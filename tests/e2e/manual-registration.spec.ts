@@ -102,7 +102,7 @@ test.describe("assisted registration from the edition workspace", () => {
         await expect(localizedDialog).toContainText(
           `Synthetic Assisted ${base}`,
         );
-        await localizedDialog.locator("select").last().selectOption("accepted");
+        await localizedDialog.locator("select").selectOption("accepted");
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,

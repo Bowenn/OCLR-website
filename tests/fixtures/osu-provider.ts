@@ -144,24 +144,6 @@ globalThis.fetch = async (input, init) => {
       });
     return new Response(null, { status: 404 });
   }
-  const assistedName = /^\/api\/v2\/users\/@(.+)\/osu$/.exec(url.pathname);
-  if (assistedName) {
-    const name = decodeURIComponent(assistedName[1]).toLowerCase();
-    const id =
-      name === "[test player]" || name === "old test player"
-        ? 983001
-        : name === "12345"
-          ? 983002
-          : null;
-    return id
-      ? Response.json({
-          ...profileResponse,
-          id,
-          username: id === 983001 ? "[Test Player]" : "12345",
-          avatar_url: `https://a.ppy.sh/${id}`,
-        })
-      : new Response(null, { status: 404 });
-  }
   const profile =
     /^\/api\/v2\/users\/([1-9]\d*)\/(osu|taiko|fruits|mania)$/.exec(
       url.pathname,
@@ -173,18 +155,6 @@ globalThis.fetch = async (input, init) => {
         ...profileResponse,
         id,
         username: `Synthetic Assisted ${id}`,
-        avatar_url: `https://a.ppy.sh/${id}`,
-      });
-    if (id >= 983001 && id <= 983020)
-      return Response.json({
-        ...profileResponse,
-        id,
-        username:
-          id === 983001
-            ? "[Test Player]"
-            : id === 983002
-              ? "12345"
-              : `Synthetic Batch ${id}`,
         avatar_url: `https://a.ppy.sh/${id}`,
       });
     // Preserve the default outage fixture; only 999 explicitly represents deletion.

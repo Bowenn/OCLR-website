@@ -104,9 +104,6 @@ export async function osuApi(
     !/^\/(?:beatmaps\/[1-9]\d*|users\/[1-9]\d*\/(?:osu|taiko|fruits|mania)\?key=id|matches\/[1-9]\d*(?:\?(?:before|after)=\d+&limit=100|\?limit=100)?)$/.test(
       path,
     ) &&
-    !/^\/users\/@(?:[A-Za-z0-9_.!~*'()-]|%[0-9A-F]{2}){1,300}\/osu$/.test(
-      path,
-    ) &&
     !/^\/beatmaps\?ids\[\]=[1-9]\d*(?:&ids\[\]=[1-9]\d*){0,49}$/.test(path)
   )
     throw new HttpError(400, "Invalid osu! API resource.");
