@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-24",
+  "scope": "Offline CSS specimens/provenance only; not production appearance integration",
+  "browser": "Headless Google Chrome",
+  "evidence": [
+    {
+      "style": "esports-broadcast",
+      "sourceHash": "18734eb84d865c9c3c03fe45f5d122c88d8139d1c77693c29c85d818106b66d6",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    }
+  ],
+  "cases": [
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "esports-broadcast",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    }
+  ],
+  "fallbacks": [
+    {
+      "style": "esports-broadcast",
+      "forcedColors": "passed"
+    }
+  ],
+  "errors": []
+}

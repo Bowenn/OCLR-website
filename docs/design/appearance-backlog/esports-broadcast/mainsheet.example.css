@@ -1,0 +1,223 @@
+/* REVIEW-ONLY candidate for style A; not registered or imported by OCLR.
+ * source.css preserves the original; this file adapts tokens and safe geometry. */
+html[data-appearance="esports-broadcast"] .themed-site {
+  --site-background: #f4f6fa;
+  --site-surface: #ffffff;
+  --site-raised: #edf0f7;
+  --site-tint: #fce4ef;
+  --site-foreground: #151b28;
+  --site-muted: #536075;
+  --site-secondary-text: #38465d;
+  --site-accent: #b71959;
+  --site-border: #cbd2df;
+  --site-control-border: #6b7890;
+  --site-primary: #b71959;
+  --site-primary-hover: #991148;
+  --site-on-primary: #ffffff;
+  --site-header: #ffffff;
+  --site-accent-strong: #b71959;
+  --site-focus: #b71959;
+  --site-selection: #fce4ef;
+  --site-highlight: #b71959;
+  --site-connector: #6b7890;
+  --site-success: #21664c;
+  --site-warning: #805500;
+  --site-danger: #b32343;
+  --site-shadow: #17213725;
+  --site-soft-shadow: #17213714;
+  --site-panel-shadow: #17213720;
+  --site-dialog-shadow: #17213745;
+  --site-backdrop: #10131d80;
+  --style-detail: #006b80;
+  --radius-panel: 6px;
+  --button-radius: 4px;
+  color-scheme: light;
+  background: var(--site-background);
+  color: var(--site-foreground);
+}
+html[data-theme="dark"][data-appearance="esports-broadcast"] .themed-site {
+  --site-background: #0e1116;
+  --site-surface: #171c25;
+  --site-raised: #232a36;
+  --site-tint: #3f2334;
+  --site-foreground: #e9edf2;
+  --site-muted: #b2bccb;
+  --site-secondary-text: #cdd6e2;
+  --site-accent: #ff75af;
+  --site-border: #3e4a5f;
+  --site-control-border: #8190a9;
+  --site-primary: #ff75af;
+  --site-primary-hover: #ff9bc5;
+  --site-on-primary: #23101b;
+  --site-header: #171c25;
+  --site-accent-strong: #ff75af;
+  --site-focus: #ff75af;
+  --site-selection: #3f2334;
+  --site-highlight: #ff75af;
+  --site-connector: #8190a9;
+  --site-success: #91e0bd;
+  --site-warning: #f0ce85;
+  --site-danger: #ffa0b4;
+  --site-shadow: #0006;
+  --site-soft-shadow: #0003;
+  --site-panel-shadow: #0005;
+  --site-dialog-shadow: #0009;
+  --site-backdrop: #050810b3;
+  --style-detail: #19e3ff;
+  color-scheme: dark;
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  :is(button, .button, input, select, textarea) {
+  border-radius: var(--button-radius);
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  :is(.panel, .season-overview-hero, .map-browse-card, .public-match-card) {
+  border-radius: var(--radius-panel);
+}
+html[data-appearance="esports-broadcast"] .themed-site :focus-visible {
+  outline: 3px solid var(--site-focus);
+  outline-offset: 4px;
+}
+html[data-appearance="esports-broadcast"] .themed-site ::selection {
+  background: var(--site-selection);
+}
+html[data-appearance="esports-broadcast"] .themed-site .season-overview-hero {
+  position: relative;
+  isolation: isolate;
+  border-left: 5px solid var(--site-accent);
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  .season-overview-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--site-raised);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    0 100%
+  );
+  pointer-events: none;
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  .season-overview-hero
+  h2 {
+  font-style: italic;
+  letter-spacing: -0.03em;
+}
+html[data-appearance="esports-broadcast"] .themed-site .badge {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  border: 0;
+}
+html[data-appearance="esports-broadcast"] .themed-site .badge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--site-tint);
+  transform: skewX(-12deg);
+  pointer-events: none;
+}
+html[data-appearance="esports-broadcast"] .themed-site .map-slot-badge {
+  background: var(--site-raised);
+  color: var(--style-detail);
+  border: 2px solid var(--style-detail);
+}
+html[data-appearance="esports-broadcast"] .themed-site progress {
+  accent-color: var(--style-detail);
+}
+/* Explicit progress rendering: native accent-color varies across engines. */
+html[data-appearance="esports-broadcast"] .themed-site progress {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 14px;
+  border: 1px solid var(--site-control-border);
+  border-radius: var(--button-radius);
+  overflow: hidden;
+  background: var(--site-raised);
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  progress::-webkit-progress-bar {
+  background: var(--site-raised);
+  border-radius: inherit;
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  progress::-webkit-progress-value {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--style-detail) 0 8px,
+    transparent 8px 11px
+  );
+  border-radius: inherit;
+}
+html[data-appearance="esports-broadcast"]
+  .themed-site
+  progress::-moz-progress-bar {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--style-detail) 0 8px,
+    transparent 8px 11px
+  );
+  border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-appearance="esports-broadcast"] .themed-site *,
+  html[data-appearance="esports-broadcast"] .themed-site *::before,
+  html[data-appearance="esports-broadcast"] .themed-site *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  html[data-appearance="esports-broadcast"] .themed-site {
+    background: Canvas;
+    color: CanvasText;
+  }
+  html[data-appearance="esports-broadcast"]
+    .themed-site
+    :is(
+      .season-overview-hero,
+      .panel,
+      .button,
+      .map-browse-card,
+      input,
+      select
+    ) {
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: CanvasText;
+  }
+  html[data-appearance="esports-broadcast"]
+    .themed-site
+    :is(.season-overview-hero, .badge)::before,
+  html[data-appearance="esports-broadcast"]
+    .themed-site
+    .season-overview-hero::after {
+    display: none;
+  }
+  html[data-appearance="esports-broadcast"] .themed-site :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-appearance="esports-broadcast"] .themed-site progress {
+    appearance: auto;
+    -webkit-appearance: auto;
+  }
+}

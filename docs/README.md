@@ -12,5 +12,6 @@ The repository root [README](../README.md) contains only a project overview, a q
 | [Localization and appearance](localization.md) | Locale messages, Simplified/Traditional Chinese and appearance preferences |
 | [Deployment and operations](deployment.md) | Host setup, release scripts, database migrations, backup and rollback |
 | [Design references](design/) | Artwork and UI references (illustrative only) |
+| [Appearance design backlog](design/appearance-backlog/README.md) | Unimplemented reference styles, P3 issues, extracted CSS and detailed MainSheet design notes |
 
 **Where to start:** use [Development](development.md) to work locally, [Tournament administration](tournament-management.md) to understand enrollment and permissions, and [Deployment](deployment.md) for running or updating production. Never use production credentials or personal registration records in tests.

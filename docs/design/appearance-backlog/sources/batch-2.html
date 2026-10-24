@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>osu! Cup 風格預覽（第二批）</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Bangers&family=Varela+Round&family=Inter:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f4f5f7;--ink:#16181d;--muted:#5b6270;--line:#d9dce1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121316;--ink:#f3f4f7;--muted:#a3a9b6;--line:#33373e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121316;--ink:#f3f4f7;--muted:#a3a9b6;--line:#33373e;color-scheme:dark}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 "Noto Sans TC",system-ui,sans-serif;overflow-x:hidden}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+h1{font-size:clamp(28px,5vw,44px);margin:48px 0 8px;line-height:1.2}
+.lead{color:var(--muted);margin:0 0 30px;max-width:34em}
+.row{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:32px;padding:40px 0;border-top:1px solid var(--line)}
+.row h2{margin:0;font-size:24px;line-height:1.3}.row h2 small{display:block;font-size:14px;font-weight:400;color:var(--muted)}
+.row p{margin:10px 0;font-size:15px}
+.mk{overflow:hidden;font-size:14px;line-height:1.5;max-width:100%}
+.mk .nv{display:flex;gap:16px;align-items:center;padding:12px 18px;overflow:hidden;white-space:nowrap}
+.mk .nv b{margin-right:auto}
+.mk .bd{padding:18px;display:grid;gap:20px}
+.mk .se{padding:18px}
+.mk .se h4{margin:6px 0 2px;font-size:30px;line-height:1.1}
+.mk .se p{margin:0}
+.mk .bar{height:12px;margin:12px 0 6px}.mk .bar i{display:block;height:100%;width:64%}
+.mk .bt{display:inline-block;margin-top:10px;padding:8px 20px;font-weight:700}
+.mk .tb{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}.mk .tb span{padding:3px 14px}
+.mk .mp{display:flex}.mk .mp em{font-style:normal;padding:0 16px;display:grid;place-items:center;font-weight:700;flex:none}
+.mk .mp div{padding:10px 14px}.mk .mp h5{margin:0;font-size:16px}
+.mk .st{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;margin-top:4px}.mk .st u{text-decoration:none}
+
+.E{--cl:8px 8px 18px rgba(214,120,160,.32),-6px -6px 14px rgba(255,255,255,.95),inset -4px -4px 8px rgba(214,120,160,.14),inset 4px 4px 8px rgba(255,255,255,.8);background:#ffe6ee;color:#5a3345;font-family:Fredoka,"Noto Sans TC",sans-serif;border-radius:32px;font-size:15px}
+.E .nv .on{background:#ffb6d0;border-radius:99px;padding:2px 14px;margin:-2px;box-shadow:inset -3px -3px 6px rgba(214,90,140,.35),inset 3px 3px 6px rgba(255,255,255,.7)}
+.E .se{background:#fff3f7;border-radius:28px;box-shadow:var(--cl)}
+.E .tag{display:inline-block;background:#ffe08a;color:#6b4a00;border-radius:99px;padding:1px 14px;font-weight:600;box-shadow:inset -2px -2px 5px rgba(180,130,0,.25),inset 2px 2px 5px rgba(255,255,255,.7)}
+.E h4{font-weight:600}
+.E .bar{height:18px;background:#f6d3e0;border-radius:99px;box-shadow:inset 3px 3px 6px rgba(214,120,160,.35),inset -3px -3px 6px rgba(255,255,255,.9)}
+.E .bar i{background:#ff8fb8;border-radius:99px;box-shadow:inset -2px -3px 5px rgba(180,50,100,.3),inset 2px 2px 4px rgba(255,255,255,.6)}
+.E .bt{background:#ff8fb8;color:#4a1f33;border-radius:99px;box-shadow:6px 6px 12px rgba(214,120,160,.4),-4px -4px 10px rgba(255,255,255,.9),inset -3px -3px 6px rgba(180,50,100,.3),inset 3px 3px 6px rgba(255,255,255,.55)}
+.E .tb span{background:#fff3f7;border-radius:99px;box-shadow:4px 4px 9px rgba(214,120,160,.28),-3px -3px 8px rgba(255,255,255,.9)}
+.E .tb .on{background:#9be7d3;box-shadow:inset -3px -3px 6px rgba(30,140,110,.3),inset 3px 3px 6px rgba(255,255,255,.6)}
+.E .mp{background:#fff3f7;border-radius:24px;box-shadow:var(--cl)}
+.E .mp em{background:#9fd0ff;margin:10px;border-radius:18px;padding:0 14px;box-shadow:inset -3px -3px 6px rgba(40,110,190,.25),inset 3px 3px 6px rgba(255,255,255,.6)}
+.E .st u{background:#ffe6ee;border-radius:99px;padding:0 10px}
+
+.F{background:#fff;color:#111;font-family:"Noto Sans TC",sans-serif;font-weight:500;border:3px solid #111}
+.F .nv{border-bottom:3px solid #111;background:linear-gradient(90deg,#fff 45%,rgba(255,255,255,0)),radial-gradient(circle,#ff4f9a 1.5px,transparent 1.8px) 0 0/8px 8px}
+.F .nv b{font:400 24px Bangers;letter-spacing:.05em}
+.F .nv .on{background:#111;color:#fff;padding:0 10px}
+.F .se{border:3px solid #111;position:relative;background:#fff;overflow:hidden}
+.F .se::after{content:"";position:absolute;right:0;top:0;width:120px;height:100px;background:radial-gradient(circle,#ff4f9a 2px,transparent 2.4px) 0 0/9px 9px;-webkit-mask:linear-gradient(225deg,#000,transparent 70%);mask:linear-gradient(225deg,#000,transparent 70%);pointer-events:none}
+.F .se::before{content:"";position:absolute;left:0;right:0;bottom:0;height:40px;background:repeating-linear-gradient(100deg,#111 0 1.5px,transparent 1.5px 9px);-webkit-mask:linear-gradient(0deg,#000,transparent);mask:linear-gradient(0deg,#000,transparent);opacity:.3;pointer-events:none}
+.F .tag{display:inline-block;position:relative;background:#fff;border:3px solid #111;border-radius:99px;padding:0 14px;font-weight:700;margin-bottom:10px}
+.F .tag::after{content:"";position:absolute;left:16px;bottom:-9px;width:10px;height:10px;background:#fff;border-right:3px solid #111;border-bottom:3px solid #111;transform:rotate(45deg)}
+.F h4{font:400 50px/1 Bangers!important;letter-spacing:.03em}
+.F .bar{border:3px solid #111;height:16px;background:#fff}.F .bar i{background:#ff4f9a;border-right:3px solid #111}
+.F .bt{background:#111;color:#fff;padding:8px 22px;transform:rotate(-2deg)}
+.F .tb span{border:3px solid #111;background:#fff;padding:0 12px;font-weight:700}.F .tb .on{background:#ff4f9a}
+.F .mp{border:3px solid #111;background:#fff}.F .mp em{background:#111;color:#fff;font:400 26px Bangers;padding:0 16px}
+.F .st u{border:2px solid #111;padding:0 8px}
+
+.G{background:linear-gradient(180deg,#8fd3ff 0,#d9f2ff 42%,#effbe6 100%);color:#0b3a57;font-family:"Varela Round","Noto Sans TC",sans-serif;border-radius:22px;border:1px solid #fff;font-size:15px}
+.G .nv{background:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.4));border-bottom:1px solid #fff;box-shadow:0 2px 8px rgba(30,140,220,.2)}
+.G .nv .on{background:linear-gradient(#9fe3ff,#4ab8f4);color:#04334d;border-radius:99px;padding:0 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 5px rgba(20,120,200,.4)}
+.G .se{background:rgba(255,255,255,.68);border:1px solid #fff;border-radius:20px;box-shadow:0 8px 24px rgba(30,140,220,.25),inset 0 1px 0 #fff;position:relative;overflow:hidden}
+.G .se::after{content:"";position:absolute;right:-22px;top:-28px;width:112px;height:112px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#fff,rgba(255,255,255,.2) 40%,rgba(120,210,255,.35) 70%);border:1px solid #fff}
+.G .tag{display:inline-block;background:linear-gradient(#d6f8a6,#8be04e);color:#1f4a05;border-radius:99px;padding:0 14px;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.G .bar{height:16px;background:#cfe9f7;border-radius:99px;box-shadow:inset 0 2px 4px rgba(0,80,140,.25)}
+.G .bar i{background:linear-gradient(#d6f8a6 0,#8be04e 50%,#62c423 51%,#8be04e);border-radius:99px}
+.G .bt{background:linear-gradient(#ffd6e7 0,#ff86b6 50%,#ff5f9b 51%,#ff8cba);color:#4a0d28;border-radius:99px;border:1px solid #fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 10px rgba(255,90,151,.45)}
+.G .tb span{background:linear-gradient(#fff,#d8f0ff);border-radius:99px;border:1px solid #fff;box-shadow:0 2px 5px rgba(30,140,220,.25)}
+.G .tb .on{background:linear-gradient(#9fe3ff,#4ab8f4)}
+.G .mp{background:rgba(255,255,255,.72);border:1px solid #fff;border-radius:18px;box-shadow:0 6px 18px rgba(30,140,220,.22)}
+.G .mp em{background:linear-gradient(#9fe3ff,#4ab8f4);color:#04334d;margin:8px;border-radius:50%;width:56px;height:56px;padding:0;align-self:center;font-size:15px;box-shadow:inset 0 2px 0 rgba(255,255,255,.7)}
+.G .st u{color:#2a7fb0}
+
+.H{background:linear-gradient(135deg,#ffb7d1 0,#ffd9b0 45%,#a9d8ff 100%);color:#2a2a33;font-family:Inter,"Noto Sans TC",sans-serif;border-radius:22px}
+.H .nv{background:rgba(255,255,255,.35);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.H .nv .on{font-weight:600;border-bottom:2px solid #2a2a33}
+.H .se{background:rgba(255,255,255,.42);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.85);border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.H .tag{display:inline-block;background:rgba(255,255,255,.75);border-radius:99px;padding:0 12px;font-size:12px;font-weight:600}
+.H h4{font-weight:600;letter-spacing:-.02em}
+.H .bar{height:8px;background:rgba(255,255,255,.6);border-radius:99px}.H .bar i{background:#ff4f9a;border-radius:99px}
+.H .bt{background:#ff4f9a;color:#2a1020;border-radius:12px}
+.H .tb span{background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.8);border-radius:10px}.H .tb .on{background:#fff;font-weight:600}
+.H .mp{background:rgba(255,255,255,.45);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.85);border-radius:16px;overflow:hidden}
+.H .mp em{background:rgba(255,79,154,.85);color:#2a1020}
+@media(max-width:760px){.row{grid-template-columns:1fr;gap:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>第二批風格預覽</h1>
+<p class="lead">同樣放導覽列、賽季卡、圖池分頁和圖卡，方便和上一批、也和目前的柔和可愛風比較。</p>
+<div id="g"></div>
+</div>
+<script>
+const mock=c=>`<div class="mk ${c}"><div class="nv"><b>osu! Cup</b><span>首頁</span><span class="on">賽季 ▾</span><span>Staff</span></div><div class="bd"><div class="se"><span class="tag">報名中</span><h4>Season 3</h4><p>2026/11/21 到 12/20</p><div class="bar"><i></i></div><small>已報名 41 / 64</small><br><span class="bt">用 osu! 帳號報名</span></div><div><div class="tb"><span>NM</span><span class="on">HD</span><span>HR</span><span>DT</span></div><div class="mp"><em>HD2</em><div><h5>Down - Luscent</h5><small>Another</small><div class="st"><u>★ 5.10</u><u>BPM 170</u><u>2:22</u></div></div></div></div></div></div>`;
+const L=[
+['E','黏土風','Claymorphism','元素像軟軟鼓起來的黏土，有內外陰影，進度條是凹槽、按鈕是凸起。','適合：和目前的柔和可愛風最接近，改動風險最低，又多了「可以按」的手感。','注意：陰影很多，頁面元素一多會顯得厚重；表格要保持平面。'],
+['F','漫畫風','Manga / Halftone','網點紙、漫畫對話框當標籤、速度線、粗黑邊框。字體用漫畫風英文標題。','適合：osu! 的歌多半是動漫和日系音樂，調性最吻合，辨識度也最高。','注意：做過頭會很吵，要控制網點和速度線的使用量；中文沒有對應的漫畫字體。'],
+['G','Y2K 水晶風','Frutiger Aero','天空藍漸層、玻璃光澤的按鈕、泡泡、草地綠進度條。泡泡和打擊圈很搭。','適合：想要很有個性、別的比賽網站沒有的樣子，也有懷舊的親切感。','注意：光澤和漸層用得太多會顯得老氣，建議只用在按鈕和進度條。'],
+['H','毛玻璃風','Glassmorphism','半透明面板疊在柔和的漸層背景上，細細的亮邊，字體偏輕。','適合：和 osu!lazer 的介面氣質接近，玩家看了會覺得熟悉。','注意：文字壓在背景上要特別注意對比；這幾年很常見，容易像模板。']];
+document.getElementById('g').innerHTML=L.map(x=>`<div class="row"><div><h2>${x[1]}<small>${x[2]}</small></h2><p>${x[3]}</p><p>${x[4]}</p><p>${x[5]}</p></div>${mock(x[0])}</div>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+.A{background:#0e1116;color:#e9edf2;font-family:"Barlow Condensed","Noto Sans TC",sans-serif;font-size:16px}
+.A .nv{border-bottom:3px solid #ff3d8b;background:#12161d;text-transform:uppercase;letter-spacing:.06em}.A .nv .on{color:#ff3d8b}
+.A .se{background:#171c25;border-left:6px solid #ff3d8b;clip-path:polygon(0 0,100% 0,100% calc(100% - 22px),calc(100% - 22px) 100%,0 100%)}
+.A .tag{display:inline-block;background:#ff3d8b;color:#0e1116;padding:1px 14px;font-weight:600;transform:skewX(-14deg)}
+.A h4{font-size:44px!important;font-weight:800;font-style:italic;text-transform:uppercase}
+.A .bar{background:repeating-linear-gradient(90deg,#2a313d 0 10px,transparent 10px 13px)}
+.A .bar i{background:repeating-linear-gradient(90deg,#19e3ff 0 10px,transparent 10px 13px)}
+.A .bt{background:#ff3d8b;color:#0e1116;transform:skewX(-14deg);text-transform:uppercase}
+.A .tb span{background:#232a36;transform:skewX(-14deg)}.A .tb .on{background:#19e3ff;color:#0e1116}
+.A .mp{background:#171c25}.A .mp em{background:#19e3ff;color:#0e1116;font-size:22px;padding-right:28px;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%)}
+.A .st u{color:#19e3ff}
