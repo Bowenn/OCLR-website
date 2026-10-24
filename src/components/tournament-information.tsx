@@ -48,6 +48,7 @@ export async function InformationDocument({
       <div className="information-layout">
         <article
           className="information-document document-typeset"
+          data-handbook=""
           aria-labelledby="information-title"
         >
           <header className="information-heading">
@@ -260,18 +261,14 @@ export async function InformationDocument({
             <section id="rules">
               <h2>{tr("Tournament rules")}</h2>
               {document.rules.map((rule, i) => (
-                <section
-                  className="information-rule"
-                  id={`rules-${i + 1}`}
-                  key={i}
-                >
+                <div className="information-rule" id={`rules-${i + 1}`} key={i}>
                   <h3>{rule.heading}</h3>
                   <ol>
                     {rule.paragraphs.map((paragraph, j) => (
                       <li key={j}>{paragraph}</li>
                     ))}
                   </ol>
-                </section>
+                </div>
               ))}
             </section>
           )}

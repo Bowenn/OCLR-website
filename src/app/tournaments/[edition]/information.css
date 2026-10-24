@@ -349,7 +349,79 @@ html[data-appearance="swiss-minimal"]
     columns: 1;
   }
 }
-.themed-site .information-document {
+/* Current editions share the historical handbook surface and reading rhythm.
+   Keep the compact, zero-gap Wiki typesetting isolated below. */
+.public-tournament .information-layout {
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 1.5rem;
+}
+.information-document[data-handbook] {
+  grid-template-columns: minmax(0, 1fr);
+  font-size: 1rem;
+  line-height: 1.85;
+}
+.information-document[data-handbook] > section + section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+.information-document[data-handbook] h2 {
+  font-size: 1.35rem;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.information-document[data-handbook] .information-rule + .information-rule {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--site-border);
+}
+.information-document[data-handbook] :is(p, li, td, th) {
+  overflow-wrap: anywhere;
+}
+.public-tournament .information-contents {
+  padding: 1rem;
+  border: 1px solid var(--site-border);
+  border-radius: var(--radius-panel);
+  background: var(--site-surface);
+}
+.public-tournament .information-contents a {
+  align-items: baseline;
+  min-height: 44px;
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+}
+.public-tournament .information-contents a > span {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+.public-tournament .information-contents ul a {
+  font-size: 0.8rem;
+}
+html[data-appearance="cute-pastel"] .public-tournament .information-layout {
+  grid-template-columns: minmax(0, 1fr) 240px;
+}
+@media (max-width: 1000px) {
+  .public-tournament .information-layout,
+  html[data-appearance="cute-pastel"] .public-tournament .information-layout {
+    grid-template-columns: minmax(0, 1fr) 190px;
+  }
+  .public-tournament .information-contents {
+    padding: 0.75rem;
+  }
+}
+@media (max-width: 760px) {
+  .public-tournament .information-contents {
+    padding: 0.75rem 1rem;
+  }
+  .public-tournament .information-page [id] {
+    scroll-margin-top: 160px;
+  }
+  .public-tournament .information-contents .information-back-top {
+    display: flex;
+    margin-top: 0.5rem;
+  }
+}
+
+.themed-site .wiki-page .information-document {
   --document-gap: 0px;
   --document-font-size: 12pt;
   --document-line-height: 36pt;
@@ -360,67 +432,68 @@ html[data-appearance="swiss-minimal"]
   line-height: var(--document-line-height);
 }
 .themed-site
+  .wiki-page
   .information-document
   :is(h2, h3, h4, p:not(.eyebrow), li, table, th, td, .information-place) {
   font-size: var(--document-font-size);
   line-height: var(--document-line-height);
 }
-.themed-site .information-document > *,
-.themed-site .information-document section > *,
-.themed-site .information-document :is(ul, ol) > li {
+.themed-site .wiki-page .information-document > *,
+.themed-site .wiki-page .information-document section > *,
+.themed-site .wiki-page .information-document :is(ul, ol) > li {
   margin-block: 0;
 }
-.themed-site .information-document section {
+.themed-site .wiki-page .information-document section {
   display: flex;
   flex-direction: column;
   gap: var(--document-gap);
   min-width: 0;
 }
-.themed-site .information-document :is(h2, h3, h4) {
+.themed-site .wiki-page .information-document :is(h2, h3, h4) {
   padding-block: 0;
   letter-spacing: normal;
 }
-.themed-site .information-document :is(ul, ol) {
+.themed-site .wiki-page .information-document :is(ul, ol) {
   margin-block: 0;
 }
-.themed-site .information-document :is(ul, ol) > li + li,
-.themed-site .information-document li > :is(ul, ol) {
+.themed-site .wiki-page .information-document :is(ul, ol) > li + li,
+.themed-site .wiki-page .information-document li > :is(ul, ol) {
   margin-top: var(--document-gap);
 }
-.themed-site .information-document .wiki-source {
+.themed-site .wiki-page .information-document .wiki-source {
   margin-block: 0;
   font-size: var(--document-font-size);
   line-height: var(--document-line-height);
 }
 
-.themed-site .information-document > .information-heading {
+.themed-site .wiki-page .information-document > .information-heading {
   margin-bottom: 12pt;
 }
-.themed-site .information-document :is(h2, h3, h4) {
+.themed-site .wiki-page .information-document :is(h2, h3, h4) {
   border-bottom: 0;
 }
 .themed-site
-  .information-page
+  .wiki-page
   .information-document
   :is(table, th, td, .information-place) {
   line-height: var(--document-line-height);
 }
-.themed-site .information-page .information-document :is(th, td) {
+.themed-site .wiki-page .information-document :is(th, td) {
   padding: 0pt 10px;
   border-block: 0;
   box-shadow: inset 0 -1px var(--site-border);
 }
 
-.themed-site .information-page article.document-typeset {
+.themed-site .wiki-page article.document-typeset {
   gap: 0pt;
 }
-.themed-site .information-page article.document-typeset section {
+.themed-site .wiki-page article.document-typeset section {
   margin: 0pt;
   padding: 0pt;
   gap: 0pt;
 }
 .themed-site
-  .information-page
+  .wiki-page
   article.document-typeset
   :is(h2, h3, h4, p:not(.eyebrow), ul, ol, li) {
   margin-top: 0pt;
@@ -432,19 +505,13 @@ html[data-appearance="swiss-minimal"]
   row-gap: 0pt;
 }
 
-.themed-site
-  .information-page
-  article.document-typeset
-  .information-table-scroll {
+.themed-site .wiki-page article.document-typeset .information-table-scroll {
   border-block: 0;
 }
 
+.themed-site .wiki-page article.document-typeset .information-pool-groups,
 .themed-site
-  .information-page
-  article.document-typeset
-  .information-pool-groups,
-.themed-site
-  .information-page
+  .wiki-page
   article.document-typeset
   .information-pool-groups
   :is(ol, li, strong) {
@@ -454,7 +521,7 @@ html[data-appearance="swiss-minimal"]
   line-height: var(--document-line-height);
 }
 .themed-site
-  .information-page
+  .wiki-page
   article.document-typeset
   .information-pool-groups
   > li

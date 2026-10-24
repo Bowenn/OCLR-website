@@ -626,7 +626,9 @@ html[data-appearance="cute-pastel"]
   color: inherit;
 }
 
-html[data-appearance="cute-pastel"] .themed-site .rules-article {
+html[data-appearance="cute-pastel"]
+  .themed-site
+  :is(.rules-article, [data-handbook]) {
   display: grid;
   gap: 1rem;
   padding: 0;
@@ -636,7 +638,10 @@ html[data-appearance="cute-pastel"] .themed-site .rules-article {
   box-shadow: none;
 }
 
-html[data-appearance="cute-pastel"] .themed-site .rules-article section {
+html[data-appearance="cute-pastel"]
+  .themed-site
+  :is(.rules-article, [data-handbook])
+  section {
   padding: clamp(1.25rem, 3vw, 2rem);
   border: 1.5px solid var(--site-border);
   border-radius: 1.5rem;
@@ -646,7 +651,7 @@ html[data-appearance="cute-pastel"] .themed-site .rules-article section {
 
 html[data-appearance="cute-pastel"]
   .themed-site
-  .rules-article
+  :is(.rules-article, [data-handbook])
   section
   + section {
   margin-top: 0;
@@ -654,7 +659,10 @@ html[data-appearance="cute-pastel"]
   border-top: 1.5px solid var(--site-border);
 }
 
-html[data-appearance="cute-pastel"] .themed-site .rules-article h2 {
+html[data-appearance="cute-pastel"]
+  .themed-site
+  :is(.rules-article, [data-handbook])
+  h2 {
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -662,7 +670,11 @@ html[data-appearance="cute-pastel"] .themed-site .rules-article h2 {
   font-size: clamp(1.2rem, 2vw, 1.5rem);
 }
 
-html[data-appearance="cute-pastel"] .themed-site .rules-article h2 span {
+html[data-appearance="cute-pastel"]
+  .themed-site
+  :is(.rules-article, [data-handbook])
+  h2
+  span {
   display: grid;
   flex: 0 0 2.2rem;
   place-items: center;
@@ -675,7 +687,10 @@ html[data-appearance="cute-pastel"] .themed-site .rules-article h2 span {
   line-height: 1;
 }
 
-html[data-appearance="cute-pastel"] .themed-site .rules-article p {
+html[data-appearance="cute-pastel"]
+  .themed-site
+  :is(.rules-article, [data-handbook])
+  p {
   max-width: 74ch;
   line-height: 1.9;
 }
@@ -946,12 +961,19 @@ html[data-appearance="cute-pastel"] .themed-site .site-footer .footer-credit {
     border-radius: 1.5rem;
   }
 
-  html[data-appearance="cute-pastel"] .themed-site .rules-article section {
+  html[data-appearance="cute-pastel"]
+    .themed-site
+    :is(.rules-article, [data-handbook])
+    section {
     padding: 1.25rem;
     border-radius: 1.25rem;
   }
 
-  html[data-appearance="cute-pastel"] .themed-site .rules-article h2 span {
+  html[data-appearance="cute-pastel"]
+    .themed-site
+    :is(.rules-article, [data-handbook])
+    h2
+    span {
     flex-basis: 2rem;
     width: 2rem;
     height: 2rem;
