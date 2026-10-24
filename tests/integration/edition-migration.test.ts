@@ -410,11 +410,21 @@ describe.skipIf(!base)(
                 await pool.query("SELECT attempt FROM registrations")
               ).rows.every((r) => r.attempt === 1),
             ).toBe(true);
+            expect(
+              (
+                await pool.query(
+                  "SELECT selection_locked_at,showcase_at FROM mappools",
+                )
+              ).rows.every(
+                (row) =>
+                  row.selection_locked_at === null && row.showcase_at === null,
+              ),
+            ).toBe(true);
             for (const table of tables)
               expect(
                 (
                   await pool.query(
-                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source' - 'eligibility_verification' - 'attempt'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision' - 'stream_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
+                    `SELECT ${table === "registrations" ? "to_jsonb(t) - 'configuration_version' - 'eligibility_acknowledged' - 'source' - 'eligibility_verification' - 'attempt'" : table === "fixtures" ? "to_jsonb(t) - 'assignment_revision' - 'stream_revision'" : table === "staff_roles" ? "to_jsonb(t) - 'about_published'" : table === "teams" ? "to_jsonb(t) - 'avatar_key'" : table === "mappools" ? "to_jsonb(t) - 'selection_locked_at' - 'showcase_at'" : "to_jsonb(t)"} AS row FROM ${table} t ORDER BY to_jsonb(t)::text`,
                   )
                 ).rows,
               ).toEqual(before.get(table));
@@ -529,6 +539,48 @@ describe.skipIf(!base)("registration operation provenance migration", () => {
             )
           ).rows[0].count,
         ).toBe(1);
+      } finally {
+        rmSync(folder, { recursive: true, force: true });
+      }
+    }));
+});
+
+describe.skipIf(!base)("replay upgrade after the merged Yumu migration", () => {
+  it("preserves the existing policy and applies replay migration exactly once", async () =>
+    isolated(async (pool) => {
+      const folder = mkdtempSync(join(tmpdir(), "oclr-replay-upgrade-test-"));
+      try {
+        cpSync("drizzle", folder, { recursive: true });
+        const file = join(folder, "meta/_journal.json");
+        const journal = JSON.parse(readFileSync(file, "utf8"));
+        journal.entries = journal.entries.filter(
+          (entry: { idx: number }) => entry.idx <= 34,
+        );
+        writeFileSync(file, JSON.stringify(journal));
+        await migrate(drizzle(pool), { migrationsFolder: folder });
+        await pool.query(
+          "INSERT INTO edition_state (slug) VALUES ('replay-upgrade-test')",
+        );
+        const before = (
+          await pool.query(
+            "INSERT INTO award_settings (edition_slug,version,weeks,policy) VALUES ('replay-upgrade-test',7,'[]','yumu-mra-v1') RETURNING *",
+          )
+        ).rows;
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect((await pool.query("SELECT * FROM award_settings")).rows).toEqual(
+          before,
+        );
+        expect(
+          (await pool.query("SELECT * FROM mappool_replays")).rows,
+        ).toEqual([]);
+        expect(
+          (
+            await pool.query(
+              "SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
+            )
+          ).rows[0].count,
+        ).toBe(journal.entries.length + 1);
       } finally {
         rmSync(folder, { recursive: true, force: true });
       }

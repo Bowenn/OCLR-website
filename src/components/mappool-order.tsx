@@ -25,6 +25,7 @@ export function MappoolOrder({
   editable,
   onFeedback,
   renderActions,
+  renderAttachments,
 }: {
   url: string;
   pool: MappoolWorkspace["pools"][number];
@@ -33,6 +34,7 @@ export function MappoolOrder({
   editable: boolean;
   onFeedback: (message: string, failed?: boolean) => void;
   renderActions: (entry: Entry) => ReactNode;
+  renderAttachments?: (entry: Entry) => ReactNode;
 }) {
   const tr = useAppTranslations();
 
@@ -359,6 +361,7 @@ export function MappoolOrder({
                   {renderActions(entry)}
                 </fieldset>
               )}
+              {renderAttachments?.(entry)}
             </li>
           );
         })}

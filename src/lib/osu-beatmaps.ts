@@ -16,6 +16,11 @@ const beatmap = z.object({
   difficulty_rating: z.number().finite().nonnegative(),
   bpm: z.number().finite().nonnegative(),
   total_length: z.number().int().nonnegative(),
+  checksum: z
+    .string()
+    .regex(/^[a-f0-9]{32}$/i)
+    .nullable()
+    .optional(),
   mode: z.enum(["osu", "taiko", "fruits", "mania"]).optional(),
   ar: z.number().finite().nonnegative().nullable().optional(),
   accuracy: z.number().finite().nonnegative().nullable().optional(),
@@ -59,6 +64,9 @@ function normalizeBeatmap(value: unknown, id: number): BeatmapSnapshot {
     stars: b.difficulty_rating,
     bpm: b.bpm,
     duration: b.total_length,
+    ...(b.checksum === undefined
+      ? {}
+      : { checksum: b.checksum?.toLowerCase() ?? null }),
     ...(b.mode === undefined ? {} : { mode: b.mode }),
     ...(b.ar === undefined ? {} : { ar: b.ar }),
     ...(b.accuracy === undefined ? {} : { od: b.accuracy }),

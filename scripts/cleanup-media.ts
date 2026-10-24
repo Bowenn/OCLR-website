@@ -2,7 +2,8 @@
 import { readdir, lstat, unlink } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { db, closeDb } from "../src/db";
-import { teams } from "../src/db/schema";
+import { cleanupReplayFiles } from "../src/lib/replay-storage";
+import { teams, mappoolReplays } from "../src/db/schema";
 const root = process.env.OCLR_MEDIA_DIR;
 try {
   if (!root?.startsWith("/") || /\/releases(?:\/|$)/.test(resolve(root)))
@@ -12,7 +13,12 @@ try {
   );
   const directory = join(root, "teams");
   let removed = 0;
-  for (const name of await readdir(directory)) {
+  for (const name of await readdir(directory).catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return [];
+      throw error;
+    },
+  )) {
     const match = /^([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})\.webp$/.exec(
       name,
     );
@@ -28,7 +34,15 @@ try {
       removed++;
     }
   }
-  console.log(`Removed ${removed} unreferenced old team images.`);
+  const replays = new Set(
+    (await db().select({ id: mappoolReplays.id }).from(mappoolReplays)).map(
+      (r) => r.id,
+    ),
+  );
+  const removedReplays = await cleanupReplayFiles(replays);
+  console.log(
+    `Removed ${removed} unreferenced old team images and ${removedReplays} old replay files.`,
+  );
 } finally {
   await closeDb();
 }

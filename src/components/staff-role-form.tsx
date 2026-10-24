@@ -47,6 +47,8 @@ export function StaffRoleForm({
             }}
           >
             <option value="mappooler">{tr("Mappooler")}</option>
+            <option value="tester">{tr("Tester")}</option>
+            <option value="replayer">{tr("Replayer")}</option>
             <option value="referee">{tr("Referee")}</option>
             <option value="streamer">{tr("Streamer")}</option>
             {!scopes && (

@@ -103,7 +103,7 @@ export const tournamentNavigation: readonly {
       {
         path: "mappools",
         label: "Mappools",
-        capabilities: ["manage_mappools"],
+        capabilities: ["manage_mappools", "view_replays"],
       },
       {
         path: "matches",

@@ -1,4 +1,5 @@
 import { getAppTranslations } from "@/i18n/server";
+import { hasCapability } from "@/lib/auth/staff";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
 import { mappoolWorkspace } from "@/lib/mappools";
@@ -26,7 +27,18 @@ export default async function MappoolsPage({
           eyebrow={tr("COMPETITION MAPS")}
           title={tr("Mappool management")}
         />
-        <MappoolEditor slug={edition} data={data} />
+        <MappoolEditor
+          slug={edition}
+          data={data}
+          readOnlyMaps={
+            !(await hasCapability(actor, "manage_mappools", edition))
+          }
+          canManageReplays={await hasCapability(
+            actor,
+            "manage_replays",
+            edition,
+          )}
+        />
       </>
     );
   });

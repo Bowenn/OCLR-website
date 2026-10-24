@@ -246,6 +246,13 @@
       "when": 1792853381978,
       "tag": "0034_yumu_award_policy",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792860358007,
+      "tag": "0035_mappool_replays",
+      "breakpoints": true
     }
   ]
 }

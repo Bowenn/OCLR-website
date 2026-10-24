@@ -124,6 +124,7 @@ globalThis.fetch = async (input, init) => {
         beatmapset_id: id === 3786810 ? 1843515 : id === 4914171 ? 2299790 : 42,
         version: "Synthetic Difficulty",
         difficulty_rating: id === 123 ? 4.5 : 5.25,
+        checksum: "a".repeat(32),
         bpm: 180,
         total_length: 123,
         mode: "osu",

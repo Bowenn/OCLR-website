@@ -55,6 +55,24 @@ describe("organizer directory publication", () => {
     expect(html).not.toContain("Northwind");
     expect(html).not.toContain("Kite");
   });
+  it("renders published Replayers in their own section", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.mocked(publicStaff).mockResolvedValue([
+      {
+        osuId: 4244,
+        username: "Published Replayer",
+        countryCode: null,
+        roles: [{ role: "replayer", edition: null }],
+      },
+    ]);
+    const html = await render();
+    const section = html.match(
+      /<section class="organizer-group" id="replayer"[\s\S]*?<\/section>/,
+    )?.[0];
+    expect(section).toContain("Published Replayer");
+    expect(section).toContain("Replayer");
+    expect(section).toContain("All editions");
+  });
   it("retains the visual sample directory in development only", async () => {
     vi.stubEnv("NODE_ENV", "development");
     const html = await render();

@@ -514,6 +514,8 @@ export const staffRole = pgEnum("staff_role", [
   "referee",
   "developer",
   "streamer",
+  "tester",
+  "replayer",
 ]);
 export const staffRoles = pgTable(
   "staff_roles",
@@ -636,6 +638,8 @@ export const mappools = pgTable(
     fmRestrictions: text("fm_restrictions").notNull().default(""),
     version: integer("version").notNull().default(0),
     publishedAt: timestamp("published_at", { withTimezone: true }),
+    selectionLockedAt: timestamp("selection_locked_at", { withTimezone: true }),
+    showcaseAt: timestamp("showcase_at", { withTimezone: true }),
     lockedAt: timestamp("locked_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
@@ -674,6 +678,29 @@ export const mappoolEntries = pgTable(
     index("pool_entry_pool_idx").on(t.poolId),
   ],
 );
+export const mappoolReplays = pgTable(
+  "mappool_replays",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => mappoolEntries.id),
+    sha256: text("sha256").notNull(),
+    filename: text("filename").notNull(),
+    size: integer("size").notNull(),
+    description: text("description").notNull().default(""),
+    uploaderId: bigint("uploader_id", { mode: "number" }).notNull(),
+    uploaderName: text("uploader_name").notNull(),
+    summary: jsonb("summary")
+      .$type<import("../lib/replay-model").ReplaySummary>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [unique("replay_entry_sha_unique").on(t.entryId, t.sha256)],
+);
+
 export const mappoolEvents = pgTable(
   "mappool_events",
   {
