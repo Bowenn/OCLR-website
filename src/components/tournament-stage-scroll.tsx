@@ -43,7 +43,7 @@ export function TournamentStageScroll({
   const current = stages.findIndex((stage) => stage.state === "current");
   const rowHeight = useCallback(() => {
     return (
-      viewport.current?.querySelector<HTMLElement>("li")?.offsetHeight ?? 96
+      viewport.current?.querySelector<HTMLElement>("li")?.offsetHeight ?? 64
     );
   }, []);
   const measure = useCallback(() => {
@@ -53,10 +53,10 @@ export function TournamentStageScroll({
     element.querySelectorAll<HTMLElement>("li").forEach((row, index) => {
       const distance = (index * height - element.scrollTop) / height;
       const clamped = Math.max(-2, Math.min(2, distance));
-      row.style.setProperty("--wheel-rotation", `${clamped * -24}deg`);
+      row.style.setProperty("--wheel-rotation", `${clamped * -40}deg`);
       row.style.setProperty(
         "--wheel-scale",
-        String(1 - Math.min(Math.abs(distance), 2) * 0.075),
+        String(1 - Math.min(Math.abs(distance), 2) * 0.09),
       );
       row.style.setProperty(
         "--wheel-opacity",
