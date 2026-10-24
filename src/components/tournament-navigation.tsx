@@ -46,6 +46,7 @@ function Navigation({
         ["", "Main page"],
         ["players", "Players"],
         ["teams", "Teams"],
+        ["draft", "Draft results"],
         ["schedule", "Schedule"],
         ["mappools", "Mappools"],
         ["statistics", "Statistics"],
@@ -54,13 +55,11 @@ function Navigation({
     : legacyLinks;
   const section = publicTournamentSection(pathname, base);
   const active = mobileMenu
-    ? section === "draft"
-      ? "players"
-      : ["bracket", "results"].includes(section ?? "")
-        ? "schedule"
-        : ["rules"].includes(section ?? "")
-          ? ""
-          : section
+    ? ["bracket", "results"].includes(section ?? "")
+      ? "schedule"
+      : ["rules"].includes(section ?? "")
+        ? ""
+        : section
     : section;
   return (
     <div
