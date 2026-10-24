@@ -1,3 +1,5 @@
+import { ObsSourceLink } from "@/components/obs-source-link";
+import Link from "next/link";
 import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
 import { requireUser } from "@/lib/auth/user";
@@ -26,6 +28,21 @@ export default async function StreamingPage({
           eyebrow={tr("COMPETITION")}
           title={tr("Streaming tasks")}
         />
+        <nav className="actions" aria-label={tr("Draft broadcast")}>
+          <Link
+            className="button secondary"
+            href={`/tournaments/${edition}/draft?presenter=1`}
+          >
+            {tr("Open presenter view")}
+          </Link>
+          <Link
+            className="button secondary"
+            href={`/tournaments/${edition}/draft/overlay`}
+          >
+            {tr("Open broadcast overlay")}
+          </Link>
+        </nav>
+        <ObsSourceLink slug={edition} />
         <StreamingManager slug={edition} data={data} />
       </>
     );

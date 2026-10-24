@@ -1,3 +1,5 @@
+import { archiveKeyVisual } from "@/lib/archive-key-visual";
+import { archiveStaff } from "@/lib/archive-staff";
 import { archiveArtworkSetIds } from "@/lib/archive-artwork";
 import { deriveS8Standings } from "@/lib/s8-standings";
 import Link from "next/link";
@@ -8,7 +10,7 @@ import { ArchiveMappools } from "./archive-mappools";
 import { Avatar } from "./avatar";
 import { EventSchedule } from "./event-schedule";
 import { archiveEventMatches } from "@/lib/archive-event-matches";
-import { BracketView } from "./bracket-view";
+import { ArchiveCompetition } from "./archive-competition";
 import { archiveBracket } from "@/lib/archive-bracket";
 import { getAppTranslations } from "@/i18n/server";
 import { getPublicEdition } from "@/lib/content";
@@ -241,44 +243,137 @@ export async function HistoricalArchiveView({
       <p className="muted">{tr("Not recorded")}</p>
     );
   }
+  function competition() {
+    const bracket = archiveBracket(a, (id) => href("matches", id));
+    const rules = historicalRulebook(a);
+    const derived =
+      rules && historicalRulebookSeason(rules) === "8"
+        ? deriveS8Standings(a)
+        : null;
+    const standings =
+      derived ??
+      [...a.standings].sort(
+        (x, y) =>
+          x.group.localeCompare(y.group) ||
+          (x.rank ?? Infinity) - (y.rank ?? Infinity),
+      );
+    if (bracket)
+      for (const group of bracket.groups) {
+        if (group.id === "match-path") group.label = tr("Match path");
+        for (const round of group.rounds)
+          for (const match of round.matches)
+            if (
+              a.matches.find((m) => m.id === match.id)?.forfeitWinner !==
+              undefined
+            )
+              match.note = tr("Forfeit");
+      }
+    return (
+      <ArchiveCompetition
+        bracket={bracket}
+        teamUrls={Object.fromEntries(
+          a.teams.map((t) => [t.id, href("teams", t.id)]),
+        )}
+        standings={
+          <>
+            <h2>{tr("Group standings")}</h2>
+            {derived && (
+              <p className="muted small">
+                {tr(
+                  "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
+                )}
+              </p>
+            )}
+            <div
+              className="table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label={title}
+            >
+              <table>
+                <thead>
+                  <tr>
+                    {[
+                      tr("Group"),
+                      tr("Rank"),
+                      tr("Team"),
+                      ...(derived ? [tr("Played")] : []),
+                      tr("Wins"),
+                      tr("Losses"),
+                      tr("Maps won"),
+                      tr("Maps lost"),
+                      ...(derived ? [tr("Map difference")] : []),
+                    ].map((h) => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {standings.map((s) => (
+                    <tr key={s.teamId}>
+                      <td>{s.group}</td>
+                      <td>
+                        {s.rank ??
+                          ("status" in s
+                            ? s.status === "review"
+                              ? tr("Awaiting review")
+                              : tr("Incomplete results")
+                            : tr("Not recorded"))}
+                        {"tied" in s && s.tied ? ` · ${tr("Tied")}` : ""}
+                      </td>
+                      <td>{teamLink(s.teamId)}</td>
+                      {"played" in s && <td>{s.played}</td>}
+                      <td>{s.wins}</td>
+                      <td>{s.losses}</td>
+                      <td>{s.mapsWon}</td>
+                      <td>{s.mapsLost}</td>
+                      {"mapDifference" in s && <td>{s.mapDifference}</td>}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        }
+      />
+    );
+  }
   let content;
   let title = edition.name;
   if (section === "overview") {
     const counts = archiveCounts(a);
+    const visual = archiveKeyVisual(a, edition.branding.keyVisual);
     content = (
       <>
-        {edition.branding.keyVisual && (
-          <Image
-            className="edition-key-visual"
-            src={edition.branding.keyVisual}
-            alt={tr("{value0} key visual", { value0: edition.name })}
-            width={
-              edition.branding.keyVisual === "/archive/s7/key-visual.jpg"
-                ? 1920
-                : 1672
-            }
-            height={
-              edition.branding.keyVisual === "/archive/s7/key-visual.jpg"
-                ? 1080
-                : 941
-            }
-            unoptimized
-          />
-        )}
-        <dl className="archive-counts">
-          {[
-            [tr("Teams"), counts.teams],
-            [tr("Players & coaches"), counts.players],
-            [tr("Recorded results"), counts.results],
-            [tr("Mappools"), counts.pools],
-            [tr("Maps"), counts.maps],
-          ].map(([label, count]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{count}</dd>
+        <div
+          className={`archive-overview-summary${visual ? " has-visual" : ""}`}
+        >
+          {visual && (
+            <div className="archive-key-visual">
+              <Image
+                src={visual.src}
+                alt={tr("{value0} key visual", { value0: edition.name })}
+                width={visual.width}
+                height={visual.height}
+                unoptimized
+              />
             </div>
-          ))}
-        </dl>
+          )}
+          <dl className="archive-counts">
+            {[
+              [tr("Teams"), counts.teams],
+              [tr("Players & coaches"), counts.players],
+              [tr("Recorded results"), counts.results],
+              [tr("Mappools"), counts.pools],
+              [tr("Maps"), counts.maps],
+            ].map(([label, count]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{count}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
         <section
           id="rules"
           className="archive-overview-rules"
@@ -308,7 +403,7 @@ export async function HistoricalArchiveView({
   } else if (section === "staff") {
     title = tr("Staff");
     const groups = new Map<string, HistoricalArchive["staff"]>();
-    for (const person of a.staff) {
+    for (const person of archiveStaff(a)) {
       const members = groups.get(person.position) ?? [];
       members.push(person);
       groups.set(person.position, members);
@@ -317,7 +412,15 @@ export async function HistoricalArchiveView({
       <div className="archive-staff stack">
         {Array.from(groups, ([position, members]) => (
           <section key={position}>
-            <h2>{position}</h2>
+            <h2>
+              {position === "Referee"
+                ? tr("Referee")
+                : position === "Streamer"
+                  ? tr("Streamer")
+                  : position === "Commentators"
+                    ? tr("Commentators")
+                    : position}
+            </h2>
             <ul className="public-staff-list">
               {members.map((person, index) => (
                 <li key={`${person.osuId}-${index}`}>
@@ -427,6 +530,7 @@ export async function HistoricalArchiveView({
           edition={edition.slug}
           heading={false}
           reviewMode={preview}
+          competition={competition()}
           phases={[...new Set(matches.map((m) => m.stage))].map((stage) => ({
             id: stage,
             label: stage,
@@ -464,106 +568,7 @@ export async function HistoricalArchiveView({
     );
   } else if (section === "bracket") {
     title = tr("Bracket");
-    const bracket = archiveBracket(a, (id) => href("matches", id));
-    const rules = historicalRulebook(a);
-    const derived =
-      rules && historicalRulebookSeason(rules) === "8"
-        ? deriveS8Standings(a)
-        : null;
-    const standings =
-      derived ??
-      [...a.standings].sort(
-        (x, y) =>
-          x.group.localeCompare(y.group) ||
-          (x.rank ?? Infinity) - (y.rank ?? Infinity),
-      );
-    if (bracket)
-      for (const group of bracket.groups) {
-        if (group.id === "match-path") group.label = tr("Match path");
-        for (const round of group.rounds)
-          for (const match of round.matches)
-            if (
-              a.matches.find((m) => m.id === match.id)?.forfeitWinner !==
-              undefined
-            )
-              match.note = tr("Forfeit");
-      }
-    content = (
-      <>
-        <p className="muted small">
-          {tr(
-            "Generated from recorded matches. Lines connect each team's previous recorded appearance; they do not establish qualification rules. Unconfirmed alternatives are excluded.",
-          )}
-        </p>
-        {bracket ? (
-          <BracketView
-            bracket={bracket}
-            teamUrls={Object.fromEntries(
-              a.teams.map((t) => [t.id, href("teams", t.id)]),
-            )}
-          />
-        ) : (
-          <p>{tr("No recorded matches.")}</p>
-        )}
-        <h2>{tr("Group standings")}</h2>
-        {derived && (
-          <p className="muted small">
-            {tr(
-              "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
-            )}
-          </p>
-        )}
-        <div
-          className="table-scroll"
-          tabIndex={0}
-          role="region"
-          aria-label={title}
-        >
-          <table>
-            <thead>
-              <tr>
-                {[
-                  tr("Group"),
-                  tr("Rank"),
-                  tr("Team"),
-                  ...(derived ? [tr("Played")] : []),
-                  tr("Wins"),
-                  tr("Losses"),
-                  tr("Maps won"),
-                  tr("Maps lost"),
-                  ...(derived ? [tr("Map difference")] : []),
-                ].map((h) => (
-                  <th key={h}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {standings.map((s) => (
-                <tr key={s.teamId}>
-                  <td>{s.group}</td>
-                  <td>
-                    {s.rank ??
-                      ("status" in s
-                        ? s.status === "review"
-                          ? tr("Awaiting review")
-                          : tr("Incomplete results")
-                        : tr("Not recorded"))}
-                    {"tied" in s && s.tied ? ` · ${tr("Tied")}` : ""}
-                  </td>
-                  <td>{teamLink(s.teamId)}</td>
-                  {"played" in s && <td>{s.played}</td>}
-                  <td>{s.wins}</td>
-                  <td>{s.losses}</td>
-                  <td>{s.mapsWon}</td>
-                  <td>{s.mapsLost}</td>
-                  {"mapDifference" in s && <td>{s.mapDifference}</td>}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </>
-    );
+    content = competition();
   } else if (section === "draft") {
     title = tr("Draft results");
     content =

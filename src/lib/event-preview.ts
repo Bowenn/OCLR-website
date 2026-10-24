@@ -23,6 +23,7 @@ export type EventMatch = {
   recorded?: boolean;
   mps?: string[];
   pool: string;
+  poolHref?: string;
   time: string;
   red: string;
   blue: string;

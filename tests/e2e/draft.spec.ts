@@ -415,7 +415,9 @@ test.describe("isolated multi-captain rehearsal", () => {
       new RegExp(`/tournaments/${slug}/players$`),
     );
     await expect(
-      bracketPage.locator(".badge").filter({ hasText: /^Captain$/ }),
+      bracketPage
+        .locator(".event-player-identity .muted")
+        .filter({ hasText: /^Captain/ }),
     ).toHaveCount(2);
     // Accepted players remain public even when they have no released roster.
     await expect(
@@ -461,8 +463,12 @@ test.describe("isolated multi-captain rehearsal", () => {
       });
     }
     await spectator.page.goto(`/tournaments/${slug}/draft?presenter=1`);
-    await expect(spectator.page.locator(".site-header")).toBeHidden();
-    await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(2);
+    await expect(spectator.page).toHaveURL(/\/login/);
+    const presenterPage = await staff.context.newPage();
+    await presenterPage.goto(`/tournaments/${slug}/draft?presenter=1`);
+    await expect(presenterPage.locator(".site-header")).toBeHidden();
+    await expect(presenterPage.locator(".draft-picks > li")).toHaveCount(2);
+    await presenterPage.close();
     const payload = JSON.stringify(
       await (
         await spectator.context.request.get(`/api/tournaments/${slug}/draft`)

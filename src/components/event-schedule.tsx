@@ -1,6 +1,6 @@
 "use client";
 import "../app/tournaments/[edition]/event-pages.css";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { EventMatch } from "@/lib/event-preview";
 import type { PublicGroup } from "@/lib/public-competition";
@@ -13,6 +13,7 @@ export function EventSchedule({
   heading = true,
   timeZone = "UTC+8",
   reviewMode = false,
+  competition,
 }: {
   matches: EventMatch[];
   groups?: PublicGroup[];
@@ -21,6 +22,7 @@ export function EventSchedule({
   heading?: boolean;
   timeZone?: string;
   reviewMode?: boolean;
+  competition?: ReactNode;
 }) {
   const tr = useAppTranslations();
   const phaseOptions = phases ?? [
@@ -146,134 +148,141 @@ export function EventSchedule({
           </select>
         </label>
       )}
-      <div className="event-tabs" role="group" aria-label={tr("Stage")}>
-        {phaseOptions.map((option) => (
-          <button
-            key={option.id}
-            aria-pressed={phase === option.id}
-            onClick={() => setPhase(option.id)}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-      <div
-        className="event-bracket-scroll"
-        tabIndex={0}
-        role="region"
-        aria-label={tr("Bracket")}
-      >
-        {!selected.length ? (
-          <p className="muted">{tr("No matches in this view.")}</p>
-        ) : structured ? (
-          <div
-            className="event-knockout"
-            style={{ minWidth: chartWidth, height: chartHeight }}
-          >
-            {seededLayout && (
-              <>
-                <span className="event-knockout-label" style={{ top: 24 }}>
-                  {tr("Winners bracket")}
-                </span>
-                <span className="event-knockout-label" style={{ top: 270 }}>
-                  {tr("Losers bracket")}
-                </span>
-              </>
-            )}
-            <svg
-              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-              aria-hidden="true"
-            >
-              {selected.flatMap((m) =>
-                [m.sourceRed, m.sourceBlue]
-                  .filter((source) => source && positions[source])
-                  .map((source, i) => {
-                    const [sx, sy] = positions[source!];
-                    const [tx, ty] = positions[m.id];
-                    const y = ty + 30 + i * 24;
-                    return (
-                      <path
-                        key={`${source}-${m.id}-${i}`}
-                        d={
-                          tx > sx
-                            ? `M ${sx + 225} ${sy + 42} H ${sx + 242} V ${y} H ${tx}`
-                            : `M ${sx + 225} ${sy + 42} H ${sx + 245 + i * 8} V ${y} H ${tx + 225}`
-                        }
-                      />
-                    );
-                  }),
-              )}
-            </svg>
-            {selected.map((m) => (
-              <div
-                key={m.id}
-                style={{
-                  position: "absolute",
-                  left: positions[m.id][0],
-                  top: positions[m.id][1],
-                }}
+      {competition ?? (
+        <>
+          <div className="event-tabs" role="group" aria-label={tr("Stage")}>
+            {phaseOptions.map((option) => (
+              <button
+                key={option.id}
+                aria-pressed={phase === option.id}
+                onClick={() => setPhase(option.id)}
               >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: -20,
-                    fontSize: ".7rem",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {m.round}
-                </div>
-                {card(m)}
-              </div>
+                {option.label}
+              </button>
             ))}
-            {seededLayout && (
-              <div className="event-knockout-ranks">
-                <h2>{tr("Final standings")}</h2>
-                {[
-                  "#GF / #GF2 胜者",
-                  "#GF / #GF2 败者",
-                  "#L6 败者",
-                  "#L5 败者",
-                  "#L3 / #L4 败者",
-                  "#L1 / #L2 败者",
-                ].map((name, i) => (
-                  <div className="event-standing" key={name}>
-                    <b>{["1", "2", "3", "4", "5–6", "7–8"][i]}</b>
-                    <span>{name}</span>
+          </div>
+          <div
+            className="event-bracket-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label={tr("Bracket")}
+          >
+            {!selected.length ? (
+              <p className="muted">{tr("No matches in this view.")}</p>
+            ) : structured ? (
+              <div
+                className="event-knockout"
+                style={{ minWidth: chartWidth, height: chartHeight }}
+              >
+                {seededLayout && (
+                  <>
+                    <span className="event-knockout-label" style={{ top: 24 }}>
+                      {tr("Winners bracket")}
+                    </span>
+                    <span className="event-knockout-label" style={{ top: 270 }}>
+                      {tr("Losers bracket")}
+                    </span>
+                  </>
+                )}
+                <svg
+                  viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                  aria-hidden="true"
+                >
+                  {selected.flatMap((m) =>
+                    [m.sourceRed, m.sourceBlue]
+                      .filter((source) => source && positions[source])
+                      .map((source, i) => {
+                        const [sx, sy] = positions[source!];
+                        const [tx, ty] = positions[m.id];
+                        const y = ty + 30 + i * 24;
+                        return (
+                          <path
+                            key={`${source}-${m.id}-${i}`}
+                            d={
+                              tx > sx
+                                ? `M ${sx + 225} ${sy + 42} H ${sx + 242} V ${y} H ${tx}`
+                                : `M ${sx + 225} ${sy + 42} H ${sx + 245 + i * 8} V ${y} H ${tx + 225}`
+                            }
+                          />
+                        );
+                      }),
+                  )}
+                </svg>
+                {selected.map((m) => (
+                  <div
+                    key={m.id}
+                    style={{
+                      position: "absolute",
+                      left: positions[m.id][0],
+                      top: positions[m.id][1],
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -20,
+                        fontSize: ".7rem",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {m.round}
+                    </div>
+                    {card(m)}
                   </div>
+                ))}
+                {seededLayout && (
+                  <div className="event-knockout-ranks">
+                    <h2>{tr("Final standings")}</h2>
+                    {[
+                      "#GF / #GF2 胜者",
+                      "#GF / #GF2 败者",
+                      "#L6 败者",
+                      "#L5 败者",
+                      "#L3 / #L4 败者",
+                      "#L1 / #L2 败者",
+                    ].map((name, i) => (
+                      <div className="event-standing" key={name}>
+                        <b>{["1", "2", "3", "4", "5–6", "7–8"][i]}</b>
+                        <span>{name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div
+                className={`event-bracket ${phase === "knockout" ? "event-double" : ""}`}
+              >
+                {rounds.map((round) => (
+                  <section className="event-bracket-round" key={round}>
+                    <h2>{round}</h2>
+                    {[
+                      ...new Set(
+                        selected
+                          .filter((m) => m.round === round)
+                          .map((m) => m.record ?? ""),
+                      ),
+                    ].map((record) => (
+                      <div className="event-record" key={record}>
+                        {record && <h3>{record}</h3>}
+                        {selected
+                          .filter(
+                            (m) =>
+                              m.round === round && (m.record ?? "") === record,
+                          )
+                          .map(card)}
+                      </div>
+                    ))}
+                  </section>
                 ))}
               </div>
             )}
           </div>
-        ) : (
-          <div
-            className={`event-bracket ${phase === "knockout" ? "event-double" : ""}`}
-          >
-            {rounds.map((round) => (
-              <section className="event-bracket-round" key={round}>
-                <h2>{round}</h2>
-                {[
-                  ...new Set(
-                    selected
-                      .filter((m) => m.round === round)
-                      .map((m) => m.record ?? ""),
-                  ),
-                ].map((record) => (
-                  <div className="event-record" key={record}>
-                    {record && <h3>{record}</h3>}
-                    {selected
-                      .filter(
-                        (m) => m.round === round && (m.record ?? "") === record,
-                      )
-                      .map(card)}
-                  </div>
-                ))}
-              </section>
-            ))}
-          </div>
-        )}
-      </div>
-      {phase === "group" && <GroupStandings groups={groups} slug={edition} />}
+          {phase === "group" && (
+            <GroupStandings groups={groups} slug={edition} />
+          )}
+        </>
+      )}
       <section className="event-match-summary">
         <div className="event-section-heading">
           <h2>{tr("Match information")}</h2>
@@ -319,7 +328,13 @@ export function EventSchedule({
                     data-recorded={m.recorded}
                   >
                     <td>
-                      <strong>{m.pool}</strong>
+                      <strong>
+                        {m.poolHref ? (
+                          <a href={m.poolHref}>{m.pool}</a>
+                        ) : (
+                          m.pool
+                        )}
+                      </strong>
                       <small>{m.round}</small>
                     </td>
                     <td>
