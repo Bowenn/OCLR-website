@@ -1,8 +1,12 @@
 # Historical hero artwork (#243)
 
-S7–S10 share one contained frame: desktop half the small viewport height capped at 30rem; mobile 40svh capped at 20rem. Images retain their full aspect ratio. Existing configured branding wins over source-based defaults. Organizer visual review remains pending.
+S7–S10 share an equal-width desktop split: the uncropped key visual sits on the left, aligned to the left edge, and archival counts fill the right half in a two-column grid. At 760px and below the image and counts stack vertically. The common image frame remains capped at half the small viewport height / 30rem on desktop and 40svh / 20rem on mobile. Existing configured branding wins over source-based defaults. This implements the organizer’s PR #251 layout clarification; visual review remains pending.
 
-## Local verification — 2026-10-25
+## Left/right layout follow-up — 2026-10-25
+
+The organizer requested artwork on the left and archival data on the right in PR #251. The updated screenshots below replace the earlier centered-art proposal. Verified with lint/type checks, production build, four artwork-selection unit tests and two desktop/mobile browser tests (four seasons × two themes × three appearances on each device). Browser assertions check equal desktop column widths, left/right ordering, mobile stacking, exact archive counts, consistent image-frame heights and no horizontal overflow. No new interface text or data changes.
+
+## Initial batch verification — 2026-10-25
 
 - Production build, lint/type checks and i18n extraction passed on the combined verification branch. No new interface copy was introduced.
 - Combined unit/integration run: 848 passed, 1 skipped. The subsequent S10 MP evidence tests passed separately (7 adapter tests).

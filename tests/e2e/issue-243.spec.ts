@@ -6,7 +6,11 @@ import { edition } from "../fixtures/edition";
 import { historicalArchiveSchema } from "../../src/lib/historical-archive";
 test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
 test.afterAll(closeDb);
-test("243 historical presentation", async ({ page, context }, info) => {
+test("243 historical presentation", async ({
+  page,
+  context,
+  isMobile,
+}, info) => {
   test.setTimeout(120000);
   const archives = [7, 8, 9, 10].map((n) =>
     historicalArchiveSchema.parse(
@@ -52,6 +56,33 @@ test("243 historical presentation", async ({ page, context }, info) => {
         const box = await frame.boundingBox();
         expect(box).not.toBeNull();
         heights.push(box!.height);
+        const data = await page
+          .locator(".archive-overview-summary .archive-counts")
+          .boundingBox();
+        expect(data).not.toBeNull();
+        if (isMobile) {
+          expect(data!.y).toBeGreaterThanOrEqual(box!.y + box!.height);
+        } else {
+          expect(data!.x).toBeGreaterThanOrEqual(box!.x + box!.width);
+          expect(Math.abs(data!.width - box!.width)).toBeLessThan(2);
+          expect(data!.y).toBeLessThan(box!.y + box!.height);
+        }
+        await expect(page.locator(".archive-counts dd")).toHaveText([
+          String(archives[season - 7].teams.length),
+          String(archives[season - 7].players.length),
+          String(
+            archives[season - 7].matches.filter(
+              (m) => m.score || m.forfeitWinner !== undefined,
+            ).length,
+          ),
+          String(archives[season - 7].pools.length),
+          String(
+            archives[season - 7].pools.reduce(
+              (total, pool) => total + pool.maps.length,
+              0,
+            ),
+          ),
+        ]);
         expect(box!.height).toBeLessThanOrEqual(
           page.viewportSize()!.height / 2 + 1,
         );
@@ -60,11 +91,17 @@ test("243 historical presentation", async ({ page, context }, info) => {
             () => document.documentElement.scrollWidth <= innerWidth,
           ),
         ).toBe(true);
-        if (appearance === "default")
+        if (appearance === "default") {
           await page.screenshot({
             path: info.outputPath(`s${season}-${theme}.png`),
             fullPage: false,
           });
+          await page
+            .locator(".archive-overview-summary")
+            .screenshot({
+              path: info.outputPath(`s${season}-${theme}-summary.png`),
+            });
+        }
       }
       expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(2);
     }

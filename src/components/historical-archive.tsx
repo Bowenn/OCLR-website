@@ -345,31 +345,35 @@ export async function HistoricalArchiveView({
     const visual = archiveKeyVisual(a, edition.branding.keyVisual);
     content = (
       <>
-        {visual && (
-          <div className="archive-key-visual">
-            <Image
-              src={visual.src}
-              alt={tr("{value0} key visual", { value0: edition.name })}
-              width={visual.width}
-              height={visual.height}
-              unoptimized
-            />
-          </div>
-        )}
-        <dl className="archive-counts">
-          {[
-            [tr("Teams"), counts.teams],
-            [tr("Players & coaches"), counts.players],
-            [tr("Recorded results"), counts.results],
-            [tr("Mappools"), counts.pools],
-            [tr("Maps"), counts.maps],
-          ].map(([label, count]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{count}</dd>
+        <div
+          className={`archive-overview-summary${visual ? " has-visual" : ""}`}
+        >
+          {visual && (
+            <div className="archive-key-visual">
+              <Image
+                src={visual.src}
+                alt={tr("{value0} key visual", { value0: edition.name })}
+                width={visual.width}
+                height={visual.height}
+                unoptimized
+              />
             </div>
-          ))}
-        </dl>
+          )}
+          <dl className="archive-counts">
+            {[
+              [tr("Teams"), counts.teams],
+              [tr("Players & coaches"), counts.players],
+              [tr("Recorded results"), counts.results],
+              [tr("Mappools"), counts.pools],
+              [tr("Maps"), counts.maps],
+            ].map(([label, count]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{count}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
         <section
           id="rules"
           className="archive-overview-rules"

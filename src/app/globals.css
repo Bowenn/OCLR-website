@@ -4992,7 +4992,29 @@ body:has([data-broadcast]) .site-shell {
   white-space: nowrap;
 }
 
-/* Shared historical hero frame: half a desktop viewport, with uncropped artwork. */
+/* Equal-width artwork and archival data columns, with uncropped season art. */
+.archive-overview-summary.has-visual {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+.archive-overview-summary > * {
+  min-width: 0;
+}
+.archive-overview-summary.has-visual .archive-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 2rem;
+}
+.archive-overview-summary.has-visual .archive-counts dt {
+  color: var(--site-secondary-text);
+}
+.archive-overview-summary.has-visual .archive-counts dd {
+  margin-top: 0.25rem;
+  font-size: 2.5rem;
+  line-height: 1.15;
+}
 .archive-key-visual {
   width: 100%;
   height: min(50svh, 30rem);
@@ -5005,8 +5027,13 @@ body:has([data-broadcast]) .site-shell {
   height: 100%;
   min-height: 0;
   object-fit: contain;
+  object-position: left center;
 }
-@media (max-width: 600px) {
+@media (max-width: 760px) {
+  .archive-overview-summary.has-visual {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
   .archive-key-visual {
     height: min(40svh, 20rem);
   }
