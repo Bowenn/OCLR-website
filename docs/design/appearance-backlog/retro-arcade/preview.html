@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" data-appearance="retro-arcade" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>OCLR — Retro Arcade CSS specimen</title>
+    <link rel="stylesheet" href="../component-preview.css" />
+    <link rel="stylesheet" href="mainsheet.example.css" />
+    <script src="../preview.js" defer></script>
+  </head>
+  <body>
+    <div class="themed-site">
+      <a class="button primary skip" href="#content">Skip to content</a>
+      <header class="review-header">
+        <div class="wrap header-inner">
+          <a class="brand" href="../README.md"
+            >OCLR<small>osu! Chinese League Rookie · design reference</small></a
+          >
+          <div class="mode-controls" role="group" aria-label="Theme">
+            <button data-mode="light" aria-pressed="true">Light</button
+            ><button data-mode="dark" aria-pressed="false">Dark</button>
+          </div>
+        </div>
+      </header>
+      <main id="content" class="wrap">
+        <div class="review-intro">
+          <div class="eyebrow">Reference D · P3 backlog</div>
+          <h1>Retro Arcade</h1>
+          <p>
+            Offline CSS specimen. All labels and values below are illustrative.
+            This appearance is not registered in the application.
+          </p>
+        </div>
+        <div class="review-grid">
+          <div>
+            <section class="season-overview-hero" aria-label="Hero specimen">
+              <span class="badge">Design sample</span>
+              <h2>OCLR</h2>
+              <p>osu! Chinese League Rookie</p>
+              <label class="progress-label" for="progress"
+                >Progress specimen · 64 of 100</label
+              ><progress id="progress" value="64" max="100">64%</progress>
+              <div class="preview-actions">
+                <button type="button" class="button primary" data-preview>
+                  Preview primary</button
+                ><button type="button" class="button">Secondary</button>
+              </div>
+            </section>
+            <section class="panel">
+              <h2>Form controls</h2>
+              <form>
+                <label class="field"
+                  >Sample name<input
+                    name="sample-name"
+                    value="OCLR component specimen"
+                    required
+                    maxlength="120" /></label
+                ><label class="field"
+                  >Sample selection<select>
+                    <option>Default option</option>
+                    <option>Alternative option</option>
+                  </select></label
+                >
+                <div class="preview-actions">
+                  <button type="submit" class="button primary">
+                    Preview form</button
+                  ><button type="reset" class="button">Reset</button
+                  ><button type="button" class="button" disabled>
+                    Unavailable
+                  </button>
+                </div>
+                <output aria-live="polite"></output>
+              </form>
+            </section>
+          </div>
+          <div>
+            <section>
+              <div class="surface-heading">
+                <h2>Mappool specimen</h2>
+                <span>Sample metadata</span>
+              </div>
+              <div
+                class="sample-tabs"
+                role="group"
+                aria-label="Mod style specimens"
+              >
+                <button type="button" aria-pressed="false">NM</button
+                ><button type="button" aria-pressed="true">HD</button
+                ><button type="button" aria-pressed="false">HR</button
+                ><button type="button" aria-pressed="false">DT</button>
+              </div>
+              <article class="map-browse-card">
+                <span class="map-slot-badge">HD2</span>
+                <div>
+                  <h3>Beatmap title — component sample</h3>
+                  <div class="map-meta">
+                    <span>Artist / mapper</span><span>★ 5.10</span
+                    ><span>BPM 170</span><span>2:22</span>
+                  </div>
+                </div>
+              </article>
+            </section>
+            <section class="table-section">
+              <div class="surface-heading">
+                <h2>Results specimen</h2>
+                <span>Fictional rows</span>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Team</th>
+                    <th scope="col" class="numeric">W</th>
+                    <th scope="col" class="numeric">L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Sample A</th>
+                    <td class="numeric">—</td>
+                    <td class="numeric">—</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Sample B</th>
+                    <td class="numeric">—</td>
+                    <td class="numeric">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <div class="notice">
+              <strong>Error specimen.</strong> A status needs readable text as
+              well as color.
+            </div>
+            <p class="help">
+              Data rows stay flat. Decorative surfaces never determine
+              authorization, publication or tournament results.
+            </p>
+          </div>
+        </div>
+        <aside class="reference-note">
+          <p lang="zh-Hant">
+            以像素感標題、霓虹分段與小面積硬陰影表現街機節奏，長文字與成績表採清楚的現代字體。
+          </p>
+          <p class="help" lang="zh-Hant">
+            這是 MainSheet 轉接候選，不是原始 CSS
+            的逐像素複製；原始規則另行保存。字體採本機系統回退，沒有遠端字體請求。
+          </p>
+          <nav class="reference-links" aria-label="Reference files">
+            <a href="DESIGN.md">Detailed design</a
+            ><a href="source.css">Original extracted CSS</a
+            ><a href="mainsheet.example.css">MainSheet candidate CSS</a>
+          </nav>
+        </aside>
+      </main>
+      <footer>
+        <div class="wrap">
+          OCLR · Offline reference · No settings are saved · 2026-10-24
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

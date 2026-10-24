@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-24",
+  "scope": "Offline CSS specimens/provenance only; not production appearance integration",
+  "browser": "Headless Google Chrome",
+  "evidence": [
+    {
+      "style": "retro-arcade",
+      "sourceHash": "9a39e41201735f82c804be2314f451927b525845dd1081346fad2f6c44362e8a",
+      "exactExtraction": true,
+      "candidateCssParsed": true
+    }
+  ],
+  "cases": [
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "light",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 320,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 390,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 768,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    },
+    {
+      "style": "retro-arcade",
+      "mode": "dark",
+      "width": 1440,
+      "overflow": false,
+      "localControls": "passed",
+      "keyboardFocus": "passed",
+      "axeViolations": 0
+    }
+  ],
+  "fallbacks": [
+    {
+      "style": "retro-arcade",
+      "forcedColors": "passed"
+    }
+  ],
+  "errors": []
+}

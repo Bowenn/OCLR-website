@@ -1,0 +1,9 @@
+.D{background:#050505;color:#fff;font-family:"Press Start 2P","Noto Sans TC",monospace;font-size:10px;line-height:1.9;border:4px solid #ffe600;position:relative}
+.D::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px)}
+.D .nv{border-bottom:4px solid #ffe600}.D .nv b{color:#ffe600}.D .nv .on{color:#ff2e97}
+.D .se{border:4px solid #00e5ff;box-shadow:5px 5px 0 #ff2e97}
+.D h4{font-size:20px!important;color:#ffe600;line-height:1.5!important}.D .tag{color:#ff2e97}
+.D .bar{border:3px solid #fff;height:18px}.D .bar i{background:repeating-linear-gradient(90deg,#00e5ff 0 8px,transparent 8px 10px)}
+.D .bt{background:#ffe600;color:#000;box-shadow:4px 4px 0 #ff2e97}
+.D .tb span{border:3px solid #fff;padding:1px 8px}.D .tb .on{background:#ff2e97;border-color:#ff2e97}
+.D .mp{border:4px solid #fff}.D .mp em{background:#00e5ff;color:#000}.D .st u{color:#ffe600}
