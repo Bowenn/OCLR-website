@@ -1,3 +1,4 @@
+import s10Evidence from "@/content/s10-match-pools.json";
 import type { HistoricalArchive } from "./historical-archive";
 
 // Source-specific aliases: group letters identify teams, not separate pools.
@@ -40,7 +41,17 @@ export function archiveMatchPool(
       ? /^\/spreadsheets\/d\/([^/]+)\/edit$/.exec(url.pathname)?.[1]
       : undefined;
   if (match.poolId === null) return null;
+  const verified =
+    sheet === "12BGS8WRnl10OdeUKyvmOypFzpTYCpHgx9QY1mw-0hlw"
+      ? s10Evidence.matches.find(
+          (evidence) =>
+            evidence.matchId === match.id &&
+            match.mpUrls.includes(evidence.mpUrl),
+        )?.poolId
+      : undefined;
   const id =
-    match.poolId ?? (sheet ? sourceStages[sheet]?.[match.stage] : undefined);
+    match.poolId ??
+    verified ??
+    (sheet ? sourceStages[sheet]?.[match.stage] : undefined);
   return archive.pools.find((pool) => pool.id === id) ?? null;
 }

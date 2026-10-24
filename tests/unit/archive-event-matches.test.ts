@@ -67,7 +67,12 @@ it("links verified pools within the edition and preserves unknown relationships"
   expect(rows.find((m) => m.id === "match-21")?.poolHref).toBe(
     href("mappools", "sf"),
   );
-  expect(rows.find((m) => m.id === "match-1")?.poolHref).toBeUndefined();
+  expect(rows.find((m) => m.id === "match-1")?.poolHref).toBe(
+    href("mappools", "gs1"),
+  );
+  expect(rows.find((m) => m.id === "match-6")?.poolHref).toBe(
+    href("mappools", "gs2"),
+  );
   const explicit = { ...a.matches[0], poolId: "gs1" };
   expect(
     archiveEventMatches(a, [explicit], href, "Asia/Shanghai", "en")[0].poolHref,
@@ -100,5 +105,40 @@ it("links verified pools within the edition and preserves unknown relationships"
         "en",
       ).every((m) => m.poolHref),
     ).toBe(true);
+  }
+});
+
+it("verifies all S10 group pool assignments using exclusive played map evidence", async () => {
+  const evidence = JSON.parse(
+    readFileSync("src/content/s10-match-pools.json", "utf8"),
+  );
+  const archive = historicalArchiveSchema.parse(
+    JSON.parse(readFileSync("docs/imports/s10-archive.json", "utf8")),
+  );
+  expect(evidence.matches).toHaveLength(20);
+  for (const entry of evidence.matches) {
+    const pool = archive.pools.find((p) => p.id === entry.poolId)!;
+    const other = archive.pools.find(
+      (p) => p.id === (entry.poolId === "gs1" ? "gs2" : "gs1"),
+    )!;
+    const played = new Set<number>(
+      entry.games.map((g: { beatmapId: number }) => g.beatmapId),
+    );
+    const exclusive = pool.maps.filter(
+      (m) =>
+        m.beatmapId &&
+        played.has(m.beatmapId) &&
+        !other.maps.some((o) => o.beatmapId === m.beatmapId),
+    );
+    expect(exclusive.length).toBeGreaterThanOrEqual(5);
+    expect(
+      other.maps.filter(
+        (m) =>
+          m.beatmapId &&
+          played.has(m.beatmapId) &&
+          !pool.maps.some((p) => p.beatmapId === m.beatmapId),
+      ),
+    ).toHaveLength(0);
+    expect(entry.complete).toBe(true);
   }
 });
