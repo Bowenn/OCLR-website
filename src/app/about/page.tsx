@@ -70,7 +70,7 @@ export default async function About() {
           </li>
         ))}
       </ul>
-    ) : (
+    ) : process.env.NODE_ENV === "development" ? (
       <ul className="organizer-people">
         {names.map((name) => (
           <li key={name}>
@@ -82,6 +82,8 @@ export default async function About() {
           </li>
         ))}
       </ul>
+    ) : (
+      <p className="muted">{tr("Not announced")}</p>
     );
   }
   return (
@@ -115,6 +117,13 @@ export default async function About() {
           </nav>
         </aside>
         <div className="organizer-directory">
+          {!staff.length && process.env.NODE_ENV !== "development" && (
+            <p className="muted">
+              {tr(
+                "OCLR is run by its community organizing team. Public staff profiles have not been announced.",
+              )}
+            </p>
+          )}
           <section id="hosts" aria-labelledby="hosts-title">
             <h2 id="hosts-title">{tr("Tournament organizers")}</h2>
             {people(organizerDirectory.hosts, ["admin"])}
