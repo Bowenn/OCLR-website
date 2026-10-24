@@ -333,6 +333,7 @@ for (const appearance of ["cute-pastel", "swiss-minimal"] as const) {
         path: info.outputPath("captain-pastel.png"),
         fullPage: true,
       });
+      await session(context, id);
       for (const theme of ["light", "dark"]) {
         await setPreferences(context, "en", theme);
         for (const path of [

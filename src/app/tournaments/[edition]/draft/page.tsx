@@ -1,6 +1,8 @@
 import { historicalPage } from "@/components/historical-archive";
 import { getAppTranslations } from "@/i18n/server";
-import Link from "next/link";
+import { authorizedPage } from "@/lib/auth/page";
+import { requireUser } from "@/lib/auth/user";
+import { assertReadCapability } from "@/lib/auth/staff";
 import { publicDraft } from "@/lib/draft";
 import { PageHeading } from "@/components/ui";
 import { LiveDraft } from "@/components/live-draft";
@@ -22,6 +24,21 @@ export default async function Draft({
   const archivePage = await historicalPage(edition, "draft");
   if (archivePage) return archivePage;
   const presenter = (await searchParams).presenter === "1";
+  if (presenter)
+    return authorizedPage(async () => {
+      await assertReadCapability(
+        await requireUser(),
+        "view_streaming",
+        edition,
+      );
+      return (
+        <LiveDraft
+          slug={edition}
+          initial={await publicDraft(edition)}
+          presenter
+        />
+      );
+    });
   return (
     <>
       {!presenter && (
@@ -32,18 +49,6 @@ export default async function Draft({
           >
             {tr("Published selections, captain turns and roster progress.")}
           </PageHeading>
-          <Link
-            href={`/tournaments/${edition}/draft?presenter=1`}
-            className="text-link"
-          >
-            {tr("Open presenter view")}
-          </Link>
-          <Link
-            href={`/tournaments/${edition}/draft/overlay`}
-            className="text-link broadcast-link"
-          >
-            {tr("Open broadcast overlay")}
-          </Link>
         </>
       )}
       <LiveDraft
