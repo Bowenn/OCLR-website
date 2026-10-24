@@ -1,10 +1,10 @@
-/** Header OCL wordmark using the shared letter outlines and star. */
-export function OclLogo() {
+/** Transparent OCLR wordmark: shared O/C/L letter treatment, signature gradient R, and star. */
+export function OclrLogo() {
   return (
     <svg
       className="oclr-wordmark"
-      viewBox="140 233 1105 430"
-      width="100"
+      viewBox="140 233 1465 430"
+      width="132"
       height="39"
       aria-hidden="true"
       focusable="false"
@@ -14,6 +14,11 @@ export function OclLogo() {
           <stop offset="0%" stopColor="var(--oclr-letter-top)" />
           <stop offset="46%" stopColor="var(--oclr-letter-mid)" />
           <stop offset="100%" stopColor="var(--oclr-letter-bottom)" />
+        </linearGradient>
+        <linearGradient id="oclr-r" x1="0.06" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor="#ff8cca" />
+          <stop offset="48%" stopColor="#e353e7" />
+          <stop offset="100%" stopColor="#815af7" />
         </linearGradient>
         <linearGradient id="oclr-star" x1="0.1" y1="0" x2="0.85" y2="1">
           <stop offset="0%" stopColor="#ff9ad4" />
@@ -38,7 +43,11 @@ export function OclLogo() {
           stroke="var(--oclr-letter-outline)"
         />
         <path
-          transform="translate(-360 0)"
+          d="M1227,358 1171,430 1383,430 1391,432 1395,436 1395,450 1381,466 1359,474 1169,475 1111,649 1199,649 1232,551 1250,551 1345,649 1464,649 1354,536 1394,534 1420,527 1442,516 1468,493 1487,463 1496,432 1495,404 1492,394 1483,380 1460,364 1443,359 1425,357Z"
+          fill="url(#oclr-r)"
+          stroke="#ffadf2"
+        />
+        <path
           d="M1522,247 1518,270 1507,293 1492,307 1479,313 1457,318 1483,324 1494,330 1506,341 1516,359 1523,387 1528,361 1540,340 1549,331 1561,324 1587,317 1565,313 1549,304 1541,296 1528,273Z"
           fill="url(#oclr-star)"
           stroke="#eca2ef"

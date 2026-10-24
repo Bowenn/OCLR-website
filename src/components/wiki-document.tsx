@@ -20,7 +20,7 @@ export async function WikiDocument({ article }: { article: WikiArticle }) {
         <article className="information-document document-typeset" aria-labelledby="wiki-title">
           <header className="information-heading">
             <p className="eyebrow">
-              {tr("OCL Wiki")} · {article.category}
+              {tr("OCLR Wiki")} · {article.category}
             </p>
             <h1 id="wiki-title">{article.title}</h1>
           </header>

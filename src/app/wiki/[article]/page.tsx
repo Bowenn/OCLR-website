@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props) {
   const article = findArticle((await params).article);
   const tr = await getAppTranslations();
   return {
-    title: article ? `${article.title} · ${tr("OCL Wiki")}` : tr("OCL Wiki"),
+    title: article ? `${article.title} · ${tr("OCLR Wiki")}` : tr("OCLR Wiki"),
   };
 }
 export default async function Page({ params }: Props) {

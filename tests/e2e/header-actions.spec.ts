@@ -250,14 +250,14 @@ test.describe("role-aware header actions and compact tournament context", () => 
       "Home",
       "Information page",
       "Tournament news",
-      "OCL Wiki",
+      "OCLR Wiki",
       "Organizers",
     ]);
     await expect(
       publicNav.getByRole("link", { name: "Information page", exact: true }),
     ).toHaveAttribute("href", /^\/tournaments(?:\/[^/]+)?$/);
     await expect(
-      publicNav.getByRole("link", { name: "OCL Wiki", exact: true }),
+      publicNav.getByRole("link", { name: "OCLR Wiki", exact: true }),
     ).toHaveAttribute("href", "/wiki");
     await expect(publicNav.getByRole("link", { name: /Staff/ })).toHaveCount(0);
     if (isMobile)
