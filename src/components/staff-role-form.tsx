@@ -4,81 +4,117 @@ import { useAppTranslations } from "@/i18n/shared";
 
 import { useState } from "react";
 import { ConfirmMutation } from "./confirm-mutation";
+type EditableRoles = {
+  userId: number;
+  editionSlug: string | null;
+  grants: { id: string; role: string }[];
+};
+const roleOptions = [
+  ["mappooler", "Mappooler"],
+  ["tester", "Tester"],
+  ["replayer", "Replayer"],
+  ["referee", "Referee"],
+  ["streamer", "Streamer"],
+  ["developer", "Developer — global read-only access"],
+  ["admin", "Admin — full access within scope"],
+] as const;
 export function StaffRoleForm({
   editions,
   scopes,
   initialEdition = "",
+  existing,
 }: {
   editions: { slug: string; name: string }[];
   scopes: string[] | null;
   initialEdition?: string;
+  existing?: EditableRoles;
 }) {
   const tr = useAppTranslations();
-
-  const [userId, setUserId] = useState("");
-  const [role, setRole] = useState("mappooler");
-  const [scope, setScope] = useState(initialEdition || scopes?.[0] || "");
-
+  const [userId, setUserId] = useState(existing ? String(existing.userId) : "");
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(
+    existing?.grants.map((g) => g.role) ?? ["mappooler"],
+  );
+  const [scope, setScope] = useState(
+    existing
+      ? (existing.editionSlug ?? "")
+      : initialEdition || scopes?.[0] || "",
+  );
+  const unchanged =
+    existing &&
+    [...selectedRoles].sort().join(",") ===
+      existing.grants
+        .map((g) => g.role)
+        .sort()
+        .join(",");
   return (
     <ReadOnlyFields>
-      <div className="panel form-stack">
-        <h2>{tr("Grant a role")}</h2>
-        <p className="muted">
-          {tr(
-            "The user must have signed in. Verify their osu! ID before granting access.",
-          )}
-        </p>
-        <label className="field">
-          <span>{tr("Verified osu! user ID")}</span>
-          <input
-            inputMode="numeric"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            maxLength={16}
-          />
-        </label>
-        <label className="field">
-          <span>{tr("Role")}</span>
-          <select
-            value={role}
-            onChange={(e) => {
-              setRole(e.target.value);
-              if (e.target.value === "developer") setScope("");
-            }}
-          >
-            <option value="mappooler">{tr("Mappooler")}</option>
-            <option value="tester">{tr("Tester")}</option>
-            <option value="replayer">{tr("Replayer")}</option>
-            <option value="referee">{tr("Referee")}</option>
-            <option value="streamer">{tr("Streamer")}</option>
-            {!scopes && (
-              <option value="developer">
-                {tr("Developer — global read-only access")}
-              </option>
-            )}
-            <option value="admin">
-              {tr("Admin — full access within scope")}
-            </option>
-          </select>
-        </label>
-        <label className="field">
-          <span>{tr("Scope")}</span>
-          <select
-            disabled={role === "developer"}
-            value={scope}
-            onChange={(e) => setScope(e.target.value)}
-          >
-            {!scopes && <option value="">{tr("Global — all editions")}</option>}
-            {editions
-              .filter((e) => !scopes || scopes.includes(e.slug))
-              .map((e) => (
-                <option key={e.slug} value={e.slug}>
-                  {e.name}
-                </option>
-              ))}
-          </select>
-        </label>
-        {role === "developer" && (
+      <div className={existing ? "form-stack" : "panel form-stack"}>
+        {!existing && <h2>{tr("Grant a role")}</h2>}
+        {!existing && (
+          <>
+            <p className="muted">
+              {tr(
+                "The user must have signed in. Verify their osu! ID before granting access.",
+              )}
+            </p>
+            <label className="field">
+              <span>{tr("Verified osu! user ID")}</span>
+              <input
+                inputMode="numeric"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                maxLength={16}
+              />
+            </label>
+            <label className="field">
+              <span>{tr("Scope")}</span>
+              <select
+                value={scope}
+                onChange={(e) => {
+                  setScope(e.target.value);
+                  if (e.target.value)
+                    setSelectedRoles((roles) =>
+                      roles.filter((role) => role !== "developer"),
+                    );
+                }}
+              >
+                {!scopes && (
+                  <option value="">{tr("Global — all editions")}</option>
+                )}
+                {editions
+                  .filter((e) => !scopes || scopes.includes(e.slug))
+                  .map((e) => (
+                    <option key={e.slug} value={e.slug}>
+                      {e.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          </>
+        )}
+        <fieldset className="staff-role-options">
+          <legend>{tr("Roles (select multiple)")}</legend>
+          {roleOptions
+            .filter(([role]) => role !== "developer" || (!scopes && !scope))
+            .map(([role, label]) => (
+              <label key={role}>
+                <input
+                  type="checkbox"
+                  value={role}
+                  checked={selectedRoles.includes(role)}
+                  onChange={(e) =>
+                    setSelectedRoles((current) =>
+                      e.target.checked
+                        ? [...current, role]
+                        : current.filter((item) => item !== role),
+                    )
+                  }
+                />
+                <span>{tr(label)}</span>
+              </label>
+            ))}
+        </fieldset>
+        {selectedRoles.includes("developer") && (
           <p className="notice">
             {tr(
               "Developer can read private applications and unpublished editions. Other roles retain their existing write permissions and export access within scope.",
@@ -86,22 +122,30 @@ export function StaffRoleForm({
           </p>
         )}
         <ConfirmMutation
-          label={tr("Review role grant")}
-          title={tr("Grant staff access?")}
+          label={existing ? tr("Save roles") : tr("Review role grant")}
+          title={
+            existing ? tr("Update staff roles?") : tr("Grant staff access?")
+          }
           description={tr(
-            "Grant {value0} to osu! ID {value1} for {value2}. This change takes effect immediately.",
+            "Set roles for osu! ID {userId} in {scope} to: {roles}. Other scopes and retained roles’ public visibility stay unchanged.",
             {
-              value0: role,
-              value1: userId || "(missing)",
-              value2: scope || "all editions",
+              userId,
+              scope: scope || tr("Global"),
+              roles: selectedRoles.join(", ") || tr("None"),
             },
           )}
+          disabled={
+            Boolean(unchanged) ||
+            !/^[1-9]\d*$/.test(userId) ||
+            (!existing && !selectedRoles.length)
+          }
           url="/api/admin/staff"
           payload={{
-            action: "grant",
+            action: "set_roles",
             userId: Number(userId),
-            role,
+            roles: selectedRoles,
             editionSlug: scope || null,
+            expectedGrantIds: existing?.grants.map((g) => g.id) ?? [],
             confirmed: true,
           }}
         />

@@ -49,8 +49,7 @@ export async function listStaffRoles(actor: User) {
     .from(staffRoles)
     .innerJoin(users, eq(users.osuId, staffRoles.userId))
     .where(where)
-    .orderBy(desc(staffRoles.grantedAt))
-    .limit(500);
+    .orderBy(desc(staffRoles.grantedAt));
   const writeScopes = await capabilityScope(actor, "manage_staff").catch(
     (error: unknown) => {
       if (error instanceof HttpError && error.status === 403)
@@ -189,5 +188,126 @@ export async function changeStaffRole(actor: User, input: unknown) {
       after: updated,
     });
     return updated;
+  });
+}
+
+const roleSetCommand = z
+  .object({
+    action: z.literal("set_roles"),
+    confirmed: z.literal(true),
+    userId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    editionSlug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .max(80)
+      .nullable(),
+    roles: z
+      .array(z.enum(roles))
+      .max(roles.length)
+      .refine((items) => new Set(items).size === items.length),
+    expectedGrantIds: z
+      .array(z.uuid())
+      .max(roles.length)
+      .refine((items) => new Set(items).size === items.length),
+  })
+  .strict();
+
+/** Replace one user's roles in one scope, never their visibility or other scopes. */
+export async function changeStaffRoleSet(actor: User, input: unknown) {
+  await capabilityScope(actor, "manage_staff");
+  const parsed = roleSetCommand.safeParse(input);
+  if (!parsed.success) throw new HttpError(400, "Confirm a valid role change.");
+  const c = parsed.data;
+  if (c.roles.includes("developer") && c.editionSlug !== null)
+    throw new HttpError(400, "Developer must be granted globally.");
+  return db().transaction(async (tx) => {
+    // Share the lock with legacy single-role grants, revocations and visibility edits.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(17301)`);
+    await assertCapability(
+      actor,
+      "manage_staff",
+      c.editionSlug ?? undefined,
+      tx,
+    );
+    if (c.editionSlug && !(await getEdition(c.editionSlug)))
+      throw new HttpError(404, "Edition not found.");
+    const [user] = await tx
+      .select({ id: users.osuId })
+      .from(users)
+      .where(eq(users.osuId, c.userId));
+    if (!user)
+      throw new HttpError(
+        400,
+        "The verified osu! user must sign in before receiving a role.",
+      );
+    const current = await tx
+      .select()
+      .from(staffRoles)
+      .where(
+        and(
+          eq(staffRoles.userId, c.userId),
+          c.editionSlug
+            ? eq(staffRoles.editionSlug, c.editionSlug)
+            : isNull(staffRoles.editionSlug),
+          isNull(staffRoles.revokedAt),
+        ),
+      )
+      .for("update");
+    if (
+      JSON.stringify(current.map((g) => g.id).sort()) !==
+      JSON.stringify([...c.expectedGrantIds].sort())
+    )
+      throw new HttpError(
+        409,
+        "Role assignments changed. Refresh before saving.",
+      );
+    if (c.editionSlug)
+      await tx
+        .insert(editionState)
+        .values({ slug: c.editionSlug })
+        .onConflictDoNothing();
+    const retained = current.filter((g) => c.roles.includes(g.role));
+    for (const grant of current.filter((g) => !c.roles.includes(g.role))) {
+      const [updated] = await tx
+        .update(staffRoles)
+        .set({ revokedAt: new Date() })
+        .where(eq(staffRoles.id, grant.id))
+        .returning();
+      await tx.insert(staffRoleEvents).values({
+        grantId: grant.id,
+        actorId: actor.osuId,
+        targetId: grant.userId,
+        role: grant.role,
+        editionSlug: grant.editionSlug,
+        action: "revoke",
+        before: grant,
+        after: updated,
+      });
+    }
+    for (const role of c.roles.filter(
+      (role) => !current.some((g) => g.role === role),
+    )) {
+      const [grant] = await tx
+        .insert(staffRoles)
+        .values({
+          userId: c.userId,
+          role,
+          editionSlug: c.editionSlug,
+          grantedBy: actor.osuId,
+        })
+        .returning();
+      await tx.insert(staffRoleEvents).values({
+        grantId: grant.id,
+        actorId: actor.osuId,
+        targetId: grant.userId,
+        role: grant.role,
+        editionSlug: grant.editionSlug,
+        action: "grant",
+        before: null,
+        after: grant,
+      });
+      retained.push(grant);
+    }
+    return { grants: retained };
   });
 }

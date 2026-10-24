@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/user";
-import { changeStaffRole, listStaffRoles } from "@/lib/staff-roles";
+import {
+  changeStaffRole,
+  changeStaffRoleSet,
+  listStaffRoles,
+} from "@/lib/staff-roles";
 import { apiError, readJson, requireSameOrigin } from "@/lib/http";
 export async function GET() {
   try {
@@ -15,8 +19,14 @@ export async function POST(request: Request) {
   try {
     requireSameOrigin(request);
     const user = await requireUser();
+    const input = await readJson(request);
     return NextResponse.json(
-      await changeStaffRole(user, await readJson(request)),
+      await (input &&
+      typeof input === "object" &&
+      "action" in input &&
+      input.action === "set_roles"
+        ? changeStaffRoleSet(user, input)
+        : changeStaffRole(user, input)),
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

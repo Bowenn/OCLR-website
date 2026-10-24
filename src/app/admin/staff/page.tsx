@@ -29,6 +29,18 @@ export default async function StaffPage({
       (e) => e.slug === requested && (!scopes || scopes.includes(e.slug)),
     );
     if (requested && !selected) notFound();
+    const visible = grants.filter(
+      ({ grant }) =>
+        !selected ||
+        grant.editionSlug === null ||
+        grant.editionSlug === selected.slug,
+    );
+    const groups = new Map<string, typeof grants>();
+    for (const row of visible.filter(({ grant }) => !grant.revokedAt)) {
+      const key = `${row.grant.userId}:${row.grant.editionSlug ?? "global"}`;
+      groups.set(key, [...(groups.get(key) ?? []), row]);
+    }
+
     return (
       <>
         <PageHeading
@@ -56,13 +68,84 @@ export default async function StaffPage({
               )}
             </EmptyState>
           )}
-          {grants
-            .filter(
-              ({ grant }) =>
-                !selected ||
-                grant.editionSlug === null ||
-                grant.editionSlug === selected.slug,
-            )
+          {[...groups].map(([key, rows]) => {
+            const { grant: first, username } = rows[0];
+            return (
+              <article className="panel spaced staff-role-group" key={key}>
+                <h3>
+                  {username} · {first.userId}
+                </h3>
+                <p>
+                  {first.editionSlug ?? tr("Global")} ·{" "}
+                  {rows.map(({ grant }) => grant.role).join(" / ")}
+                </p>
+                <StaffReadOnlyContext
+                  value={
+                    !permits(
+                      access,
+                      "manage_staff",
+                      first.editionSlug ?? undefined,
+                    )
+                  }
+                >
+                  <details>
+                    <summary>{tr("Edit roles")}</summary>
+                    <StaffRoleForm
+                      key={rows
+                        .map(({ grant }) => grant.id)
+                        .sort()
+                        .join(",")}
+                      scopes={writeScopes}
+                      editions={editions.map((e) => ({
+                        slug: e.slug,
+                        name: e.name,
+                      }))}
+                      existing={{
+                        userId: first.userId,
+                        editionSlug: first.editionSlug,
+                        grants: rows.map(({ grant }) => ({
+                          id: grant.id,
+                          role: grant.role,
+                        })),
+                      }}
+                    />
+                  </details>
+                  {rows.map(({ grant: g }) => (
+                    <div className="spaced" key={g.id}>
+                      <p>
+                        {g.role} · {tr("About:")}{" "}
+                        {g.aboutPublished
+                          ? !g.editionSlug ||
+                            editions.some(
+                              (e) => e.slug === g.editionSlug && e.published,
+                            )
+                            ? tr("Public")
+                            : tr("Hidden until tournament publication")
+                          : tr("Private")}
+                      </p>
+                      <div className="staff-role-actions">
+                        <StaffPublicVisibility
+                          id={g.id}
+                          username={username}
+                          role={g.role}
+                          scope={g.editionSlug}
+                          published={g.aboutPublished}
+                        />
+                        <RevokeRole
+                          id={g.id}
+                          username={username}
+                          role={g.role}
+                          scope={g.editionSlug}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </StaffReadOnlyContext>
+              </article>
+            );
+          })}
+          {visible
+            .filter(({ grant }) => grant.revokedAt)
             .map(({ grant: g, username }) => (
               <article className="panel spaced" key={g.id}>
                 <h3>
@@ -87,33 +170,6 @@ export default async function StaffPage({
                   {tr("Granted by osu! ID ")}
                   {g.grantedBy} {tr(" on")} {g.grantedAt.toISOString()}
                 </p>
-                {!g.revokedAt && (
-                  <StaffReadOnlyContext
-                    value={
-                      !permits(
-                        access,
-                        "manage_staff",
-                        g.editionSlug ?? undefined,
-                      )
-                    }
-                  >
-                    <div className="staff-role-actions">
-                      <StaffPublicVisibility
-                        id={g.id}
-                        username={username}
-                        role={g.role}
-                        scope={g.editionSlug}
-                        published={g.aboutPublished}
-                      />
-                      <RevokeRole
-                        id={g.id}
-                        username={username}
-                        role={g.role}
-                        scope={g.editionSlug}
-                      />
-                    </div>
-                  </StaffReadOnlyContext>
-                )}
               </article>
             ))}
         </section>
