@@ -12,7 +12,7 @@ import {
 } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
-import { captains, registrations, teams } from "../../src/db/schema";
+import { captains, registrations, teams, users } from "../../src/db/schema";
 import { publicPlayers, publicParticipantCount } from "../../src/lib/players";
 import { edition } from "../fixtures/edition";
 import { seedPublicDirectory } from "../fixtures/players";
@@ -37,11 +37,46 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
     await closeDb();
     vi.unstubAllEnvs();
   });
+  it("returns every accepted identity beyond the former 24-player page", async () => {
+    const ids = Array.from({ length: 53 }, (_, i) => base + 100 + i);
+    await db()
+      .insert(users)
+      .values(
+        ids.map((osuId) => ({ osuId, username: `Complete list ${osuId}` })),
+      );
+    await db()
+      .insert(registrations)
+      .values(
+        ids.map((userId) => ({
+          userId,
+          editionSlug: "test-cup",
+          status: "accepted" as const,
+          answers: { private: "PRIVATE_CONTACT" },
+        })),
+      );
+    for (const page of [1, 2, 999]) {
+      const result = await publicPlayers({ edition: "test-cup", page });
+      expect(result.rows).toHaveLength(56);
+      expect(result.total).toBe(56);
+      expect(new Set(result.rows.map((p) => p.osuId)).size).toBe(56);
+      expect(result.rows.some((p) => p.osuId === fixture.privateId)).toBe(
+        false,
+      );
+    }
+    expect(
+      (await publicPlayers({ edition: "test-cup", q: "Complete list" })).rows,
+    ).toHaveLength(53);
+  });
   it("counts only accepted participants in a currently published edition", async () => {
     expect(await publicParticipantCount("test-cup")).toBe(3);
     expect(await publicParticipantCount("private-test-cup")).toBeNull();
     expect(await publicParticipantCount("missing-cup")).toBeNull();
-    for (const status of ["pending", "deferred", "rejected", "withdrawn"] as const) {
+    for (const status of [
+      "pending",
+      "deferred",
+      "rejected",
+      "withdrawn",
+    ] as const) {
       await db()
         .update(registrations)
         .set({ status })
@@ -153,7 +188,12 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
     expect(
       (await publicPlayers({ edition: "second-cup" })).rows.map((p) => p.osuId),
     ).toEqual([fixture.privateId]);
-    for (const status of ["pending", "deferred", "rejected", "withdrawn"] as const) {
+    for (const status of [
+      "pending",
+      "deferred",
+      "rejected",
+      "withdrawn",
+    ] as const) {
       await db()
         .update(registrations)
         .set({ status })
@@ -168,7 +208,7 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
       ).toEqual([]);
     }
   });
-  it("supports bounded search/edition/pagination without exposing guessed private identities", async () => {
+  it("supports bounded search and legacy page links without exposing guessed private identities", async () => {
     expect(
       (
         await publicPlayers({
@@ -205,7 +245,7 @@ describe.skipIf(!url)("public player directory publication boundaries", () => {
     ]);
     expect(
       (await publicPlayers({ edition: "test-cup", page: 2 })).rows,
-    ).toEqual([]);
+    ).toEqual((await publicPlayers({ edition: "test-cup" })).rows);
     for (const input of [
       { q: "x".repeat(101) },
       { page: 0 },
