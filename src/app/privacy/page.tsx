@@ -31,6 +31,11 @@ export default function Privacy() {
           "Public profiles may show cached osu! statistics with their update time. Released mappools and approved, published results are public. Staff review imports and game scores privately; administrative changes are audited.",
         )}
       </p>
+      <p>
+        {tr(
+          "An explicitly designated self introduction is public after application acceptance; other questionnaire answers remain private. Signed player messages are public and identify the authenticated author's osu! account.",
+        )}
+      </p>
       <h2>{tr("Cookies and external services")}</h2>
       <p>
         {tr(

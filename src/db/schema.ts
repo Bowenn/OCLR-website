@@ -512,6 +512,7 @@ export const staffRole = pgEnum("staff_role", [
   "mappooler",
   "referee",
   "developer",
+  "streamer",
 ]);
 export const staffRoles = pgTable(
   "staff_roles",
@@ -717,6 +718,7 @@ export const fixtures = pgTable(
     awaySourceOutcome: text("away_source_outcome").$type<"winner" | "loser">(),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     assignmentRevision: integer("assignment_revision").notNull().default(0),
+    streamRevision: integer("stream_revision").notNull().default(0),
     version: integer("version").notNull().default(0),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
@@ -785,6 +787,35 @@ export const fixtureReferees = pgTable(
     index("fixture_referee_user_idx").on(t.userId),
   ],
 );
+// One current Streamer per fixture. Immutable changes live in edition_events,
+// so deleting an otherwise removable fixture preserves attribution/history.
+export const fixtureStreams = pgTable(
+  "fixture_streams",
+  {
+    fixtureId: uuid("fixture_id")
+      .primaryKey()
+      .references(() => fixtures.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    source: text("source").$type<"self" | "staff">().notNull(),
+    assignedBy: bigint("assigned_by", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    assignedAt: timestamp("assigned_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    confirmedScheduledAt: timestamp("confirmed_scheduled_at", {
+      withTimezone: true,
+    }),
+    confirmedTimeZone: text("confirmed_time_zone").notNull(),
+  },
+  (t) => [
+    index("fixture_streams_user_idx").on(t.userId),
+    check("fixture_streams_source", sql`${t.source} IN ('self', 'staff')`),
+  ],
+);
+
 export const matchImports = pgTable(
   "match_imports",
   {
@@ -995,6 +1026,41 @@ export const historicalStatistics = pgTable(
     check(
       "historical_statistics_version",
       sql.raw("version >= 0 AND mp_id > 0"),
+    ),
+  ],
+);
+
+// Immutable signed public messages; author and timestamp are the transactional write record.
+export const playerMessages = pgTable(
+  "player_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    editionSlug: text("edition_slug")
+      .notNull()
+      .references(() => editionState.slug),
+    playerId: bigint("player_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId, { onDelete: "cascade" }),
+    authorId: bigint("author_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId, { onDelete: "cascade" }),
+    requestId: uuid("request_id").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("player_messages_author_request_unique").on(t.authorId, t.requestId),
+    index("player_messages_target_idx").on(
+      t.editionSlug,
+      t.playerId,
+      t.createdAt,
+    ),
+    index("player_messages_author_time_idx").on(t.authorId, t.createdAt),
+    check(
+      "player_messages_body_length",
+      sql`char_length(btrim(${t.body})) BETWEEN 1 AND 1000`,
     ),
   ],
 );
