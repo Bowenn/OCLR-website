@@ -2234,6 +2234,21 @@
     "mfb6f7c93e6bf": "Planned",
     "m63a8496096a4": "Date ({zone})",
     "mc19cde7b5315": "OCL home",
-    "m6213b82e318d": "OCL Wiki"
+    "m6213b82e318d": "OCL Wiki",
+    "m878476bc27c6": "Save review settings before choosing games.",
+    "m1d947f906f8e": "Exclude zero-score lobby records only after confirming that the user did not play. Keep genuine failed scores.",
+    "m6d5536fc3605": "Exclude score",
+    "m73bfdd7ebc76": "Only verified zero-score records can be excluded.",
+    "ma5495f416e7d": "Some matches include confirmed technical adjudication. Historical series results are retained; player statistics reflect actual MP scores, without invented scores for awarded points.",
+    "m0e587dd7c4d5": "Technical adjudication; recorded series score",
+    "m2e4bafe827b5": "Player statistics reflect recorded MP scores only.",
+    "me97e142bb33c": "Organizer confirmed technical adjudication. Keep the recorded series score; statistics use only actual MP scores.",
+    "mb7365d5771c8": "Use verified roster teams",
+    "meee68746298f": "I verified team membership by UID despite incorrect lobby colors.",
+    "m66021557ffe1": "I verified this user did not play for either team. Exclude this lobby record.",
+    "me680b48148b8": "Publish reviewed scoring games. Every MP link must be imported. Keep the recorded result, including any explicitly confirmed technical adjudication.",
+    "mc5364248eade": "Invalid roster-team review.",
+    "m6e06c13b2e47": "Invalid score exclusions.",
+    "m97f1b1af11d0": "OCLR Season 7 — "
   }
 }

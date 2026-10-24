@@ -8,7 +8,137 @@ export type StatisticsSnapshot = {
   poolId: string;
   included: number[];
   allowUnlistedMaps?: boolean;
+  excludedScores?: {
+    gameId: number;
+    osuId: number;
+    reason?: "non-participant";
+  }[];
+  rosterTeamGames?: number[];
+  technicalAdjudication?: boolean;
 };
+// Zero-score lobby occupants require an explicit review decision. A failed
+// player's zero remains a real appearance unless the reviewer excludes it.
+export function canExcludeStatisticsScore(score: MatchScore) {
+  return (
+    score.osuId !== null &&
+    score.total === 0 &&
+    score.combo === 0 &&
+    score.accuracy === 0 &&
+    // Modern ScoreStatistics is sparse. Do not invent missing hit counts as
+    // zero; permit explicit review when misses are recorded and no successful
+    // hits are reported, with independently recorded zero score/ACC/combo.
+    score.hitCounts !== undefined &&
+    score.hitCounts.miss !== null &&
+    score.hitCounts.miss > 0 &&
+    [score.hitCounts.great, score.hitCounts.ok, score.hitCounts.meh].every(
+      (count) => count === null || count === 0,
+    ) &&
+    score.problems.length === 0
+  );
+}
+// An explicit Admin review may exclude a lobby occupant with a nonzero score,
+// but never an actual member of either recorded team. Raw provider data stays intact.
+export function canExcludeNonParticipantScore(
+  archive: HistoricalArchive,
+  fixtureId: string,
+  score: MatchScore,
+) {
+  const fixture = archive.matches.find((m) => m.id === fixtureId);
+  const player = archive.players.find((p) => p.osuId === score.osuId);
+  return (
+    !!fixture &&
+    score.osuId !== null &&
+    score.total !== null &&
+    score.problems.length === 0 &&
+    ![fixture.teamA, fixture.teamB].includes(player?.teamId ?? "")
+  );
+}
+// A reviewed bench occupant can also be on the edition roster. Require four
+// other positive, retained same-team records; never reduce a real lineup.
+export function canExcludeStatisticsBenchScore(
+  archive: HistoricalArchive,
+  fixtureId: string,
+  game: MatchGame,
+  score: MatchScore,
+  excludedIds: number[] = [],
+) {
+  const fixture = archive.matches.find((m) => m.id === fixtureId);
+  const team = archive.players.find((p) => p.osuId === score.osuId)?.teamId;
+  return (
+    !!fixture &&
+    !!team &&
+    [fixture.teamA, fixture.teamB].includes(team) &&
+    score.osuId !== null &&
+    score.total !== null &&
+    score.problems.length === 0 &&
+    new Set(
+      game.scores
+        .filter(
+          (other) =>
+            other.osuId !== score.osuId &&
+            other.osuId !== null &&
+            !excludedIds.includes(other.osuId) &&
+            (other.total ?? 0) > 0 &&
+            other.problems.length === 0 &&
+            archive.players.find((p) => p.osuId === other.osuId)?.teamId ===
+              team,
+        )
+        .map((other) => other.osuId),
+    ).size >= 4
+  );
+}
+export function statisticsScores(
+  game: MatchGame,
+  excluded: NonNullable<StatisticsSnapshot["excludedScores"]> = [],
+) {
+  const ids = new Set(
+    excluded
+      .filter(
+        (e) =>
+          e.gameId === game.id &&
+          game.scores.some(
+            (score) =>
+              score.osuId === e.osuId &&
+              (e.reason === "non-participant" ||
+                canExcludeStatisticsScore(score)),
+          ),
+      )
+      .map((e) => e.osuId),
+  );
+  return game.scores.filter((score) => !ids.has(score.osuId!));
+}
+export function validStatisticsExclusions(
+  snapshot: StatisticsSnapshot,
+  archive?: HistoricalArchive,
+  fixtureId?: string,
+) {
+  const excluded = snapshot.excludedScores ?? [];
+  return (
+    new Set(excluded.map((e) => `${e.gameId}:${e.osuId}`)).size ===
+      excluded.length &&
+    excluded.every((e) => {
+      const game = snapshot.source.games.find((g) => g.id === e.gameId);
+      const scores = game?.scores.filter((s) => s.osuId === e.osuId);
+      return (
+        scores?.length === 1 &&
+        (e.reason === "non-participant"
+          ? !!archive &&
+            !!fixtureId &&
+            (canExcludeNonParticipantScore(archive, fixtureId, scores[0]) ||
+              canExcludeStatisticsBenchScore(
+                archive,
+                fixtureId,
+                game!,
+                scores[0],
+                excluded
+                  .filter((x) => x.gameId === e.gameId)
+                  .map((x) => x.osuId),
+              ))
+          : canExcludeStatisticsScore(scores[0]))
+      );
+    })
+  );
+}
 export type StatisticsSourceSummary = {
   mpId: number;
   fixtureId: string;
@@ -31,6 +161,8 @@ export function statisticsGameIssues(
   poolId: string,
   game: MatchGame,
   allowUnlistedMaps = false,
+  excludedScores: StatisticsSnapshot["excludedScores"] = [],
+  useRosterTeams = false,
 ) {
   const issues: string[] = [];
   const fixture = archive.matches.find((m) => m.id === fixtureId);
@@ -53,7 +185,8 @@ export function statisticsGameIssues(
     issues.push("Game data is incomplete.");
   const seen = new Set<number>();
   const colors = new Map<string, Set<string>>();
-  for (const s of game.scores) {
+  const teams = new Set<string>();
+  for (const s of statisticsScores(game, excludedScores)) {
     const player = archive.players.find((p) => p.osuId === s.osuId);
     if (
       !player?.teamId ||
@@ -68,14 +201,17 @@ export function statisticsGameIssues(
       continue;
     }
     seen.add(s.osuId);
+    teams.add(player.teamId);
     const c = colors.get(s.team!) ?? new Set<string>();
     c.add(player.teamId);
     colors.set(s.team!, c);
   }
   if (
-    colors.size !== 2 ||
-    [...colors.values()].some((c) => c.size !== 1) ||
-    new Set([...colors.values()].flatMap((c) => [...c])).size !== 2
+    teams.size !== 2 ||
+    (!useRosterTeams &&
+      (colors.size !== 2 ||
+        [...colors.values()].some((c) => c.size !== 1) ||
+        new Set([...colors.values()].flatMap((c) => [...c])).size !== 2))
   )
     issues.push("Team colors do not identify both recorded teams.");
   return [...new Set(issues)];
@@ -119,6 +255,19 @@ export function fixtureStatisticsIssues(
   const wins = [0, 0];
   const issues: string[] = [];
   for (const s of snapshots) {
+    if (!validStatisticsExclusions(s, archive, fixtureId))
+      issues.push("Invalid score exclusions.");
+    const rosterGames = s.rosterTeamGames ?? [];
+    if (
+      new Set(rosterGames).size !== rosterGames.length ||
+      rosterGames.some((id) => !s.source.games.some((g) => g.id === id))
+    )
+      issues.push("Invalid roster-team review.");
+    if (
+      new Set(s.included).size !== s.included.length ||
+      s.included.some((id) => !s.source.games.some((g) => g.id === id))
+    )
+      issues.push("Only eligible recorded games can be selected.");
     if (
       !s.source.complete ||
       !s.source.match.endTime ||
@@ -133,6 +282,8 @@ export function fixtureStatisticsIssues(
           s.poolId,
           g,
           s.allowUnlistedMaps,
+          s.excludedScores,
+          s.rosterTeamGames?.includes(g.id),
         ),
       );
       if (seen.has(g.id) || (g.beatmapId !== null && maps.has(g.beatmapId)))
@@ -140,7 +291,7 @@ export function fixtureStatisticsIssues(
       seen.add(g.id);
       if (g.beatmapId) maps.add(g.beatmapId);
       const totals = [fixture.teamA, fixture.teamB].map((id) =>
-        g.scores.reduce(
+        statisticsScores(g, s.excludedScores).reduce(
           (sum, score) =>
             sum +
             (archive.players.find((p) => p.osuId === score.osuId)?.teamId === id
@@ -153,7 +304,16 @@ export function fixtureStatisticsIssues(
       else wins[totals[0] > totals[1] ? 0 : 1]++;
     }
   }
-  if (!seen.size || wins.some((n, i) => n !== fixture.score![i]))
+  const adjudicated =
+    snapshots.length > 0 && snapshots.every((s) => s.technicalAdjudication);
+  // An adjudicated point may have no MP score. Never fabricate that appearance
+  // or relabel a raw map winner; retain the accepted series result separately.
+  if (
+    !seen.size ||
+    (adjudicated
+      ? seen.size > fixture.score[0] + fixture.score[1]
+      : wins.some((n, i) => n !== fixture.score![i]))
+  )
     issues.push(
       "Selected games do not reconcile with the recorded series score.",
     );
@@ -188,8 +348,9 @@ export function projectStatistics(
   const pool = archive.pools.find((p) => p.id === snapshot.poolId);
   return selectedStatisticsGames(snapshot).flatMap((g) => {
     const map = pool?.maps.find((m) => m.beatmapId === g.beatmapId);
-    const maximum = Math.max(...g.scores.map((s) => s.total ?? 0));
-    return g.scores.map((s) => ({
+    const scores = statisticsScores(g, snapshot.excludedScores);
+    const maximum = Math.max(...scores.map((s) => s.total ?? 0));
+    return scores.map((s) => ({
       fixtureId,
       mpId: snapshot.source.match.id,
       gameId: g.id,

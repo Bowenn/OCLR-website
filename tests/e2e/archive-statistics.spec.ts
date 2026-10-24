@@ -2,7 +2,10 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
-import { statisticsArchive } from "../fixtures/archive-statistics";
+import {
+  statisticsArchive,
+  statisticsSource,
+} from "../fixtures/archive-statistics";
 import { seedSession } from "./session";
 import { closeDb } from "../../src/db";
 test.describe("historical statistics review and public exploration", () => {
@@ -67,6 +70,43 @@ test.describe("historical statistics review and public exploration", () => {
     await expect(
       page.getByRole("checkbox", { name: "Include game 3", exact: true }),
     ).toBeDisabled();
+    // A referee's zero-score occupant blocks the game until explicitly reviewed.
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeDisabled();
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await page
+      .getByRole("checkbox", { name: "Exclude score 1 · 999999", exact: true })
+      .check();
+    await expect(
+      page.getByRole("button", { name: "Select eligible games", exact: true }),
+    ).toBeDisabled();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeEnabled();
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await expect(
+      page.getByRole("checkbox", {
+        name: "Exclude score 1 · 999999",
+        exact: true,
+      }),
+    ).toBeChecked();
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.screenshot({
+      path: info.outputPath("zero-score-review.png"),
+      fullPage: true,
+    });
     await page
       .getByRole("button", { name: "Select eligible games", exact: true })
       .click();
@@ -127,6 +167,7 @@ test.describe("historical statistics review and public exploration", () => {
               expectedVersion: 1,
               poolId: "final",
               included: [1, 2],
+              excludedScores: [{ gameId: 1, osuId: 999999 }],
             },
           })
         ).ok(),
@@ -216,5 +257,267 @@ test.describe("historical statistics review and public exploration", () => {
         }),
       ).toBeVisible();
     }
+  });
+  test("reviews adjudication, wrong colors and nonzero non-participants explicitly", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    await seedEditions([
+      {
+        ...edition,
+        slug: "s7",
+        name: "Synthetic adjudicated statistics",
+        status: "completed",
+        registration: null,
+        published: true,
+        archive: statisticsArchive,
+      },
+    ]);
+    const { db } = await import("../../src/db");
+    const { historicalStatistics } = await import("../../src/db/schema");
+    const { eq } = await import("drizzle-orm");
+    const { statisticsArchiveKey } =
+      await import("../../src/lib/archive-statistics");
+    const source = statisticsSource();
+    source.games[0].scores[0].team = "red";
+    source.games[0].scores.push({
+      ...structuredClone(source.games[0].scores[0]),
+      osuId: 91005,
+      total: 3,
+    });
+    source.games[1].scores[2].total = 999;
+    await db()
+      .delete(historicalStatistics)
+      .where(eq(historicalStatistics.editionSlug, "s7"));
+    await db()
+      .insert(historicalStatistics)
+      .values({
+        editionSlug: "s7",
+        mpId: 999177,
+        fixtureId: "one",
+        version: 1,
+        draft: {
+          archiveKey: statisticsArchiveKey(statisticsArchive),
+          source,
+          poolId: "final",
+          included: [],
+        },
+      });
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await page.goto("/admin/tournaments/s7/statistics");
+    await page.getByLabel("Match", { exact: true }).selectOption("one");
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeDisabled();
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await expect(
+      page.getByRole("checkbox", {
+        name: "Exclude score 1 · 91001",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("checkbox", { name: "Exclude score 1 · 91005", exact: true })
+      .check();
+    await page
+      .getByRole("checkbox", {
+        name: "Use verified roster teams 1",
+        exact: true,
+      })
+      .check();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeEnabled();
+    await page
+      .getByRole("checkbox", { name: "Include game 1", exact: true })
+      .check();
+    await page
+      .getByRole("checkbox", { name: "Include game 2", exact: true })
+      .check();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", {
+        name: "Approve & publish statistics",
+        exact: true,
+      }),
+    ).toBeDisabled();
+    await page
+      .getByRole("checkbox", {
+        name: /Organizer confirmed technical adjudication/,
+      })
+      .check();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeEnabled();
+    await page
+      .getByRole("checkbox", { name: "Include game 1", exact: true })
+      .check();
+    await page
+      .getByRole("checkbox", { name: "Include game 2", exact: true })
+      .check();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", {
+        name: "Approve & publish statistics",
+        exact: true,
+      }),
+    ).toBeEnabled();
+    await page
+      .getByRole("button", {
+        name: "Approve & publish statistics",
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await context.clearCookies();
+    await context.addCookies([
+      { name: "oclr-locale", value: "en", domain: "127.0.0.1", path: "/" },
+    ]);
+    await page.goto("/tournaments/s7/statistics");
+    await expect(
+      page.getByText(/Some matches include confirmed technical adjudication/),
+    ).toBeVisible();
+    await expect(page.locator(".statistics-summary")).toContainText("1 / 1");
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(isMobile ? 390 : 1280);
+    await page.screenshot({
+      path: info.outputPath("adjudicated-statistics.png"),
+      fullPage: true,
+    });
+  });
+  test("reviews a rostered bench occupant only beyond four retained teammates", async ({
+    page,
+    context,
+    isMobile,
+  }) => {
+    const archive = structuredClone(statisticsArchive),
+      source = statisticsSource();
+    for (const uid of [91006, 91007, 91008]) {
+      archive.players.push({
+        ...archive.players[0],
+        osuId: uid,
+        username: "Synthetic teammate " + uid,
+        role: "player",
+        tier: null,
+      });
+      source.games[0].scores.push({
+        ...structuredClone(source.games[0].scores[0]),
+        osuId: uid,
+        total: uid === 91008 ? 50 : 200,
+      });
+    }
+    await seedEditions([
+      {
+        ...edition,
+        slug: "s7",
+        name: "Synthetic bench review",
+        status: "completed",
+        registration: null,
+        published: true,
+        archive,
+      },
+    ]);
+    const { db } = await import("../../src/db");
+    const { historicalStatistics } = await import("../../src/db/schema");
+    const { eq } = await import("drizzle-orm");
+    const { statisticsArchiveKey } =
+      await import("../../src/lib/archive-statistics");
+    await db()
+      .delete(historicalStatistics)
+      .where(eq(historicalStatistics.editionSlug, "s7"));
+    await db()
+      .insert(historicalStatistics)
+      .values({
+        editionSlug: "s7",
+        mpId: 999177,
+        fixtureId: "one",
+        version: 1,
+        draft: {
+          archiveKey: statisticsArchiveKey(archive),
+          source,
+          poolId: "final",
+          included: [],
+        },
+      });
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await page.goto("/admin/tournaments/s7/statistics");
+    await page.getByLabel("Match", { exact: true }).selectOption("one");
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await page
+      .getByRole("checkbox", { name: "Exclude score 1 · 91008", exact: true })
+      .check();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("checkbox", { name: "Include game 1", exact: true }),
+    ).toBeEnabled();
+    await page
+      .locator(".statistics-review tbody tr")
+      .first()
+      .locator("summary")
+      .click();
+    await expect(
+      page.getByRole("checkbox", {
+        name: "Exclude score 1 · 91001",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("checkbox", {
+        name: "Exclude score 1 · 91008",
+        exact: true,
+      }),
+    ).toBeChecked();
+    for (const id of [1, 2])
+      await page
+        .getByRole("checkbox", { name: "Include game " + id, exact: true })
+        .check();
+    await page
+      .getByRole("button", { name: "Save statistics review", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", {
+        name: "Approve & publish statistics",
+        exact: true,
+      }),
+    ).toBeEnabled();
+    await page
+      .getByRole("button", {
+        name: "Approve & publish statistics",
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    expect(source.games[0].scores.at(-1)?.total).toBe(50);
   });
 });

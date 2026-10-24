@@ -25,3 +25,15 @@ Source workbooks/PDF are intermediate extraction evidence and are not shipped. T
 Deploy the new fixed branding-path allowlist before selecting the assets. No migration or automatic production configuration update is performed. After organizer deployment confirmation, use computer use in each edition's General settings to select its corresponding **OCLR Season 9 / 8 — Square logo**, save, reload and check the public directory at desktop/mobile sizes and in light/dark themes. Background and key visual selections remain unchanged. Clearing the logo continues to use the existing fallback.
 
 Rollback must keep support for the stored asset path, or clear these choices through the Admin UI before reverting to a build whose schema cannot parse them. Preserve archive content, revision checks, transactional audit and publication state.
+
+
+## S7 organizer-supplied key visual (#189)
+
+- Organizer attachment: `LRS7.jpg`, supplied 2026-10-24.
+- Asset: `public/archive/s7/key-visual.jpg`, original JPEG, 1920×1080, 638,212 bytes.
+- SHA-256: `516ced09024af30f8df4be15e3cb254a8c514dbf1d1f3307f9ea3e552f224f2a`.
+- Copied byte-for-byte. The complete banner keeps its original 16:9 composition.
+- The existing Admin artwork selectors expose this image for **Square logo** (directory card) and **Key visual** (historical overview). The server allowlists only the fixed bundled asset path. Historical overview and private preview render an explicitly selected key visual using the existing responsive image class; other archive sections do not repeat it.
+- Deploy the supporting version first, then select **OCLR Season 7 — Square logo** and **OCLR Season 7 — Key visual** in S7 General settings through computer use. Save and verify the directory card and S7 overview. No migration, historical JSON re-import or change to statistical snapshots is needed. Keep asset-path schema support when rolling back, or clear these selections before reverting.
+
+S7 local verification (2026-10-24): 99 test files / 738 passed with one existing skipped, lint/types and production build passed, three-language catalog extraction/check passed, and production dependency audit reported zero vulnerabilities. Desktop/mobile Chrome saved both image settings through the Admin form and verified original 16:9 rendering on the directory card and historical overview across default/cute-pastel/swiss-minimal and light/dark; Axe and horizontal-overflow checks passed. The historical archive and edition publication state remained identical. Deployment and production selection remain pending organizer action.

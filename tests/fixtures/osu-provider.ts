@@ -51,7 +51,29 @@ globalThis.fetch = async (input, init) => {
       syntheticPage(
         statisticsApiGames()
           .filter((g) => g.id > after)
-          .map((g) => syntheticEvent(g.id, g)),
+          .map((g) => {
+            if (g.id === 1)
+              return syntheticEvent(g.id, {
+                ...g,
+                scores: [
+                  ...g.scores,
+                  {
+                    ...g.scores[0],
+                    user_id: 999999,
+                    legacy_total_score: 0,
+                    total_score: 0,
+                    accuracy: 0,
+                    max_combo: 0,
+                    passed: false,
+                    match: { team: "blue", slot: 4, pass: false },
+                    statistics: {
+                      count_miss: 100,
+                    },
+                  },
+                ],
+              });
+            return syntheticEvent(g.id, g);
+          }),
         {
           match: {
             id: 999177,
