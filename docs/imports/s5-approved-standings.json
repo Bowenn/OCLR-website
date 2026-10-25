@@ -1,0 +1,132 @@
+{
+  "editionSlug": "s5",
+  "basis": "MainSheet scores and MP progression; organizer approved publication",
+  "standings": [
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "g",
+      "rank": 1,
+      "wins": 6,
+      "losses": 1,
+      "mapsWon": 37,
+      "mapsLost": 18,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "i",
+      "rank": 2,
+      "wins": 6,
+      "losses": 3,
+      "mapsWon": 42,
+      "mapsLost": 33,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "b",
+      "rank": 3,
+      "wins": 5,
+      "losses": 2,
+      "mapsWon": 34,
+      "mapsLost": 23,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "e",
+      "rank": 4,
+      "wins": 4,
+      "losses": 3,
+      "mapsWon": 25,
+      "mapsLost": 23,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "a",
+      "rank": 5,
+      "wins": 3,
+      "losses": 3,
+      "mapsWon": 21,
+      "mapsLost": 21,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "c",
+      "rank": 5,
+      "wins": 3,
+      "losses": 3,
+      "mapsWon": 23,
+      "mapsLost": 26,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "h",
+      "rank": 7,
+      "wins": 2,
+      "losses": 3,
+      "mapsWon": 19,
+      "mapsLost": 20,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "最終排名（全賽事戰績）",
+      "teamId": "j",
+      "rank": 7,
+      "wins": 2,
+      "losses": 3,
+      "mapsWon": 18,
+      "mapsLost": 19,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "未晉級（第9–12名未細分）",
+      "teamId": "d",
+      "rank": null,
+      "wins": 1,
+      "losses": 3,
+      "mapsWon": 10,
+      "mapsLost": 16,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "未晉級（第9–12名未細分）",
+      "teamId": "k",
+      "rank": null,
+      "wins": 1,
+      "losses": 3,
+      "mapsWon": 12,
+      "mapsLost": 15,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "未晉級（第9–12名未細分）",
+      "teamId": "l",
+      "rank": null,
+      "wins": 1,
+      "losses": 3,
+      "mapsWon": 7,
+      "mapsLost": 17,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    },
+    {
+      "group": "未晉級（第9–12名未細分）",
+      "teamId": "f",
+      "rank": null,
+      "wins": 0,
+      "losses": 4,
+      "mapsWon": 3,
+      "mapsLost": 20,
+      "source": "MainSheet／34場MP；主辦者核准重建排名"
+    }
+  ],
+  "publication": {
+    "revision": 9,
+    "published": true,
+    "timeZone": "Asia/Shanghai",
+    "matchReviewsPreserved": 34
+  }
+}

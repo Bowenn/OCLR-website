@@ -43,3 +43,9 @@ B32 的 MainSheet `对阵表!F33` 原值 2020-01-01；[MP72596333](https://osu.p
 ## 建議採用範圍
 
 可向主辦者提出G/I/B/E前四，以及A/C第5–6、H/J第7–8的重建結果；9–12先保留未晉級集合，K/D/L/F精確排序作有條件候選。此次未修改正式站standings或bracket，避免把推理直接當成已核准排名。
+
+## 主辦者核准與正式公開
+
+主辦者後續要求「寫入正式排名，然後進行公開」。已經 computer use 寫入 G/I/B/E 第1/2/3/4、A/C並列第5、H/J並列第7；D/K/L/F保留未晉級且名次null，不採用依未確認同分規則推導的9–12順序。正式資料見 [s5-approved-standings.json](imports/s5-approved-standings.json)。
+
+因匯入介面要求未公開，先短暫取消公開，從revision 6原始已核准歸檔保留全部資料，僅增加standings、核准來源附錄及更新過時備註，保存後恢復公開。最終revision 9、published=true、Asia/Shanghai；34場matches含原核准紀錄逐欄完全未變。公開賽程頁已實際顯示排名。現有介面的表格標題仍是「小组排名」，各列已明確標示「最終排名（全賽事戰績）」；本次未變更介面程式。
