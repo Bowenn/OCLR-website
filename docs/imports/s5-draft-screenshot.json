@@ -1,0 +1,20 @@
+{
+  "source": "Organizer-supplied draft screenshot, 2026-10-25",
+  "sourceFile": "codex-clipboard-c25c785e-7dab-4f2f-b779-14632afec7fe.png",
+  "interpretation": "Group labels are draft-team labels, not competition groups or pick order. Names and Elo are transcribed from the screenshot; no UID is inferred from a numeric name.",
+  "groups": [
+    {"group":1,"avgElo":947,"members":[["-xxx Rumia-",1052],["dhui",969],["BurNing",1087],["Reecho",1015],["Dana Iclucia",656],["Niwasaka_Rira",903]]},
+    {"group":2,"avgElo":1021,"members":[["Curriescaz",1278],["akziyou",1206],["TaneshimaPopura",1118],["[-buki-]",1165],["Aurora_fang",702],["huoyaoyuan",656]]},
+    {"group":3,"avgElo":991,"members":[["Crystal 1",1113],["WhiteCookies",973],["Muziyami",975],["M P I",695],["zhuangsi",1082],["None1637",1107]]},
+    {"group":4,"avgElo":1017,"members":[["1miss_Cozmo",1222],["Guozi on Osu",996],["Hunxin",1293],["Qlinging",927],["Yuuki Yuuna",997],["[K I D]",664]]},
+    {"group":5,"avgElo":946,"members":[["Soymana",1043],["MasterKotori",1344],["hotrock_",1145],["Moutreak",787],["Mars New",769],["LittleStone",589]]},
+    {"group":6,"avgElo":999,"members":[["Slay_conceit",1358],["Clivery_V",1008],["Rairakkuhana",896],["alansword",1177],["[RyuZu]",908],["SqcOc-",647]]},
+    {"group":7,"avgElo":987,"members":[["CUWAN",1084],["An Yanyan",1224],["Molli",1091],["- Rainbow -",1137],["Myoi Mina",828],["Hoshizora Rin",558]]},
+    {"group":8,"avgElo":868,"members":[["zmyk",1081],["[Illustrious]",1089],["X bol",898],["Shijie",1105],["Kazumi Pager",517],["lianlian514",515]]},
+    {"group":9,"avgElo":994,"members":[["feifeiis",1219],["VinyeKk_Ame",1282],["Texas",998],["qi_e",949],["Pata-Mon",858],["Katamari",655]]},
+    {"group":10,"avgElo":942,"members":[["My Suck Aim",1100],["No rank",988],["Takagi San",1043],["Banana skin",1005],["foraphe",979],["AnthV",537]]},
+    {"group":11,"avgElo":1012,"members":[["moe nyannyan",1228],["KobeNanami",1008],["acvyou",1166],["[ Kuon ]",1010],["SakurajimaMai",1151],["Shiina Mafuyu",506]]},
+    {"group":12,"avgElo":790,"members":[["Darcklh",823],["hvick226",1039],["[1552828]",1110],["Mikako",846],["Duraaa",762],["- Ssooy -",654],["spead_come",294]]}
+  ],
+  "rowRoles": ["Captain","VICE","Tier 1","Tier 2","Tier 3","Tier 4","Tier 5"]
+}

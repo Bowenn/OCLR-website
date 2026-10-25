@@ -29,6 +29,9 @@ real grants/OAuth/deployment and new Chinese wording acceptance remain separate.
 
 ## Historical source preparation
 
+- [OCLR β (S5) sources](s5-archive.md) — MainSheet-authoritative rosters,
+  separate draft screenshot, 34 recorded source scores and four mappools;
+  preparation only, with identity/date/rule uncertainties tracked (#288).
 - [S6 surviving sources and missing evidence](s6-archive.md) — source review,
   original artwork and format 2 organizer-confirmed package; S6 is imported and
   published, with remaining source/result review items recorded separately (#289).
