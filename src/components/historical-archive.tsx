@@ -35,6 +35,7 @@ import {
 import { Avatar } from "./avatar";
 import { EventSchedule } from "./event-schedule";
 import { RulesHandbook } from "./rules-handbook";
+import { RulesSection } from "./rules-section";
 import { Badge, PageHeading } from "./ui";
 
 export type ArchiveSection =
@@ -55,7 +56,7 @@ export type ArchiveSection =
   | "awards";
 export async function historicalPage(
   slug: string,
-  section: ArchiveSection,
+  section: Exclude<ArchiveSection, "rules">,
   id?: string,
 ) {
   let edition: Edition;
@@ -446,14 +447,10 @@ export async function HistoricalArchiveView({
             ))}
           </dl>
         </div>
-        <section
-          id="rules"
-          className="archive-overview-rules"
-          aria-labelledby="archive-rules-title"
-        >
+        <RulesSection titleId="archive-rules-title">
           <h2 id="archive-rules-title">{tr("Tournament rules")}</h2>
           {rulesContent()}
-        </section>
+        </RulesSection>
         {preview && (
           <nav className="actions" aria-label={tr("Archive sections")}>
             {[

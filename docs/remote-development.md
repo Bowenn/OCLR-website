@@ -8,6 +8,11 @@ running the existing synthetic workflows.
 
 ## Fresh frontend checkout
 
+Tournament rules are displayed on each current or historical edition's overview
+at `#rules`. Legacy `/tournaments/{edition}/rules` links only redirect to that
+edition's overview or a recognized chapter there; they are not a separate content
+page. Anonymous and Developer reads use the same publication boundaries.
+
 Use Node.js 24 LTS (minimum 22.13) and the existing npm lockfile:
 
 ```sh

@@ -1764,12 +1764,11 @@
       "file": "src/app/tournaments/[edition]/rules/page.tsx",
       "kind": "page",
       "authority": "saved-read",
-      "operations": ["getPublicTournament", "publicEnrollment"],
+      "operations": ["getPublicTournament"],
       "commands": "Denied in remote mode; connection management and preference cookies remain separate",
       "metadata": "Same file; shared request adapter for dynamic data",
       "services": [
-        "src/lib/public-read-models.ts / frontend-data.ts (getPublicTournament)",
-        "src/lib/frontend-read-models.ts#publicEnrollment"
+        "src/lib/public-read-models.ts / frontend-data.ts (getPublicTournament)"
       ],
       "test": "remote-e2e/full-site.spec.ts + integration/extended-read.test.ts",
       "authorization": "Existing publication/subject boundaries",

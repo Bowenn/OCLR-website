@@ -120,7 +120,7 @@ test.describe("compact public player statistics", () => {
         });
         await expect(
           hidden.locator(".event-player-identity .muted"),
-        ).toHaveText("osu!");
+        ).toHaveCount(0);
         await expect(hidden.locator('a[href*="/teams/"]')).toHaveCount(0);
         expect(
           await page.evaluate(

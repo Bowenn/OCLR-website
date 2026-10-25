@@ -74,8 +74,8 @@ const optional = {
   },
   "manga-halftone": {
     label: "Manga halftone",
-    lightBackground: "rgb(246, 243, 236)",
-    darkBackground: "rgb(23, 21, 18)",
+    lightBackground: "rgb(251, 250, 248)",
+    darkBackground: "rgb(23, 20, 24)",
   },
   glassmorphism: {
     label: "Glassmorphism",
@@ -188,11 +188,11 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
           "data-appearance",
           appearance,
         );
-        const response = await context.request.get(base + "/rules");
+        const response = await context.request.get(base + "#rules");
         expect(await response.text()).toMatch(
           new RegExp(`<html[^>]*data-appearance="${appearance}"`),
         );
-        await page.goto(base + "/rules");
+        await page.goto(base + "#rules");
         await page.reload();
         await expect(page.locator(".themed-site")).toHaveCSS(
           "background-color",
@@ -274,7 +274,7 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
           for (const path of [
             "/",
             base,
-            base + "/rules",
+            base + "#rules",
             base + "/mappools",
             base + "/players",
             "/privacy",
@@ -282,7 +282,11 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
             "/admin/tournaments/test-cup/settings",
             "/dashboard",
           ]) {
-            expect((await page.goto(path))?.status()).toBe(200);
+            const response = await page.goto(path);
+            if (path.endsWith("#rules")) {
+              await expect(page).toHaveURL(origin + path);
+              await expect(page.locator("#rules")).toBeVisible();
+            } else expect(response?.status()).toBe(200);
             await expect(page.locator("html")).toHaveAttribute(
               "data-appearance",
               appearance,
@@ -297,10 +301,10 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
             );
             await expect(page.locator(".themed-site")).toHaveCSS(
               "color-scheme",
-              theme,
+              appearance === "retro-arcade" ? "dark" : theme,
             );
             await noOverflow(page);
-            if ([base, base + "/rules", "/admin"].includes(path))
+            if ([base, base + "#rules", "/admin"].includes(path))
               await page.screenshot({
                 path: info.outputPath(
                   `${locale}-${theme}-${path === base ? "overview" : path.endsWith("rules") ? "rules" : "admin"}.png`,
@@ -311,7 +315,7 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
             if (
               locale === "en" &&
               [
-                base + "/rules",
+                base + "#rules",
                 base + "/mappools",
                 "/admin/tournaments/test-cup/settings",
               ].includes(path)

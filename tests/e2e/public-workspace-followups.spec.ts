@@ -274,16 +274,14 @@ test.describe("public and operational follow-ups", () => {
         await page.goto(`/tournaments/test-cup/teams/${seed.teamId}`);
         await expect(page.locator(".public-roster-grid > li")).toHaveCount(2);
         await expect(
-          page
-            .locator(".public-roster-grid .badge")
-            .filter({
-              hasText:
-                locale === "en"
-                  ? "Captain"
-                  : locale === "zh-Hans"
-                    ? "队长"
-                    : "隊長",
-            }),
+          page.locator(".public-roster-grid .badge").filter({
+            hasText:
+              locale === "en"
+                ? "Captain"
+                : locale === "zh-Hans"
+                  ? "队长"
+                  : "隊長",
+          }),
         ).toHaveCount(1);
         await page.goto("/tournaments/empty-followup-test/teams");
         await expect(page.locator(".page-heading")).toBeVisible();
@@ -720,6 +718,13 @@ test.describe("public and operational follow-ups", () => {
       page.getByRole("link", { name: "Manage rounds", exact: true }),
     ).toHaveCount(0);
     await openTournamentTool(page, "test-cup", "Rounds", isMobile);
+    await page.getByRole("tab", { name: "Group Stage", exact: true }).click();
+    await page
+      .getByRole("list", { name: "Rounds", exact: true })
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("heading", { name: "GS", exact: true }) })
+      .getByRole("button", { name: "Edit round", exact: true })
+      .click();
     await expect(page.getByLabel("Round order", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await page.goto("/admin/tournaments/test-cup/mappools");

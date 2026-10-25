@@ -448,9 +448,15 @@ test.describe("historical archive browser workflow", () => {
     await page.getByRole("tab", { name: "All mods", exact: true }).click();
     await captureResponsiveLayout(page, info, "archive-pool");
     for (const path of ["bracket", "draft", "rules", "results/awards"]) {
-      expect((await page.goto(`/tournaments/${slug}/${path}`))?.status()).toBe(
-        200,
-      );
+      expect(
+        (
+          await page.goto(
+            path === "rules"
+              ? `/tournaments/${slug}#rules`
+              : `/tournaments/${slug}/${path}`,
+          )
+        )?.status(),
+      ).toBe(200);
     }
     for (const path of [
       "teams/missing",
@@ -556,7 +562,11 @@ test.describe("historical archive browser workflow", () => {
           "staff",
           "rules",
         ]) {
-          await page.goto(`/tournaments/${slug}/${path}`);
+          await page.goto(
+            path === "rules"
+              ? `/tournaments/${slug}#rules`
+              : `/tournaments/${slug}/${path}`,
+          );
           if (path === "schedule") {
             await expect(page.locator(".event-matches tbody tr")).toHaveCount(
               22,

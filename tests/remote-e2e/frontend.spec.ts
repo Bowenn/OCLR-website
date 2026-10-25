@@ -509,16 +509,22 @@ test("uses real remote grants for core SSR/navigation without local DB or OAuth,
       .first(),
   ).toBeVisible();
   await page.goto("/remote");
-  await page
-    .getByRole("button", {
-      name: "Browse public data anonymously",
-      exact: true,
-    })
-    .click();
+  await Promise.all([
+    page.waitForEvent("load"),
+    page
+      .getByRole("button", {
+        name: "Browse public data anonymously",
+        exact: true,
+      })
+      .click(),
+  ]);
   await expect(
     page.getByText("Anonymous public browsing", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Disconnect", exact: true }).click();
+  await Promise.all([
+    page.waitForEvent("load"),
+    page.getByRole("button", { name: "Disconnect", exact: true }).click(),
+  ]);
   await expect(
     page.getByText(
       "Connect to the remote backend or choose anonymous public browsing.",
