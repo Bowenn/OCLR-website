@@ -2585,6 +2585,7 @@
     "m286d59b3d14d": "Public tournament lists, overview, rules, complete players and saved profiles; scope-gated internal tournament configuration. Writes, messages, round ratings and other pages are not supported yet.",
     "m4eda72493731": "Public tournaments",
     "m7b1c67183226": "Remote development does not grant browser write roles.",
-    "m864ca4393ac2": "Round rating history is not supported in remote development yet."
+    "m864ca4393ac2": "Round rating history is not supported in remote development yet.",
+    "m29c2670bb584": "Manga halftone"
   }
 }
