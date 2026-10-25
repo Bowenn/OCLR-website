@@ -1563,7 +1563,7 @@
           },
           "defaultAppearance": {
             "type": "string",
-            "enum": ["default", "cute-pastel", "swiss-minimal"]
+            "enum": ["default", "cute-pastel", "swiss-minimal", "claymorphism"]
           },
           "defaultLocale": { "type": "string", "const": "zh-Hans" },
           "locales": {
@@ -1715,7 +1715,12 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["default", "cute-pastel", "swiss-minimal"]
+                "enum": [
+                  "default",
+                  "cute-pastel",
+                  "swiss-minimal",
+                  "claymorphism"
+                ]
               },
               { "type": "null" }
             ]
@@ -2546,7 +2551,12 @@
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["default", "cute-pastel", "swiss-minimal"]
+                "enum": [
+                  "default",
+                  "cute-pastel",
+                  "swiss-minimal",
+                  "claymorphism"
+                ]
               },
               { "type": "null" }
             ]
@@ -2732,7 +2742,12 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "enum": ["default", "cute-pastel", "swiss-minimal"]
+                  "enum": [
+                    "default",
+                    "cute-pastel",
+                    "swiss-minimal",
+                    "claymorphism"
+                  ]
                 },
                 { "type": "null" }
               ]
@@ -2914,7 +2929,12 @@
                 "anyOf": [
                   {
                     "type": "string",
-                    "enum": ["default", "cute-pastel", "swiss-minimal"]
+                    "enum": [
+                      "default",
+                      "cute-pastel",
+                      "swiss-minimal",
+                      "claymorphism"
+                    ]
                   },
                   { "type": "null" }
                 ]
@@ -3419,7 +3439,12 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "enum": ["default", "cute-pastel", "swiss-minimal"]
+                  "enum": [
+                    "default",
+                    "cute-pastel",
+                    "swiss-minimal",
+                    "claymorphism"
+                  ]
                 },
                 { "type": "null" }
               ]
