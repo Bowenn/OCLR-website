@@ -43,3 +43,9 @@
 - [S5公開頁](https://oclr.org/tournaments/s5) 實際顯示12隊、85位選手與教練、34賽果、5圖池／77譜面。來源附錄不出現在公開概覽。
 - 此節取代上方私人匯入階段的「尚未核准／公開」狀態；規則、原表時區及日期修正、未知UID、最終名次與晉級連線仍未補造。誤建空白草稿仍未使用。
 - 實際 historicalArchiveSchema 驗證通過，完整來源界限、紅藍唯一對應、MainSheet比分與站上逐筆比對均通過。沒有變更應用程式或部署。
+
+## S5 主視覺接入（待部署）
+
+主辦者提供1920×1080原始PNG，已原樣保存於 `public/archive/s5/key-visual.png`，SHA-256與附件一致。沿用S6/S7固定素材機制，加入S5來源圖映射、後台主視覺／標誌選單與橫向縮圖識別；正式站已保存的S5來源可在部署後自動取得主視覺及列表圖片。沒有重新繪圖、裁切或修改賽果。
+
+驗證：相關2個單元測試檔21 tests通過；npm run check（lint/typecheck）通過；npm audit --omit=dev為0 vulnerabilities；生成51份讀取契約並更新對應素材白名單。全量npm test出現update-script.test.ts的9項失敗，未完成全套；build長時間停留optimized build階段，本次中止，未宣稱成功。未跑需要隔離環境的desktop/mobile E2E。這些限制需CI／後續完整驗證解決，未聲稱正式部署或站上已顯示圖片。

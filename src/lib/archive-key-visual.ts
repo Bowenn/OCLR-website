@@ -2,6 +2,11 @@ import type { HistoricalArchive } from "./historical-archive";
 
 const visuals: Record<string, { src: string; width: number; height: number }> =
   {
+    "100CrQhmcX3lQ_7yn4xcP3cC316A7t35wK6kGfSW2tyM": {
+      src: "/archive/s5/key-visual.png",
+      width: 1920,
+      height: 1080,
+    },
     "1vZ7JN6ePxDqjdVZ1527fvyeoV1m5rbHzSvXObDUuf7I": {
       src: "/archive/s7/key-visual.jpg",
       width: 1920,
