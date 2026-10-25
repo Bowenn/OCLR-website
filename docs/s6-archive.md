@@ -88,8 +88,16 @@ strict private-field rejection and pending scores that never become winners.
 The full 616-case local browser run was started and intentionally interrupted
 so the existing CI shards can execute the full suite. Local focused desktop/
 mobile archive checks include uploading and round-tripping the complete S6 file,
-not just a smaller synthetic example. Their final results, exact commit and
-commit-specific CI status are recorded on #289; no pending check is a pass.
+not just a smaller synthetic example. Sixteen cases in the focused 18-case run
+passed; the two new synthetic cases initially misread a followed login redirect.
+After correcting that assertion and making the new test edition slugs unique
+across reruns, all four affected real-package/synthetic desktop/mobile cases
+passed. No application change was needed for those test corrections. Exact commit
+and commit-specific CI status are recorded on #289; no pending check is a pass.
+
+Local preview evidence (not a production import):
+[desktop 1440px](verification/issue-289/s6-private-review-desktop-1440.png),
+[mobile 320px](verification/issue-289/s6-private-review-mobile-320.png).
 
 The organizer then supplied [OCLR Mappool Collections](https://docs.google.com/spreadsheets/d/14o3t0nEwp5YnRZHbjgX8OBr9tj7yeajzV5FlVIZM0Vg/edit)
 and selected **S6GS, S6ES and S6FS** only. The organizer reiterated that match

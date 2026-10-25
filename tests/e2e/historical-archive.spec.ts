@@ -19,7 +19,7 @@ test.describe("historical archive browser workflow", () => {
     context,
     isMobile,
   }, info) => {
-    const slug = `s6-${isMobile ? "mobile" : "desktop"}-test`;
+    const slug = `s6-${isMobile ? "mobile" : "desktop"}-test-${Date.now()}`;
     const archive = historicalArchiveSchema.parse({
       ...JSON.parse(readFileSync("docs/imports/s6-archive.json", "utf8")),
       editionSlug: slug,
@@ -37,13 +37,11 @@ test.describe("historical archive browser workflow", () => {
       },
     ]);
     await page.goto(`/admin/tournaments/${slug}/archive`);
-    await page
-      .getByLabel("Archive JSON file", { exact: true })
-      .setInputFiles({
-        name: "s6-archive.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(JSON.stringify(archive, null, 2)),
-      });
+    await page.getByLabel("Archive JSON file", { exact: true }).setInputFiles({
+      name: "s6-archive.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(archive, null, 2)),
+    });
     await page
       .getByRole("button", { name: "Validate and review archive" })
       .click();
@@ -106,7 +104,7 @@ test.describe("historical archive browser workflow", () => {
     context,
     isMobile,
   }) => {
-    const slug = `source-${isMobile ? "mobile" : "desktop"}-test`;
+    const slug = `source-${isMobile ? "mobile" : "desktop"}-test-${Date.now()}`;
     const archive = historicalSourceDetails(slug);
     await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
     await seedEditions([
@@ -200,6 +198,7 @@ test.describe("historical archive browser workflow", () => {
       (
         await guest.request.get(
           `http://127.0.0.1:3100/admin/tournaments/${slug}/archive/preview`,
+          { maxRedirects: 0 },
         )
       ).status(),
     ).not.toBe(200);
