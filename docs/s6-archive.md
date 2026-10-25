@@ -7,7 +7,12 @@ provenance entry point, not a claim that the workbook is downloadable there.
 
 This phase organizes surviving evidence only. There has been no production
 import, publication, deployment, database change or edition creation. The issue
-remains open. Missing knockout results and final placements remain unknown.
+remains open. The initial workbook did not preserve knockout results or final
+placements. The organizer subsequently supplied corrected 2021 MP links:
+[match and bracket reconstruction](s6-match-reconstruction.md) now records the
+surviving games, candidate scores, preliminary tables and unresolved bracket
+questions separately. The original workbook-only `results: []` is preserved;
+it is no longer a claim that no supplementary match evidence exists.
 
 The organizer then supplied [OCLR Mappool Collections](https://docs.google.com/spreadsheets/d/14o3t0nEwp5YnRZHbjgX8OBr9tj7yeajzV5FlVIZM0Vg/edit)
 and selected **S6GS, S6ES and S6FS** only. The organizer reiterated that match
@@ -81,6 +86,21 @@ explicit UTC+8 schedule confirmation.
 
 The original artwork is collected independently; it does not supply rules,
 results or missing identities.
+
+The later MP reconstruction supplies ten evidenced team names (I/J remain
+unknown), 33 match histories and separate strict-GS/four-batch standings. The
+organizer also recovered the [S6 rules](https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw):
+four Swiss rounds, BO9, 12 into 8 with four teams starting upper and four starting
+lower, BO11 playoffs and BO13 lower/grand finals. The obsolete two-group proposal
+is visibly struck through and must not be applied. Extra restricts lineups, not
+score multipliers; individual Fail scores count and Team Fail loses.
+
+Four completed replay rulings, D–I's BO9 conflict, C–F's missing sixth winner
+point and the structurally inferred but unsourced G–J upper final remain review
+items. The rule-grounded bracket has one structural source gap: the G–J upper
+final. This does not approve a full
+bracket or official placements. See the reconstruction for rule facts, source
+links and exact game IDs; no withdrawn 2020 source is used.
 
 ## Organizer confirmations (2026-10-25)
 

@@ -1,0 +1,72 @@
+{
+  "artifactKind": "oclr-s6-rule-facts",
+  "sourceUrl": "https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw",
+  "title": "OCLR S6 规则表",
+  "capturedOn": "2026-10-25",
+  "captureMethod": "Organizer-provided document; read-only browser inspection of rendered document and accessibility text, including strike-through formatting and document end",
+  "sourceQueryParametersExcluded": true,
+  "scoring": {
+    "version": "Score v1",
+    "individualFailScoresCount": true,
+    "teamFailLoses": true,
+    "noFailOptional": true,
+    "extraModeChangesScoreMultiplier": false
+  },
+  "preliminary": {
+    "format": "swiss",
+    "rounds": 4,
+    "teams": 12,
+    "advance": 8,
+    "bestOf": 9,
+    "plannedDates": ["2021-05-08", "2021-05-30"],
+    "standingCriteriaInSourceOrder": [
+      "match wins",
+      "head-to-head",
+      "source term: 净胜场 (precise meaning not expanded in source)"
+    ],
+    "obsoleteStruckThroughProposal": "Two separate round-robin groups; visibly struck through in the document and not applied"
+  },
+  "knockout": {
+    "upperEntrants": 4,
+    "lowerEntrants": 4,
+    "otherTeamsEliminated": true,
+    "upperFirstSeedMayChooseOpponent": true,
+    "lowerFirstSeedMayChooseOpponent": true,
+    "bestOf": 11,
+    "plannedDates": ["2021-06-05", "2021-06-13"],
+    "lowerFinalAndGrandFinalBestOf": 13,
+    "plannedFinalDates": ["2021-06-19", "2021-06-20"],
+    "grandFinalResetSpecified": false,
+    "upperAdvantageSpecified": false
+  },
+  "extraMode": {
+    "slots": ["NM1", "HD1", "HR1", "DT1"],
+    "usesPerTeam": 2,
+    "onlyOnOwnPick": true,
+    "maxExtraBansPerTeam": 1,
+    "maxConcurrentCaptainViceAndTier1": 1,
+    "fourVsFourTier1Exception": true,
+    "firstPickCannotUseExtraWhenChoosingPickFirst": true
+  },
+  "mods": {
+    "nmOptionalSingleMod": ["HR", "HD", "EZ"],
+    "nmNoAdditionalScoreAdjustment": true,
+    "tiebreakerAnyMod": true
+  },
+  "replays": {
+    "ordinaryAllowancesPerTeamPerMatch": 1,
+    "disconnectScoreDeficitThresholdRelativeToSS": true,
+    "refereeDecisionRequired": true,
+    "startDisconnectAbortWithinSecondsDoesNotConsumeAllowance": 30,
+    "refereeErrorOrUnavailableAbortNeedsOpponentDecisionAndIsFree": true,
+    "completedAttemptAutomaticallyInvalidatedByRule": false
+  },
+  "notes": [
+    "Structured factual paraphrases, not a full verbatim republication of the rulebook.",
+    "Planned dates do not override actual MP lobby/game timestamps or establish that a later match did not occur.",
+    "The active Swiss rule replaces the struck-through two-group proposal. Do not create group A/B labels from the obsolete text.",
+    "Extra restricts lineups; it does not specify a new score multiplier. Historical lineup changes and Extra declarations cannot be proved from scores alone.",
+    "The replay rule permits adjudicated replays; it does not prove which particular attempt a referee accepted.",
+    "No grand-final reset or winner-side advantage is described in the inspected document; absence of a clause is not evidence that an extra unprovided match never occurred."
+  ]
+}

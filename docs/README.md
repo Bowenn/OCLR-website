@@ -31,5 +31,7 @@ real grants/OAuth/deployment and new Chinese wording acceptance remain separate.
 
 - [S6 surviving sources and missing evidence](s6-archive.md) — source review and
   original artwork; not yet an uploadable archive package (#289).
+- [S6 match and bracket reconstruction](s6-match-reconstruction.md) — corrected
+  2021 MP histories, preliminary/knockout tables, replay and format uncertainties.
 - [S7 archive](s7-archive.md), [S8 archive](s8-archive.md),
   [S9 archive](s9-archive.md), [S10 archive](s10-archive.md).

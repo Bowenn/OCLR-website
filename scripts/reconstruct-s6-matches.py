@@ -1,0 +1,330 @@
+"""Reconstruct S6 source tables without approving or publishing any result.
+
+python3 scripts/reconstruct-s6-matches.py snapshot.json roster.json pools.json rules.json output.json
+Complete pooled games are summed by provider red/blue sides. A separate,
+explicit hypothesis uses the last completed attempt for a repeated beatmap.
+"""
+
+import argparse
+from collections import Counter
+import datetime as dt
+import hashlib
+import json
+from pathlib import Path
+import re
+
+
+def game_result(game):
+    totals = {color: sum(s["score"] for s in game["scores"] if s["team"] == color) for color in ["red", "blue"]}
+    failed = {}
+    for color in totals:
+        scores = [s for s in game["scores"] if s["team"] == color]
+        if not scores or any(type(s.get("passed")) is not bool for s in scores):
+            raise ValueError("Missing source pass flags; Team Fail cannot be verified")
+        failed[color] = not any(s["passed"] for s in scores)
+    if all(failed.values()):
+        raise ValueError("Both teams failed; adjudication required")
+    if any(failed.values()):
+        winner = next(color for color in failed if not failed[color])
+    elif totals["red"] == totals["blue"]:
+        raise ValueError("Completed game has tied totals; review required")
+    else:
+        winner = max(totals, key=totals.get)
+    return {"totals": totals, "teamFail": failed, "winningColor": winner}
+
+
+def score_games(games):
+    wins = {"red": 0, "blue": 0}
+    for game in games:
+        wins[game_result(game)["winningColor"]] += 1
+    return wins
+
+
+def source_labels(name):
+    labels = re.findall(r"\(([^()]*)\)", name)
+    if len(labels) != 2:
+        raise ValueError("Unrecognized match title")
+    return [label.strip() for label in labels]
+
+
+def apply_rule_structure(data, rules):
+    """Keep rule-grounded bracket deductions separate from recorded matches."""
+    lookup = {m["id"]: m for m in data["matches"]}
+    upper = {s["teamId"] for s in data["standingsStrictGsPool"] if s["wins"] >= 3}
+    playoff = {team for mid in data["knockoutRecordedMatchIds"] for team in [lookup[mid]["teamA"], lookup[mid]["teamB"]]}
+    lower = playoff - upper
+    if len(upper) != 4 or len(lower) != 4:
+        raise ValueError("Standings do not establish four upper and four lower entrants")
+    expected = {84896923: ({"team-a", "team-f"}, "team-f"), 84972689: ({"team-b", "team-g"}, "team-g"), 85044339: ({"team-e", "team-h"}, "team-e"), 85172398: ({"team-j", "team-c"}, "team-j"), 85439390: ({"team-b", "team-e"}, "team-b"), 85503945: ({"team-c", "team-f"}, "team-f"), 85546490: ({"team-b", "team-f"}, "team-b"), 86302764: ({"team-j", "team-b"}, "team-b"), 86362224: ({"team-g", "team-b"}, "team-b")}
+    for mid, (pair, winner) in expected.items():
+        if {lookup[mid]["teamA"], lookup[mid]["teamB"]} != pair or lookup[mid]["winner"] != winner:
+            raise ValueError("Changed playoff evidence requires a new bracket review")
+    later_roles = {85439390: "lower-round-2", 85503945: "lower-round-2", 85546490: "lower-round-3", 86302764: "lower-final", 86362224: "grand-final"}
+    for match in data["matches"]:
+        if match["id"] == 84398168:
+            role, best_of = "phase-unresolved", None
+            match["scoreNotes"].append("The rulebook specifies BO9 for Swiss, but D-I has six I map wins and uses ES. Do not assert it as the fourth Swiss match.")
+        elif match["pool"] == "S6GS":
+            role, best_of = "swiss", rules["preliminary"]["bestOf"]
+        elif match["id"] in later_roles:
+            role = later_roles[match["id"]]
+            best_of = rules["knockout"]["lowerFinalAndGrandFinalBestOf"] if role in ["lower-final", "grand-final"] else rules["knockout"]["bestOf"]
+        elif {match["teamA"], match["teamB"]} <= upper:
+            role, best_of = "upper-semifinal", rules["knockout"]["bestOf"]
+        elif {match["teamA"], match["teamB"]} <= lower:
+            role, best_of = "lower-round-1", rules["knockout"]["bestOf"]
+        else:
+            raise ValueError("Unresolved knockout opening role")
+        match["stageClassification"] = {"role": role, "bestOf": best_of, "status": "rules-and-records-reconstruction-not-official-acceptance"}
+        if best_of and max(match["reconstructedScore"]) != (best_of+1)//2:
+            match["scoreNotes"].append(f"Recorded completed wins do not reach the rulebook BO{best_of} target; official match score remains unknown.")
+    for i, batch in enumerate(data["preliminaryBatches"], 1):
+        batch["status"] = "rule-confirmed-swiss-format-reconstructed-round-batch" if i < 4 else "fourth-swiss-batch-candidate-with-unresolved-DI-record"
+    data["ruleSource"] = {"sourceUrl": rules["sourceUrl"], "title": rules["title"], "capturedOn": rules["capturedOn"]}
+    data["bracketDeductions"] = {
+        "status": "rules-grounded-reconstruction-awaiting-review",
+        "upperEntrants": sorted(upper),
+        "lowerEntrants": sorted(lower),
+        "firstSeedSelectionRights": {"upper": True, "lower": True},
+        "exactSeeds": None,
+        "missingUpperFinal": {"teamA": "team-g", "teamB": "team-j", "winner": "team-g", "score": None, "mpUrls": [], "playedAt": None, "status": "structurally-inferred-source-not-found", "basis": "G and J win the two upper semifinals; J later meets B in the lower final, G meets its winner in the grand final. One missing upper-final record connects these paths."},
+        "conditionalPlacements": [{"rank": 1, "teams": ["team-b"]}, {"rank": 2, "teams": ["team-g"]}, {"rank": 3, "teams": ["team-j"]}, {"rank": 4, "teams": ["team-f"]}, {"rankRange": [5, 6], "teams": ["team-c", "team-e"]}, {"rankRange": [7, 8], "teams": ["team-a", "team-h"]}],
+        "placementConditions": ["Organizer accepts the four completed-replay rulings", "Grand final is the actual tournament endpoint with no unprovided reset or later adjudication", "C-F official 2:5 versus a BO11 target is resolved; no missing sixth point is invented"],
+        "nonAdvancingCandidates": ["team-d", "team-i", "team-k", "team-l"]
+    }
+    data["notes"] = [
+        "The supplied rulebook confirms four Swiss rounds, 12 into 8, BO9, four entrants starting upper and four starting lower; the struck-through two-group proposal is obsolete.",
+        "Raw Score v1 plus Team Fail loss is applied. Extra changes permitted lineups, not the score multiplier.",
+        "One Team Fail is evidenced (D-I game 432255879, blue side); applying it does not change the raw-score winner of that game or any reconstructed match score.",
+        "All scores remain reconstructions, not approved historical results. Four completed replays require actual referee rulings.",
+        "The third standings criterion is preserved as the source term 净胜场. No exact tied seed order is fabricated.",
+        "D-I conflicts with BO9 Swiss and remains a phase ambiguity; strict GS and a four-batch hypothetical table remain separate.",
+        "The only structural missing playoff fixture is G-J upper final. Its winner G is inferred from later branch appearances; date, source MP and score remain unknown.",
+        "The rulebook gives planned dates; actual MP dates include postponements. Planned dates do not overwrite source lobby timestamps.",
+        "No final reset or upper-side advantage clause is stated; official final placements remain empty pending acceptance.",
+        "Cross-team roster appearances and missing adjudications do not authorize editing the original roster or manufacturing violations."
+    ]
+    return data
+
+
+def reconstruct(snapshot, roster, pools, rules):
+    if rules.get("artifactKind") != "oclr-s6-rule-facts" or rules["preliminary"]["format"] != "swiss" or rules["knockout"]["upperEntrants"] != 4 or rules["knockout"]["lowerEntrants"] != 4:
+        raise ValueError("Unexpected rule facts require review")
+    known = {}
+    for team in roster["teams"]:
+        for member in team["members"]:
+            for person in [member, *member.get("replacementHistory", [])]:
+                if person["osuId"] is not None:
+                    if person["osuId"] in known and known[person["osuId"]] != team["id"]:
+                        raise ValueError("Conflicting roster UID")
+                    known[person["osuId"]] = team["id"]
+    pool_lookup = {}
+    for sheet in pools["sheets"]:
+        for entry in sheet["maps"]:
+            if entry["beatmapId"] in pool_lookup:
+                raise ValueError("Cross-pool beatmap requires explicit review")
+            pool_lookup[entry["beatmapId"]] = (sheet["name"], entry["sourceSlot"])
+    aliases = {t["name"]: t["id"] for t in roster["teams"] if t["name"]}
+    alias_evidence = {t["name"]: [t["source"]] for t in roster["teams"] if t["name"]}
+    matches = []
+    excluded_matches = []
+    for match in sorted(snapshot["matches"], key=lambda m: (m["startTime"], m["id"])):
+        if re.search(r"showcase|mappool|mapool|qualifi|captain|coach|测试|资格|教练|队长赛", match["name"], re.I):
+            excluded_matches.append({"id": match["id"], "name": match["name"], "reason": "qualifier-test-or-showcase"})
+            continue
+        if not match["complete"] or not match["endTime"]:
+            raise ValueError("Incomplete match source")
+        if not match["startTime"].startswith("2021-"):
+            raise ValueError("Wrong-year source must not enter S6")
+        games = match["games"]
+        if len({g["id"] for g in games}) != len(games):
+            raise ValueError("Duplicate game ID")
+        pooled = [g for g in games if g["beatmapId"] in pool_lookup]
+        if len({pool_lookup[g["beatmapId"]][0] for g in pooled}) != 1:
+            raise ValueError("Mixed or missing stage-pool evidence")
+        pool = pool_lookup[pooled[0]["beatmapId"]][0]
+        complete = [g for g in pooled if g["endTime"] is not None]
+        if any(g["mode"] != "osu" or g["teamType"] != "team-vs" or g["scoringType"] != "score" for g in complete):
+            raise ValueError("Unsupported scoring or team mode")
+        for g in pooled:
+            if g["endTime"] is None and any(s["score"] for s in g["scores"]):
+                raise ValueError("Unfinished game has scores; review required")
+        last = {g["beatmapId"]: g["id"] for g in complete}
+        selected = [g for g in complete if g["id"] == last[g["beatmapId"]]]
+        votes = {color: Counter(known[s["osuId"]] for g in selected for s in g["scores"] if s["team"] == color and s["osuId"] in known and s["score"] > 0) for color in ["red", "blue"]}
+        side_teams = {}
+        side_evidence = {}
+        for color, counts in votes.items():
+            ordered = counts.most_common()
+            if not ordered or ordered[0][1] < 2 or (len(ordered) > 1 and ordered[0][1] <= 2*ordered[1][1]):
+                raise ValueError("No unambiguous roster majority for source side")
+            side_teams[color] = ordered[0][0]
+            side_evidence[color] = {"positiveScoreOccurrences": dict(counts), "supportingUids": sorted({s["osuId"] for g in selected for s in g["scores"] if s["team"] == color and s["score"] > 0 and known.get(s["osuId"]) == ordered[0][0]})}
+        if side_teams["red"] == side_teams["blue"]:
+            raise ValueError("Both source sides resolve to the same team")
+        labels = source_labels(match["name"])
+        for label in labels:
+            literal = re.fullmatch(r"([A-L])(?:\s+(.+))?", label)
+            if literal:
+                team = "team-" + literal[1].lower()
+                aliases[label] = team
+                if literal[2]:
+                    if literal[2] in aliases and aliases[literal[2]] != team:
+                        raise ValueError("Conflicting explicit team name")
+                    aliases[literal[2]] = team
+                    alias_evidence.setdefault(literal[2], []).append(match["url"])
+        matches.append({"id": match["id"], "url": match["url"], "name": match["name"], "labels": labels, "startedAt": match["startTime"], "startedAtUtc8": dt.datetime.fromisoformat(match["startTime"].replace("Z", "+00:00")).astimezone(dt.timezone(dt.timedelta(hours=8))).isoformat(), "pool": pool, "sideTeams": side_teams, "sideEvidence": side_evidence, "rawCompletedWins": score_games(complete), "lastCompletedAttemptWins": score_games(selected), "officialScore": None, "approval": "unreviewed", "gameReview": [{"gameId": g["id"], "beatmapId": g["beatmapId"], "poolSlot": pool_lookup.get(g["beatmapId"], (None, None))[1], "startTime": g["startTime"], "endTime": g["endTime"], "disposition": "outside-stage-pools" if g["beatmapId"] not in pool_lookup else "aborted-no-result" if g["endTime"] is None else "earlier-completed-replay-candidate" if g["id"] != last[g["beatmapId"]] else "selected-under-last-completed-attempt-hypothesis", "totals": {c: sum(s["score"] for s in g["scores"] if s["team"] == c) for c in ["red", "blue"]}, "positivePlayers": {c: sum(s["score"] > 0 for s in g["scores"] if s["team"] == c) for c in ["red", "blue"]}} for g in games], "crossRosterEvidence": [{"gameId": g["id"], "osuId": s["osuId"], "sourceRosterTeam": known[s["osuId"]], "observedSideTeam": side_teams[s["team"]]} for g in selected for s in g["scores"] if s["score"] > 0 and s["osuId"] in known and known[s["osuId"]] != side_teams[s["team"]]]})
+        for review in matches[-1]["gameReview"]:
+            if review["endTime"] and review["poolSlot"]:
+                original = next(g for g in games if g["id"] == review["gameId"])
+                review.update(game_result(original))
+    # Propagate a name only when the other title side is already evidenced and
+    # the two UID-majority sides establish its unique remaining team.
+    for _ in range(len(matches)):
+        changed = False
+        for match in matches:
+            labels = match["labels"]
+            teams = set(match["sideTeams"].values())
+            for i, label in enumerate(labels):
+                other = aliases.get(labels[1-i])
+                if label not in aliases and other in teams:
+                    remaining = teams - {other}
+                    if len(remaining) == 1:
+                        aliases[label] = remaining.pop()
+                        alias_evidence.setdefault(label, []).append(match["url"])
+                        changed = True
+        if not changed:
+            break
+    for match in matches:
+        teams = [aliases.get(label) for label in match["labels"]]
+        if None in teams or set(teams) != set(match["sideTeams"].values()):
+            raise ValueError("Title aliases disagree with scoreboard identities")
+        match["teamA"], match["teamB"] = teams
+        colors = [next(c for c, t in match["sideTeams"].items() if t == team) for team in teams]
+        match["rawCompletedScore"] = [match["rawCompletedWins"][c] for c in colors]
+        match["reconstructedScore"] = [match["lastCompletedAttemptWins"][c] for c in colors]
+        match["winner"] = teams[0 if match["reconstructedScore"][0] > match["reconstructedScore"][1] else 1]
+        match["requiresReplayConfirmation"] = match["rawCompletedScore"] != match["reconstructedScore"]
+        match["scoreNotes"] = []
+        if match["requiresReplayConfirmation"]:
+            match["scoreNotes"].append("Same beatmap has multiple completed attempts. Both raw and last-attempt totals are preserved; replay ruling is unconfirmed.")
+        if match["id"] == 85503945:
+            match["scoreNotes"].append("Completed in-pool games give C 2:5 F. No sixth F point is evidenced. Do not invent a 2:6 result, forfeit or penalty.")
+        if match["id"] == 84398168:
+            match["scoreNotes"].append("D-I uses S6ES and gives 3:6, although its date/pairing fills the missing D/I appearances in the fourth preliminary batch. Stage purpose is unconfirmed.")
+    teams = [{"id": team["id"], "workbookName": team["name"], "evidencedNames": [{"name": name, "sources": sorted(set(alias_evidence.get(name, [])))} for name, target in aliases.items() if target == team["id"] and not re.fullmatch(r"[A-L](?:\s+.+)?", name)]} for team in roster["teams"]]
+    batches = []
+    for i, (first, last) in enumerate([("2021-05-08", "2021-05-09"), ("2021-05-14", "2021-05-16"), ("2021-05-22", "2021-05-24"), ("2021-05-28", "2021-06-01")], 1):
+        records = [m for m in matches if first <= m["startedAtUtc8"][:10] <= last]
+        occurrences = Counter(t for m in records for t in [m["teamA"], m["teamB"]])
+        if occurrences != Counter({team["id"]: 1 for team in teams}):
+            raise ValueError("Preliminary date batch does not contain all twelve teams once")
+        batches.append({"label": f"Preliminary batch {i}", "status": "chronological-reconstruction-not-official-round-name", "matchIds": [m["id"] for m in records]})
+    def standings(records):
+        rows = []
+        for team in teams:
+            played = [m for m in records if team["id"] in [m["teamA"], m["teamB"]]]
+            won = sum(m["winner"] == team["id"] for m in played)
+            maps_for = sum(m["reconstructedScore"][0 if m["teamA"] == team["id"] else 1] for m in played)
+            maps_against = sum(m["reconstructedScore"][1 if m["teamA"] == team["id"] else 0] for m in played)
+            rows.append({"teamId": team["id"], "played": len(played), "wins": won, "losses": len(played)-won, "mapsWon": maps_for, "mapsLost": maps_against, "rank": None})
+        return rows
+    data = {"artifactKind": "oclr-s6-match-reconstruction", "importReady": False, "officialPlacements": [], "teams": teams, "matches": matches, "excludedMatches": excluded_matches, "preliminaryBatches": batches, "standingsStrictGsPool": standings([m for m in matches if m["pool"] == "S6GS"]), "standingsFourBatchHypothesis": standings([m for m in matches if any(m["id"] in b["matchIds"] for b in batches)]), "knockoutRecordedMatchIds": [m["id"] for m in matches if m["startedAtUtc8"][:10] >= "2021-06-04"], "notes": []}
+
+    return apply_rule_structure(data, rules)
+
+
+def write_report(data, path):
+    """Generate review tables from rule facts and the same match records."""
+    lookup = {m["id"]: m for m in data["matches"]}
+    letter = lambda team: team.removeprefix("team-").upper()
+    roles = {"swiss": "瑞士輪", "phase-unresolved": "性質待確認", "upper-semifinal": "勝者組準決賽", "lower-round-1": "敗者組第 1 輪", "lower-round-2": "敗者組第 2 輪", "lower-round-3": "敗者組第 3 輪", "lower-final": "敗者組決賽", "grand-final": "總決賽"}
+    lines = [
+        "# S6 小組賽、淘汰對陣與結果重建（待覆核）", "",
+        "使用主辦者更正後提供的 33 個 2021 年 MP，以及後補的 [S6 規則](https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw)。先前撤回的 2020 年對局完全排除；規則連結不保存 QQ 追蹤參數。", "",
+        "已核對 33 場完整分頁、共 348 局遊戲。按譜面 ID 可確認 GS 圖池 23 場、ES 圖池 8 場、FS 圖池 2 場；本批沒有資格賽、測試賽或 Showcase 房間。65 局圖池外的開場遊戲及 20 局無結束時間、全員零分的中止遊戲不計勝圖。另有四次完整重打，暫採最後一次已完成紀錄，原始加總仍保留。", "",
+        "**所有比分、分支與名次仍是重建資料，沒有寫入正式站或批准為官方賽果。** C–F 缺少 BO11 的第六個勝圖、D–I 的階段不明、勝者組決賽 G–J 未取得 MP，均保持來源缺口。", "",
+        "來源：[MP 清單](imports/s6-match-manifest.json)、[分頁核對後的競賽快照](imports/s6-match-source-snapshot.json)、[規則事實摘要](imports/s6-rules-facts.json)、[機器可讀重建](imports/s6-match-reconstruction.json)。原工作簿名單、現行角色及正式資料未更動。", "",
+        "## 規則確認後的結構", "",
+        "- 採 Score v1；個人 Fail 分數保留，整隊 Team Fail 判負，No Fail 可自行開啟。逐局核對到一個 Team Fail：D–I 的遊戲 432255879 藍方；它與原始總分勝負相同，因此沒有改變任何重建比分。",
+        "- 小組階段是四輪瑞士輪、12 進 8、BO9。文件中兩組循環的舊提案已劃除，不採用。",
+        "- 瑞士輪前四隊直接進勝者組，後四隊直接進敗者組；兩組第一名均可挑選其淘汰賽對手。不是八隊全部從勝者組起跑。",
+        "- 淘汰階段 BO11；敗者組決賽及總決賽 BO13。規則沒有寫出總決賽重置或勝者方讓分，不能自行添加。",
+        "- Extra 用於 NM1／HD1／HR1／DT1，限制 Captain／VICE／Tier 1 同時上場的人數；它沒有額外計分倍率。規則亦允許 NM 單開 HR／HD／EZ，不額外調整原始分數。不能單憑加了 Mod 就剔除某局。",
+        "- 重賽有每隊一次及掉線、SS 分差門檻、裁判判定等條件；開場 30 秒內中止及指定裁判例外不消耗次數。這些條文不等於證明每一場實際獲准重打。", "",
+        "規則的原定日期是瑞士輪 5 月 8–30 日、淘汰 6 月 5–13 日、決賽 6 月 19–20 日；MP 有延後紀錄，保留實際日期。下述輪次由規則與對手／路徑共同重建，並非另有完整原始對陣表。", "",
+        "## 隊伍名稱對照", "",
+        "原表及帶字母的房名建立名稱對照；已知一側名稱及雙方 UID 時，才推定唯一另一側。紅藍隊依名單 UID 的多數證據確認，房名順序不能代替紅藍順序。I、J 仍無可靠隊名。", "",
+        "| 代號 | 來源隊名 |", "| --- | --- |"
+    ]
+    for team in data["teams"]:
+        names = [n["name"] for n in team["evidencedNames"]]
+        lines.append(f"| {letter(team['id'])} | {'／'.join(names) if names else '未記錄'} |")
+
+    def table(records):
+        rows = ["| 日期（UTC+8） | 重建輪次 | 對局 | 比分 | 勝方 | 圖池 | MP／備註 |", "| --- | --- | --- | --- | --- | --- | --- |"]
+        for match in records:
+            mark = "†" if match["requiresReplayConfirmation"] else ""
+            note = "；ES 圖池／3:6 不符合 BO9" if match["id"] == 84398168 else "；未取得第六個 F 勝圖" if match["id"] == 85503945 else ""
+            score = match["reconstructedScore"]
+            rows.append(f"| {match['startedAtUtc8'][:10]} | {roles[match['stageClassification']['role']]} | {letter(match['teamA'])}–{letter(match['teamB'])} | {score[0]}:{score[1]}{mark} | {letter(match['winner'])} | {match['pool']} | [{match['id']}]({match['url']}){note} |")
+        return rows
+
+    lines += ["", "## 瑞士輪對陣", "", "按時間可排出四批、每批十二隊各出現一次。前三批與規則及 GS 圖池一致；第四批的 D–I 使用 ES 並打到 3:6，不能直接認定為 BO9 瑞士輪。因此保留為第四批的候選對局，而非已確認第四輪結果。日期是實際房間建立日（UTC+8），不覆蓋原表預定時間。† 表示完整重打仍待裁判結論。", ""]
+    for index, batch in enumerate(data["preliminaryBatches"], 1):
+        lines += [f"### 第 {index} 輪{'候選批次' if index == 4 else '重建'}", "", *table([lookup[mid] for mid in batch["matchIds"]]), ""]
+    lines += ["### 小組戰績與兩套口徑", "", "左側只計 23 場 GS 圖池；右側暫將 D–I 列入第四批，以供後續推理。兩表都沿用重打假設；不把右側假設表當成正式積分。原文排序依序為勝場、直接勝負及「净胜场」；第三項沒有進一步定義，不擅自把得失圖排序當成已接受的完整種子。", "", "| 隊伍 | GS 場數 | GS 勝–負 | GS 得–失圖 | 四批候選勝–負 | 四批候選得–失圖 |", "| --- | --- | --- | --- | --- | --- |"]
+    for a, b in zip(data["standingsStrictGsPool"], data["standingsFourBatchHypothesis"]):
+        lines.append(f"| {letter(a['teamId'])} | {a['played']} | {a['wins']}–{a['losses']} | {a['mapsWon']}–{a['mapsLost']} | {b['wins']}–{b['losses']} | {b['mapsWon']}–{b['mapsLost']} |")
+    lines += ["", "按目前重建，J 四勝，B／C／G 各三勝，對應勝者組四隊；A／E／F／H 對應敗者組四隊。這兩組與六月實際對陣相符。第一名可選對手，所以不能只按固定 1–4、2–3 配對反推精確種子。D／I／K／L 尚不能分配官方 9–12 名順序。", "",
+        "## 淘汰賽對陣與結果", "", *table([lookup[mid] for mid in data["knockoutRecordedMatchIds"]]), "",
+        "規則確認前四隊從勝者組、後四隊從敗者組起跑後，所需的主要結構缺口縮小為一場：**G–J 勝者組決賽**。G 和 J 分別贏下兩場勝者組準決賽，後續 J 出現在敗者組決賽、G 出現在總決賽，因此能推導 G 贏該勝者決賽；但沒有 MP、日期及比分，以下只畫為缺失來源節點，未建立正式賽果。", "",
+        "```mermaid", "flowchart LR", '  U1["勝者準決賽 J 6:0 C"] -->|J| UF["缺失來源：勝者決賽 G–J\n路徑推導 G 勝；比分未知"]', '  U2["勝者準決賽 G 6:2 B"] -->|G| UF', '  L1["敗者一輪 F 6:5 A"] -->|F| L22["敗者二輪 F 5:2 C\nBO11 尚缺第六個勝圖"]', '  U1 -->|C| L22', '  L2["敗者一輪 E 6:4 H"] -->|E| L21["敗者二輪 B 6:4 E"]', '  U2 -->|B| L21', '  L21 -->|B| L3["敗者三輪 B 6:2 F"]', '  L22 -->|F| L3', '  L3 -->|B| LF["敗者決賽 B 7:3 J"]', '  UF -.->|J，分支推導| LF', '  UF -.->|G，分支推導| GF["總決賽 B 7:5 G †"]', '  LF -->|B| GF', '  style UF stroke-dasharray: 5 5', "```", "",
+        "B 的已知出場路徑為：勝者組 2:6 負 G → 敗者組 6:4 勝 E → 6:2 勝 F → 敗者決賽 7:3 勝 J → 總決賽候選 7:5 勝 G。所有實線比賽都有 MP；虛線所連的 G–J 只由結構推導。", "",
+        "### 條件式名次整理", "", "若主辦者接受四場重打判定、確認最後一場確為賽事終局且沒有未提供的重置／後續裁定，則可按這條路徑整理如下。C–F 的正式比分仍需補正或接受其來源缺漏。這是待覆核的名次整理，JSON 的正式排名仍保持空白。", "",
+        "| 候選名次 | 隊伍 |", "| --- | --- |", "| 1 | B 队长是隐形播放器 |", "| 2 | G 超级敏感 |", "| 3 | J（隊名未知） |", "| 4 | F aoi被圣遗物气晕 |", "| 5–6 | C 猫娘别演了／E 爆炸奶油面包V2 |", "| 7–8 | A 饮茶先啦／H 你寄吧谁 |", "| 未晉級候選；順序未知 | D／I／K／L |", "",
+        "## 四場完整重打覆核", "", "重賽規則支持檢查重複譜面的必要性，但不能代替該場裁判判決。同一譜面兩次已完成紀錄，分別保留全部加總及採最後一次的候選值。", "",
+        "| MP | 對局 | 全部已完成加總 | 最後一次候選比分 | 先前遊戲 → 後次遊戲（BID） |", "| --- | --- | --- | --- | --- |"
+    ]
+    for match in data["matches"]:
+        earlier = [g for g in match["gameReview"] if g["disposition"] == "earlier-completed-replay-candidate"]
+        if not earlier:
+            continue
+        refs = []
+        for game in earlier:
+            later = next(g for g in match["gameReview"] if g["beatmapId"] == game["beatmapId"] and g["disposition"] == "selected-under-last-completed-attempt-hypothesis")
+            refs.append(f"{game['gameId']} → {later['gameId']}（{game['beatmapId']}）")
+        raw, selected = match["rawCompletedScore"], match["reconstructedScore"]
+        lines.append(f"| [{match['id']}]({match['url']}) | {letter(match['teamA'])}–{letter(match['teamB'])} | {raw[0]}:{raw[1]} | {selected[0]}:{selected[1]} | {'；'.join(refs)} |")
+    lines += ["", "H–C 直接累加會變成 5:5，只有最後一次重打假設得到 H 4:5 C，因此該場勝方及小組戰績也依賴重打覆核。其他三場的兩種加總方式不改變勝方。四次較早紀錄的一方均只有兩位非零分選手，重打後回到三位；這支持斷線重打的推測，並不證明已獲裁判批准。", "",
+        "## 仍需共同推理／補充的項目", "",
+        "1. D–I（84398168）為 ES 圖池、3:6，與 BO9 小組賽衝突。它可能是不同性質的比賽；不能因為日期補上第四輪兩隊，就把它正式列入瑞士輪。",
+        "2. C–F（85503945）只有 7 局已完成圖池遊戲，2:5；另有中止 HD2，沒有第六個 F 勝圖。BO11 的要求不授權補成 2:6，也不能自行判棄權或加分。",
+        "3. G–J 勝者組決賽的 MP、比分及日期尚缺。僅把 G 勝當成後續分支所需的結構推導。",
+        "4. 確認四場完整重打的實際裁判處理；開場中止不等於已完成重打，兩類分開核對。",
+        "5. 部分 A/B 原表 UID 跨隊出場（15174317、13679569 等）。實際分數保留，不自行重寫 roster 或判定違規。Extra 的上場宣告／選圖方亦不能從比分單獨還原。",
+        "6. I/J 隊名、精確小組種子、總決賽終局性與最終排名仍待主辦者接受；規則沒有重置條文，不等於證明沒有遺漏後續賽事。", "",
+        "## 來源與重現", "",
+        "公開 MP 以未登入 JSON、after 遞增分頁讀取，核對首尾事件及穩定結束狀態；不讀本機秘密。只保留競賽事實及公開 UID／名稱，不保存聊天與無關個人欄位。QQ 規則是人工閱讀其唯讀畫面、包含劃除格式與文末後整理的事實摘要，不是全文重刊。", "",
+        "```sh", "python3 scripts/fetch-s6-match-sources.py docs/imports/s6-match-manifest.json /tmp/s6-match-source-snapshot.json", "python3 scripts/reconstruct-s6-matches.py docs/imports/s6-match-source-snapshot.json docs/imports/s6-source-records.json docs/imports/s6-pool-source-snapshot.json docs/imports/s6-rules-facts.json docs/imports/s6-match-reconstruction.json --report docs/s6-match-reconstruction.md", "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/scripts -p 'test_s6_match_reconstruction.py'", "```", "",
+        "快照重取後先比較，不直接覆蓋已審查證據。本階段不部署、不匯入、不發布正式資料。", ""
+    ]
+    path.write_text("\n".join(lines))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ["snapshot", "roster", "pools", "rules", "output"]:
+        parser.add_argument(name, type=Path)
+    parser.add_argument("--report", type=Path)
+    args = parser.parse_args()
+    data = reconstruct(*(json.loads(p.read_text()) for p in [args.snapshot, args.roster, args.pools, args.rules]))
+    data["sources"] = [{"file": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in [args.snapshot, args.roster, args.pools, args.rules]]
+    args.output.write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
+    if args.report:
+        write_report(data, args.report)
+    print(json.dumps({"matches": len(data["matches"]), "excludedMatches": len(data["excludedMatches"]), "poolCounts": dict(Counter(m["pool"] for m in data["matches"])), "gameDispositions": dict(Counter(g["disposition"] for m in data["matches"] for g in m["gameReview"])), "replayReviews": [m["id"] for m in data["matches"] if m["requiresReplayConfirmation"]]}, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()
