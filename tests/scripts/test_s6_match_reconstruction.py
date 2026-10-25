@@ -58,7 +58,8 @@ class S6MatchReconstruction(unittest.TestCase):
         self.assertEqual(dispositions.count("outside-stage-pools"), 65)
         self.assertEqual(dispositions.count("aborted-no-result"), 20)
         self.assertEqual(dispositions.count("earlier-completed-replay-candidate"), 4)
-        self.assertEqual(dispositions.count("selected-under-last-completed-attempt-hypothesis"), 259)
+        self.assertEqual(dispositions.count("selected-under-last-completed-attempt-hypothesis"), 258)
+        self.assertEqual(dispositions.count("post-match-entertainment-pending-confirmation"), 1)
         for mid, raw, candidate in [(82845405, [5, 5], [4, 5]), (82930484, [1, 6], [1, 5]), (83393789, [5, 4], [5, 3]), (86362224, [6, 7], [5, 7])]:
             self.assertEqual(self.matches[mid]["rawCompletedScore"], raw)
             self.assertEqual(self.matches[mid]["reconstructedScore"], candidate)
@@ -95,7 +96,7 @@ class S6MatchReconstruction(unittest.TestCase):
             if batch != self.result["preliminaryBatches"][3]:
                 self.assertIn("reconstructed", batch["status"])
             else:
-                self.assertIn("unresolved-DI", batch["status"])
+                self.assertIn("DI-post-match-TB-excluded-pending-confirmation", batch["status"])
         self.assertEqual(self.matches[84398168]["pool"], "S6ES")
         self.assertIn(84398168, self.result["preliminaryBatches"][3]["matchIds"])
         self.assertNotIn(84398168, self.result["knockoutRecordedMatchIds"])
@@ -103,6 +104,8 @@ class S6MatchReconstruction(unittest.TestCase):
         candidate = {s["teamId"]: s for s in self.result["standingsFourBatchHypothesis"]}
         self.assertEqual([strict["team-i"]["played"], strict["team-i"]["wins"]], [3, 0])
         self.assertEqual([candidate["team-i"]["played"], candidate["team-i"]["wins"]], [4, 1])
+        self.assertEqual([candidate["team-d"]["mapsWon"], candidate["team-d"]["mapsLost"]], [12, 15])
+        self.assertEqual([candidate["team-i"]["mapsWon"], candidate["team-i"]["mapsLost"]], [15, 18])
         self.assertEqual(sum(s["wins"] for s in candidate.values()), 24)
         self.assertEqual(sum(s["mapsWon"] for s in candidate.values()), sum(s["mapsLost"] for s in candidate.values()))
 
@@ -115,6 +118,29 @@ class S6MatchReconstruction(unittest.TestCase):
         self.assertEqual(self.result["officialPlacements"], [])
         self.assertFalse(self.result["importReady"])
         self.assertTrue(all(m["officialScore"] is None and m["approval"] == "unreviewed" for m in self.result["matches"]))
+
+    def test_provisional_di_and_cf_interpretations_preserve_raw_evidence(self):
+        di = self.matches[84398168]
+        self.assertEqual(di["rawCompletedScore"], [3, 6])
+        self.assertEqual(di["lastCompletedAttemptWins"], {"red": 3, "blue": 6})
+        self.assertEqual(di["reconstructedScore"], [3, 5])
+        self.assertFalse(di["requiresReplayConfirmation"])
+        self.assertEqual(di["provisionalInterpretation"]["status"], "pending-confirmation")
+        self.assertEqual(di["stageClassification"], {"role": "swiss-provisional", "bestOf": 9, "status": "pending-confirmation"})
+        tb = next(g for g in di["gameReview"] if g["gameId"] == 432260817)
+        self.assertEqual(tb["positivePlayers"], {"red": 5, "blue": 5})
+        self.assertEqual(tb["disposition"], "post-match-entertainment-pending-confirmation")
+        cf = self.matches[85503945]
+        self.assertEqual(cf["rawCompletedScore"], [2, 5])
+        self.assertEqual(cf["reconstructedScore"], [2, 5])
+        hypothesis = cf["provisionalInterpretation"]
+        self.assertEqual(hypothesis["status"], "pending-confirmation")
+        self.assertEqual(hypothesis["possibleOfficialScore"], [2, 6])
+        self.assertEqual(hypothesis["unsettledGameId"], 437459269)
+        self.assertEqual(hypothesis["unsettledGameScoreCount"], 0)
+        self.assertEqual(hypothesis["roomClosedSecondsAfterLastCompletedGame"], 49)
+        self.assertIsNone(cf["officialScore"])
+        self.assertEqual(self.snapshot, json.loads((ROOT / "docs/imports/s6-match-source-snapshot.json").read_text()))
 
     def test_saved_reconstruction_and_report_match_offline_regeneration(self):
         saved = json.loads((ROOT / "docs/imports/s6-match-reconstruction.json").read_text())

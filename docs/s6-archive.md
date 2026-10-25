@@ -95,9 +95,16 @@ lower, BO11 playoffs and BO13 lower/grand finals. The obsolete two-group proposa
 is visibly struck through and must not be applied. Extra restricts lineups, not
 score multipliers; individual Fail scores count and Team Fail loses.
 
-Four completed replay rulings, D–I's BO9 conflict, C–F's missing sixth winner
-point and the structurally inferred but unsourced G–J upper final remain review
-items. The rule-grounded bracket has one structural source gap: the G–J upper
+The organizer requested two provisional interpretations, both pending historical
+confirmation: D–I uses 3:5 with the final five-versus-five TB treated as post-match
+entertainment (raw room total 3:6 preserved); C–F keeps played 2:5 with a possible
+unrecorded HD2 win for F and possible actual 2:6, without fabricating a point.
+The four-batch candidate standings now exclude D–I's entertainment TB; D/I remain
+1–3, with map totals D 12–15 and I 15–18. The strict GS-pool table is unchanged.
+
+These interpretations, four completed replay rulings and the structurally
+inferred but unsourced G–J upper final remain review items. The rule-grounded
+bracket has one structural source gap: the G–J upper
 final. This does not approve a full
 bracket or official placements. See the reconstruction for rule facts, source
 links and exact game IDs; no withdrawn 2020 source is used.

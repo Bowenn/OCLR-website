@@ -4923,7 +4923,7 @@
           "poolSlot": "TB",
           "startTime": "2021-05-28T13:29:30Z",
           "endTime": "2021-05-28T13:34:17Z",
-          "disposition": "selected-under-last-completed-attempt-hypothesis",
+          "disposition": "post-match-entertainment-pending-confirmation",
           "totals": {
             "red": 42017220,
             "blue": 55678953
@@ -4936,24 +4936,46 @@
             "red": false,
             "blue": false
           },
-          "winningColor": "blue"
+          "winningColor": "blue",
+          "interpretationStatus": "pending-confirmation"
         }
       ],
       "crossRosterEvidence": [],
       "teamA": "team-d",
       "teamB": "team-i",
       "rawCompletedScore": [3, 6],
-      "reconstructedScore": [3, 6],
+      "reconstructedScore": [3, 5],
       "winner": "team-i",
       "requiresReplayConfirmation": false,
       "scoreNotes": [
-        "D-I uses S6ES and gives 3:6, although its date/pairing fills the missing D/I appearances in the fourth preliminary batch. Stage purpose is unconfirmed.",
-        "The rulebook specifies BO9 for Swiss, but D-I has six I map wins and uses ES. Do not assert it as the fourth Swiss match."
+        "Working hypothesis requested by organizer, pending confirmation: D-I ended 3:5 at BO9; the later five-versus-five TB is post-match entertainment. Raw room totals remain 3:6; use of the ES pool remains unexplained."
       ],
+      "provisionalInterpretation": {
+        "status": "pending-confirmation",
+        "recordedOn": "2026-10-25",
+        "authority": "Organizer requested provisional documentation, not historical result acceptance",
+        "workingScore": [3, 5],
+        "rawRoomScore": [3, 6],
+        "swissRoundCandidate": 4,
+        "seriesEndCandidate": "2021-05-28T13:20:51Z",
+        "postMatchGameId": 432260817,
+        "postMatchGameStartedAt": "2021-05-28T13:29:30Z",
+        "postMatchGameEndedAt": "2021-05-28T13:34:17Z",
+        "postMatchTreatment": "entertainment-excluded-from-working-series-and-standings",
+        "evidence": [
+          "Eight preceding completed pool games give D 3:5 I, reaching BO9",
+          "The later TB has five nonzero scorers per side, rather than three on each preceding pool game",
+          "The pairing fills the fourth chronological Swiss batch"
+        ],
+        "unresolved": [
+          "No contemporary referee or organizer ruling supplied",
+          "Why this Swiss candidate used ES instead of GS is unknown"
+        ]
+      },
       "stageClassification": {
-        "role": "phase-unresolved",
-        "bestOf": null,
-        "status": "rules-and-records-reconstruction-not-official-acceptance"
+        "role": "swiss-provisional",
+        "bestOf": 9,
+        "status": "pending-confirmation"
       }
     },
     {
@@ -8007,9 +8029,30 @@
       "winner": "team-f",
       "requiresReplayConfirmation": false,
       "scoreNotes": [
-        "Completed in-pool games give C 2:5 F. No sixth F point is evidenced. Do not invent a 2:6 result, forfeit or penalty.",
+        "Completed in-pool games remain C 2:5 F. No sixth F point is evidenced. Working hypothesis, pending confirmation: HD2 may have an unrecorded F win from lost settlement or adjudication, making the actual match 2:6. No extra played game, player score, forfeit or penalty is invented.",
         "Recorded completed wins do not reach the rulebook BO11 target; official match score remains unknown."
       ],
+      "provisionalInterpretation": {
+        "status": "pending-confirmation",
+        "recordedOn": "2026-10-25",
+        "authority": "Organizer requested provisional documentation, not historical result acceptance",
+        "recordedPlayedScore": [2, 5],
+        "possibleOfficialScore": [2, 6],
+        "possibleUnrecordedWinFor": "team-f",
+        "unsettledGameId": 437459269,
+        "unsettledBeatmapId": 2844989,
+        "unsettledPoolSlot": "HD2",
+        "unsettledGameStartedAt": "2021-06-13T13:29:06Z",
+        "unsettledGameEndTime": null,
+        "unsettledGameScoreCount": 0,
+        "nextGameStartedAt": "2021-06-13T13:43:54Z",
+        "roomClosedSecondsAfterLastCompletedGame": 49,
+        "basis": "One unrecorded HD2 point for F would reconcile BO11 with the room ending and F's later B-F appearance",
+        "unresolved": [
+          "No evidence proves an HD2 win or referee award",
+          "Lost settlement, adjudication, a local BO9 change or an early ending cannot be distinguished from the MP alone"
+        ]
+      },
       "stageClassification": {
         "role": "lower-round-2",
         "bestOf": 11,
@@ -9089,7 +9132,7 @@
     },
     {
       "label": "Preliminary batch 4",
-      "status": "fourth-swiss-batch-candidate-with-unresolved-DI-record",
+      "status": "provisional-swiss-round-4-DI-post-match-TB-excluded-pending-confirmation",
       "matchIds": [84398168, 84482290, 84483533, 84554110, 84554459, 84686450]
     }
   ],
@@ -9237,7 +9280,7 @@
       "wins": 1,
       "losses": 3,
       "mapsWon": 12,
-      "mapsLost": 16,
+      "mapsLost": 15,
       "rank": null
     },
     {
@@ -9281,7 +9324,7 @@
       "played": 4,
       "wins": 1,
       "losses": 3,
-      "mapsWon": 16,
+      "mapsWon": 15,
       "mapsLost": 18,
       "rank": null
     },
@@ -9323,7 +9366,8 @@
     "One Team Fail is evidenced (D-I game 432255879, blue side); applying it does not change the raw-score winner of that game or any reconstructed match score.",
     "All scores remain reconstructions, not approved historical results. Four completed replays require actual referee rulings.",
     "The third standings criterion is preserved as the source term 净胜场. No exact tied seed order is fabricated.",
-    "D-I conflicts with BO9 Swiss and remains a phase ambiguity; strict GS and a four-batch hypothetical table remain separate.",
+    "D-I provisionally uses a 3:5 Swiss score with the final five-versus-five TB excluded as post-match entertainment. This remains pending confirmation; raw room totals stay 3:6 and the ES pool exception is unexplained.",
+    "C-F preserves played 2:5. A missing HD2 F point and possible actual 2:6 are a pending-confirmation hypothesis only, not an invented played result or accepted official score.",
     "The only structural missing playoff fixture is G-J upper final. Its winner G is inferred from later branch appearances; date, source MP and score remain unknown.",
     "The rulebook gives planned dates; actual MP dates include postponements. Planned dates do not overwrite source lobby timestamps.",
     "No final reset or upper-side advantage clause is stated; official final placements remain empty pending acceptance.",
@@ -9382,7 +9426,7 @@
     "placementConditions": [
       "Organizer accepts the four completed-replay rulings",
       "Grand final is the actual tournament endpoint with no unprovided reset or later adjudication",
-      "C-F official 2:5 versus a BO11 target is resolved; no missing sixth point is invented"
+      "C-F played 2:5 versus possible official 2:6 is resolved; no missing sixth point is invented"
     ],
     "nonAdvancingCandidates": ["team-d", "team-i", "team-k", "team-l"]
   },

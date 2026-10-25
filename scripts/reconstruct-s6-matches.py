@@ -47,6 +47,63 @@ def source_labels(name):
     return [label.strip() for label in labels]
 
 
+def apply_provisional_interpretations(matches, snapshot):
+    """Organizer-requested working hypotheses; never historical acceptance."""
+    lookup = {m["id"]: m for m in matches}
+    sources = {m["id"]: m for m in snapshot["matches"]}
+    di = lookup[84398168]
+    selected = [g for g in di["gameReview"] if g["disposition"] == "selected-under-last-completed-attempt-hypothesis"]
+    tb = selected[-1]
+    before = {color: sum(g["winningColor"] == color for g in selected[:-1]) for color in ["red", "blue"]}
+    if di["reconstructedScore"] != [3, 6] or before != {"red": 3, "blue": 5} or any(g["positivePlayers"] != {"red": 3, "blue": 3} for g in selected[:-1]) or tb["gameId"] != 432260817 or tb["beatmapId"] != 2968871 or tb["positivePlayers"] != {"red": 5, "blue": 5}:
+        raise ValueError("Changed D-I evidence requires provisional-treatment review")
+    tb["disposition"] = "post-match-entertainment-pending-confirmation"
+    tb["interpretationStatus"] = "pending-confirmation"
+    di["reconstructedScore"] = [3, 5]
+    di["scoreNotes"] = ["Working hypothesis requested by organizer, pending confirmation: D-I ended 3:5 at BO9; the later five-versus-five TB is post-match entertainment. Raw room totals remain 3:6; use of the ES pool remains unexplained."]
+    di["provisionalInterpretation"] = {
+        "status": "pending-confirmation",
+        "recordedOn": "2026-10-25",
+        "authority": "Organizer requested provisional documentation, not historical result acceptance",
+        "workingScore": [3, 5],
+        "rawRoomScore": [3, 6],
+        "swissRoundCandidate": 4,
+        "seriesEndCandidate": selected[-2]["endTime"],
+        "postMatchGameId": tb["gameId"],
+        "postMatchGameStartedAt": tb["startTime"],
+        "postMatchGameEndedAt": tb["endTime"],
+        "postMatchTreatment": "entertainment-excluded-from-working-series-and-standings",
+        "evidence": ["Eight preceding completed pool games give D 3:5 I, reaching BO9", "The later TB has five nonzero scorers per side, rather than three on each preceding pool game", "The pairing fills the fourth chronological Swiss batch"],
+        "unresolved": ["No contemporary referee or organizer ruling supplied", "Why this Swiss candidate used ES instead of GS is unknown"]
+    }
+    cf = lookup[85503945]
+    source = sources[85503945]
+    hd2 = next(g for g in source["games"] if g["id"] == 437459269)
+    following = next(g for g in source["games"] if g["id"] == 437462597)
+    if cf["reconstructedScore"] != [2, 5] or hd2["endTime"] is not None or hd2["scores"]:
+        raise ValueError("Changed C-F evidence requires provisional-treatment review")
+    cf["scoreNotes"] = ["Completed in-pool games remain C 2:5 F. No sixth F point is evidenced. Working hypothesis, pending confirmation: HD2 may have an unrecorded F win from lost settlement or adjudication, making the actual match 2:6. No extra played game, player score, forfeit or penalty is invented."]
+    last = next(g for g in reversed(source["games"]) if g["endTime"] is not None)
+    cf["provisionalInterpretation"] = {
+        "status": "pending-confirmation",
+        "recordedOn": "2026-10-25",
+        "authority": "Organizer requested provisional documentation, not historical result acceptance",
+        "recordedPlayedScore": [2, 5],
+        "possibleOfficialScore": [2, 6],
+        "possibleUnrecordedWinFor": "team-f",
+        "unsettledGameId": hd2["id"],
+        "unsettledBeatmapId": hd2["beatmapId"],
+        "unsettledPoolSlot": "HD2",
+        "unsettledGameStartedAt": hd2["startTime"],
+        "unsettledGameEndTime": None,
+        "unsettledGameScoreCount": 0,
+        "nextGameStartedAt": following["startTime"],
+        "roomClosedSecondsAfterLastCompletedGame": int((dt.datetime.fromisoformat(source["endTime"])-dt.datetime.fromisoformat(last["endTime"])).total_seconds()),
+        "basis": "One unrecorded HD2 point for F would reconcile BO11 with the room ending and F's later B-F appearance",
+        "unresolved": ["No evidence proves an HD2 win or referee award", "Lost settlement, adjudication, a local BO9 change or an early ending cannot be distinguished from the MP alone"]
+    }
+
+
 def apply_rule_structure(data, rules):
     """Keep rule-grounded bracket deductions separate from recorded matches."""
     lookup = {m["id"]: m for m in data["matches"]}
@@ -62,8 +119,7 @@ def apply_rule_structure(data, rules):
     later_roles = {85439390: "lower-round-2", 85503945: "lower-round-2", 85546490: "lower-round-3", 86302764: "lower-final", 86362224: "grand-final"}
     for match in data["matches"]:
         if match["id"] == 84398168:
-            role, best_of = "phase-unresolved", None
-            match["scoreNotes"].append("The rulebook specifies BO9 for Swiss, but D-I has six I map wins and uses ES. Do not assert it as the fourth Swiss match.")
+            role, best_of = "swiss-provisional", rules["preliminary"]["bestOf"]
         elif match["pool"] == "S6GS":
             role, best_of = "swiss", rules["preliminary"]["bestOf"]
         elif match["id"] in later_roles:
@@ -76,10 +132,12 @@ def apply_rule_structure(data, rules):
         else:
             raise ValueError("Unresolved knockout opening role")
         match["stageClassification"] = {"role": role, "bestOf": best_of, "status": "rules-and-records-reconstruction-not-official-acceptance"}
+        if match["id"] == 84398168:
+            match["stageClassification"]["status"] = "pending-confirmation"
         if best_of and max(match["reconstructedScore"]) != (best_of+1)//2:
             match["scoreNotes"].append(f"Recorded completed wins do not reach the rulebook BO{best_of} target; official match score remains unknown.")
     for i, batch in enumerate(data["preliminaryBatches"], 1):
-        batch["status"] = "rule-confirmed-swiss-format-reconstructed-round-batch" if i < 4 else "fourth-swiss-batch-candidate-with-unresolved-DI-record"
+        batch["status"] = "rule-confirmed-swiss-format-reconstructed-round-batch" if i < 4 else "provisional-swiss-round-4-DI-post-match-TB-excluded-pending-confirmation"
     data["ruleSource"] = {"sourceUrl": rules["sourceUrl"], "title": rules["title"], "capturedOn": rules["capturedOn"]}
     data["bracketDeductions"] = {
         "status": "rules-grounded-reconstruction-awaiting-review",
@@ -89,7 +147,7 @@ def apply_rule_structure(data, rules):
         "exactSeeds": None,
         "missingUpperFinal": {"teamA": "team-g", "teamB": "team-j", "winner": "team-g", "score": None, "mpUrls": [], "playedAt": None, "status": "structurally-inferred-source-not-found", "basis": "G and J win the two upper semifinals; J later meets B in the lower final, G meets its winner in the grand final. One missing upper-final record connects these paths."},
         "conditionalPlacements": [{"rank": 1, "teams": ["team-b"]}, {"rank": 2, "teams": ["team-g"]}, {"rank": 3, "teams": ["team-j"]}, {"rank": 4, "teams": ["team-f"]}, {"rankRange": [5, 6], "teams": ["team-c", "team-e"]}, {"rankRange": [7, 8], "teams": ["team-a", "team-h"]}],
-        "placementConditions": ["Organizer accepts the four completed-replay rulings", "Grand final is the actual tournament endpoint with no unprovided reset or later adjudication", "C-F official 2:5 versus a BO11 target is resolved; no missing sixth point is invented"],
+        "placementConditions": ["Organizer accepts the four completed-replay rulings", "Grand final is the actual tournament endpoint with no unprovided reset or later adjudication", "C-F played 2:5 versus possible official 2:6 is resolved; no missing sixth point is invented"],
         "nonAdvancingCandidates": ["team-d", "team-i", "team-k", "team-l"]
     }
     data["notes"] = [
@@ -98,7 +156,8 @@ def apply_rule_structure(data, rules):
         "One Team Fail is evidenced (D-I game 432255879, blue side); applying it does not change the raw-score winner of that game or any reconstructed match score.",
         "All scores remain reconstructions, not approved historical results. Four completed replays require actual referee rulings.",
         "The third standings criterion is preserved as the source term 净胜场. No exact tied seed order is fabricated.",
-        "D-I conflicts with BO9 Swiss and remains a phase ambiguity; strict GS and a four-batch hypothetical table remain separate.",
+        "D-I provisionally uses a 3:5 Swiss score with the final five-versus-five TB excluded as post-match entertainment. This remains pending confirmation; raw room totals stay 3:6 and the ES pool exception is unexplained.",
+        "C-F preserves played 2:5. A missing HD2 F point and possible actual 2:6 are a pending-confirmation hypothesis only, not an invented played result or accepted official score.",
         "The only structural missing playoff fixture is G-J upper final. Its winner G is inferred from later branch appearances; date, source MP and score remain unknown.",
         "The rulebook gives planned dates; actual MP dates include postponements. Planned dates do not overwrite source lobby timestamps.",
         "No final reset or upper-side advantage clause is stated; official final placements remain empty pending acceptance.",
@@ -208,10 +267,7 @@ def reconstruct(snapshot, roster, pools, rules):
         match["scoreNotes"] = []
         if match["requiresReplayConfirmation"]:
             match["scoreNotes"].append("Same beatmap has multiple completed attempts. Both raw and last-attempt totals are preserved; replay ruling is unconfirmed.")
-        if match["id"] == 85503945:
-            match["scoreNotes"].append("Completed in-pool games give C 2:5 F. No sixth F point is evidenced. Do not invent a 2:6 result, forfeit or penalty.")
-        if match["id"] == 84398168:
-            match["scoreNotes"].append("D-I uses S6ES and gives 3:6, although its date/pairing fills the missing D/I appearances in the fourth preliminary batch. Stage purpose is unconfirmed.")
+    apply_provisional_interpretations(matches, snapshot)
     teams = [{"id": team["id"], "workbookName": team["name"], "evidencedNames": [{"name": name, "sources": sorted(set(alias_evidence.get(name, [])))} for name, target in aliases.items() if target == team["id"] and not re.fullmatch(r"[A-L](?:\s+.+)?", name)]} for team in roster["teams"]]
     batches = []
     for i, (first, last) in enumerate([("2021-05-08", "2021-05-09"), ("2021-05-14", "2021-05-16"), ("2021-05-22", "2021-05-24"), ("2021-05-28", "2021-06-01")], 1):
@@ -238,12 +294,12 @@ def write_report(data, path):
     """Generate review tables from rule facts and the same match records."""
     lookup = {m["id"]: m for m in data["matches"]}
     letter = lambda team: team.removeprefix("team-").upper()
-    roles = {"swiss": "瑞士輪", "phase-unresolved": "性質待確認", "upper-semifinal": "勝者組準決賽", "lower-round-1": "敗者組第 1 輪", "lower-round-2": "敗者組第 2 輪", "lower-round-3": "敗者組第 3 輪", "lower-final": "敗者組決賽", "grand-final": "總決賽"}
+    roles = {"swiss": "瑞士輪", "swiss-provisional": "瑞士輪（待確認）", "upper-semifinal": "勝者組準決賽", "lower-round-1": "敗者組第 1 輪", "lower-round-2": "敗者組第 2 輪", "lower-round-3": "敗者組第 3 輪", "lower-final": "敗者組決賽", "grand-final": "總決賽"}
     lines = [
         "# S6 小組賽、淘汰對陣與結果重建（待覆核）", "",
         "使用主辦者更正後提供的 33 個 2021 年 MP，以及後補的 [S6 規則](https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw)。先前撤回的 2020 年對局完全排除；規則連結不保存 QQ 追蹤參數。", "",
-        "已核對 33 場完整分頁、共 348 局遊戲。按譜面 ID 可確認 GS 圖池 23 場、ES 圖池 8 場、FS 圖池 2 場；本批沒有資格賽、測試賽或 Showcase 房間。65 局圖池外的開場遊戲及 20 局無結束時間、全員零分的中止遊戲不計勝圖。另有四次完整重打，暫採最後一次已完成紀錄，原始加總仍保留。", "",
-        "**所有比分、分支與名次仍是重建資料，沒有寫入正式站或批准為官方賽果。** C–F 缺少 BO11 的第六個勝圖、D–I 的階段不明、勝者組決賽 G–J 未取得 MP，均保持來源缺口。", "",
+        "已核對 33 場完整分頁、共 348 局遊戲。按譜面 ID 可確認 GS 圖池 23 場、ES 圖池 8 場、FS 圖池 2 場；本批沒有資格賽、測試賽或 Showcase 房間。65 局圖池外的開場遊戲及 20 局無結束時間、全員零分的中止遊戲不計勝圖。另有四次完整重打暫採最後一次；D–I 最後一局 TB 暫列賽後娛樂，候選賽事合計 258 局，原始紀錄均保留。", "",
+        "**所有比分、分支與名次仍是重建資料，沒有寫入正式站或批准為官方賽果。** 依主辦者最新指示，D–I 暫按 3:5、最後 TB 為賽後娛樂；C–F 保留實打 2:5，另註 HD2 可能有未記錄勝點而實際為 2:6。兩項均標示待確認，不代表主辦者已確認歷史賽果。G–J 勝者組決賽仍未取得 MP。", "",
         "來源：[MP 清單](imports/s6-match-manifest.json)、[分頁核對後的競賽快照](imports/s6-match-source-snapshot.json)、[規則事實摘要](imports/s6-rules-facts.json)、[機器可讀重建](imports/s6-match-reconstruction.json)。原工作簿名單、現行角色及正式資料未更動。", "",
         "## 規則確認後的結構", "",
         "- 採 Score v1；個人 Fail 分數保留，整隊 Team Fail 判負，No Fail 可自行開啟。逐局核對到一個 Team Fail：D–I 的遊戲 432255879 藍方；它與原始總分勝負相同，因此沒有改變任何重建比分。",
@@ -265,15 +321,15 @@ def write_report(data, path):
         rows = ["| 日期（UTC+8） | 重建輪次 | 對局 | 比分 | 勝方 | 圖池 | MP／備註 |", "| --- | --- | --- | --- | --- | --- | --- |"]
         for match in records:
             mark = "†" if match["requiresReplayConfirmation"] else ""
-            note = "；ES 圖池／3:6 不符合 BO9" if match["id"] == 84398168 else "；未取得第六個 F 勝圖" if match["id"] == 85503945 else ""
+            note = "；暫按 3:5，末局 TB 賽後娛樂；整房 3:6（待確認）" if match["id"] == 84398168 else "；實打 2:5，HD2 可能缺一分而為 2:6（待確認）" if match["id"] == 85503945 else ""
             score = match["reconstructedScore"]
             rows.append(f"| {match['startedAtUtc8'][:10]} | {roles[match['stageClassification']['role']]} | {letter(match['teamA'])}–{letter(match['teamB'])} | {score[0]}:{score[1]}{mark} | {letter(match['winner'])} | {match['pool']} | [{match['id']}]({match['url']}){note} |")
         return rows
 
-    lines += ["", "## 瑞士輪對陣", "", "按時間可排出四批、每批十二隊各出現一次。前三批與規則及 GS 圖池一致；第四批的 D–I 使用 ES 並打到 3:6，不能直接認定為 BO9 瑞士輪。因此保留為第四批的候選對局，而非已確認第四輪結果。日期是實際房間建立日（UTC+8），不覆蓋原表預定時間。† 表示完整重打仍待裁判結論。", ""]
+    lines += ["", "## 瑞士輪對陣", "", "按時間可排出四批、每批十二隊各出現一次。前三批與規則及 GS 圖池一致；第四批 D–I 雖使用 ES，現暫按瑞士輪 3:5 處理，最後五對五 TB 作賽後娛樂，不計入候選小組戰績。該處理及使用 ES 的原因均待確認。日期是實際房間建立日（UTC+8），不覆蓋原表預定時間。† 表示完整重打仍待裁判結論。", ""]
     for index, batch in enumerate(data["preliminaryBatches"], 1):
         lines += [f"### 第 {index} 輪{'候選批次' if index == 4 else '重建'}", "", *table([lookup[mid] for mid in batch["matchIds"]]), ""]
-    lines += ["### 小組戰績與兩套口徑", "", "左側只計 23 場 GS 圖池；右側暫將 D–I 列入第四批，以供後續推理。兩表都沿用重打假設；不把右側假設表當成正式積分。原文排序依序為勝場、直接勝負及「净胜场」；第三項沒有進一步定義，不擅自把得失圖排序當成已接受的完整種子。", "", "| 隊伍 | GS 場數 | GS 勝–負 | GS 得–失圖 | 四批候選勝–負 | 四批候選得–失圖 |", "| --- | --- | --- | --- | --- | --- |"]
+    lines += ["### 小組戰績與兩套口徑", "", "左側只計 23 場 GS 圖池；右側暫將 D–I 以 3:5 列入第四輪，不計最後的娛樂 TB。故候選得失圖更新為 D 12–15、I 15–18，兩隊勝負仍各為 1–3。兩表都沿用重打假設，且 D–I 處理仍待確認；右側不是正式積分。原文排序依序為勝場、直接勝負及「净胜场」；第三項沒有進一步定義，不擅自把得失圖排序當成已接受的完整種子。", "", "| 隊伍 | GS 場數 | GS 勝–負 | GS 得–失圖 | 四批候選勝–負 | 四批候選得–失圖 |", "| --- | --- | --- | --- | --- | --- |"]
     for a, b in zip(data["standingsStrictGsPool"], data["standingsFourBatchHypothesis"]):
         lines.append(f"| {letter(a['teamId'])} | {a['played']} | {a['wins']}–{a['losses']} | {a['mapsWon']}–{a['mapsLost']} | {b['wins']}–{b['losses']} | {b['mapsWon']}–{b['mapsLost']} |")
     lines += ["", "按目前重建，J 四勝，B／C／G 各三勝，對應勝者組四隊；A／E／F／H 對應敗者組四隊。這兩組與六月實際對陣相符。第一名可選對手，所以不能只按固定 1–4、2–3 配對反推精確種子。D／I／K／L 尚不能分配官方 9–12 名順序。", "",
@@ -297,9 +353,17 @@ def write_report(data, path):
         raw, selected = match["rawCompletedScore"], match["reconstructedScore"]
         lines.append(f"| [{match['id']}]({match['url']}) | {letter(match['teamA'])}–{letter(match['teamB'])} | {raw[0]}:{raw[1]} | {selected[0]}:{selected[1]} | {'；'.join(refs)} |")
     lines += ["", "H–C 直接累加會變成 5:5，只有最後一次重打假設得到 H 4:5 C，因此該場勝方及小組戰績也依賴重打覆核。其他三場的兩種加總方式不改變勝方。四次較早紀錄的一方均只有兩位非零分選手，重打後回到三位；這支持斷線重打的推測，並不證明已獲裁判批准。", "",
+        "## D–I／C–F 暫定推理（均待確認）", "",
+        "### D–I：暫按 3:5，末局 TB 作賽後娛樂", "",
+        "[D–I（84398168）](https://osu.ppy.sh/community/matches/84398168) 在 2021-05-28 21:20:51（UTC+8）完成第八張圖池圖 NM2，比分已到 D 3:5 I，符合 BO9 終點。21:29:30 才再開 TB，21:34:17 結束；前八圖每方各三名非零分選手，這張卻各有五名。TB 開打前不是平分，且 D–I 恰好補齊第四輪兩隊的出場，因此暫採『正式候選 3:5，末局為娛樂』解讀。", "",
+        "原始整房加總 3:6、最後 TB 的遊戲 432260817／BID 2968871、分數與時間全部保留；只從暫定賽事比分及候選積分中排除該局。使用 ES 圖池的原因、現場是否確實如此處理，仍未取得當時佐證。主辦者目前只要求暫按此推理整理，並非確認歷史結果。", "",
+        "### C–F：實打維持 2:5，可能缺 HD2 的一個 F 勝點", "",
+        "[C–F（85503945）](https://osu.ppy.sh/community/matches/85503945) 在 2021-06-13 21:29:06 開 HD2（遊戲 437459269／BID 2844989），MP 沒有結束時間及任何分數，直到 21:43:54 才開始下一張。最後一張在 22:21:44 結束，已完成遊戲合計 C 2:5 F，49 秒後房間解散；翌日 F 已進入 B–F 的下一輪。", "",
+        "若 HD2 有未保存的結算或現場判給 F 的一點，最終便可能是符合 BO11 的 C 2:6 F。此解讀比整輪改為 BO9 更符合相鄰 B–E、B–F 均打到六勝的紀錄，但目前沒有 HD2 勝負或裁判判分的直接證據；臨場改 BO9 或提前結束也無法排除。『無結算』不能直接證明主動 Abort、F 勝、棄權或罰分。", "",
+        "因此表格與實打統計仍為 2:5，2:6 僅放在待確認的可能正式比分欄，不新增遊戲、選手分數或裁定。", "",
         "## 仍需共同推理／補充的項目", "",
-        "1. D–I（84398168）為 ES 圖池、3:6，與 BO9 小組賽衝突。它可能是不同性質的比賽；不能因為日期補上第四輪兩隊，就把它正式列入瑞士輪。",
-        "2. C–F（85503945）只有 7 局已完成圖池遊戲，2:5；另有中止 HD2，沒有第六個 F 勝圖。BO11 的要求不授權補成 2:6，也不能自行判棄權或加分。",
+        "1. D–I 的暫定 3:5／末局娛樂處理及使用 ES 的原因仍待當時紀錄或裁判佐證；原始整房 3:6 保留。",
+        "2. C–F 實打 2:5 不變；HD2 是否存在未記錄的 F 勝點、實際是否 2:6，仍待確認。",
         "3. G–J 勝者組決賽的 MP、比分及日期尚缺。僅把 G 勝當成後續分支所需的結構推導。",
         "4. 確認四場完整重打的實際裁判處理；開場中止不等於已完成重打，兩類分開核對。",
         "5. 部分 A/B 原表 UID 跨隊出場（15174317、13679569 等）。實際分數保留，不自行重寫 roster 或判定違規。Extra 的上場宣告／選圖方亦不能從比分單獨還原。",
