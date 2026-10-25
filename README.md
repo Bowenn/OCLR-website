@@ -113,10 +113,12 @@ Artwork and tournament dates shown in [design references](docs/design/) are exam
 
 - [Sonoaoi](https://osu.ppy.sh/users/9755808)
 - [Tensorera](https://osu.ppy.sh/users/19204569)
+- [Shi Thi](https://osu.ppy.sh/users/3094900)
+- [qi_e](https://osu.ppy.sh/users/6963321)
+- [\[SHK\]ShandenYMD](https://osu.ppy.sh/users/13413713)
 
 ## Contributors
 
-- [qi_e](https://osu.ppy.sh/users/6963321)
 - [Muziyami](https://osu.ppy.sh/users/7003013)
 
 ## License
