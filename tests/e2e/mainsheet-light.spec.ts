@@ -116,7 +116,7 @@ test.describe("MainSheet Light public experience", () => {
       "OCLR 公開測試賽",
     );
     await expect(page.locator(".public-tournament")).toBeVisible();
-    for (const section of ["", "/schedule", "/mappools", "/teams", "/rules"]) {
+    for (const section of ["", "/schedule", "/mappools", "/teams", "#rules"]) {
       await page.goto(base + section);
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
       await expect(page.locator(".site-header")).toHaveCount(1);
@@ -158,7 +158,10 @@ test.describe("MainSheet Light public experience", () => {
         height: 1000,
       });
     }
-    await page.goto(base + "/rules");
+    // Legacy URLs redirect after hydration to preserve browser-only fragments.
+    await page.goto(base + "/rules", { waitUntil: "commit" });
+    await expect(page).toHaveURL(`http://127.0.0.1:3100${base}#rules`);
+    await expect(page.locator("#rules .rules-article")).toBeVisible();
     const headings = page.locator(".rules-article h2");
     const ids = await headings.evaluateAll((nodes) => nodes.map((n) => n.id));
     expect(new Set(ids).size).toBe(4); // Published eligibility remains part of the homepage handbook.

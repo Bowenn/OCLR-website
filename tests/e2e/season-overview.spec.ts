@@ -120,7 +120,7 @@ test.describe("season overview composition", () => {
       404,
     );
   });
-  test("optional sections remain absent until public content exists", async ({
+  test("optional data sections stay absent while rules availability remains visible", async ({
     page,
   }) => {
     await seedEditions([
@@ -134,8 +134,9 @@ test.describe("season overview composition", () => {
     ]);
     await page.goto("/tournaments/test-cup");
     await expect(
-      page.locator("#rules, #schedule, #participants, #mappools"),
+      page.locator("#schedule, #participants, #mappools"),
     ).toHaveCount(0);
+    await expect(page.locator("#rules")).toContainText("Rules to be announced");
     const disclosure =
       "Eligibility disclosure.\n" + "UnbrokenAuthoredText".repeat(150);
     await seedEditions([

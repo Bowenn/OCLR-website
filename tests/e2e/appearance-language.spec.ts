@@ -61,9 +61,9 @@ test.describe("appearance and language preferences", () => {
     expect(initial?.headers()["content-language"]).toBe("zh-Hans");
     await expect(page.locator("html")).toHaveAttribute("lang", "zh-Hans");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await expect(page.locator(".language-control > button")).toHaveText(
-      "简体中文",
-    );
+    await expect(
+      page.locator(".language-control > button"),
+    ).toHaveAccessibleName(/简体中文$/);
     await expect(
       page.getByRole("heading", {
         name: "Organizer edition · 原文",

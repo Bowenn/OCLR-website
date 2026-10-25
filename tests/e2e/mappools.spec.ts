@@ -470,8 +470,13 @@ test.describe("published mappools and restricted editing", () => {
     await expect(
       page.getByRole("button", { name: "Group Round One", exact: true }),
     ).toHaveCount(0);
+    await openTournamentTool(page, "test-cup", "Rounds", isMobile);
     await page
-      .getByRole("link", { name: "Manage rounds", exact: true })
+      .getByRole("tab", { name: "Knockout Stage", exact: true })
+      .click();
+    await page
+      .getByRole("list", { name: "Rounds", exact: true })
+      .getByRole("button", { name: "Edit round", exact: true })
       .click();
     await expect(page.getByLabel("Round name", { exact: true })).toHaveValue(
       "Knockout Final",

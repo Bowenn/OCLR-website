@@ -66,7 +66,6 @@ function AccountControl({
       <Link
         href="/dashboard"
         className="button secondary account-control"
-        aria-label={tr("Dashboard")}
         title={user.username}
         aria-current={
           path === "/dashboard" || path.startsWith("/dashboard/")
@@ -114,7 +113,6 @@ function AccountControl({
       <button
         type="button"
         className="secondary account-control"
-        aria-label={tr("Dashboard")}
         ref={trigger}
         title={user.username}
         aria-haspopup="menu"

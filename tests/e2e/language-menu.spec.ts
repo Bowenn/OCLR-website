@@ -22,7 +22,7 @@ test.describe("custom language menu", () => {
       const menu = root.getByRole("menu");
       const options = root.getByRole("menuitemradio");
       await expect(root.locator("select")).toHaveCount(0);
-      await expect(trigger).toHaveText("简体中文");
+      await expect(trigger).toHaveAccessibleName(/简体中文$/);
       await expect(trigger).toHaveAttribute("aria-expanded", "false");
       await trigger.focus();
       await trigger.press("Enter");
@@ -39,7 +39,7 @@ test.describe("custom language menu", () => {
       await page.keyboard.press("ArrowDown");
       await page.keyboard.press(" ");
       await expect(page.locator("html")).toHaveAttribute("lang", "zh-Hant");
-      await expect(trigger).toHaveText("繁體中文");
+      await expect(trigger).toHaveAccessibleName(/繁體中文$/);
       await expect(menu).toHaveCount(0);
       await expect(page).toHaveURL(/\/tournaments\/s11\?view=locale#details$/);
       await page.reload();
