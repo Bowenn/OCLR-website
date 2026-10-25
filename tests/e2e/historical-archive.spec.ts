@@ -76,7 +76,7 @@ test.describe("historical archive browser workflow", () => {
     await card
       .getByRole("link", { name: "View tournament", exact: true })
       .click();
-    await expect(page.locator(".rules-article > section")).toHaveCount(14);
+    await expect(page.locator(".rules-article > section")).toHaveCount(4);
     for (const section of rules.sections)
       await expect(page.locator(".rules-article")).toContainText(section.body);
     await expect(page.locator(".rules-article")).toContainText(

@@ -15,6 +15,30 @@ surviving games, candidate scores, preliminary tables and unresolved bracket
 questions separately. The original workbook-only `results: []` is preserved;
 it is no longer a claim that no supplementary match evidence exists.
 
+## Original rule hierarchy correction — 2026-10-25
+
+The organizer rejected the flattened 14-section import. The corrected
+[rule import](imports/s6-configured-rules.json) preserves the original four
+chapters: `重点规则`, `比赛流程`, `BP流程`, `时限`. Original sublabels, bullet
+markers and numbered clauses remain inside their chapters. The evidence-backed
+annotation distinguishing the struck-out group proposal from four Swiss rounds
+is retained.
+
+The organizer explicitly approved saving the new version
+`OCLR S6 规则表（原文分段）`. Computer use saved it through the ordinary rules
+editor. Reload and readback verified **revision 8**, all four chapter headings
+and exact rule equality, with publication and the imported archive unchanged.
+Old version records are retained by the ordinary configuration flow. The native
+rules display and directory artwork still require the pending application
+correction to be deployed; this content update itself needs no second import.
+The checkpoint below records the earlier 14-section import, now superseded.
+
+After the original hierarchy correction, the three targeted S6 tests and both
+desktop/mobile directory-and-rules browser cases passed again; the latter check
+all four complete chapter bodies and six responsive widths. The isolated test
+database was stopped after verification. The linked 320px rules image below
+now shows this corrected four-chapter layout.
+
 ## Consistent directory copy, artwork and sectioned rules — 2026-10-25
 
 The organizer requested the same summary format as S7 and supplied the complete
@@ -39,8 +63,9 @@ For the exact S6 issue/rulebook source pair, historical pages and their shared
 read overview now use the edition's saved sectioned rules with the existing
 `RulesHandbook`, including anchors and preserved line breaks. Other seasons
 continue to use their own curated source supplements. These display corrections
-require deployment of the new application commit; the 14 sections are already
-saved, so no second import or database migration is needed after deployment.
+require deployment of the new application commit; the corrected four chapters
+are already saved, so no second import or database migration is needed after
+deployment.
 
 Local verification for this correction: npm ci, lint/typecheck, 1,031 unit and
 integration checks (one existing skipped), production build, i18n checks and

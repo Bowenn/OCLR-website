@@ -11,8 +11,10 @@ Tournament editions live in PostgreSQL and are managed through `/admin/tournamen
 Historical directory cards inherit their approved source artwork when no explicit
 logo is set; an explicit logo takes priority. S6's original image is available in
 the logo and key-visual selectors. Its organizer-supplied rules are maintained as
-14 versioned sections in the ordinary rules editor; the S6 archive's exact source
-pair enables the same sections in historical public/private views and saved reads.
+four original chapters (`重点规则`, `比赛流程`, `BP流程`, `时限`) in the ordinary
+rules editor; see [the import checkpoint](s6-archive.md) for the confirmed version
+and pending display deployment. The S6 archive's exact source pair enables the same saved sections in
+historical public/private views and saved reads.
 
 Publishing never enables registration. Rules, eligibility and milestones are optional, independent content. Registration requires publication, privacy configuration, explicit enablement and a valid unlocked window. Advance enabling is supported; submissions are accepted from opening (inclusive) until closing (exclusive). Only configured Rules/Eligibility are acknowledged. Missing rules use a null version and absent eligibility uses a null acknowledgment; no synthetic consent is generated. Existing draft/team locks still protect competition setup. Changed rules cannot reuse a version for different text. Configuration snapshots preserve earlier rules, questions and answers without requiring a retention-approval checkbox or coupling question edits to rules versions.
 

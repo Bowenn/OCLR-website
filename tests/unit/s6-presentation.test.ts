@@ -39,7 +39,12 @@ it("uses the saved S6 section editor only for its evidenced source pair", () => 
 });
 
 it("preserves all supplied rule sections and labels the obsolete group proposal", () => {
-  expect(rules.sections).toHaveLength(14);
+  expect(rules.sections.map((s) => s.heading)).toEqual([
+    "重点规则",
+    "比赛流程",
+    "BP流程",
+    "时限",
+  ]);
   const text = rules.sections.map((s) => s.body).join("\n");
   for (const fact of [
     "BO9 2Ban",
@@ -55,9 +60,9 @@ it("preserves all supplied rule sections and labels the obsolete group proposal"
     "第一轮最后选择的队伍将连续选两名选手",
   ])
     expect(text).toContain(fact);
-  expect(
-    rules.sections.find((s) => s.heading === "比赛流程：小组赛")!.body,
-  ).toMatch(/已废止[\s\S]*两个小组[\s\S]*现行规则[\s\S]*4轮的瑞士轮/);
+  expect(rules.sections.find((s) => s.heading === "比赛流程")!.body).toMatch(
+    /已废止[\s\S]*两个小组[\s\S]*现行规则[\s\S]*4轮的瑞士轮/,
+  );
 });
 
 it("accepts the original S6 image in both branding slots and minimal read summaries", () => {
