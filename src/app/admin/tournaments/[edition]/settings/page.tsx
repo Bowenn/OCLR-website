@@ -2,7 +2,7 @@ import { TournamentEditor } from "@/components/tournament-editor";
 import { PageHeading } from "@/components/ui";
 import { getAppTranslations } from "@/i18n/server";
 import { authorizedPage } from "@/lib/auth/page";
-import { requireStaff } from "@/lib/auth/staff";
+import { hasCapability, requireStaff } from "@/lib/auth/staff";
 import { remotePage } from "@/lib/remote-page";
 import { tournamentForAdmin } from "@/lib/tournaments";
 export async function generateMetadata() {
@@ -19,7 +19,8 @@ async function Issue271Page({
 
   return authorizedPage(async () => {
     const { edition } = await params;
-    const data = await tournamentForAdmin(await requireStaff(), edition);
+    const actor = await requireStaff();
+    const data = await tournamentForAdmin(actor, edition);
     return (
       <>
         <PageHeading
@@ -27,6 +28,7 @@ async function Issue271Page({
           title={tr("Tournament settings")}
         />
         <TournamentEditor
+          canDeleteDraft={await hasCapability(actor, "configure_tournament")}
           data={{
             edition: data.edition,
             revision: data.revision,

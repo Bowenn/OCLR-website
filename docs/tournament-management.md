@@ -8,6 +8,25 @@ Historical editions can import verified source snapshots through the edition's *
 
 Tournament editions live in PostgreSQL and are managed through `/admin/tournaments`. Global Admins create private editions; edition-scoped Admins configure their assigned tournaments. Creation needs only a name: the URL slug is suggested and editable before creation; UTC is the neutral initial zone. Drafts may have no summary, season or artwork. Add public copy before publishing. Save general information, rules/eligibility, registration and milestones independently, then deliberately publish. The slug is immutable. S11 starts unpublished with its existing artwork and no invented dates, rules or registration window.
 
+Global Admins can remove an accidentally created **unused blank draft** from
+Settings → Publication → **Delete unused draft** (#327). Confirm the exact slug
+in the dialog. The server checks the current revision, all saved configurations,
+setup/publication flags, edition-owned data and audit history in one transaction.
+Only an upcoming, never-published draft with no saved content or operational use
+qualifies; changing its name, season identifier or time zone alone is allowed.
+Clearing content, revoking roles or deleting competition records does not make a
+previously used edition eligible. Edition-scoped Admins and Developer/remote
+read channels cannot delete drafts. Concurrent settings, setup and role changes
+are serialized; stale requests fail without deleting anything.
+
+Removal retires the active configuration, so the draft disappears from public and
+staff lists, selectors and edition pages. Its reserved slug, configuration
+revisions and automatic `tournament_delete_draft` audit event remain intact.
+There is no cascade deletion, slug reuse or new database migration. Existing
+historical and used tournaments remain available through the normal private
+archive/unpublish controls. Deployment is required before using this new action;
+implementation and local tests do not establish that a production draft was removed.
+
 Historical directory cards inherit their approved source artwork when no explicit
 logo is set; an explicit logo takes priority. S6's original image is available in
 the logo and key-visual selectors. Its organizer-supplied rules are maintained as

@@ -1,0 +1,25 @@
+import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth/user";
+import { deleteUnusedTournamentDraft } from "@/lib/delete-tournament-draft";
+import { apiError, readJson, requireSameOrigin } from "@/lib/http";
+
+export async function POST(
+  request: Request,
+  context: { params: Promise<{ edition: string }> },
+) {
+  try {
+    requireSameOrigin(request);
+    const result = await deleteUnusedTournamentDraft(
+      await requireUser(),
+      (await context.params).edition,
+      await readJson(request),
+    );
+    revalidatePath("/", "layout");
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (error) {
+    return apiError(error);
+  }
+}

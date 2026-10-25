@@ -12,6 +12,7 @@ export async function assertOperationalEdition(
     .select({ configuration: editionState.configuration })
     .from(editionState)
     .where(eq(editionState.slug, slug));
+  if (!state?.configuration) throw new HttpError(404, "Tournament not found.");
   if (state?.configuration?.archive)
     throw new HttpError(
       409,
