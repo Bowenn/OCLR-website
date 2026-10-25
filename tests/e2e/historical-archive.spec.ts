@@ -14,6 +14,81 @@ test.describe("historical archive browser workflow", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.setTimeout(120000);
   test.afterAll(async () => closeDb());
+  test("approves a historical draw without selecting a winning team", async ({
+    page,
+    context,
+    isMobile,
+  }) => {
+    const slug = `draw-test-${isMobile ? "mobile" : "desktop"}-${Date.now()}`;
+    const archive = historicalSourceDetails(slug);
+    archive.matches = [archive.matches[0]];
+    archive.matches[0].review!.workingScore = [5, 5];
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        name: "Synthetic draw archive",
+        published: false,
+        status: "completed",
+        registration: null,
+        archive,
+      },
+    ]);
+    await page.goto(`/admin/tournaments/${slug}/archive`);
+    await page
+      .getByRole("button", { name: "Approve reviewed matches", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect
+      .poll(
+        async () =>
+          (
+            await (
+              await context.request.get(`/api/admin/tournaments/${slug}`)
+            ).json()
+          ).edition.archive.matches[0].review.status,
+      )
+      .toBe("approved");
+    const saved = await (
+      await context.request.get(`/api/admin/tournaments/${slug}`)
+    ).json();
+    expect(saved.edition.published).toBe(false);
+    expect(saved.edition.archive.matches[0].score).toEqual([5, 5]);
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=match&id=${archive.matches[0].id}`,
+    );
+    await expect(page.locator('[data-winner="true"]')).toHaveCount(0);
+    await page.goto(`/admin/tournaments/${slug}/settings`);
+    await page.getByRole("tab", { name: "Publication", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Publish tournament", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect
+      .poll(
+        async () =>
+          (
+            await (
+              await context.request.get(`/api/admin/tournaments/${slug}`)
+            ).json()
+          ).edition.published,
+      )
+      .toBe(true);
+    await context.clearCookies();
+    for (const section of ["schedule", "bracket"]) {
+      await page.goto(`/tournaments/${slug}/${section}`);
+      await expect(page.locator('[data-winner="true"]')).toHaveCount(0);
+      if (section === "schedule")
+        await expect(page.locator(".event-score")).toContainText("5 : 5");
+    }
+  });
   test("shows S6 source artwork in the directory and its configured rule sections", async ({
     page,
     context,

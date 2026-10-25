@@ -114,3 +114,19 @@ publishes an immutable calculation snapshot with source IDs/revisions. Source,
 fixture-time, Tier or participant-publication changes mark affected releases stale;
 the public page withholds winners pending deliberate review and republication.
 Previous releases remain in the database. No scheduler or second score store is used.
+
+### Historical drawn results
+
+Historical archive reviews accept played tied scores (for example, 5:5). Admin
+approval records the exact score and retains source evidence; publication remains
+a separate edition operation. A recorded draw counts as a completed result but
+has no winner in schedules or bracket cards. A 0:0 placeholder remains invalid;
+unknown scores stay null and forfeits retain their explicit winner without a
+fabricated map score. This does not change live competition scoring policies or
+infer standings points/tiebreaks for historical seasons.
+
+For S4's five temporarily withheld draws, restore the organizer-confirmed 5:5 to
+`review.workingScore` through the existing private archive workflow, then use
+Admin approval after deploying this compatibility fix. Do not automatically
+promote `possibleScore`: it may represent unconfirmed alternatives in other
+seasons. No database migration or automatic production-data change is required.

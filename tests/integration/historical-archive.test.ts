@@ -165,6 +165,35 @@ describe.skipIf(!url)("historical archive transactions", () => {
       tournamentCommand(admin, slug, { ...approval, expectedRevision: 3 }),
     ).rejects.toMatchObject({ status: 409 });
   });
+  it("persists an approved draw privately and releases it only on publication", async () => {
+    const archive = historicalSourceDetails(slug);
+    archive.matches = [archive.matches[0]];
+    archive.matches[0].review!.workingScore = [5, 5];
+    await tournamentCommand(admin, slug, command(0, archive));
+    await tournamentCommand(admin, slug, {
+      action: "approve-archive-matches",
+      expectedRevision: 1,
+      confirmed: true,
+      matchIds: [archive.matches[0].id],
+    });
+    const saved = (await readTournament(slug))!;
+    expect(saved.edition.published).toBe(false);
+    expect(saved.edition.archive!.matches[0]).toMatchObject({
+      score: [5, 5],
+      review: { status: "approved" },
+    });
+    expect(await getPublicEdition(slug)).toBeUndefined();
+    await tournamentCommand(admin, slug, {
+      action: "publication",
+      expectedRevision: 2,
+      confirmed: true,
+      published: true,
+    });
+    const published = (await getPublicEdition(slug))!.archive!;
+    expect(published.matches[0].score).toEqual([5, 5]);
+    expect(published.matches[0].review).toBeUndefined();
+    expect(published.sourceFacts).toBeUndefined();
+  });
   it("enforces edition scope, revision, source matching and complete rollback", async () => {
     await expect(
       tournamentCommand(scoped, slug, command(0)),

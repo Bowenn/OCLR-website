@@ -298,8 +298,8 @@ export const historicalArchiveSchema = z
       team(m.teamA);
       team(m.teamB);
       if (m.teamA === m.teamB) issue("A match requires two different teams.");
-      if (m.score && m.score[0] === m.score[1])
-        issue("Completed historical matches cannot have tied scores.");
+      if (m.score && m.score[0] === 0 && m.score[1] === 0)
+        issue("Completed historical matches require a played map score.");
       if (m.forfeitWinner !== undefined && m.score !== null)
         issue("Forfeits cannot invent a played map score.");
       if (m.review) {
@@ -470,7 +470,12 @@ export function publicHistoricalArchive(
 export function archiveWinner(m: HistoricalArchive["matches"][number]) {
   if (m.review?.status === "pending") return null;
   return (
-    m.forfeitWinner ?? (m.score ? (m.score[0] > m.score[1] ? 0 : 1) : null)
+    m.forfeitWinner ??
+    (m.score && m.score[0] !== m.score[1]
+      ? m.score[0] > m.score[1]
+        ? 0
+        : 1
+      : null)
   );
 }
 

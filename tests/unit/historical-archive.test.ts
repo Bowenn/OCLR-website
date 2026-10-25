@@ -1,13 +1,74 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import {
+  approveArchiveMatches,
+  publicHistoricalArchive,
   historicalArchiveSchema,
   archiveCounts,
   archiveWinner,
   recordedArchiveMatch,
 } from "../../src/lib/historical-archive";
 import { historicalArchive } from "../fixtures/historical-archive";
+import { historicalSourceDetails } from "../fixtures/historical-source-details";
+import { archiveEventMatches } from "../../src/lib/archive-event-matches";
+import { archiveBracket } from "../../src/lib/archive-bracket";
 describe("historical evidence validation", () => {
+  it("approves a played draw without inventing a winner or exposing review evidence", () => {
+    const pending = historicalSourceDetails();
+    pending.matches = [pending.matches[0]];
+    pending.matches[0].review!.workingScore = [5, 5];
+    pending.matches[0].review!.rawScore = [5, 5];
+    expect(publicHistoricalArchive(pending).matches).toEqual([]);
+    expect(archiveWinner(pending.matches[0])).toBeNull();
+    const approval = {
+      approvedOn: "2026-10-26",
+      source: "Synthetic organizer approval",
+    };
+    const approved = approveArchiveMatches(
+      pending,
+      [pending.matches[0].id],
+      approval,
+    );
+    expect(approved.matches[0]).toMatchObject({
+      score: [5, 5],
+      review: { status: "approved", approval },
+    });
+    expect(approved.matches[0].review!.games).toEqual(
+      pending.matches[0].review!.games,
+    );
+    expect(pending.matches[0].score).toBeNull();
+    expect(recordedArchiveMatch(approved.matches[0])).toBe(true);
+    expect(archiveCounts(approved)).toMatchObject({
+      results: 1,
+      incomplete: 0,
+    });
+    expect(archiveWinner(approved.matches[0])).toBeNull();
+    const published = publicHistoricalArchive(approved);
+    expect(published.matches[0].score).toEqual([5, 5]);
+    expect(published.matches[0].review).toBeUndefined();
+    expect(published.sourceFacts).toBeUndefined();
+    expect(archiveWinner(published.matches[0])).toBeNull();
+    expect(
+      archiveEventMatches(
+        published,
+        published.matches,
+        () => "/",
+        "Asia/Shanghai",
+        "en",
+      )[0],
+    ).toMatchObject({
+      score: [5, 5],
+      winner: null,
+      recorded: true,
+      forfeit: false,
+    });
+    expect(
+      archiveBracket(published, () => "/")!.groups[0].rounds[0].matches[0],
+    ).toMatchObject({ scores: [5, 5], winnerSlot: null, status: "completed" });
+    expect(() =>
+      approveArchiveMatches(approved, [pending.matches[0].id], approval),
+    ).toThrow();
+  });
   it("keeps final Tier evidence without inventing chronological draft selections", () => {
     const a = historicalArchiveSchema.parse({
       ...historicalArchive,
