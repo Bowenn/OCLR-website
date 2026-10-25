@@ -91,6 +91,7 @@ function competition(fixtures: PublicFixture[], rules: StandingsRules | null) {
 async function render() {
   const element = await Schedule({
     params: Promise.resolve({ edition: edition.slug }),
+    searchParams: Promise.resolve({}),
   });
   return new Response(await renderToReadableStream(element)).text();
 }

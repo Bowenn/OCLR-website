@@ -115,6 +115,7 @@ export const historicalArchiveSchema = z
             teamA: key,
             teamB: key,
             scheduledAt: z.iso.datetime({ offset: true }).nullable(),
+            roomOpenedAt: z.iso.datetime({ offset: true }).optional(),
             score: z.tuple([score, score]).nullable(),
             review: archiveMatchReview.optional(),
             forfeitWinner: z.union([z.literal(0), z.literal(1)]).optional(),
@@ -185,7 +186,9 @@ export const historicalArchiveSchema = z
         archive.reviewTables !== undefined ||
         archive.sourceFacts !== undefined ||
         archive.players.some((p) => p.sourceRole !== undefined) ||
-        archive.matches.some((m) => m.review !== undefined) ||
+        archive.matches.some(
+          (m) => m.review !== undefined || m.roomOpenedAt !== undefined,
+        ) ||
         archive.pools.some((p) => p.maps.some((m) => m.title === null)))
     )
       issue(
@@ -300,8 +303,24 @@ export const historicalArchiveSchema = z
       if (m.forfeitWinner !== undefined && m.score !== null)
         issue("Forfeits cannot invent a played map score.");
       if (m.review) {
-        if (m.score !== null || m.forfeitWinner !== undefined)
+        if (
+          m.review.status === "pending" &&
+          (m.score !== null ||
+            m.forfeitWinner !== undefined ||
+            m.review.approval)
+        )
           issue("Pending match reviews cannot claim a recorded result.");
+        if (
+          m.review.status === "approved" &&
+          (!m.review.approval ||
+            !m.score ||
+            m.forfeitWinner !== undefined ||
+            !m.review.workingScore ||
+            m.score.some((value, i) => value !== m.review!.workingScore![i]))
+        )
+          issue(
+            "Approved match reviews require approval evidence and the reviewed score.",
+          );
         if (
           new Set([m.review.redTeamId, m.review.blueTeamId]).size !== 2 ||
           ![m.teamA, m.teamB].includes(m.review.redTeamId) ||
@@ -362,12 +381,94 @@ export const historicalArchiveSchema = z
   });
 export type HistoricalArchive = z.infer<typeof historicalArchiveSchema>;
 
+/** Approval changes the authoritative score, never the retained provider evidence. */
+export function approveArchiveMatches(
+  archive: HistoricalArchive,
+  matchIds: string[],
+  approval: NonNullable<
+    NonNullable<HistoricalArchive["matches"][number]["review"]>["approval"]
+  >,
+): HistoricalArchive {
+  const ids = new Set(matchIds);
+  if (
+    !ids.size ||
+    ids.size !== matchIds.length ||
+    [...ids].some(
+      (id) =>
+        !archive.matches.some(
+          (m) =>
+            m.id === id &&
+            m.review?.status === "pending" &&
+            m.review.workingScore &&
+            m.score === null,
+        ),
+    )
+  )
+    throw new Error(
+      "Only pending saved match reviews with a score can be approved.",
+    );
+  return historicalArchiveSchema.parse({
+    ...archive,
+    matches: archive.matches.map((m) =>
+      ids.has(m.id)
+        ? {
+            ...m,
+            stage:
+              archive.sourceUrl ===
+              "https://github.com/OCLR-dev/OCLR-website/issues/289"
+                ? m.stage.replace("（重建待確認）", "（重建）")
+                : m.stage,
+            score: m.review!.workingScore,
+            review: { ...m.review!, status: "approved", approval },
+          }
+        : m,
+    ),
+  });
+}
+
 export function recordedArchiveMatch(m: HistoricalArchive["matches"][number]) {
-  return !m.review && (m.score !== null || m.forfeitWinner !== undefined);
+  return (
+    m.review?.status !== "pending" &&
+    (m.score !== null || m.forfeitWinner !== undefined)
+  );
+}
+
+/** Management appendices never leave public page/API read models. */
+export function publicHistoricalArchive(
+  archive: HistoricalArchive,
+): HistoricalArchive {
+  if (
+    !archive.sourceFacts &&
+    !archive.reviewTables &&
+    !archive.qualifiers &&
+    !archive.matches.some((m) => m.review)
+  )
+    return archive;
+  const {
+    sourceFacts: _facts,
+    reviewTables: _tables,
+    qualifiers: _qualifiers,
+    ...publicFields
+  } = archive;
+  void _facts;
+  void _tables;
+  void _qualifiers;
+  return {
+    ...publicFields,
+    notes: [],
+    matches: archive.matches
+      .filter(recordedArchiveMatch)
+      .map(({ review, ...match }) => ({
+        ...match,
+        ...(match.roomOpenedAt || review?.startedAt
+          ? { roomOpenedAt: match.roomOpenedAt ?? review!.startedAt! }
+          : {}),
+      })),
+  };
 }
 
 export function archiveWinner(m: HistoricalArchive["matches"][number]) {
-  if (m.review) return null;
+  if (m.review?.status === "pending") return null;
   return (
     m.forfeitWinner ?? (m.score ? (m.score[0] > m.score[1] ? 0 : 1) : null)
   );

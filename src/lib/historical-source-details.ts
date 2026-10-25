@@ -43,10 +43,17 @@ export const archiveReplacement = z
   })
   .strict();
 
-/** A review score must never enter recorded results, winners or derived official standings. */
+/** Pending evidence cannot become a result; approval retains the source snapshot. */
 export const archiveMatchReview = z
   .object({
-    status: z.literal("pending"),
+    status: z.enum(["pending", "approved"]),
+    approval: z
+      .object({
+        approvedOn: z.iso.date(),
+        source: note,
+      })
+      .strict()
+      .optional(),
     workingScore: pair.nullable(),
     rawScore: pair.nullable(),
     possibleScore: pair.nullable(),

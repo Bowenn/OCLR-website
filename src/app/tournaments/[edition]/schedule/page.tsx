@@ -7,11 +7,21 @@ import { remotePage } from "@/lib/remote-page";
 import { notFound } from "next/navigation";
 async function Issue271Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ edition: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
   const { edition: slug } = await params;
-  const archive = await historicalPage(slug, "schedule");
+  const { status } = await searchParams;
+  const statusFilter =
+    status === "recorded" || status === "unconfirmed" ? status : "all";
+  const archive = await historicalPage(
+    slug,
+    "schedule",
+    undefined,
+    statusFilter,
+  );
   if (archive) return archive;
   if (!(await getPublicEdition(slug))) notFound();
   const preview = eventPreview(slug);

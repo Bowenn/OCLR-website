@@ -9,6 +9,7 @@ import {
   type HistoricalArchive,
 } from "@/lib/historical-archive";
 import { ConfirmMutation } from "./confirm-mutation";
+import { useRouter } from "next/navigation";
 
 export function ArchiveImporter({
   slug,
@@ -24,6 +25,11 @@ export function ArchiveImporter({
   archive?: HistoricalArchive;
 }) {
   const tr = useAppTranslations();
+  const router = useRouter();
+  const pendingMatches =
+    archive?.matches.filter(
+      (m) => m.review?.status === "pending" && m.review.workingScore,
+    ) ?? [];
   const [text, setText] = useState("");
   const [review, setReview] = useState<HistoricalArchive | null>(null);
   const [error, setError] = useState("");
@@ -61,6 +67,33 @@ export function ArchiveImporter({
   return (
     <ReadOnlyFields>
       <div className="stack">
+        {pendingMatches.length > 0 && (
+          <section className="panel form-stack">
+            <h2>{tr("Approve reviewed matches")}</h2>
+            <ul>
+              {pendingMatches.map((m) => (
+                <li key={m.id}>
+                  {m.label} · {m.review!.workingScore!.join(" : ")}
+                </li>
+              ))}
+            </ul>
+            <ConfirmMutation
+              label={tr("Approve reviewed matches")}
+              title={tr("Approve reviewed matches")}
+              description={tr(
+                "Approve these saved historical match scores. Published editions show the approved results immediately; source games are preserved.",
+              )}
+              url={`/api/admin/tournaments/${slug}`}
+              payload={{
+                action: "approve-archive-matches",
+                matchIds: pendingMatches.map((m) => m.id),
+                expectedRevision: revision,
+                confirmed: true,
+              }}
+              onSuccess={() => router.refresh()}
+            />
+          </section>
+        )}
         <p>
           {tr(
             "Import source records into an unpublished, completed edition. Review the saved preview, then publish the tournament separately.",

@@ -28,10 +28,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArchiveCompetition } from "./archive-competition";
 import { ArchiveMappools } from "./archive-mappools";
 import { ArchivePlayerSearch } from "./archive-player-search";
-import {
-  ArchiveRosterSources,
-  ArchiveSourceRecords,
-} from "./archive-source-records";
+import { ArchiveRosterSources } from "./archive-source-records";
 import { Avatar } from "./avatar";
 import { EventSchedule } from "./event-schedule";
 import { RulesHandbook } from "./rules-handbook";
@@ -58,6 +55,7 @@ export async function historicalPage(
   slug: string,
   section: Exclude<ArchiveSection, "rules">,
   id?: string,
+  statusFilter?: "all" | "recorded" | "unconfirmed",
 ) {
   let edition: Edition;
   try {
@@ -77,6 +75,7 @@ export async function historicalPage(
       archive={edition.archive}
       section={section}
       id={id}
+      statusFilter={statusFilter}
     />
   ) : null;
 }
@@ -88,12 +87,14 @@ export async function HistoricalArchiveView({
   section = "overview",
   id,
   preview = false,
+  statusFilter = "all",
 }: {
   edition: Edition;
   archive: HistoricalArchive;
   section?: ArchiveSection;
   id?: string;
   preview?: boolean;
+  statusFilter?: "all" | "recorded" | "unconfirmed";
 }) {
   const tr = await getAppTranslations();
   const base = preview
@@ -189,6 +190,16 @@ export async function HistoricalArchiveView({
             : tr("Not recorded")}
         </span>
       </header>
+      {(m.roomOpenedAt ?? m.review?.startedAt) && (
+        <p className="muted small">
+          {tr("MP room opened")} ·{" "}
+          {formatDate(
+            (m.roomOpenedAt ?? m.review?.startedAt)!,
+            edition.timeZone,
+            tr.locale,
+          )}
+        </p>
+      )}
       <div className="archive-scoreboard">
         {[m.teamA, m.teamB].map((teamId, i) => {
           const won = archiveWinner(m) === i;
@@ -207,7 +218,9 @@ export async function HistoricalArchiveView({
                   ? won
                     ? tr("Winner")
                     : tr("Forfeit")
-                  : (m.score?.[i] ?? "—")}
+                  : ((preview && m.review?.status === "pending"
+                      ? m.review.workingScore
+                      : m.score)?.[i] ?? "—")}
               </strong>
             </div>
           );
@@ -235,27 +248,11 @@ export async function HistoricalArchiveView({
       {!recordedArchiveMatch(m) && (
         <p className="muted small archive-unconfirmed">
           {m.review
-            ? tr("Unconfirmed records")
+            ? `${tr("Unconfirmed records")} · ${m.review.workingScore?.join(" : ") ?? "—"}`
             : tr(
                 "Schedule record only; completion and result are not confirmed.",
               )}
         </p>
-      )}
-      {m.review && (
-        <section className="stack">
-          <h3>{tr("Review source records")}</h3>
-          <p>
-            {tr("Unconfirmed records")} ·{" "}
-            {m.review.workingScore?.join(" : ") ?? "—"}
-          </p>
-          <p>{m.review.note}</p>
-          <details>
-            <summary>{tr("All import fields")}</summary>
-            <pre className="archive-json">
-              {JSON.stringify(m.review, null, 2)}
-            </pre>
-          </details>
-        </section>
       )}
       {section === "match" && (
         <>
@@ -346,65 +343,67 @@ export async function HistoricalArchiveView({
           a.teams.map((t) => [t.id, href("teams", t.id)]),
         )}
         standings={
-          <>
-            <h2>{tr("Group standings")}</h2>
-            {derived && (
-              <p className="muted small">
-                {tr(
-                  "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
-                )}
-              </p>
-            )}
-            <div
-              className="table-scroll"
-              tabIndex={0}
-              role="region"
-              aria-label={title}
-            >
-              <table>
-                <thead>
-                  <tr>
-                    {[
-                      tr("Group"),
-                      tr("Rank"),
-                      tr("Team"),
-                      ...(derived ? [tr("Played")] : []),
-                      tr("Wins"),
-                      tr("Losses"),
-                      tr("Maps won"),
-                      tr("Maps lost"),
-                      ...(derived ? [tr("Map difference")] : []),
-                    ].map((h) => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((s) => (
-                    <tr key={s.teamId}>
-                      <td>{s.group}</td>
-                      <td>
-                        {s.rank ??
-                          ("status" in s
-                            ? s.status === "review"
-                              ? tr("Awaiting review")
-                              : tr("Incomplete results")
-                            : tr("Not recorded"))}
-                        {"tied" in s && s.tied ? ` · ${tr("Tied")}` : ""}
-                      </td>
-                      <td>{teamLink(s.teamId)}</td>
-                      {"played" in s && <td>{s.played}</td>}
-                      <td>{s.wins}</td>
-                      <td>{s.losses}</td>
-                      <td>{s.mapsWon}</td>
-                      <td>{s.mapsLost}</td>
-                      {"mapDifference" in s && <td>{s.mapDifference}</td>}
+          standings.length ? (
+            <>
+              <h2>{tr("Group standings")}</h2>
+              {derived && (
+                <p className="muted small">
+                  {tr(
+                    "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
+                  )}
+                </p>
+              )}
+              <div
+                className="table-scroll"
+                tabIndex={0}
+                role="region"
+                aria-label={title}
+              >
+                <table>
+                  <thead>
+                    <tr>
+                      {[
+                        tr("Group"),
+                        tr("Rank"),
+                        tr("Team"),
+                        ...(derived ? [tr("Played")] : []),
+                        tr("Wins"),
+                        tr("Losses"),
+                        tr("Maps won"),
+                        tr("Maps lost"),
+                        ...(derived ? [tr("Map difference")] : []),
+                      ].map((h) => (
+                        <th key={h}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+                  </thead>
+                  <tbody>
+                    {standings.map((s) => (
+                      <tr key={s.teamId}>
+                        <td>{s.group}</td>
+                        <td>
+                          {s.rank ??
+                            ("status" in s
+                              ? s.status === "review"
+                                ? tr("Awaiting review")
+                                : tr("Incomplete results")
+                              : tr("Not recorded"))}
+                          {"tied" in s && s.tied ? ` · ${tr("Tied")}` : ""}
+                        </td>
+                        <td>{teamLink(s.teamId)}</td>
+                        {"played" in s && <td>{s.played}</td>}
+                        <td>{s.wins}</td>
+                        <td>{s.losses}</td>
+                        <td>{s.mapsWon}</td>
+                        <td>{s.mapsLost}</td>
+                        {"mapDifference" in s && <td>{s.mapDifference}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : undefined
         }
       />
     );
@@ -467,7 +466,6 @@ export async function HistoricalArchiveView({
             ))}
           </nav>
         )}
-        <ArchiveSourceRecords archive={a} />
       </>
     );
   } else if (section === "staff") {
@@ -539,7 +537,11 @@ export async function HistoricalArchiveView({
               a.players.filter((p) => p.teamId === t.id),
               false,
             )}
-            <ArchiveRosterSources archive={a} teamId={t.id} />
+            <ArchiveRosterSources
+              archive={a}
+              teamId={t.id}
+              showSources={false}
+            />
           </section>
         ))}
       </div>
@@ -580,7 +582,9 @@ export async function HistoricalArchiveView({
             </a>
           </>
         )}
-        {section === "players" && <ArchiveRosterSources archive={a} />}
+        {section === "players" && (
+          <ArchiveRosterSources archive={a} showSources={false} />
+        )}
       </>
     );
   } else if (["schedule", "results", "match"].includes(section)) {
@@ -591,9 +595,14 @@ export async function HistoricalArchiveView({
           ? m.id === id
           : section !== "results" || recordedArchiveMatch(m),
       )
-      .sort((x, y) =>
-        (x.scheduledAt ?? "9999").localeCompare(y.scheduledAt ?? "9999"),
-      );
+      .sort((x, y) => {
+        const at = (m: typeof x) =>
+          m.roomOpenedAt ?? m.review?.startedAt ?? m.scheduledAt;
+        return (
+          (at(x) ? Date.parse(at(x)!) : Infinity) -
+            (at(y) ? Date.parse(at(y)!) : Infinity) || x.id.localeCompare(y.id)
+        );
+      });
     if (section === "match" && !matches.length) notFound();
     title = section === "match" ? matches[0].label : tr("Matches & results");
     content =
@@ -601,9 +610,12 @@ export async function HistoricalArchiveView({
         match(matches[0])
       ) : (
         <EventSchedule
+          key={statusFilter}
           edition={edition.slug}
           heading={false}
           reviewMode={preview}
+          initialStatus={statusFilter}
+          timeZone={edition.timeZone}
           competition={competition()}
           phases={[...new Set(matches.map((m) => m.stage))].map((stage) => ({
             id: stage,

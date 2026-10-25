@@ -25,6 +25,11 @@ import { edition } from "../fixtures/edition";
 import { historicalArchive } from "../fixtures/historical-archive";
 import { historicalSourceDetails } from "../fixtures/historical-source-details";
 import { assertTestDatabase } from "../database";
+import { readFileSync } from "node:fs";
+import {
+  archiveCounts,
+  publicHistoricalArchive,
+} from "../../src/lib/historical-archive";
 const url = process.env.TEST_DATABASE_URL;
 const admin = { osuId: 390001, username: "Archive Admin" };
 const scoped = { osuId: 390002, username: "Other edition Admin" };
@@ -99,6 +104,66 @@ describe.skipIf(!url)("historical archive transactions", () => {
     expect(await getPublicEdition(slug)).toBeUndefined();
     await tournamentCommand(admin, slug, command(3));
     expect((await readTournament(slug))?.revision).toBe(3); // Identical import is a no-op.
+  });
+  it("approves saved historical reviews atomically with scope and revision checks while preserving publication and evidence", async () => {
+    const archive = {
+      ...JSON.parse(
+        readFileSync("docs/imports/s6-confirmed-archive.json", "utf8"),
+      ),
+      editionSlug: slug,
+    };
+    await tournamentCommand(admin, slug, command(0, archive));
+    await tournamentCommand(admin, slug, {
+      action: "publication",
+      expectedRevision: 1,
+      confirmed: true,
+      published: true,
+    });
+    const approval = {
+      action: "approve-archive-matches",
+      expectedRevision: 2,
+      confirmed: true,
+      matchIds: archive.matches.map((m: { id: string }) => m.id),
+    };
+    await expect(
+      tournamentCommand(scoped, slug, approval),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      tournamentCommand(admin, slug, {
+        ...approval,
+        matchIds: [approval.matchIds[0], approval.matchIds[0]],
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      tournamentCommand(admin, slug, { ...approval, expectedRevision: 1 }),
+    ).rejects.toMatchObject({ status: 409 });
+    const raced = await Promise.allSettled([
+      tournamentCommand(admin, slug, approval),
+      tournamentCommand(admin, slug, approval),
+    ]);
+    expect(raced.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    const saved = (await readTournament(slug))!;
+    expect(saved.revision).toBe(3);
+    expect(saved.edition.published).toBe(true);
+    expect(archiveCounts(saved.edition.archive!).results).toBe(33);
+    expect(
+      saved.edition.archive!.matches.flatMap((m) => m.review!.games),
+    ).toEqual(
+      archive.matches.flatMap(
+        (m: { review: { games: unknown[] } }) => m.review.games,
+      ),
+    );
+    expect((await getPublicEdition(slug))?.archive).toEqual(
+      publicHistoricalArchive(saved.edition.archive!),
+    );
+    expect(
+      (await db().select().from(editionEvents)).filter(
+        (e) => e.kind === "tournament_approve-archive-matches",
+      ),
+    ).toHaveLength(1);
+    await expect(
+      tournamentCommand(admin, slug, { ...approval, expectedRevision: 3 }),
+    ).rejects.toMatchObject({ status: 409 });
   });
   it("enforces edition scope, revision, source matching and complete rollback", async () => {
     await expect(

@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { historicalArchiveSchema } from "../../src/lib/historical-archive";
+import {
+  historicalArchiveSchema,
+  recordedArchiveMatch,
+  archiveWinner,
+  approveArchiveMatches,
+  publicHistoricalArchive,
+} from "../../src/lib/historical-archive";
+import { archiveEventMatches } from "../../src/lib/archive-event-matches";
+import { archiveBracket } from "../../src/lib/archive-bracket";
 import { editionSchema } from "../../src/lib/editions";
 import {
   historicalRulebook,
@@ -15,6 +23,94 @@ const archive = historicalArchiveSchema.parse(
 const rules = editionSchema.shape.rules.parse(
   JSON.parse(readFileSync("docs/imports/s6-configured-rules.json", "utf8")),
 )!;
+
+it("records exactly the organizer-approved matches while retaining their source evidence", () => {
+  const approved = approveArchiveMatches(
+    archive,
+    archive.matches.map((m) => m.id),
+    { approvedOn: "2026-10-25", source: "Admin approval" },
+  );
+  expect(() =>
+    approveArchiveMatches(
+      archive,
+      [archive.matches[0].id, archive.matches[0].id],
+      { approvedOn: "2026-10-25", source: "Admin approval" },
+    ),
+  ).toThrow();
+  expect(() =>
+    approveArchiveMatches(approved, [approved.matches[0].id], {
+      approvedOn: "2026-10-25",
+      source: "Admin approval",
+    }),
+  ).toThrow();
+  expect(approved.matches.filter(recordedArchiveMatch)).toHaveLength(33);
+  expect(archive.matches.filter(recordedArchiveMatch)).toHaveLength(0);
+  expect(approved.standings).toEqual(archive.standings);
+  expect(approved.matches.flatMap((m) => m.review!.games)).toEqual(
+    archive.matches.flatMap((m) => m.review!.games),
+  );
+  for (const m of approved.matches) {
+    const original = archive.matches.find((old) => old.id === m.id)!;
+    expect(
+      historicalArchiveSchema.safeParse({ ...approved, matches: [m] }).success,
+    ).toBe(true);
+    expect(m.review!.rawScore).toEqual(original.review!.rawScore);
+    expect(m.score).toEqual(original.review!.workingScore);
+    expect(m.review!.approval?.approvedOn).toBe("2026-10-25");
+    expect(archiveWinner(m)).not.toBeNull();
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...approved,
+        matches: [{ ...m, review: { ...m.review!, approval: undefined } }],
+      }).success,
+    ).toBe(false);
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...approved,
+        matches: [{ ...m, review: { ...m.review!, status: "pending" } }],
+      }).success,
+    ).toBe(false);
+    expect(
+      historicalArchiveSchema.safeParse({
+        ...approved,
+        matches: [{ ...m, score: [99, 0] }],
+      }).success,
+    ).toBe(false);
+  }
+  const rows = archiveEventMatches(
+    approved,
+    approved.matches,
+    (s, id) => `/${s}/${id}`,
+    "Asia/Shanghai",
+    "en",
+  );
+  expect(rows.find((m) => m.id === "mp-84398168")?.score).toEqual([3, 5]);
+  expect(rows.find((m) => m.id === "mp-85503945")?.score).toEqual([2, 6]);
+  expect(rows.every((m) => m.reviewScore === undefined)).toBe(true);
+  expect(rows.every((m) => m.roomOpenedAt?.includes("UTC+8"))).toBe(true);
+  expect(
+    archiveBracket(approved, (id) => id)?.groups.flatMap((g) =>
+      g.rounds.flatMap((r) => r.matches),
+    ),
+  ).toHaveLength(33);
+  const published = publicHistoricalArchive(approved);
+  expect(published.matches).toHaveLength(33);
+  expect(published.matches.every((m) => !m.review && m.roomOpenedAt)).toBe(
+    true,
+  );
+  expect(published.sourceFacts).toBeUndefined();
+  expect(published.reviewTables).toBeUndefined();
+  expect(published.qualifiers).toBeUndefined();
+  expect(published.notes).toEqual([]);
+  expect(published.unresolvedPlayers).toEqual(archive.unresolvedPlayers);
+  expect(historicalArchiveSchema.safeParse(published).success).toBe(true);
+  expect(publicHistoricalArchive(archive).matches).toHaveLength(0);
+  expect(
+    archiveBracket(published, (id) => id)?.groups.filter(
+      (g) => g.layout === "grid",
+    ),
+  ).toHaveLength(4);
+});
 
 it("uses the saved S6 section editor only for its evidenced source pair", () => {
   expect(historicalRulebook(archive, rules)?.sections).toEqual(rules.sections);

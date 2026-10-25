@@ -15,19 +15,34 @@ export function archiveBracket(
     .filter(recordedArchiveMatch)
     .sort(
       (a, b) =>
-        (a.scheduledAt ? Date.parse(a.scheduledAt) : Infinity) -
-          (b.scheduledAt ? Date.parse(b.scheduledAt) : Infinity) ||
-        a.id.localeCompare(b.id),
+        (a.roomOpenedAt || a.review?.startedAt || a.scheduledAt
+          ? Date.parse(
+              (a.roomOpenedAt ?? a.review?.startedAt ?? a.scheduledAt)!,
+            )
+          : Infinity) -
+          (b.roomOpenedAt || b.review?.startedAt || b.scheduledAt
+            ? Date.parse(
+                (b.roomOpenedAt ?? b.review?.startedAt ?? b.scheduledAt)!,
+              )
+            : Infinity) || a.id.localeCompare(b.id),
     );
   if (!sorted.length) return null;
   const groupMatches = new Map<string, ResolvedMatch[]>();
   const rounds: { label: string; matches: ResolvedMatch[] }[] = [];
   const last = new Map<string, { id: string; column: number; at: number }[]>();
   for (const m of sorted) {
-    const g = groups.get(m.teamA);
+    const g =
+      archive.sourceUrl ===
+        "https://github.com/OCLR-dev/OCLR-website/issues/289" &&
+      /^瑞士輪第 \d+ 輪/.test(m.stage)
+        ? m.stage
+        : groups.get(m.teamA);
     const isGroup =
-      g && g === groups.get(m.teamB) && /^(?:group(?:\s|$)|GS$)/i.test(m.stage);
-    const at = m.scheduledAt ? Date.parse(m.scheduledAt) : null;
+      g &&
+      ((g === m.stage && /^瑞士輪第 \d+ 輪/.test(m.stage)) ||
+        (g === groups.get(m.teamB) && /^(?:group(?:\s|$)|GS$)/i.test(m.stage)));
+    const startedAt = m.roomOpenedAt ?? m.review?.startedAt ?? m.scheduledAt;
+    const at = startedAt ? Date.parse(startedAt) : null;
     const predecessors = [m.teamA, m.teamB].map((team) => {
       if (isGroup || at === null) return null;
       const earlier = (last.get(team) ?? []).filter((p) => p.at < at);

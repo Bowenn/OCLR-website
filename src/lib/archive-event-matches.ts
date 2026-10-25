@@ -25,12 +25,23 @@ export function archiveEventMatches(
       pool: pool?.name ?? "—",
       poolHref: pool ? href("mappools", pool.id) : undefined,
       time: m.scheduledAt ? formatDate(m.scheduledAt, timeZone, locale) : "—",
+      ...((m.roomOpenedAt ?? m.review?.startedAt)
+        ? {
+            roomOpenedAt: formatDate(
+              (m.roomOpenedAt ?? m.review?.startedAt)!,
+              timeZone,
+              locale,
+            ),
+          }
+        : {}),
       red: archive.teams.find((t) => t.id === m.teamA)!.name,
       blue: archive.teams.find((t) => t.id === m.teamB)!.name,
       redHref: href("teams", m.teamA),
       blueHref: href("teams", m.teamB),
       score: m.score,
-      ...(m.review ? { reviewScore: m.review.workingScore } : {}),
+      ...(m.review?.status === "pending"
+        ? { reviewScore: m.review.workingScore }
+        : {}),
       winner: archiveWinner(m),
       forfeit: m.forfeitWinner !== undefined,
       recorded: recordedArchiveMatch(m),

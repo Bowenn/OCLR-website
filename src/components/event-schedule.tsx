@@ -13,6 +13,7 @@ export function EventSchedule({
   heading = true,
   timeZone = "UTC+8",
   reviewMode = false,
+  initialStatus = "all",
   competition,
 }: {
   matches: EventMatch[];
@@ -22,6 +23,7 @@ export function EventSchedule({
   heading?: boolean;
   timeZone?: string;
   reviewMode?: boolean;
+  initialStatus?: "all" | "recorded" | "unconfirmed";
   competition?: ReactNode;
 }) {
   const tr = useAppTranslations();
@@ -30,7 +32,7 @@ export function EventSchedule({
     { id: "knockout", label: tr("Double elimination") },
   ];
   const [phase, setPhase] = useState(phaseOptions[0]?.id ?? "");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(initialStatus);
   const listed = matches.filter(
     (m) => status === "all" || m.recorded === (status === "recorded"),
   );
@@ -143,7 +145,7 @@ export function EventSchedule({
           <select
             aria-label={tr("Match status")}
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => setStatus(e.target.value as typeof status)}
           >
             <option value="all">{tr("All matches")}</option>
             <option value="recorded">{tr("Recorded results")}</option>
@@ -352,6 +354,11 @@ export function EventSchedule({
                         {m.label ?? `#${m.id}`}
                       </a>
                       <small>{m.time}</small>
+                      {m.roomOpenedAt && (
+                        <small>
+                          {tr("MP room opened")} · {m.roomOpenedAt}
+                        </small>
+                      )}
                       {m.status === "cancelled" && (
                         <small>{tr("Cancelled")}</small>
                       )}

@@ -33,6 +33,10 @@ import {
 import { compareTournamentSeasons } from "./tournament-order";
 import { assertRemoteSubject, frontendResource } from "./frontend-resource";
 import { HttpError } from "./http";
+import {
+  approveArchiveMatches,
+  publicHistoricalArchive,
+} from "./historical-archive";
 type Reader = Pick<ReturnType<typeof db>, "select">;
 export function storedEdition(row: typeof editionState.$inferSelect) {
   if (!row.configuration) return undefined;
@@ -66,7 +70,16 @@ export async function readTournament(
           : undefined,
       ),
     );
-  return row ? storedEdition(row) : undefined;
+  const saved = row ? storedEdition(row) : undefined;
+  return saved && publicOnly && saved.edition.archive
+    ? {
+        ...saved,
+        edition: {
+          ...saved.edition,
+          archive: publicHistoricalArchive(saved.edition.archive),
+        },
+      }
+    : saved;
 }
 export async function readTournaments(publicOnly = false) {
   if (!process.env.DATABASE_URL) return [];
@@ -82,7 +95,18 @@ export async function readTournaments(publicOnly = false) {
       ),
     )
     .orderBy(desc(editionState.configurationUpdatedAt), editionState.slug);
-  return rows.map((row) => storedEdition(row)!);
+  return rows.map((row) => {
+    const saved = storedEdition(row)!;
+    return publicOnly && saved.edition.archive
+      ? {
+          ...saved,
+          edition: {
+            ...saved.edition,
+            archive: publicHistoricalArchive(saved.edition.archive),
+          },
+        }
+      : saved;
+  });
 }
 
 const shape = editionSchema.shape;
@@ -110,6 +134,13 @@ const createSchema = z
   })
   .strict();
 const commandSchema = z.discriminatedUnion("action", [
+  z
+    .object({
+      ...version,
+      action: z.literal("approve-archive-matches"),
+      matchIds: z.array(z.string().min(1).max(80)).min(1).max(500),
+    })
+    .strict(),
   z
     .object({
       ...version,
@@ -382,6 +413,27 @@ export async function tournamentCommand(
     const e = current.edition;
     let next: Edition = e;
     let registrationPausedAt = state.registrationPausedAt;
+    if (c.action === "approve-archive-matches") {
+      if (!e.archive || e.status !== "completed" || e.registration)
+        throw new HttpError(
+          409,
+          "Select a completed historical archive without registration.",
+        );
+      try {
+        next = {
+          ...e,
+          archive: approveArchiveMatches(e.archive, c.matchIds, {
+            approvedOn: new Date().toISOString().slice(0, 10),
+            source: "Admin approval",
+          }),
+        };
+      } catch {
+        throw new HttpError(
+          409,
+          "Only pending saved match reviews with a score can be approved.",
+        );
+      }
+    }
     if (c.action === "archive") {
       if (e.published || e.status !== "completed" || e.registration)
         throw new HttpError(

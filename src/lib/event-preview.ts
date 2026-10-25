@@ -25,6 +25,7 @@ export type EventMatch = {
   pool: string;
   poolHref?: string;
   time: string;
+  roomOpenedAt?: string;
   red: string;
   blue: string;
   score: [number, number] | null;

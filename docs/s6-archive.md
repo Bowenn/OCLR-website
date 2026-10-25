@@ -15,6 +15,57 @@ surviving games, candidate scores, preliminary tables and unresolved bracket
 questions separately. The original workbook-only `results: []` is preserved;
 it is no longer a claim that no supplementary match evidence exists.
 
+## Approval of all 33 reconstructed matches — 2026-10-25
+
+The organizer reported the public schedule was empty, then explicitly instructed
+“核准這33場對局”. The 33 source records had been saved with pending reviews,
+which excluded them from public recorded schedules and match pages. This latest
+approval supersedes the proposal to display pending scores publicly.
+
+The approval control reviews the saved list of 33 existing working scores,
+including D–I 3:5 and C–F 2:6. The versioned, edition-scoped Admin command records
+an approval date/source and authoritative score without replacing the archive.
+All 348 source games, raw totals, missing HD2 scores/timestamps and replay
+evidence remain unchanged. No missing G–J match or final placements are created.
+Earlier pending/confirmed packages remain reproducible source snapshots.
+
+The compatibility correction requires matching recorded scores and approval
+evidence for approved source reviews. Pending reviews still cannot claim
+results or winners. Approved records flow through the ordinary schedule,
+results, winner and historical appearance-path rendering. MP room-open times
+are labeled separately from original planned times and supply actual chronology;
+appearance lines do not establish undocumented qualification rules. Per the
+organizer's further instruction, inspection records are a management-only
+appendix on the Admin archive screen. They are absent from public pages, public
+read resources and the tournament preview. Original source facts, raw reviews,
+qualifier scores and comparison tables remain saved in the private configuration.
+Public roster names and undated replacement information remain, with inspection
+headings/provenance strings omitted. Public match DTOs expose recorded totals and
+a separately labeled MP room-open timestamp, without the private review payload. Four Swiss rounds appear in the group-stage
+view without inventing group standings. The legacy results filter begins on
+recorded entries only.
+
+**Production approval has not yet run.** Deploy the compatible version first,
+then use the saved archive's **Approve reviewed matches** control and confirmation.
+This is an Admin approval of already reviewed source records, not direct import
+publication. The existing published edition stays public throughout; no unpublish,
+reimport, migration or editing of saved rules/summary is needed. No direct
+production API/DB write or operator deployment is performed by this session.
+
+Verification: check, full isolated-database tests (1,033 passed, one existing
+skipped), production build, i18n and production dependency audit (zero
+vulnerabilities) passed. Eight focused historical archive browser cases passed across desktop/mobile.
+They operate the actual Admin approval control, check all 33 recorded rows,
+D–I/C–F scores, unchanged rules and 348 games, anonymous access, six responsive
+widths, management-only appendix access, and absence of inspection content from
+tournament previews and public pages. After safely incorporating main’s #297
+update, the final build and 21 affected draft/i18n tests also passed. Full browser/remote suites remain for commit-specific CI.
+The isolated test database is stopped after verification.
+
+Synthetic local evidence, pending deployment and production approval:
+[desktop schedule](verification/issue-289/s6-approved-schedule-desktop.png) and
+[mobile schedule](verification/issue-289/s6-approved-schedule-mobile.png).
+
 ## Original rule hierarchy correction — 2026-10-25
 
 The organizer rejected the flattened 14-section import. The corrected

@@ -16,6 +16,16 @@ rules editor; see [the import checkpoint](s6-archive.md) for the confirmed versi
 and pending display deployment. The S6 archive's exact source pair enables the same saved sections in
 historical public/private views and saved reads.
 
+Completed historical editions can approve saved pending match scores from the
+archive screen with **Approve reviewed matches**. The review list and confirmation
+use the current configuration revision; server-side edition Admin authorization,
+transactional revision/audit writes and concurrent-save protection remain in
+force. Approval preserves the edition's publication state and every source game,
+raw score and missing value. It does not create unrecorded matches or final ranks.
+Historical source-inspection data is stored in an Admin-only appendix on the
+archive screen. Public pages, public saved-read resources and tournament previews
+omit the appendix; recorded match totals and MP room-open times remain public. Existing archive replacement still requires an unpublished edition.
+
 Publishing never enables registration. Rules, eligibility and milestones are optional, independent content. Registration requires publication, privacy configuration, explicit enablement and a valid unlocked window. Advance enabling is supported; submissions are accepted from opening (inclusive) until closing (exclusive). Only configured Rules/Eligibility are acknowledged. Missing rules use a null version and absent eligibility uses a null acknowledgment; no synthetic consent is generated. Existing draft/team locks still protect competition setup. Changed rules cannot reuse a version for different text. Configuration snapshots preserve earlier rules, questions and answers without requiring a retention-approval checkbox or coupling question edits to rules versions.
 
 Registration dates, withdrawal deadlines, milestones and fixture times use separate Date and 24-hour `HH:mm` fields with the configured IANA zone immediately after the time (and a date-specific offset when available). Partial edits and daylight-saving gaps block saving; duplicated hours require an explicit UTC offset. Optional dates can be cleared to TBA. Unchanged timestamps retain their original seconds and offset; editing the date/time sets seconds to zero. Changing a fixture’s time zone keeps its scheduled instant and updates the local display. General settings and Fixtures share a searchable city/IANA selector; UTC is the default, valid saved aliases are retained, and supported zones have a bundled fallback list.

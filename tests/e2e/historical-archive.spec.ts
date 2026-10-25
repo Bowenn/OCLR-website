@@ -56,6 +56,38 @@ test.describe("historical archive browser workflow", () => {
         rules,
       },
     ]);
+    await page.goto(`/admin/tournaments/${slug}/archive`);
+    await page
+      .getByRole("button", { name: "Approve reviewed matches", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: "Approve reviewed matches",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    const approved = await (
+      await context.request.get(`/api/admin/tournaments/${slug}`)
+    ).json();
+    expect(approved.edition.published).toBe(true);
+    expect(approved.edition.rules).toEqual(rules);
+    expect(
+      approved.edition.archive.matches.filter(
+        (m: { score: unknown }) => m.score,
+      ),
+    ).toHaveLength(33);
+    expect(
+      approved.edition.archive.matches.flatMap(
+        (m: { review: { games: unknown[] } }) => m.review.games,
+      ),
+    ).toEqual(archive.matches.flatMap((m) => m.review!.games));
+    await page.locator("[data-archive-appendix] > summary").click();
+    await expect(page.locator("[data-archive-appendix]")).toContainText("348");
     await page.goto("/tournaments");
     const card = page.locator(".edition-card").filter({
       has: page.locator(`a[href="/tournaments/${slug}"]`),
@@ -83,6 +115,55 @@ test.describe("historical archive browser workflow", () => {
       "【已废止的原提案；原规则文档中已划除】",
     );
     await captureResponsiveLayout(page, info, "s6-configured-rules");
+    await expect(
+      page.getByRole("heading", { name: "Review source records" }),
+    ).toHaveCount(0);
+    await page.goto(`/tournaments/${slug}/schedule`);
+    await expect(
+      page.getByText("No recorded matches.", { exact: true }),
+    ).toHaveCount(0);
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(33);
+    await expect(
+      page.locator('.event-matches tr[data-recorded="true"]'),
+    ).toHaveCount(33);
+    await expect(page.locator("#row-mp-84398168")).toContainText("3 : 5");
+    await expect(page.locator("#row-mp-85503945")).toContainText("2 : 6");
+    await expect(page.locator("#row-mp-85503945")).toContainText(
+      "MP room opened",
+    );
+    await expect(page.locator("#row-mp-85503945")).not.toContainText(
+      "Unconfirmed records",
+    );
+    await page
+      .getByRole("heading", { name: "Match information", exact: true })
+      .scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: info.outputPath("s6-public-schedule-viewport.png"),
+      animations: "disabled",
+    });
+    await captureResponsiveLayout(page, info, "s6-public-schedule");
+    await page.goto(`/tournaments/${slug}/results`);
+    await expect(page).toHaveURL(new RegExp(`/schedule\\?status=recorded$`));
+    await expect(page.locator(".event-matches tbody tr")).toHaveCount(33);
+    await page.goto(`/tournaments/${slug}/matches/mp-85503945`);
+    await expect(page.locator(".archive-score-team strong")).toHaveText([
+      "2",
+      "6",
+    ]);
+    await expect(
+      page.getByRole("heading", { name: "Review source records" }),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.archive-score-team[data-winner="true"]'),
+    ).toHaveCount(1);
+    await expect(
+      page.getByText("All import fields", { exact: true }),
+    ).toHaveCount(0);
+    const guest = await context.browser()!.newContext();
+    const guestPage = await guest.newPage();
+    await guestPage.goto(`http://127.0.0.1:3100/tournaments/${slug}/schedule`);
+    await expect(guestPage.locator(".event-matches tbody tr")).toHaveCount(33);
+    await guest.close();
     await page.goto(`/admin/tournaments/${slug}/settings`);
     await expect(
       page
@@ -148,14 +229,21 @@ test.describe("historical archive browser workflow", () => {
     await expect(
       page.getByText("Unconfirmed records · 3 : 5", { exact: true }),
     ).toBeVisible();
-    await expect(page.locator(".archive-match")).toContainText("原始整房 3:6");
+    await expect(
+      page.getByRole("heading", { name: "Review source records" }),
+    ).toHaveCount(0);
     await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=match&id=mp-85503945`,
     );
     await expect(
       page.getByText("Unconfirmed records · 2 : 5", { exact: true }),
     ).toBeVisible();
-    await expect(page.locator(".archive-match")).toContainText(
+    await expect(
+      page.getByRole("heading", { name: "Review source records" }),
+    ).toHaveCount(0);
+    await page.goto(`/admin/tournaments/${slug}/archive`);
+    await page.locator("[data-archive-appendix] > summary").click();
+    await expect(page.locator("[data-archive-appendix]")).toContainText(
       "實際可能為 2:6，待確認",
     );
     await captureResponsiveLayout(page, info, "s6-pending-results");
@@ -228,10 +316,9 @@ test.describe("historical archive browser workflow", () => {
     await expect(
       page.getByText("Private archive preview", { exact: true }),
     ).toBeVisible();
-    await page.getByText("Synthetic raw qualifier", { exact: true }).click();
     await expect(
-      page.getByRole("cell", { name: "1234567", exact: true }),
-    ).toBeVisible();
+      page.getByText("Synthetic raw qualifier", { exact: true }),
+    ).toHaveCount(0);
     await page.goto(`/admin/tournaments/${slug}/archive/preview?section=teams`);
     await expect(
       page.getByText("Synthetic unknown captain", { exact: true }),
@@ -258,7 +345,16 @@ test.describe("historical archive browser workflow", () => {
         "Synthetic post-match TB hypothesis, awaiting confirmation.",
         { exact: true },
       ),
+    ).toHaveCount(0);
+    await page.goto(`/admin/tournaments/${slug}/archive`);
+    await page.locator("[data-archive-appendix] > summary").click();
+    await page.getByText("Synthetic raw qualifier", { exact: true }).click();
+    await expect(
+      page.getByRole("cell", { name: "1234567", exact: true }),
     ).toBeVisible();
+    await expect(page.locator("[data-archive-appendix]")).toContainText(
+      "Synthetic post-match TB hypothesis, awaiting confirmation.",
+    );
     await page.goto(
       `/admin/tournaments/${slug}/archive/preview?section=mappools`,
     );

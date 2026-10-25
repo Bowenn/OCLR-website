@@ -5,9 +5,11 @@ import type { HistoricalArchive } from "@/lib/historical-archive";
 export async function ArchiveRosterSources({
   archive: a,
   teamId,
+  showSources = false,
 }: {
   archive: HistoricalArchive;
   teamId?: string;
+  showSources?: boolean;
 }) {
   const tr = await getAppTranslations();
   const unresolved = (a.unresolvedPlayers ?? []).filter(
@@ -20,7 +22,7 @@ export async function ArchiveRosterSources({
   const teamName = (id: string) => a.teams.find((t) => t.id === id)!.name;
   return (
     <section className="stack">
-      <h2>{tr("Review source records")}</h2>
+      {showSources && <h2>{tr("Review source records")}</h2>}
       <ul>
         {unresolved.map((p) => (
           <li key={p.id}>
@@ -33,7 +35,8 @@ export async function ArchiveRosterSources({
                   (p.tier === null ? tr("Not recorded") : `Tier ${p.tier}`))}
             <div className="muted small">
               {tr("osu! ID ")}
-              {tr("Not recorded")} · {p.source}
+              {tr("Not recorded")}
+              {showSources ? ` · ${p.source}` : ""}
             </div>
           </li>
         ))}
@@ -48,11 +51,12 @@ export async function ArchiveRosterSources({
               {r.people.map((p, i) => (
                 <li key={i}>
                   {p.username} · {tr("osu! ID ")}
-                  {p.osuId ?? tr("Not recorded")} · {p.source}
+                  {p.osuId ?? tr("Not recorded")}
+                  {showSources ? ` · ${p.source}` : ""}
                 </li>
               ))}
             </ul>
-            <p className="muted small">{r.source}</p>
+            {showSources && <p className="muted small">{r.source}</p>}
           </li>
         ))}
       </ul>
@@ -74,7 +78,7 @@ export async function ArchiveSourceRecords({
     return null;
   return (
     <section className="stack">
-      <h2>{tr("Review source records")}</h2>
+      <h2>{tr("Historical source appendix")}</h2>
       {(a.sourceFacts ?? []).map((f, i) => (
         <details key={i}>
           <summary>{f.label}</summary>
