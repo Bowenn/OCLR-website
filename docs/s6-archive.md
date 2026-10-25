@@ -15,6 +15,23 @@ surviving games, candidate scores, preliminary tables and unresolved bracket
 questions separately. The original workbook-only `results: []` is preserved;
 it is no longer a claim that no supplementary match evidence exists.
 
+## Production approval completed — 2026-10-25
+
+After the organizer deployed `0f924afd6afd2355561fb0082f9dc5410c17873e`,
+computer use verified that exact release in the browser and used the native
+Admin approval control plus its confirmation to approve all 33 saved matches.
+Reload/readback confirmed **revision 9**, published status, 33 approved results
+and zero pending matches. D–I is 3:5; C–F is 2:6. All 348 raw games and the
+four-section configured rules compare equal to the saved import snapshots
+(after normalizing JSON object-key ordering).
+
+The public schedule displays 33 recorded rows with MP room-open timestamps.
+The public overview shows four rule chapters and 33 results. Source inspection
+and the appendix are absent from both public pages and the private tournament
+preview; the appendix remains available on the Admin archive page. Missing
+G–J evidence and final placements remain unresolved. No reimport, unpublication,
+direct production API/DB write or deployment was performed by the agent.
+
 ## Approval of all 33 reconstructed matches — 2026-10-25
 
 The organizer reported the public schedule was empty, then explicitly instructed
@@ -45,7 +62,7 @@ a separately labeled MP room-open timestamp, without the private review payload.
 view without inventing group standings. The legacy results filter begins on
 recorded entries only.
 
-**Production approval has not yet run.** Deploy the compatible version first,
+**Pre-deployment checkpoint (superseded by the completion above):** deploy the compatible version first,
 then use the saved archive's **Approve reviewed matches** control and confirmation.
 This is an Admin approval of already reviewed source records, not direct import
 publication. The existing published edition stays public throughout; no unpublish,
