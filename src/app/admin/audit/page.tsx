@@ -60,11 +60,13 @@ export default async function Audit({
             ...auditModules.map((module) => ({
               value: module,
               label:
-                module === "site"
-                  ? tr("Site settings")
-                  : module === "draft"
-                    ? "draft_module"
-                    : module.charAt(0).toUpperCase() + module.slice(1),
+                module === "developer_api"
+                  ? tr("Developer API access")
+                  : module === "site"
+                    ? tr("Site settings")
+                    : module === "draft"
+                      ? "draft_module"
+                      : module.charAt(0).toUpperCase() + module.slice(1),
             })),
           ]}
         />

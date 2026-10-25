@@ -6,6 +6,8 @@ export async function GET(
   { params }: { params: Promise<{ osuId: string }> },
 ) {
   try {
+    if (request.headers.has("authorization"))
+      throw new HttpError(403, "Use a browser session for this operation.");
     const query = new URL(request.url).searchParams;
     if (
       [...query.keys()].some((key) => !["mode", "edition"].includes(key)) ||

@@ -29,6 +29,11 @@ export function sourceMessages() {
         )
       )
         value = node.arguments?.[1];
+      if (
+        ts.isNewExpression(node) &&
+        node.expression.getText(file) === "DeveloperApiError"
+      )
+        value = node.arguments?.[2];
       if (value && ts.isStringLiteral(value)) messages.add(value.text);
       ts.forEachChild(node, walk);
     };

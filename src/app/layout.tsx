@@ -2,6 +2,7 @@ import { getPublicEditions } from "@/lib/content";
 import { getAppTranslations } from "@/i18n/server";
 import type { Metadata } from "next";
 import { isStaff } from "@/lib/auth/staff";
+import { hasDeveloperAccess } from "@/lib/developer-api";
 import { currentUser } from "@/lib/auth/user";
 import { SiteFrame } from "@/components/site-frame";
 import { Header } from "@/components/header";
@@ -91,9 +92,11 @@ export default async function RootLayout({
   let user: Awaited<ReturnType<typeof currentUser>> = null;
   let authUnavailable = false;
   let staff = false;
+  let developer = false;
   try {
     user = await currentUser();
     staff = user ? await isStaff(user) : false;
+    developer = user ? await hasDeveloperAccess(user.osuId) : false;
   } catch {
     authUnavailable = true;
   }
@@ -136,7 +139,12 @@ export default async function RootLayout({
                 appearancePreference={appearancePreference}
                 user={
                   user
-                    ? { osuId: user.osuId, username: user.username, staff }
+                    ? {
+                        osuId: user.osuId,
+                        username: user.username,
+                        staff,
+                        developer,
+                      }
                     : null
                 }
               />

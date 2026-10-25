@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { appUrl } from "@/lib/http";
 import { localeCookie, readLocale } from "@/i18n/config";
 export function proxy(request: NextRequest) {
+  // Non-v1 endpoints keep their session/anonymous transport. In particular a
+  // token cannot reach a legacy public GET that refreshes provider caches.
+  if (
+    request.headers.has("authorization") &&
+    !request.nextUrl.pathname.startsWith("/api/v1/")
+  )
+    return NextResponse.json(
+      { error: "Use a browser session for this operation." },
+      { status: 403, headers: { "Cache-Control": "no-store" } },
+    );
   let canonical: URL | null = null;
   try {
     canonical = process.env.APP_URL ? new URL(appUrl()) : null;

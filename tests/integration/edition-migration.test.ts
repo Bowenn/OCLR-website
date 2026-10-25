@@ -231,6 +231,82 @@ async function isolated(
     await admin.end();
   }
 }
+describe.skipIf(!base)("Developer API upgrade (#268)", () => {
+  it("preserves browser sessions and grants, enforces credential constraints and retains audit after logout", async () =>
+    isolated(async (pool) => {
+      const folder = mkdtempSync(
+        join(tmpdir(), "oclr-developer-api-upgrade-test-"),
+      );
+      try {
+        cpSync("drizzle", folder, { recursive: true });
+        const file = join(folder, "meta/_journal.json");
+        const journal = JSON.parse(readFileSync(file, "utf8"));
+        journal.entries = journal.entries.filter(
+          (entry: { idx: number }) => entry.idx < 37,
+        );
+        writeFileSync(file, JSON.stringify(journal));
+        await migrate(drizzle(pool), { migrationsFolder: folder });
+        await pool.query(
+          "INSERT INTO users (osu_id,username) VALUES (268001,'Synthetic Developer')",
+        );
+        await pool.query(
+          "INSERT INTO sessions (token_hash,user_id,expires_at) VALUES ($1,268001,now()+interval '7 days')",
+          ["a".repeat(64)],
+        );
+        await pool.query(
+          "INSERT INTO staff_roles (user_id,role,granted_by) VALUES (268001,'developer',268001)",
+        );
+        const before = await Promise.all(
+          ["users", "sessions", "staff_roles"].map(
+            async (table) => (await pool.query(`SELECT * FROM ${table}`)).rows,
+          ),
+        );
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
+        expect(
+          await Promise.all(
+            ["users", "sessions", "staff_roles"].map(
+              async (table) =>
+                (await pool.query(`SELECT * FROM ${table}`)).rows,
+            ),
+          ),
+        ).toEqual(before);
+        const insert =
+          "INSERT INTO developer_api_tokens (token_hash,session_hash,user_id,origin,scopes,expires_at) VALUES ($1,$2,268001,'http://localhost:3000',$3,now()+interval '30 minutes') RETURNING id";
+        await expect(
+          pool.query(insert, ["invalid", "a".repeat(64), '["identity:read"]']),
+        ).rejects.toThrow();
+        await expect(
+          pool.query(insert, [
+            "b".repeat(64),
+            "a".repeat(64),
+            '["manage_staff"]',
+          ]),
+        ).rejects.toThrow();
+        const credential = (
+          await pool.query(insert, [
+            "b".repeat(64),
+            "a".repeat(64),
+            '["identity:read"]',
+          ])
+        ).rows[0];
+        await pool.query(
+          "INSERT INTO developer_api_events (actor_id,access_id,action,detail) VALUES (268001,$1,'create','{}')",
+          [credential.id],
+        );
+        await pool.query("DELETE FROM sessions");
+        expect(
+          (await pool.query("SELECT * FROM developer_api_tokens")).rows,
+        ).toEqual([]);
+        expect(
+          (await pool.query("SELECT * FROM developer_api_events")).rows,
+        ).toHaveLength(1);
+      } finally {
+        rmSync(folder, { recursive: true, force: true });
+      }
+    }));
+});
+
 describe.skipIf(!base)("Swiss appearance constraint upgrade", () => {
   it("preserves existing defaults and audit history while accepting the new design", async () =>
     isolated(async (pool) => {

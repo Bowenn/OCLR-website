@@ -47,6 +47,11 @@ Client interactions call the corresponding `/api/...` route, which reuses the sa
 
 ## Checks and hosting
 
+Developer API authentication and local cross-origin reads are documented in
+[Developer API access](developer-api.md). Stage 1 (#268) supplies token management
+and `/api/v1/me`; it does not yet replace local frontend database access. Remote
+frontend mode and complete page coverage are tracked in #270–#272.
+
 `npm run check` runs ESLint, generated route types and TypeScript. `npm run build` creates the production build; `npm start` serves it on a conventional Node.js host. CI runs the same checks. No Vercel services are required.
 
 ## Design and content

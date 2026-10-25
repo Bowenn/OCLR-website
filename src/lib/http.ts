@@ -27,6 +27,8 @@ export function appUrl() {
   return url.origin;
 }
 export function requireSameOrigin(request: Request) {
+  if (request.headers.has("authorization"))
+    throw new HttpError(403, "Use a browser session for this operation.");
   if (request.headers.get("origin") !== appUrl())
     throw new HttpError(
       403,

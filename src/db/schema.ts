@@ -120,6 +120,72 @@ export const oauthStates = pgTable(
   (table) => [index("oauth_states_expiry_idx").on(table.expiresAt)],
 );
 
+// This credential family is deliberately distinct from browser sessions.
+export const developerApiTokens = pgTable(
+  "developer_api_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tokenHash: text("token_hash").notNull().unique(),
+    sessionHash: text("session_hash")
+      .notNull()
+      .references(() => sessions.tokenHash, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId, { onDelete: "cascade" }),
+    origin: text("origin").notNull(),
+    scopes: jsonb("scopes")
+      .$type<import("@/lib/developer-api-model").DeveloperApiScope[]>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("developer_api_tokens_user_idx").on(t.userId),
+    index("developer_api_tokens_session_idx").on(t.sessionHash),
+    check("developer_api_tokens_hash", sql`${t.tokenHash} ~ '^[0-9a-f]{64}$'`),
+    check(
+      "developer_api_tokens_expiry",
+      sql`${t.expiresAt} > ${t.createdAt} AND ${t.expiresAt} <= ${t.createdAt} + interval '1 hour'`,
+    ),
+    check(
+      "developer_api_tokens_scopes",
+      sql`jsonb_typeof(${t.scopes}) = 'array' AND jsonb_array_length(${t.scopes}) BETWEEN 1 AND 4 AND ${t.scopes} <@ '["identity:read","tournaments:read","tournaments:private:read","profiles:read"]'::jsonb`,
+    ),
+  ],
+);
+// Retain authorization history after logout cascades the credential itself.
+export const developerApiEvents = pgTable(
+  "developer_api_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: bigint("actor_id", { mode: "number" }).references(
+      () => users.osuId,
+      { onDelete: "set null" },
+    ),
+    accessId: uuid("access_id").notNull(),
+    action: text("action").$type<"create" | "revoke">().notNull(),
+    detail: jsonb("detail")
+      .$type<{
+        before:
+          import("@/lib/developer-api-model").DeveloperTokenMetadata | null;
+        after: import("@/lib/developer-api-model").DeveloperTokenMetadata;
+      }>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      "developer_api_events_action",
+      sql`${t.action} IN ('create', 'revoke')`,
+    ),
+  ],
+);
+
 export const registrationStatus = pgEnum("registration_status", [
   "pending",
   "deferred",

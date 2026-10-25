@@ -15,6 +15,7 @@ export const auditModules = [
   "staff",
   "fixtures",
   "results",
+  "developer_api",
 ] as const;
 const filtersSchema = z
   .object({
@@ -155,7 +156,10 @@ const projection = sql`
   SELECT 'site', id, NULL::text, actor_id, 'site_appearance_changed', 'site', 'site settings', '1',
     jsonb_build_object('defaultAppearance', before_appearance, 'revision', revision - 1),
     jsonb_build_object('defaultAppearance', after_appearance, 'revision', revision),
-    '{}'::jsonb, created_at FROM site_setting_events`;
+    '{}'::jsonb, created_at FROM site_setting_events
+  UNION ALL
+  SELECT 'developer_api', id, NULL::text, actor_id, 'developer_api_' || action, 'developer_api', 'developer API access', access_id::text,
+    detail->'before', detail->'after', '{}'::jsonb, created_at FROM developer_api_events`;
 type AuditRow = {
   source: string;
   id: string;

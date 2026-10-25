@@ -260,6 +260,13 @@
       "when": 1792860358008,
       "tag": "0036_s10_pool_names",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792890390250,
+      "tag": "0037_developer_api_access",
+      "breakpoints": true
     }
   ]
 }

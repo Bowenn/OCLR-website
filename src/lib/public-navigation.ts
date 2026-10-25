@@ -16,7 +16,8 @@ export function publicTournamentSection(path: string, base: string) {
 
 /** Public route context is independent of the shared visual theme. */
 export function isPublicPage(path: string, presenter = false) {
-  if (/^\/(admin|dashboard|login|auth|api)(?:\/|$)/.test(path)) return false;
+  if (/^\/(admin|dashboard|developer|login|auth|api)(?:\/|$)/.test(path))
+    return false;
   if (
     /^\/tournaments\/[^/]+\/(team(?:\/|$)|draft\/(captain|overlay)(?:\/|$))/.test(
       path,

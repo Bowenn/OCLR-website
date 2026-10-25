@@ -11,7 +11,12 @@ import { ThemeControl } from "./theme-control";
 import type { Theme, Appearance } from "@/lib/preferences";
 import { AppearanceControl } from "./appearance-control";
 import { LanguageControl } from "./language-control";
-type Account = { osuId: number; username: string; staff?: boolean };
+type Account = {
+  osuId: number;
+  username: string;
+  staff?: boolean;
+  developer?: boolean;
+};
 function AccountControl({
   user,
   path,
@@ -118,6 +123,7 @@ function AccountControl({
           path.startsWith("/dashboard/") ||
           path === "/admin" ||
           path.startsWith("/admin/") ||
+          path === "/developer" ||
           undefined
         }
         onClick={() => {
@@ -159,6 +165,7 @@ function AccountControl({
           {[
             ["/dashboard", "Player dashboard"],
             ["/admin", "Staff dashboard"],
+            ...(user.developer ? [["/developer", "Developer API access"]] : []),
           ].map(([href, label]) => (
             <Link
               key={href}

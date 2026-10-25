@@ -80,6 +80,8 @@ export default defineConfig({
           OSU_CLIENT_ID: "123",
           OSU_CLIENT_SECRET: "synthetic-browser-provider-secret",
           APP_URL: "http://127.0.0.1:3100",
+          OCLR_DEVELOPER_ORIGINS:
+            "http://localhost:3000,http://127.0.0.1:3000,http://127.0.0.1:31468",
           OCLR_BRACKETS_FILE: bracketsPath,
           OCLR_ANNOUNCEMENTS_FILE: announcementsPath,
           PRIVACY_CONTACT_OSU_ID: "60001",
