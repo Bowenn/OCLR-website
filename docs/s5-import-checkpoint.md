@@ -49,3 +49,27 @@
 主辦者提供1920×1080原始PNG，已原樣保存於 `public/archive/s5/key-visual.png`，SHA-256與附件一致。沿用S6/S7固定素材機制，加入S5來源圖映射、後台主視覺／標誌選單與橫向縮圖識別；正式站已保存的S5來源可在部署後自動取得主視覺及列表圖片。沒有重新繪圖、裁切或修改賽果。
 
 驗證：相關2個單元測試檔21 tests通過；npm run check（lint/typecheck）通過；npm audit --omit=dev為0 vulnerabilities；生成51份讀取契約並更新對應素材白名單。全量npm test出現update-script.test.ts的9項失敗，未完成全套；build長時間停留optimized build階段，本次中止，未宣稱成功。未跑需要隔離環境的desktop/mobile E2E。這些限制需CI／後續完整驗證解決，未聲稱正式部署或站上已顯示圖片。
+
+## 2026-10-25 — S5 原文規則補件（後台已保存，公開讀取待部署）
+
+- 主辦者提供的 [OCLR β 规则表](https://docs.qq.com/doc/DRU92Zm1JbGFFSEdq)
+  已透過瀏覽器讀取全文，按原有順序保存為「重点规则:」「BP流程」「时限」三段，
+  保留子標題、星號項目、用字及原文第 7–9 點同段的編號。未將 S6 的規則補入。
+- 透過 computer use 在 `/admin/tournaments/s5/settings?section=rules`
+  保存新版本「OCLR β 规则表（原文分段）」，重新載入後三段標題及內容逐欄完全一致。
+  [原文擷取](imports/s5-rulebook.txt)與[已保存段落快照](imports/s5-rulebook.json)
+  的非空白行比對完全一致。
+- 原文確認 Score v2；小組賽 11/21–12/13、4 輪、12 進 8、BO9 1Ban；
+  淘汰賽 12/19–12/27、前四勝者組／後四敗者組、BO11 2Ban；
+  決賽 1/1–1/3、BO13 2Ban。保留原文「赛制：小组赛」字樣，不推寫未載明的同分規則。
+- 公開歷史頁的原生規則讀取先前僅支援 S6，實際檢查 S5 仍顯示「未记录」。
+  本次補上 S5 MainSheet＋QQ 規則 URL 的精確來源配對，沿用目前保存的原生規則版本；
+  離線快照不作為自動覆寫資料。需部署這項讀取修正後公開頁才會顯示。
+  本次只保存規則設定，沒有重新匯入歸檔、取消公開或更動已核准比分／名次。
+- 驗證：`npm ci`、`npm run check`、`npm run build`、`npm audit --omit=dev`
+  （0 漏洞）與 `git diff --check` 通過。正常本機權限下完整測試得到
+  655 passed／1 failed／382 skipped；唯一失敗為前次 S5 主視覺未同步的
+  OpenAPI 文件，已重新生成並針對讀取 API／規則／歸檔／規則導覽重跑，
+  4 個檔案 34 tests 全通過。修正後未再次執行完整套件；未配置隔離
+  `TEST_DATABASE_URL`，未跑資料庫整合及桌面／手機 E2E。
+  沙箱內初次完整測試／建置停滯後已中止，以上完整結果來自正常本機權限重試。

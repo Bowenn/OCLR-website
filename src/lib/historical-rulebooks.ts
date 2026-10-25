@@ -45,6 +45,22 @@ export function historicalRulebook(
     sections: HistoricalRulebook["sections"];
   } | null,
 ): HistoricalRulebook | null {
+  // S5 uses the same versioned editor, bound to its evidenced source pair.
+  if (
+    configured &&
+    archive.sourceUrl ===
+      "https://docs.google.com/spreadsheets/d/100CrQhmcX3lQ_7yn4xcP3cC316A7t35wK6kGfSW2tyM/edit" &&
+    archive.links.some(
+      ({ url }) => url === "https://docs.qq.com/doc/DRU92Zm1JbGFFSEdq",
+    )
+  ) {
+    return {
+      title: "OCLR β 规则表",
+      version: configured.version,
+      documentUrl: "https://docs.qq.com/doc/DRU92Zm1JbGFFSEdq",
+      sections: configured.sections,
+    };
+  }
   // S6 is maintained through the edition's native, versioned section editor.
   // Require its evidenced source pair; do not borrow generic/live rules elsewhere.
   if (
@@ -82,6 +98,11 @@ export function historicalRulebook(
 
 /** Identify the approved source pair independently of editable edition slugs. */
 export function historicalRulebookSeason(rules: HistoricalRulebook) {
+  if (
+    rules.title === "OCLR β 规则表" &&
+    rules.documentUrl === "https://docs.qq.com/doc/DRU92Zm1JbGFFSEdq"
+  )
+    return "5";
   if (
     rules.title === "OCLR S6 规则表" &&
     rules.documentUrl === "https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw"

@@ -16,6 +16,15 @@ rules editor; see [the import checkpoint](s6-archive.md) for the confirmed versi
 and pending display deployment. The S6 archive's exact source pair enables the same saved sections in
 historical public/private views and saved reads.
 
+S5 likewise uses its native versioned editor, bound to the exact S5 MainSheet and
+QQ rulebook source URLs. The organizer-provided `OCLR β 规则表` is saved in its
+original order as `重点规则:`, `BP流程`, and `时限`; source subheadings, wording,
+bullets and numbering remain literal. The source transcript is in
+[`imports/s5-rulebook.txt`](imports/s5-rulebook.txt), with the saved section
+snapshot in [`imports/s5-rulebook.json`](imports/s5-rulebook.json). Public reads
+use the edition's current saved version, not that offline snapshot. Deployment
+of the S5 source-pair reader is required for the historical page to display it.
+
 Completed historical editions can approve saved pending match scores from the
 archive screen with **Approve reviewed matches**. The review list and confirmation
 use the current configuration revision; server-side edition Admin authorization,
