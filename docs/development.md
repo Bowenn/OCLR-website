@@ -85,3 +85,30 @@ For the stage #270 core-page remote frontend mode, see
 backend origin and an in-memory Developer connection or explicit anonymous mode;
 it needs no local database, migration, seed or OAuth secret. The coverage table
 identifies remaining #271–#272 work. Production entry points reject this mode.
+
+## CI browser isolation and execution time
+
+CI builds the production app once after lint/types and unit/integration checks,
+then restores that exact build into four Playwright shard jobs and a separate
+remote-mode browser job. Each job migrates its own PostgreSQL service; browser
+workers remain set to one because the fixtures truncate shared tables. Do not
+increase workers against a shared database. Playwright shards whole test files
+(`fullyParallel: false`), preserving file hooks and sequential test behavior.
+
+Every regular browser project, including Firefox header coverage, remains in
+the four shards. Remote-mode checks run independently so ordinary E2E failures
+do not prevent that coverage. Per-shard failure traces/screenshots retain unique
+artifact names. The aggregate `check` job requires verification, every shard and
+the remote job to succeed; it fails if a dependency fails or is skipped. New
+commits cancel superseded runs for the same branch or PR. Runner availability
+and the slowest test file still affect elapsed time; compare completed CI runs
+before claiming an actual speedup.
+
+To reproduce a shard locally after building and migrating an isolated test DB:
+
+```sh
+DATABASE_URL="$TEST_DATABASE_URL" npm run test:e2e -- --shard=1/4
+```
+
+Run shards sequentially locally, or give each concurrent run a separate database,
+server port and storage paths. The default full local command is unchanged.
