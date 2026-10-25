@@ -47,6 +47,7 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
+      - run: npm run test:e2e:remote
       - run: npm audit --omit=dev
       - uses: actions/upload-artifact@v4
         if: always()

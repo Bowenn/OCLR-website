@@ -5,6 +5,7 @@ set +x
 set -Eeuo pipefail
 
 fail() { printf '%s\n' "$1" >&2; exit 1; }
+[[ ${OCLR_DATA_SOURCE-database} == database ]] || fail "Production commands require the database data source; remote development is disabled."
 usage='Usage: bash scripts/production.sh setup|prepare --apply|--dry-run | start [--dry-run]'
 action=${1-}
 option=${2-}
