@@ -529,77 +529,14 @@ html[data-appearance="cute-pastel"] .public-tournament .information-layout {
   display: block;
 }
 
-/* One index accompanies the complete current-edition page from the banner onward. */
-html
-  .public-tournament
-  .information-page
-  .rules-handbook.rules-handbook-overview {
-  grid-template-columns: minmax(0, 1fr) 13rem;
-}
-.rules-handbook-overview > .rules-reading {
-  grid-column: 1;
-  grid-row: 1;
-}
-.rules-handbook-overview > .rules-desktop-contents {
-  grid-column: 2;
-  grid-row: 1;
-  top: calc(var(--site-header-height, 88px) + 1rem);
-}
-.rules-handbook-overview .information-overview-details,
-.rules-handbook-overview .rules-overview-body {
+/* The overview spans the page; the left index belongs only to the rules below. */
+.information-overview-details {
   margin-top: 2rem;
 }
-@media (min-width: 600px) and (max-width: 760px) {
-  html
-    .public-tournament
-    .information-page
-    .rules-handbook.rules-handbook-overview {
-    grid-template-columns: minmax(0, 1fr) 10rem;
-    gap: 1rem;
-  }
-  .rules-handbook-overview > .rules-desktop-contents {
-    display: block;
-    top: 160px;
-    max-height: calc(100svh - 176px);
-    padding: 0.75rem;
-  }
-  .rules-handbook-overview .rules-mobile-contents {
-    display: none;
-  }
-}
-@media (max-width: 599px) {
-  html
-    .public-tournament
-    .information-page
-    .rules-handbook.rules-handbook-overview {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .rules-handbook-overview > .rules-desktop-contents {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .rules-handbook-overview .stage-scroll {
-    --wheel-row: 112px;
-  }
-  .rules-handbook-overview .stage-scroll-face {
-    display: grid;
-    grid-template-columns: 24px minmax(0, 1fr);
-    gap: 0 0.6rem;
-    padding: 0.3rem 1rem;
-    align-content: center;
-  }
-  .rules-handbook-overview .stage-scroll-marker {
-    align-self: start;
-    padding-top: 0.25rem;
-  }
-  .rules-handbook-overview .stage-scroll-title {
-    gap: 0.3rem 0.6rem;
-  }
-  .rules-handbook-overview .stage-scroll-action {
-    grid-column: 2;
-    justify-self: start;
-    padding: 0.3rem 0;
-  }
+.public-tournament .information-overview-details > .information-document {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
