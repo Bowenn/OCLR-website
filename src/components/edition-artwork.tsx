@@ -13,6 +13,7 @@ export function EditionArtwork({
   const image =
     logo === undefined && slug === "s11" ? "/oclr-s11-square-logo.webp" : logo;
   const landscape =
+    image === "/archive/s6/key-visual.jpg" ||
     image === "/archive/s9/thumbnail.png" ||
     image === "/archive/s8/thumbnail.jpg" ||
     image === "/archive/s7/key-visual.jpg";

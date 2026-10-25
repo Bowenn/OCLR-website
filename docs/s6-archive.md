@@ -15,6 +15,48 @@ surviving games, candidate scores, preliminary tables and unresolved bracket
 questions separately. The original workbook-only `results: []` is preserved;
 it is no longer a claim that no supplementary match evidence exists.
 
+## Consistent directory copy, artwork and sectioned rules — 2026-10-25
+
+The organizer requested the same summary format as S7 and supplied the complete
+S6 rule text. Computer use saved the summary as
+`osu! Chinese League Rookie — Season 6. 2021 年歷史賽事歸檔。` and imported
+[the supplied rules](imports/s6-configured-rules.json) into the native rules
+editor as **14 sections**, version `OCLR S6 规则表`. Production readback verified
+revision **7**, `published: true`, exact section equality and an unchanged saved
+archive. The obsolete two-group proposal is visibly annotated as superseded;
+four Swiss rounds remain the active format. The COST/Z draft wording, BO9/11/13,
+two bans with distinct mods, warmup, rescheduling and all nine time-limit clauses
+are retained.
+
+The application correction makes directory cards inherit the source-keyed
+archive artwork when no explicit logo is configured, in both the shared saved
+read summary and direct edition rendering. Explicit logos keep priority; this
+does not mutate edition configuration or publication. S6's original 1920×1080
+image is also selectable as logo/key visual and uses the existing landscape
+treatment. No bitmap, CSS palette or card layout was replaced.
+
+For the exact S6 issue/rulebook source pair, historical pages and their shared
+read overview now use the edition's saved sectioned rules with the existing
+`RulesHandbook`, including anchors and preserved line breaks. Other seasons
+continue to use their own curated source supplements. These display corrections
+require deployment of the new application commit; the 14 sections are already
+saved, so no second import or database migration is needed after deployment.
+
+Local verification for this correction: npm ci, lint/typecheck, 1,031 unit and
+integration checks (one existing skipped), production build, i18n checks and
+production dependency audit (zero vulnerabilities) passed. After the saved-list
+projection adjustment, the 18 affected API/DX/S6 checks passed again. Existing
+archive presentation passed on desktop/mobile; both new S6 directory/rules cases
+passed after fixing duplicate fixture-name selection and the select-label query.
+The final two cases also verify the image actually loads at 1920px natural width.
+Full browser/remote coverage is left to commit-specific CI, not claimed as a
+completed full local run. The test database is separate from production/demo.
+
+Synthetic local evidence, not screenshots of deployed fixes:
+[desktop directory card](verification/issue-289/s6-directory-desktop.png),
+[mobile directory card](verification/issue-289/s6-directory-mobile.png),
+[320px sectioned rules](verification/issue-289/s6-sectioned-rules-mobile-320.png).
+
 ## S6 published after private verification — 2026-10-25
 
 The organizer subsequently instructed “完成後公開S6”. After the complete private

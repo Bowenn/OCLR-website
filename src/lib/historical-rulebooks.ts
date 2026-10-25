@@ -38,7 +38,30 @@ const supplements: {
 ];
 
 /** Organizer-provided source pairs; never fall back to another season's live rules. */
-export function historicalRulebook(archive: HistoricalArchive) {
+export function historicalRulebook(
+  archive: HistoricalArchive,
+  configured?: {
+    version: string;
+    sections: HistoricalRulebook["sections"];
+  } | null,
+): HistoricalRulebook | null {
+  // S6 is maintained through the edition's native, versioned section editor.
+  // Require its evidenced source pair; do not borrow generic/live rules elsewhere.
+  if (
+    configured &&
+    archive.sourceUrl ===
+      "https://github.com/OCLR-dev/OCLR-website/issues/289" &&
+    archive.links.some(
+      ({ url }) => url === "https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw",
+    )
+  ) {
+    return {
+      title: "OCLR S6 规则表",
+      version: configured.version,
+      documentUrl: "https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw",
+      sections: configured.sections,
+    };
+  }
   const sheet = new URL(archive.sourceUrl);
   return (
     supplements.find(
@@ -59,5 +82,10 @@ export function historicalRulebook(archive: HistoricalArchive) {
 
 /** Identify the approved source pair independently of editable edition slugs. */
 export function historicalRulebookSeason(rules: HistoricalRulebook) {
+  if (
+    rules.title === "OCLR S6 规则表" &&
+    rules.documentUrl === "https://docs.qq.com/doc/DUHFuRFBER1NKS3Bw"
+  )
+    return "6";
   return supplements.find((entry) => entry.rules === rules)?.season;
 }

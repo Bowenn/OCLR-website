@@ -80,9 +80,11 @@ export function historicalTournamentOverview(
     kind: "historical_archive",
     counts: { teams, players, results, pools, maps },
     keyVisual: archiveKeyVisual(archive, edition.branding.keyVisual) ?? null,
-    rulebook: historicalRulebook(archive),
-    rulebookSeason: historicalRulebook(archive)
-      ? (historicalRulebookSeason(historicalRulebook(archive)!) ?? null)
+    rulebook: historicalRulebook(archive, edition.rules),
+    rulebookSeason: historicalRulebook(archive, edition.rules)
+      ? (historicalRulebookSeason(
+          historicalRulebook(archive, edition.rules)!,
+        ) ?? null)
       : null,
   });
 }
@@ -99,7 +101,14 @@ async function summary(row: StoredTournament) {
     summary: fields.summary,
     status: fields.status,
     timeZone: fields.timeZone,
-    branding: fields.branding,
+    branding: {
+      ...fields.branding,
+      logo:
+        fields.branding.logo ??
+        (row.edition.archive
+          ? (archiveKeyVisual(row.edition.archive, null)?.src ?? null)
+          : null),
+    },
     defaultAppearance: row.edition.defaultAppearance ?? null,
     registration: fields.registration,
   });

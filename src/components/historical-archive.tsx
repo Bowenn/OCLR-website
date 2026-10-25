@@ -278,7 +278,7 @@ export async function HistoricalArchiveView({
     </article>
   );
   function rulesContent() {
-    const rules = historicalRulebook(a);
+    const rules = historicalRulebook(a, edition.rules);
     if (!rules && a.sourceFacts?.some((f) => f.category === "rules"))
       return (
         <div className="stack">
@@ -316,7 +316,7 @@ export async function HistoricalArchiveView({
   }
   function competition() {
     const bracket = archiveBracket(a, (id) => href("matches", id));
-    const rules = historicalRulebook(a);
+    const rules = historicalRulebook(a, edition.rules);
     const derived =
       rules && historicalRulebookSeason(rules) === "8"
         ? deriveS8Standings(a)

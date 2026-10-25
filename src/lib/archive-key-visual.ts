@@ -23,10 +23,9 @@ const visuals: Record<string, { src: string; width: number; height: number }> =
       height: 1024,
     },
   };
-export function archiveKeyVisual(
-  archive: HistoricalArchive,
-  configured: string | null | undefined,
-) {
+export function archiveKeyVisual<
+  T extends Pick<HistoricalArchive, "sourceUrl">,
+>(archive: T, configured: string | null | undefined) {
   const url = new URL(archive.sourceUrl);
   const sheet =
     url.hostname === "docs.google.com"

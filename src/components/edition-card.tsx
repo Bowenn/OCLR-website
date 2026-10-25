@@ -1,6 +1,7 @@
 import type { PublicTournamentSummary } from "@/lib/read-api-contract";
 import { getAppTranslations } from "@/i18n/server";
 import { registrationAvailability } from "@/lib/registrations";
+import { archiveKeyVisual } from "@/lib/archive-key-visual";
 import { Action, Badge } from "./ui";
 import { EditionArtwork } from "./edition-artwork";
 import { formatDate, publicEditionSummary, type Edition } from "@/lib/editions";
@@ -19,9 +20,13 @@ export async function EditionCard({
       : await registrationAvailability(edition);
   const summary = publicEditionSummary(edition.summary);
   const historical = edition.status === "completed";
+  const archive = "archive" in edition ? edition.archive : null;
+  const artwork =
+    edition.branding.logo ??
+    (archive ? (archiveKeyVisual(archive, null)?.src ?? null) : null);
   return (
     <article className="edition-card">
-      <EditionArtwork slug={edition.slug} logo={edition.branding.logo} />
+      <EditionArtwork slug={edition.slug} logo={artwork} />
       <div className="edition-copy">
         {historical ? (
           <Badge>{tr("Historical archive")}</Badge>

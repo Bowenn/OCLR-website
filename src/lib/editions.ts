@@ -68,11 +68,16 @@ export const editionSchema = z
             "/archive/s9/thumbnail.png",
             "/archive/s8/thumbnail.jpg",
             "/archive/s7/key-visual.jpg",
+            "/archive/s6/key-visual.jpg",
           ])
           .nullable(),
         background: z.enum(["/oclr-s11-website-background.webp"]).nullable(),
         keyVisual: z
-          .enum(["/oclr-s11-key-visual.webp", "/archive/s7/key-visual.jpg"])
+          .enum([
+            "/oclr-s11-key-visual.webp",
+            "/archive/s7/key-visual.jpg",
+            "/archive/s6/key-visual.jpg",
+          ])
           .nullable(),
       })
       .strict()

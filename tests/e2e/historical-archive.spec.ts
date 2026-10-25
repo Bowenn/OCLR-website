@@ -14,6 +14,87 @@ test.describe("historical archive browser workflow", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.setTimeout(120000);
   test.afterAll(async () => closeDb());
+  test("shows S6 source artwork in the directory and its configured rule sections", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    const slug = `s6-rules-${isMobile ? "mobile" : "desktop"}-test-${Date.now()}`;
+    const archive = historicalArchiveSchema.parse({
+      ...JSON.parse(
+        readFileSync("docs/imports/s6-confirmed-archive.json", "utf8"),
+      ),
+      editionSlug: slug,
+    });
+    const rules = JSON.parse(
+      readFileSync("docs/imports/s6-configured-rules.json", "utf8"),
+    );
+    const summary =
+      "osu! Chinese League Rookie — Season 6. 2021 年歷史賽事歸檔。";
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await context.addCookies([
+      { name: "oclr-theme", value: "dark", domain: "127.0.0.1", path: "/" },
+      {
+        name: "oclr-appearance",
+        value: "default",
+        domain: "127.0.0.1",
+        path: "/",
+      },
+    ]);
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        name: "S6 card and rules verification",
+        season: "6",
+        summary,
+        branding: { logo: null, keyVisual: null, background: null },
+        status: "completed",
+        registration: null,
+        published: true,
+        archive,
+        rules,
+      },
+    ]);
+    await page.goto("/tournaments");
+    const card = page.locator(".edition-card").filter({
+      has: page.locator(`a[href="/tournaments/${slug}"]`),
+    });
+    await expect(card.locator("img")).toHaveAttribute(
+      "src",
+      "/archive/s6/key-visual.jpg",
+    );
+    await expect(card.locator("img")).toHaveAttribute("width", "1920");
+    await expect(card.locator("img")).toHaveAttribute("height", "1080");
+    await expect(card).toContainText(summary);
+    await card.scrollIntoViewIfNeeded();
+    await expect(card.locator("img")).toHaveJSProperty("naturalWidth", 1920);
+    await card.screenshot({
+      path: info.outputPath("s6-directory-card.png"),
+      animations: "disabled",
+    });
+    await card
+      .getByRole("link", { name: "View tournament", exact: true })
+      .click();
+    await expect(page.locator(".rules-article > section")).toHaveCount(14);
+    for (const section of rules.sections)
+      await expect(page.locator(".rules-article")).toContainText(section.body);
+    await expect(page.locator(".rules-article")).toContainText(
+      "【已废止的原提案；原规则文档中已划除】",
+    );
+    await captureResponsiveLayout(page, info, "s6-configured-rules");
+    await page.goto(`/admin/tournaments/${slug}/settings`);
+    await expect(
+      page
+        .getByLabel("Square logo")
+        .locator('option[value="/archive/s6/key-visual.jpg"]'),
+    ).toHaveCount(1);
+    await expect(
+      page
+        .getByLabel("Key visual")
+        .locator('option[value="/archive/s6/key-visual.jpg"]'),
+    ).toHaveCount(1);
+  });
   test("imports the complete S6 review package privately without resolving pending interpretations", async ({
     page,
     context,
