@@ -160,7 +160,7 @@ test.describe("independent round management and safe deletion", () => {
     ).toHaveCount(0);
     await expect(
       page.getByRole("link", { name: "Manage rounds", exact: true }),
-    ).toBeVisible();
+    ).toHaveCount(0);
     await page.getByRole("tab", { name: "Group Stage", exact: true }).click();
     await expect(
       page.getByText(
@@ -177,9 +177,7 @@ test.describe("independent round management and safe deletion", () => {
     await expect(
       page.getByRole("heading", { name: "Preserved pool", exact: false }),
     ).toBeVisible();
-    await page
-      .getByRole("link", { name: "Manage rounds", exact: true })
-      .click();
+    await openTournamentTool(page, "test-cup", "Rounds", isMobile);
     await expect(page.getByLabel("Round name", { exact: true })).toHaveValue(
       "Final renamed",
     );
