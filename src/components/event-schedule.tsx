@@ -114,10 +114,13 @@ export function EventSchedule({
                 ? m.winner === i
                   ? tr("Winner")
                   : tr("Forfeit")
-                : (m.score?.[i] ?? "—")}
+                : ((m.reviewScore ?? m.score)?.[i] ?? "—")}
             </b>
           </div>
         ))}
+        {m.reviewScore && (
+          <p className="muted small">{tr("Unconfirmed records")}</p>
+        )}
         {(m.sourceRed || m.sourceBlue) && (
           <footer>
             {m.sourceRed} / {m.sourceBlue}
@@ -361,9 +364,12 @@ export function EventSchedule({
                         ? m.winner === 0
                           ? `${tr("Winner")} : ${tr("Forfeit")}`
                           : `${tr("Forfeit")} : ${tr("Winner")}`
-                        : m.score
-                          ? m.score.join(" : ")
+                        : (m.reviewScore ?? m.score)
+                          ? (m.reviewScore ?? m.score)!.join(" : ")
                           : "—"}
+                      {m.reviewScore && (
+                        <small>{tr("Unconfirmed records")}</small>
+                      )}
                     </td>
                     <td>
                       {m.blueHref ? <a href={m.blueHref}>{m.blue}</a> : m.blue}

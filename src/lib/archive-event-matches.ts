@@ -30,6 +30,7 @@ export function archiveEventMatches(
       redHref: href("teams", m.teamA),
       blueHref: href("teams", m.teamB),
       score: m.score,
+      ...(m.review ? { reviewScore: m.review.workingScore } : {}),
       winner: archiveWinner(m),
       forfeit: m.forfeitWinner !== undefined,
       recorded: recordedArchiveMatch(m),

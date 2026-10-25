@@ -7,12 +7,122 @@ import { seedSession } from "./session";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 import { historicalArchive } from "../fixtures/historical-archive";
+import { historicalSourceDetails } from "../fixtures/historical-source-details";
 import { captureResponsiveLayout } from "./responsive";
 
 test.describe("historical archive browser workflow", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.setTimeout(120000);
   test.afterAll(async () => closeDb());
+  test("preserves unknown identities, replacement evidence and pending scores in a private draft", async ({
+    page,
+    context,
+    isMobile,
+  }) => {
+    const slug = `source-${isMobile ? "mobile" : "desktop"}-test`;
+    const archive = historicalSourceDetails(slug);
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        name: "Synthetic source archive",
+        season: "6",
+        published: false,
+        status: "completed",
+        registration: null,
+      },
+    ]);
+    await page.goto(`/admin/tournaments/${slug}/archive`);
+    await page.getByLabel("Archive JSON file", { exact: true }).setInputFiles({
+      name: "source-archive.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(archive)),
+    });
+    await page
+      .getByRole("button", { name: "Validate and review archive" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Review source records" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Save archive draft", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect(page.getByRole("status")).toContainText("Archive draft saved");
+    const saved = await (
+      await context.request.get(`/api/admin/tournaments/${slug}`)
+    ).json();
+    expect(saved.edition.published).toBe(false);
+    expect(saved.edition.archive).toEqual(archive);
+    await page.goto(`/admin/tournaments/${slug}/archive/preview`);
+    await expect(
+      page.getByText("Private archive preview", { exact: true }),
+    ).toBeVisible();
+    await page.getByText("Synthetic raw qualifier", { exact: true }).click();
+    await expect(
+      page.getByRole("cell", { name: "1234567", exact: true }),
+    ).toBeVisible();
+    await page.goto(`/admin/tournaments/${slug}/archive/preview?section=teams`);
+    await expect(
+      page.getByText("Synthetic unknown captain", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("VICE", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText(
+        "Synthetic replacement history; dates and membership are unknown.",
+      ),
+    ).toBeVisible();
+    expect(
+      await page
+        .locator('a[href*="91005"],a[href*="91006"],a[href*="null"]')
+        .count(),
+    ).toBe(0);
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=match&id=${archive.matches[0].id}`,
+    );
+    await expect(
+      page.getByText("Unconfirmed records · 3 : 5", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Synthetic post-match TB hypothesis, awaiting confirmation.",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=mappools`,
+    );
+    await page
+      .getByRole("button", { name: "View NM1: Not recorded", exact: true })
+      .click();
+    await expect(page.getByRole("dialog").getByRole("heading")).toHaveText(
+      "Not recorded",
+    );
+    await page.keyboard.press("Escape");
+    const guest = await context.browser()!.newContext();
+    expect(
+      (
+        await guest.request.get(`http://127.0.0.1:3100/tournaments/${slug}`)
+      ).status(),
+    ).toBe(404);
+    expect(
+      (
+        await guest.request.get(
+          `http://127.0.0.1:3100/admin/tournaments/${slug}/archive/preview`,
+        )
+      ).status(),
+    ).not.toBe(200);
+    await guest.close();
+    await captureResponsiveLayout(
+      page,
+      test.info(),
+      `source-archive-${isMobile ? "mobile" : "desktop"}`,
+    );
+  });
   test("reviews private import, explicitly publishes, and keeps every detail in its edition", async ({
     page,
     context,
@@ -638,11 +748,11 @@ test.describe("historical archive browser workflow", () => {
     await opener.click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByRole("dialog").getByRole("heading")).toHaveText(
-      archive.pools[0].maps[0].title,
+      archive.pools[0].maps[0].title ?? "Not recorded",
     );
     await page.getByRole("button", { name: "Next map", exact: true }).click();
     await expect(page.getByRole("dialog").getByRole("heading")).toHaveText(
-      archive.pools[0].maps[1].title,
+      archive.pools[0].maps[1].title ?? "Not recorded",
     );
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -663,10 +773,10 @@ test.describe("historical archive browser workflow", () => {
         .getByLabel(`Sort ${pool.name}`, { exact: true })
         .selectOption("title");
       const titleOrder = [...pool.maps].sort((a, b) =>
-        a.title.localeCompare(b.title),
+        (a.title ?? "").localeCompare(b.title ?? ""),
       );
       await expect(page.locator(".archive-map-identity h3").first()).toHaveText(
-        titleOrder[0].title,
+        titleOrder[0].title ?? "Not recorded",
       );
       await page
         .getByLabel(`Sort ${pool.name}`, { exact: true })
@@ -709,7 +819,7 @@ test.describe("historical archive browser workflow", () => {
         .fill(String(first.beatmapId));
       await expect(page.locator(".archive-map-item")).toHaveCount(1);
       await expect(page.locator(".archive-map-identity h3")).toHaveText(
-        first.title,
+        first.title ?? "Not recorded",
       );
       await expect(
         page.locator(".archive-map-stats dd").first(),
@@ -749,7 +859,7 @@ test.describe("historical archive browser workflow", () => {
       ).toBeVisible();
       await expect(page.locator(".archive-map-item")).toHaveCount(19);
       await expect(page.locator(".archive-map-identity h3").first()).toHaveText(
-        archive.pools[3].maps[0].title,
+        archive.pools[3].maps[0].title ?? "Not recorded",
       );
     }
   });

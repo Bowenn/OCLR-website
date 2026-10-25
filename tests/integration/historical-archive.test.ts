@@ -23,6 +23,7 @@ import { mappoolCommand } from "../../src/lib/mappools";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 import { historicalArchive } from "../fixtures/historical-archive";
+import { historicalSourceDetails } from "../fixtures/historical-source-details";
 import { assertTestDatabase } from "../database";
 const url = process.env.TEST_DATABASE_URL;
 const admin = { osuId: 390001, username: "Archive Admin" };
@@ -146,6 +147,17 @@ describe.skipIf(!url)("historical archive transactions", () => {
         status: "upcoming",
       }),
     ).rejects.toMatchObject({ status: 400 });
+  });
+  it("round-trips source-only identities and pending scores privately without creating accounts", async () => {
+    const archive = historicalSourceDetails(slug);
+    await tournamentCommand(admin, slug, command(0, archive));
+    const saved = await readTournament(slug);
+    expect(saved?.edition.published).toBe(false);
+    expect(saved?.edition.archive).toEqual(archive);
+    expect(await getPublicEdition(slug)).toBeUndefined();
+    expect(await db().select().from(users)).toHaveLength(2);
+    expect(await db().select().from(registrations)).toHaveLength(0);
+    expect(await db().select().from(teams)).toHaveLength(0);
   });
   it("blocks operational pool creation after archive import", async () => {
     await tournamentCommand(admin, slug, command(0));

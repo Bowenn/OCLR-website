@@ -32,7 +32,12 @@ export function archiveKeyVisual(
     url.hostname === "docs.google.com"
       ? /^\/spreadsheets\/d\/([^/]+)\/edit$/.exec(url.pathname)?.[1]
       : undefined;
-  const original = sheet ? visuals[sheet] : undefined;
+  const original =
+    archive.sourceUrl === "https://github.com/OCLR-dev/OCLR-website/issues/289"
+      ? { src: "/archive/s6/key-visual.jpg", width: 1920, height: 1080 }
+      : sheet
+        ? visuals[sheet]
+        : undefined;
   // Explicit edition branding still takes priority over the source supplement.
   return configured
     ? {

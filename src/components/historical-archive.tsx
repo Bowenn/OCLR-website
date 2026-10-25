@@ -28,6 +28,10 @@ import { notFound, redirect } from "next/navigation";
 import { ArchiveCompetition } from "./archive-competition";
 import { ArchiveMappools } from "./archive-mappools";
 import { ArchivePlayerSearch } from "./archive-player-search";
+import {
+  ArchiveRosterSources,
+  ArchiveSourceRecords,
+} from "./archive-source-records";
 import { Avatar } from "./avatar";
 import { EventSchedule } from "./event-schedule";
 import { RulesHandbook } from "./rules-handbook";
@@ -107,17 +111,22 @@ export async function HistoricalArchiveView({
     <Link href={href("players", String(p.osuId))}>{p.username}</Link>
   );
   const role = (
-    p: Pick<HistoricalArchive["players"][number], "role" | "tier">,
+    p: Pick<
+      HistoricalArchive["players"][number],
+      "role" | "tier" | "sourceRole"
+    >,
   ) =>
-    p.role === "captain"
-      ? "Captain"
-      : p.role === "coach"
-        ? tr("Coach")
-        : p.role === "free_agent"
-          ? tr("Free agent")
-          : p.tier === null
-            ? tr("Not recorded")
-            : `Tier ${p.tier}`;
+    p.sourceRole === "VICE"
+      ? "VICE"
+      : p.role === "captain"
+        ? "Captain"
+        : p.role === "coach"
+          ? tr("Coach")
+          : p.role === "free_agent"
+            ? tr("Free agent")
+            : p.tier === null
+              ? tr("Not recorded")
+              : `Tier ${p.tier}`;
   const rosterCard = (
     p: HistoricalArchive["players"][number] | PublicPlayer,
     showTeam = true,
@@ -132,7 +141,14 @@ export async function HistoricalArchiveView({
       </Link>
       <div className="archive-player-copy">
         <div className="archive-player-name">
-          {playerLink(p)} <Badge>{role(p)}</Badge>
+          {playerLink(p)}{" "}
+          <Badge>
+            {role({
+              ...p,
+              sourceRole: a.players.find((s) => s.osuId === p.osuId)
+                ?.sourceRole,
+            })}
+          </Badge>
         </div>
         <span className="muted small">
           {tr("osu! ID ")}
@@ -217,8 +233,28 @@ export async function HistoricalArchiveView({
       </footer>
       {!recordedArchiveMatch(m) && (
         <p className="muted small archive-unconfirmed">
-          {tr("Schedule record only; completion and result are not confirmed.")}
+          {m.review
+            ? tr("Unconfirmed records")
+            : tr(
+                "Schedule record only; completion and result are not confirmed.",
+              )}
         </p>
+      )}
+      {m.review && (
+        <section className="stack">
+          <h3>{tr("Review source records")}</h3>
+          <p>
+            {tr("Unconfirmed records")} ·{" "}
+            {m.review.workingScore?.join(" : ") ?? "—"}
+          </p>
+          <p>{m.review.note}</p>
+          <details>
+            <summary>{tr("All import fields")}</summary>
+            <pre className="archive-json">
+              {JSON.stringify(m.review, null, 2)}
+            </pre>
+          </details>
+        </section>
       )}
       {section === "match" && (
         <>
@@ -242,6 +278,20 @@ export async function HistoricalArchiveView({
   );
   function rulesContent() {
     const rules = historicalRulebook(a);
+    if (!rules && a.sourceFacts?.some((f) => f.category === "rules"))
+      return (
+        <div className="stack">
+          {a.sourceFacts
+            .filter((f) => f.category === "rules")
+            .map((f, i) => (
+              <section key={i}>
+                <h3>{f.label}</h3>
+                <p>{f.text}</p>
+                <p className="muted small">{f.source}</p>
+              </section>
+            ))}
+        </div>
+      );
     return rules ? (
       <>
         <p className="rules-version muted small">
@@ -420,6 +470,7 @@ export async function HistoricalArchiveView({
             ))}
           </nav>
         )}
+        <ArchiveSourceRecords archive={a} />
       </>
     );
   } else if (section === "staff") {
@@ -491,6 +542,7 @@ export async function HistoricalArchiveView({
               a.players.filter((p) => p.teamId === t.id),
               false,
             )}
+            <ArchiveRosterSources archive={a} teamId={t.id} />
           </section>
         ))}
       </div>
@@ -531,6 +583,7 @@ export async function HistoricalArchiveView({
             </a>
           </>
         )}
+        {section === "players" && <ArchiveRosterSources archive={a} />}
       </>
     );
   } else if (["schedule", "results", "match"].includes(section)) {

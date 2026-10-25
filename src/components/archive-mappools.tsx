@@ -65,8 +65,8 @@ function ArchiveMapDetails({
         <div className="map-detail-identity">
           <BeatmapCover setId={setId} />
           <div>
-            <h2 id={title}>{map.title}</h2>
-            {map.mapper && !map.title.includes(map.mapper) && (
+            <h2 id={title}>{map.title ?? tr("Not recorded")}</h2>
+            {map.mapper && !map.title?.includes(map.mapper) && (
               <p className="muted">
                 {tr("Mapper")}: {map.mapper}
               </p>
@@ -139,7 +139,8 @@ export function ArchiveMappools({
           .includes(query)),
   );
   const number = new Intl.NumberFormat(tr.locale, { maximumFractionDigits: 2 });
-  if (sort === "title") maps.sort((a, b) => a.title.localeCompare(b.title));
+  if (sort === "title")
+    maps.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""));
   if (sort === "stars")
     maps.sort((a, b) => (b.stars ?? -Infinity) - (a.stars ?? -Infinity));
   const activeIndex = maps.findIndex((m) => m.slot === selected);
@@ -314,11 +315,11 @@ export function ArchiveMappools({
                         className="map-open-button"
                         aria-label={tr("View {value0}: {value1}", {
                           value0: m.slot,
-                          value1: m.title,
+                          value1: m.title ?? tr("Not recorded"),
                         })}
                         onClick={() => setSelected(m.slot)}
                       >
-                        {m.title}
+                        {m.title ?? tr("Not recorded")}
                       </button>
                     </h3>
                     <p className="muted small">

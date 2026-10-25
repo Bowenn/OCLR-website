@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  unresolvedArchivePlayer,
+  archiveReplacement,
+  archiveMatchReview,
+  archiveQualifier,
+  archiveReviewTable,
+  archiveSourceFact,
+} from "./historical-source-details";
 
 const text = z.string().trim().min(1).max(300);
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/);
@@ -23,7 +31,7 @@ const metric = z.number().finite().nonnegative().max(10000).nullable();
 /** Historical evidence is not a registration, OAuth account or live result approval. */
 export const historicalArchiveSchema = z
   .object({
-    formatVersion: z.literal(1),
+    formatVersion: z.union([z.literal(1), z.literal(2)]),
     editionSlug: key,
     sourceUrl: url,
     capturedOn: z.iso.date(),
@@ -41,12 +49,18 @@ export const historicalArchiveSchema = z
             username: text,
             teamId: key.nullable(),
             role: z.enum(["captain", "player", "coach", "free_agent"]),
+            sourceRole: z.literal("VICE").optional(),
             tier: z.number().int().min(0).max(32).nullable(),
             source,
           })
           .strict(),
       )
       .max(2048),
+    unresolvedPlayers: z.array(unresolvedArchivePlayer).max(2048).optional(),
+    rosterReplacements: z.array(archiveReplacement).max(200).optional(),
+    qualifiers: z.array(archiveQualifier).max(32).optional(),
+    reviewTables: z.array(archiveReviewTable).max(10).optional(),
+    sourceFacts: z.array(archiveSourceFact).max(100).optional(),
     picks: z
       .array(
         z
@@ -102,6 +116,7 @@ export const historicalArchiveSchema = z
             teamB: key,
             scheduledAt: z.iso.datetime({ offset: true }).nullable(),
             score: z.tuple([score, score]).nullable(),
+            review: archiveMatchReview.optional(),
             forfeitWinner: z.union([z.literal(0), z.literal(1)]).optional(),
             mpUrls: z
               .array(
@@ -136,7 +151,7 @@ export const historicalArchiveSchema = z
                   .object({
                     slot: z.string().regex(/^(NM|HD|HR|DT|FM|TB|ACE)[1-9]\d?$/),
                     beatmapId: id.nullable(),
-                    title: text,
+                    title: text.nullable(),
                     mapper: text.nullable(),
                     stars: metric,
                     bpm: metric,
@@ -162,6 +177,20 @@ export const historicalArchiveSchema = z
     const unique = (values: (string | number)[], label: string) => {
       if (new Set(values).size !== values.length) issue(`Duplicate ${label}.`);
     };
+    if (
+      archive.formatVersion === 1 &&
+      (archive.unresolvedPlayers !== undefined ||
+        archive.rosterReplacements !== undefined ||
+        archive.qualifiers !== undefined ||
+        archive.reviewTables !== undefined ||
+        archive.sourceFacts !== undefined ||
+        archive.players.some((p) => p.sourceRole !== undefined) ||
+        archive.matches.some((m) => m.review !== undefined) ||
+        archive.pools.some((p) => p.maps.some((m) => m.title === null)))
+    )
+      issue(
+        "Source-only extensions and unknown titles require archive format version 2.",
+      );
     unique(
       archive.teams.map((t) => t.id),
       "team ID",
@@ -213,7 +242,16 @@ export const historicalArchiveSchema = z
     const team = (id: string) => {
       if (!teams.has(id)) issue("Unknown team reference.");
     };
-    for (const p of archive.players) {
+    unique(
+      (archive.unresolvedPlayers ?? []).map((p) => p.id),
+      "unresolved player ID",
+    );
+    unique(
+      (archive.rosterReplacements ?? []).map((p) => p.id),
+      "replacement ID",
+    );
+    const roster = [...archive.players, ...(archive.unresolvedPlayers ?? [])];
+    for (const p of roster) {
       if (p.teamId) team(p.teamId);
       if (p.role === "captain" && (p.tier !== 0 || !p.teamId))
         issue("Captains require a team and Tier 0.");
@@ -223,10 +261,12 @@ export const historicalArchiveSchema = z
         issue("Coaches and free agents have no draft Tier.");
       if (p.role === "free_agent" && p.teamId)
         issue("Free agents cannot have a team.");
+      if (p.sourceRole === "VICE" && (p.role !== "player" || p.tier !== null))
+        issue("VICE source roles have no inferred draft Tier.");
     }
     for (const t of archive.teams) {
       if (
-        archive.players.filter((p) => p.teamId === t.id && p.role === "captain")
+        roster.filter((p) => p.teamId === t.id && p.role === "captain")
           .length !== 1
       )
         issue("Each team requires exactly one captain.");
@@ -242,12 +282,12 @@ export const historicalArchiveSchema = z
       )
         issue("Draft pick does not match the roster and Tier.");
     }
-    for (const p of archive.players) {
+    for (const p of roster) {
       if (
         p.role === "player" &&
         p.tier !== null &&
         archive.draftMode !== "final-tiers" &&
-        !archive.picks.some((pick) => pick.osuId === p.osuId)
+        !("osuId" in p && archive.picks.some((pick) => pick.osuId === p.osuId))
       )
         issue("A player Tier requires source draft evidence.");
     }
@@ -259,6 +299,59 @@ export const historicalArchiveSchema = z
         issue("Completed historical matches cannot have tied scores.");
       if (m.forfeitWinner !== undefined && m.score !== null)
         issue("Forfeits cannot invent a played map score.");
+      if (m.review) {
+        if (m.score !== null || m.forfeitWinner !== undefined)
+          issue("Pending match reviews cannot claim a recorded result.");
+        if (
+          new Set([m.review.redTeamId, m.review.blueTeamId]).size !== 2 ||
+          ![m.teamA, m.teamB].includes(m.review.redTeamId) ||
+          ![m.teamA, m.teamB].includes(m.review.blueTeamId)
+        )
+          issue("Review sides must identify the two match teams.");
+        unique(
+          m.review.games.map((g) => g.gameId),
+          "review game ID",
+        );
+      }
+    }
+    for (const r of archive.rosterReplacements ?? []) {
+      team(r.teamId);
+      const ids = r.people.flatMap((p) => (p.osuId === null ? [] : [p.osuId]));
+      unique(ids, "replacement identity");
+      if (
+        r.replacedAt === null &&
+        ids.some((id) => archive.players.some((p) => p.osuId === id))
+      )
+        issue(
+          "Undated replacement identities cannot also claim current roster membership.",
+        );
+      if (
+        r.tier !== null &&
+        roster.some(
+          (p) =>
+            p.teamId === r.teamId && p.role === "player" && p.tier === r.tier,
+        )
+      )
+        issue("Replacement slot conflicts with a current Tier allocation.");
+    }
+    for (const q of archive.qualifiers ?? []) {
+      const pool = archive.pools.find((p) => p.id === q.poolId);
+      if (!pool) issue("Unknown qualifier pool reference.");
+      for (const r of q.records) {
+        unique(
+          r.scores.map((s) => s.slot),
+          "qualifier score slot",
+        );
+        if (r.scores.some((s) => !pool?.maps.some((m) => m.slot === s.slot)))
+          issue("Unknown qualifier score slot.");
+      }
+    }
+    for (const table of archive.reviewTables ?? []) {
+      unique(
+        table.rows.map((r) => r.teamId),
+        "review table team",
+      );
+      for (const r of table.rows) team(r.teamId);
     }
     for (const s of archive.standings) team(s.teamId);
     for (const p of archive.pools)
@@ -270,10 +363,11 @@ export const historicalArchiveSchema = z
 export type HistoricalArchive = z.infer<typeof historicalArchiveSchema>;
 
 export function recordedArchiveMatch(m: HistoricalArchive["matches"][number]) {
-  return m.score !== null || m.forfeitWinner !== undefined;
+  return !m.review && (m.score !== null || m.forfeitWinner !== undefined);
 }
 
 export function archiveWinner(m: HistoricalArchive["matches"][number]) {
+  if (m.review) return null;
   return (
     m.forfeitWinner ?? (m.score ? (m.score[0] > m.score[1] ? 0 : 1) : null)
   );
@@ -282,7 +376,10 @@ export function archiveWinner(m: HistoricalArchive["matches"][number]) {
 export function archiveCounts(a: HistoricalArchive) {
   return {
     teams: a.teams.length,
-    players: a.players.length,
+    players:
+      a.players.length +
+      (a.unresolvedPlayers?.length ?? 0) +
+      (a.rosterReplacements ?? []).reduce((n, r) => n + r.people.length, 0),
     picks: a.picks.length,
     results: a.matches.filter(recordedArchiveMatch).length,
     incomplete: a.matches.filter((m) => !recordedArchiveMatch(m)).length,
