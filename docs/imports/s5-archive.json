@@ -1,0 +1,3807 @@
+{
+  "formatVersion": 2,
+  "editionSlug": "s5",
+  "sourceUrl": "https://docs.google.com/spreadsheets/d/100CrQhmcX3lQ_7yn4xcP3cC316A7t35wK6kGfSW2tyM/edit",
+  "capturedOn": "2026-10-25",
+  "draftMode": "final-tiers",
+  "teams": [
+    {
+      "id": "a",
+      "name": "男同竟在我身边?!",
+      "source": "队伍表!A3:J3"
+    },
+    {
+      "id": "b",
+      "name": "白果子不讲武德",
+      "source": "队伍表!A7:J7"
+    },
+    {
+      "id": "c",
+      "name": "Team K",
+      "source": "队伍表!A11:J11"
+    },
+    {
+      "id": "d",
+      "name": "SpinEsc",
+      "source": "队伍表!A15:J15"
+    },
+    {
+      "id": "e",
+      "name": "小心管人痴",
+      "source": "队伍表!A19:J19"
+    },
+    {
+      "id": "f",
+      "name": "佐藤先生是湊阿库娅",
+      "source": "队伍表!A23:J23"
+    },
+    {
+      "id": "g",
+      "name": "怎么还要想队名的",
+      "source": "队伍表!A27:J27"
+    },
+    {
+      "id": "h",
+      "name": "队名怎么还要想的",
+      "source": "队伍表!A31:J31"
+    },
+    {
+      "id": "i",
+      "name": "想要睡觉",
+      "source": "队伍表!A35:J35"
+    },
+    {
+      "id": "j",
+      "name": "No Name",
+      "source": "队伍表!A39:J39"
+    },
+    {
+      "id": "k",
+      "name": "Team C",
+      "source": "队伍表!A43:J43"
+    },
+    {
+      "id": "l",
+      "name": "绝赞咕咕做的队",
+      "source": "队伍表!A47:J47"
+    }
+  ],
+  "players": [
+    {
+      "osuId": 5936405,
+      "username": "-xxx Rumia-",
+      "teamId": "a",
+      "source": "队伍表!C3; 测试表!C12:D12",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 7798860,
+      "username": "dhui",
+      "teamId": "a",
+      "source": "队伍表!D3; 测试表!C14:D14",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 342558,
+      "username": "BurNing",
+      "teamId": "a",
+      "source": "队伍表!F3; 测试表!C67:D67",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 1262507,
+      "username": "Reecho",
+      "teamId": "a",
+      "source": "队伍表!G3; 测试表!C31:D31",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 13184288,
+      "username": "Dana Iclucia",
+      "teamId": "a",
+      "source": "队伍表!H3; 测试表!C46:D46",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 7083201,
+      "username": "Niwasaka_Rira",
+      "teamId": "a",
+      "source": "队伍表!I3; 测试表!C32:D32",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 8012734,
+      "username": "Curriescaz",
+      "teamId": "b",
+      "source": "队伍表!C7; 测试表!C20:D20",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 427033,
+      "username": "akziyou",
+      "teamId": "b",
+      "source": "队伍表!D7; 测试表!C44:D44",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 7003013,
+      "username": "Muziyami",
+      "teamId": "b",
+      "source": "队伍表!F7; 测试表!C3:D3",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 2927918,
+      "username": "[-buki-]",
+      "teamId": "b",
+      "source": "队伍表!G7; 测试表!C57:D57",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 9887164,
+      "username": "Aurora_fang",
+      "teamId": "b",
+      "source": "队伍表!H7; 测试表!C56:D56",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 2428732,
+      "username": "huoyaoyuan",
+      "teamId": "b",
+      "source": "队伍表!I7; 测试表!C5:D5",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 13617153,
+      "username": "WhiteCookies",
+      "teamId": "c",
+      "source": "队伍表!D11; 测试表!C25:D25",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 714369,
+      "username": "TaneshimaPopura",
+      "teamId": "c",
+      "source": "队伍表!F11; 测试表!C72:D72",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 12942584,
+      "username": "M P I",
+      "teamId": "c",
+      "source": "队伍表!G11; 测试表!C74:D74",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 2401600,
+      "username": "zhuangsi",
+      "teamId": "c",
+      "source": "队伍表!H11; 测试表!C50:D50",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 7184125,
+      "username": "None1637",
+      "teamId": "c",
+      "source": "队伍表!I11; 测试表!C64:D64",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 12764539,
+      "username": "1miss_Cozmo",
+      "teamId": "d",
+      "source": "队伍表!C15; 测试表!C58:D58",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 8692802,
+      "username": "Guozi on Osu",
+      "teamId": "d",
+      "source": "队伍表!D15; 测试表!C9:D9",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 6397367,
+      "username": "Hunxin",
+      "teamId": "d",
+      "source": "队伍表!F15; 测试表!C63:D63",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 12403986,
+      "username": "Qlinging",
+      "teamId": "d",
+      "source": "队伍表!G15; 测试表!C16:D16",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 311610,
+      "username": "Yuuki Yuuna",
+      "teamId": "d",
+      "source": "队伍表!H15; 测试表!C23:D23",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 4764449,
+      "username": "[K I D]",
+      "teamId": "d",
+      "source": "队伍表!I15; 测试表!C49:D49",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 8751122,
+      "username": "Soymana",
+      "teamId": "e",
+      "source": "队伍表!C19; 测试表!C43:D43",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 2351439,
+      "username": "MasterKotori",
+      "teamId": "e",
+      "source": "队伍表!D19; 测试表!C79:D79",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 8877531,
+      "username": "hotrock_",
+      "teamId": "e",
+      "source": "队伍表!F19; 测试表!C70:D70",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 3911472,
+      "username": "Moutreak",
+      "teamId": "e",
+      "source": "队伍表!G19; 测试表!C15:D15",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 8926316,
+      "username": "Mars New",
+      "teamId": "e",
+      "source": "队伍表!H19; 测试表!C10:D10",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 13960915,
+      "username": "LittleStone",
+      "teamId": "e",
+      "source": "队伍表!I19; 测试表!C37:D37",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 5568835,
+      "username": "Slay_conceit",
+      "teamId": "f",
+      "source": "队伍表!C23; 测试表!C24:D24",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 6918298,
+      "username": "Clivery_V",
+      "teamId": "f",
+      "source": "队伍表!D23; 测试表!C77:D77",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 12117924,
+      "username": "Rairakkuhana",
+      "teamId": "f",
+      "source": "队伍表!F23; 测试表!C6:D6",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 11230275,
+      "username": "alansword",
+      "teamId": "f",
+      "source": "队伍表!G23; 测试表!C1:D1",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 10933499,
+      "username": "[RyuZu]",
+      "teamId": "f",
+      "source": "队伍表!H23; 测试表!C48:D48",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 10040597,
+      "username": "SqcOc-",
+      "teamId": "f",
+      "source": "队伍表!I23; 测试表!C33:D33",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 7799707,
+      "username": "CUWAN",
+      "teamId": "g",
+      "source": "队伍表!C27; 测试表!C60:D60",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 1936416,
+      "username": "An Yanyan",
+      "teamId": "g",
+      "source": "队伍表!D27; 测试表!C17:D17",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 8893772,
+      "username": "Molli",
+      "teamId": "g",
+      "source": "队伍表!F27; 测试表!C18:D18",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 8742486,
+      "username": "- Rainbow -",
+      "teamId": "g",
+      "source": "队伍表!G27; 测试表!C7:D7",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 9218431,
+      "username": "Myoi Mina",
+      "teamId": "g",
+      "source": "队伍表!H27; 测试表!C75:D75",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 10743435,
+      "username": "Hoshizora Rin",
+      "teamId": "g",
+      "source": "队伍表!I27; 测试表!C65:D65",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 11396041,
+      "username": "zmyk",
+      "teamId": "h",
+      "source": "队伍表!C31; 测试表!C19:D19",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 4082595,
+      "username": "[Illustrious]",
+      "teamId": "h",
+      "source": "队伍表!D31; 测试表!C73:D73",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 1793139,
+      "username": "X bol",
+      "teamId": "h",
+      "source": "队伍表!F31; 测试表!C13:D13",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 10927454,
+      "username": "Shijie",
+      "teamId": "h",
+      "source": "队伍表!G31; 测试表!C71:D71",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 15030466,
+      "username": "Kazumi Pager",
+      "teamId": "h",
+      "source": "队伍表!H31; 测试表!C8:D8",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 8976508,
+      "username": "lianlian514",
+      "teamId": "h",
+      "source": "队伍表!I31; 测试表!C76:D76",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 4734497,
+      "username": "feifeiis",
+      "teamId": "i",
+      "source": "队伍表!C35; 测试表!C22:D22",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 4721007,
+      "username": "VinyeKk_Ame",
+      "teamId": "i",
+      "source": "队伍表!D35; 测试表!C51:D51",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 8281276,
+      "username": "Texas",
+      "teamId": "i",
+      "source": "队伍表!F35; 测试表!C62:D62",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 6963321,
+      "username": "qi_e",
+      "teamId": "i",
+      "source": "队伍表!G35; 测试表!C59:D59",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 6149313,
+      "username": "Pata-Mon",
+      "teamId": "i",
+      "source": "队伍表!H35; 测试表!C39:D39",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 1221468,
+      "username": "Katamari",
+      "teamId": "i",
+      "source": "队伍表!I35; 测试表!C55:D55",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 10436444,
+      "username": "No rank",
+      "teamId": "j",
+      "source": "队伍表!D39; 测试表!C34:D34",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 1405856,
+      "username": "Takagi San",
+      "teamId": "j",
+      "source": "队伍表!F39; 测试表!C53:D53",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 1371409,
+      "username": "Banana skin",
+      "teamId": "j",
+      "source": "队伍表!G39; 测试表!C54:D54",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 9633566,
+      "username": "foraphe",
+      "teamId": "j",
+      "source": "队伍表!H39; 测试表!C36:D36",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 13171674,
+      "username": "AnthV",
+      "teamId": "j",
+      "source": "队伍表!I39; 测试表!C47:D47",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 8911619,
+      "username": "KobeNanami",
+      "teamId": "k",
+      "source": "队伍表!D43; 测试表!C35:D35",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 11042554,
+      "username": "acvyou",
+      "teamId": "k",
+      "source": "队伍表!F43; 测试表!C21:D21",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 10377846,
+      "username": "[ Kuon ]",
+      "teamId": "k",
+      "source": "队伍表!G43; 测试表!C27:D27",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 4733339,
+      "username": "SakurajimaMai",
+      "teamId": "k",
+      "source": "队伍表!H43; 测试表!C69:D69",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 2957253,
+      "username": "Shiina Mafuyu",
+      "teamId": "k",
+      "source": "队伍表!I43; 测试表!C28:D28",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 12039046,
+      "username": "DarckLH",
+      "teamId": "l",
+      "source": "队伍表!C47; 测试表!C68:D68",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "osuId": 14406132,
+      "username": "hvick226",
+      "teamId": "l",
+      "source": "队伍表!D47; 测试表!C42:D42",
+      "role": "player",
+      "tier": null,
+      "sourceRole": "VICE"
+    },
+    {
+      "osuId": 8208288,
+      "username": "[1552828]",
+      "teamId": "l",
+      "source": "队伍表!F47; 测试表!C41:D41",
+      "role": "player",
+      "tier": 1
+    },
+    {
+      "osuId": 2676427,
+      "username": "Mikako",
+      "teamId": "l",
+      "source": "队伍表!G47; 测试表!C40:D40",
+      "role": "player",
+      "tier": 2
+    },
+    {
+      "osuId": 5185609,
+      "username": "Duraaa",
+      "teamId": "l",
+      "source": "队伍表!H47; 测试表!C45:D45",
+      "role": "player",
+      "tier": 3
+    },
+    {
+      "osuId": 2806084,
+      "username": "- Ssooy -",
+      "teamId": "l",
+      "source": "队伍表!I47; 测试表!C80:D80",
+      "role": "player",
+      "tier": 4
+    },
+    {
+      "osuId": 15706663,
+      "username": "spead_come",
+      "teamId": "l",
+      "source": "队伍表!J47; 测试表!C61:D61",
+      "role": "player",
+      "tier": 5
+    }
+  ],
+  "unresolvedPlayers": [
+    {
+      "id": "a-slot-3",
+      "username": "davidqu2",
+      "teamId": "a",
+      "source": "队伍表!E3",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "b-slot-3",
+      "username": "im_a_burger_fox",
+      "teamId": "b",
+      "source": "队伍表!E7",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "c-slot-1",
+      "username": "Azureus",
+      "teamId": "c",
+      "source": "队伍表!C11",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "id": "c-slot-3",
+      "username": "Old k",
+      "teamId": "c",
+      "source": "队伍表!E11",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "d-slot-3",
+      "username": "buhei",
+      "teamId": "d",
+      "source": "队伍表!E15",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "e-slot-3",
+      "username": "TiRa",
+      "teamId": "e",
+      "source": "队伍表!E19",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "f-slot-3",
+      "username": "[Kaffu Chile]",
+      "teamId": "f",
+      "source": "队伍表!E23",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "g-slot-3",
+      "username": "milk-tea",
+      "teamId": "g",
+      "source": "队伍表!E27",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "h-slot-3",
+      "username": "Crystal",
+      "teamId": "h",
+      "source": "队伍表!E31",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "i-slot-3",
+      "username": "NekoKamui",
+      "teamId": "i",
+      "source": "队伍表!E35",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "j-slot-1",
+      "username": "My_Suck_Aim",
+      "teamId": "j",
+      "source": "队伍表!C39",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "id": "j-slot-3",
+      "username": "Kishin Sagume",
+      "teamId": "j",
+      "source": "队伍表!E39",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "k-slot-1",
+      "username": "moe_nyannyan",
+      "teamId": "k",
+      "source": "队伍表!C43",
+      "role": "captain",
+      "tier": 0
+    },
+    {
+      "id": "k-slot-3",
+      "username": "Manasoy",
+      "teamId": "k",
+      "source": "队伍表!E43",
+      "role": "coach",
+      "tier": null
+    },
+    {
+      "id": "l-slot-3",
+      "username": "demisemiquaver",
+      "teamId": "l",
+      "source": "队伍表!E47",
+      "role": "coach",
+      "tier": null
+    }
+  ],
+  "picks": [],
+  "staff": [
+    {
+      "osuId": null,
+      "username": "Explosive",
+      "position": "Host",
+      "source": "Cover!G7"
+    },
+    {
+      "osuId": null,
+      "username": "Prophet",
+      "position": "Host",
+      "source": "Cover!G8"
+    },
+    {
+      "osuId": null,
+      "username": "Sonoaoi",
+      "position": "Host",
+      "source": "Cover!G9"
+    },
+    {
+      "osuId": null,
+      "username": "Selis",
+      "position": "LOGO Inspired",
+      "source": "Cover!G11"
+    },
+    {
+      "osuId": null,
+      "username": "Prophet",
+      "position": "Mappool",
+      "source": "Cover!H7"
+    },
+    {
+      "osuId": null,
+      "username": "Sonoaoi",
+      "position": "Mappool",
+      "source": "Cover!H8"
+    },
+    {
+      "osuId": null,
+      "username": "Fushimi Rio",
+      "position": "Mappool",
+      "source": "Cover!H9"
+    },
+    {
+      "osuId": null,
+      "username": "FujiwaraNoMouko",
+      "position": "Mappool",
+      "source": "Cover!H10"
+    },
+    {
+      "osuId": null,
+      "username": "B C",
+      "position": "Mappool",
+      "source": "Cover!H11"
+    },
+    {
+      "osuId": null,
+      "username": "FujiwaraNoMouko",
+      "position": "Refer",
+      "source": "Cover!I7"
+    },
+    {
+      "osuId": null,
+      "username": "Europix",
+      "position": "Refer",
+      "source": "Cover!I8"
+    },
+    {
+      "osuId": null,
+      "username": "osu happy",
+      "position": "Refer",
+      "source": "Cover!I10"
+    },
+    {
+      "osuId": null,
+      "username": "demisemiquaver",
+      "position": "Refer",
+      "source": "Cover!I11"
+    },
+    {
+      "osuId": null,
+      "username": "Alice Mana",
+      "position": "Streamer",
+      "source": "Cover!J7"
+    },
+    {
+      "osuId": null,
+      "username": "Sonoaoi",
+      "position": "Streamer",
+      "source": "Cover!J8"
+    },
+    {
+      "osuId": null,
+      "username": "Selis",
+      "position": "Streamer",
+      "source": "Cover!J9"
+    }
+  ],
+  "standings": [],
+  "matches": [
+    {
+      "id": "a1",
+      "label": "A1 · A vs L",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "a",
+      "teamB": "l",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70214161"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1AZ4y157tS",
+      "referee": "Sonoaoi",
+      "streamer": "gxytcgxytc",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A2:L2"
+    },
+    {
+      "id": "a2",
+      "label": "A2 · B vs K",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "k",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70217154"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1bz4y1y7Fe",
+      "referee": "Europix",
+      "streamer": "Selis",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A3:L3"
+    },
+    {
+      "id": "a3",
+      "label": "A3 · C vs J",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "c",
+      "teamB": "j",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70219167"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV11v411r7h8",
+      "referee": "Sonoaoi",
+      "streamer": "Explosive",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A4:L4"
+    },
+    {
+      "id": "a4",
+      "label": "A4 · D vs I",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "d",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70211567"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1ty4y167iV",
+      "referee": "B C",
+      "streamer": "Sonoaoi",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A5:L5"
+    },
+    {
+      "id": "a5",
+      "label": "A5 · E vs H",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "e",
+      "teamB": "h",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70216682"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV11Z4y137Lx",
+      "referee": "osu happy",
+      "streamer": "B C",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A6:L6"
+    },
+    {
+      "id": "a6",
+      "label": "A6 · F vs G",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "f",
+      "teamB": "g",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70279705"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1FK411V7x6",
+      "referee": "demisemiquaver",
+      "streamer": "Alice Mana",
+      "commentators": "Alice Mana",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A7:L7"
+    },
+    {
+      "id": "a7",
+      "label": "A7 · F vs I",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "f",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70607908"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Sy4y167ax",
+      "referee": "Explosive",
+      "streamer": "Sonoaoi",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A8:L8"
+    },
+    {
+      "id": "a8",
+      "label": "A8 · E vs K",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "e",
+      "teamB": "k",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70607142"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1tf4y1v7Wt",
+      "referee": "502 Bad Speed",
+      "streamer": "Nagaiyume",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A9:L9"
+    },
+    {
+      "id": "a9",
+      "label": "A9 · C vs L",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "c",
+      "teamB": "l",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70611688"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1t541157pX",
+      "referee": "osu happy",
+      "streamer": "Muziyami",
+      "commentators": "prophet luffyty osu happy",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A10:L10"
+    },
+    {
+      "id": "a10",
+      "label": "A10 · D vs G",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "d",
+      "teamB": "g",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70610187"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1iK411V7x1",
+      "referee": "Sonoaoi",
+      "streamer": "Dana Iclucia",
+      "commentators": "prophet luffyty Selis",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A11:L11"
+    },
+    {
+      "id": "a11",
+      "label": "A11 · B vs H",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "h",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70673286"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV16A411x75T",
+      "referee": "B C",
+      "streamer": "Selis",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A12:L12"
+    },
+    {
+      "id": "a12",
+      "label": "A12 · A vs J",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "a",
+      "teamB": "j",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/70672935"
+      ],
+      "vodUrl": null,
+      "referee": "demisemiquaver",
+      "streamer": "Sonoaoi",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A13:L13"
+    },
+    {
+      "id": "a13",
+      "label": "A13 · A vs I",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "a",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71008526"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Uy4y1S7on",
+      "referee": "502 Bad Speed",
+      "streamer": "Sonoaoi",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A14:L14"
+    },
+    {
+      "id": "a14",
+      "label": "A14 · D vs C",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "d",
+      "teamB": "c",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71012162"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1na4y1H7Ay",
+      "referee": "demisemiquaver",
+      "streamer": "Re_CYCLC",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A15:L15"
+    },
+    {
+      "id": "a15",
+      "label": "A15 · F vs E",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "f",
+      "teamB": "e",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71012247"
+      ],
+      "vodUrl": null,
+      "referee": "osu happy",
+      "streamer": "none",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A16:L16"
+    },
+    {
+      "id": "a16",
+      "label": "A16 · G vs H",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "g",
+      "teamB": "h",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71083712"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV14p4y1z7Hz",
+      "referee": "Kishin Sagume",
+      "streamer": "Aurora_fang",
+      "commentators": "Kishin Sagume  TaneshimaPopura  Aurora_fang",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A17:L17"
+    },
+    {
+      "id": "a17",
+      "label": "A17 · K vs L",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "k",
+      "teamB": "l",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71079961"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/av543037600",
+      "referee": "Europix",
+      "streamer": "Alice mana",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A18:L18"
+    },
+    {
+      "id": "a18",
+      "label": "A18 · B vs J",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "j",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71012199"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Vz4y1C7oJ",
+      "referee": "B C",
+      "streamer": "Sonoaoi",
+      "commentators": "prophet",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A19:L19"
+    },
+    {
+      "id": "a19",
+      "label": "A19 · H vs C",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "h",
+      "teamB": "c",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71484949"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Hz4y1r7e2",
+      "referee": "502 Bad Speed",
+      "streamer": "Alice mana",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A20:L20"
+    },
+    {
+      "id": "a20",
+      "label": "A20 · J vs G",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "j",
+      "teamB": "g",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71472736"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1DT4y1M789",
+      "referee": "osu happy",
+      "streamer": "Alice mana",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A21:L21"
+    },
+    {
+      "id": "a21",
+      "label": "A21 · D vs E",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "d",
+      "teamB": "e",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71422298"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/bv1kV41187Kk",
+      "referee": "B C",
+      "streamer": "Selis",
+      "commentators": "prophet selis b c",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A22:L22"
+    },
+    {
+      "id": "a22",
+      "label": "A22 · B vs A",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "a",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71421418"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Zy4y1q7VG",
+      "referee": "Sonoaoi",
+      "streamer": "Explosive",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A23:L23"
+    },
+    {
+      "id": "a23",
+      "label": "A23 · I vs K",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "i",
+      "teamB": "k",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71419226"
+      ],
+      "vodUrl": null,
+      "referee": "demisemiquaver",
+      "streamer": "k e e h a c k",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A24:L24"
+    },
+    {
+      "id": "a24",
+      "label": "A24 · L vs F",
+      "stage": "前四輪（原表順序）",
+      "poolId": null,
+      "teamA": "l",
+      "teamB": "f",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71422840"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV14f4y1i7SA",
+      "referee": "osu happy",
+      "streamer": "Muziyami",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A25:L25"
+    },
+    {
+      "id": "a25",
+      "label": "A25 · B vs E",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "e",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71900819"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1Nh411f739",
+      "referee": "Explosive",
+      "streamer": "Selis",
+      "commentators": "Selis、Europix、TaneshimaPopura",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A26:L26"
+    },
+    {
+      "id": "a26",
+      "label": "A26 · G vs C",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "g",
+      "teamB": "c",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71851009"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1ef4y1e7N3",
+      "referee": "Europix",
+      "streamer": "Selis",
+      "commentators": "Europix Selis luffyty",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A27:L27"
+    },
+    {
+      "id": "b27",
+      "label": "B27 · J vs I",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "j",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71910710"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/bv1MT4y1u7MV",
+      "referee": "Kishin Sagume",
+      "streamer": "Alice Mana",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A28:L28"
+    },
+    {
+      "id": "b28",
+      "label": "B28 · A vs H",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "a",
+      "teamB": "h",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/71900068"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1964y1f7nK",
+      "referee": "B C",
+      "streamer": "- Rainbow -",
+      "commentators": "prophet - rainbow -",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A29:L29"
+    },
+    {
+      "id": "wf",
+      "label": "WF · B vs G",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "g",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/72198819"
+      ],
+      "vodUrl": null,
+      "referee": "demisemiquaver",
+      "streamer": "Sonoaoi",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A30:L30"
+    },
+    {
+      "id": "b30",
+      "label": "B30 · C vs I",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "c",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/72307852"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1bh411f7gM",
+      "referee": "B C",
+      "streamer": "Selis",
+      "commentators": "Selis、prophet、B C",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A31:L31"
+    },
+    {
+      "id": "b31",
+      "label": "B31 · E vs A",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "e",
+      "teamB": "a",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/72304259"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/av543251741",
+      "referee": "demisemiquaver",
+      "streamer": "B C",
+      "commentators": "Prophet BC demq",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A32:L32"
+    },
+    {
+      "id": "b32",
+      "label": "B32 · I vs E",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "i",
+      "teamB": "e",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/72596333"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/BV1aT4y1T7G3",
+      "referee": "B C",
+      "streamer": "Sonoaoi",
+      "commentators": "Prophet Crystal 1",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A33:L33"
+    },
+    {
+      "id": "lf",
+      "label": "LF · B vs I",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "b",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/72703300"
+      ],
+      "vodUrl": null,
+      "referee": "Crystal 1",
+      "streamer": "Selis",
+      "commentators": null,
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A34:L34"
+    },
+    {
+      "id": "gf",
+      "label": "GF · G vs I",
+      "stage": "後續對局（原表順序）",
+      "poolId": null,
+      "teamA": "g",
+      "teamB": "i",
+      "scheduledAt": null,
+      "score": null,
+      "mpUrls": [
+        "https://osu.ppy.sh/community/matches/73600572"
+      ],
+      "vodUrl": "https://www.bilibili.com/video/bv1Hy4y1m7L8",
+      "referee": "B C",
+      "streamer": "Alice mana",
+      "commentators": "好多人",
+      "bansA": null,
+      "bansB": null,
+      "source": "对阵表!A35:L35"
+    }
+  ],
+  "pools": [
+    {
+      "id": "pool-1",
+      "name": "第一轮赛图",
+      "source": "第一轮赛图",
+      "maps": [
+        {
+          "slot": "NM1",
+          "beatmapId": 2449773,
+          "title": "x0o0x_ - / / // / / [Invisible Station]",
+          "mapper": "too",
+          "stars": 5.42,
+          "bpm": 130.0,
+          "drainSeconds": 118,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B2:P2"
+        },
+        {
+          "slot": "NM2",
+          "beatmapId": 1379897,
+          "title": "Wake up, May'n! - One In A Billion [Yogurtt's Extra]",
+          "mapper": "yogurtt",
+          "stars": 5.96,
+          "bpm": 152.0,
+          "drainSeconds": 231,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B3:P3"
+        },
+        {
+          "slot": "NM3",
+          "beatmapId": 446261,
+          "title": "Igorrr - Moldy Eye [Insane]",
+          "mapper": "grumd",
+          "stars": 5.56,
+          "bpm": 210.0,
+          "drainSeconds": 129,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B4:P4"
+        },
+        {
+          "slot": "NM4",
+          "beatmapId": 1559384,
+          "title": "Skillet - Monster [Extra]",
+          "mapper": "Testo",
+          "stars": 5.25,
+          "bpm": 135.0,
+          "drainSeconds": 165,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B5:P5"
+        },
+        {
+          "slot": "NM5",
+          "beatmapId": 2610929,
+          "title": "Virtual Riot - Prove Them Wrong [Reform's Extra]",
+          "mapper": "Reform",
+          "stars": 5.67,
+          "bpm": 174.0,
+          "drainSeconds": 145,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B6:P6"
+        },
+        {
+          "slot": "HD1",
+          "beatmapId": 1286416,
+          "title": "Dreamcatcher - GOOD NIGHT [toybot's Sunset]",
+          "mapper": "toybot",
+          "stars": 5.35,
+          "bpm": 196.0,
+          "drainSeconds": 163,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B8:P8"
+        },
+        {
+          "slot": "HD2",
+          "beatmapId": 2116373,
+          "title": "ZUN - Chiisana Chiisana Kenshou [Extra Stage]",
+          "mapper": "Leader",
+          "stars": 5.59,
+          "bpm": 170.0,
+          "drainSeconds": 93,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B9:P9"
+        },
+        {
+          "slot": "HD3",
+          "beatmapId": 1736935,
+          "title": "EBIMAYO - GOODTEK [T-Turn Up the Bass]",
+          "mapper": "Ruby",
+          "stars": 5.67,
+          "bpm": 190.0,
+          "drainSeconds": 100,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B10:P10"
+        },
+        {
+          "slot": "HR1",
+          "beatmapId": 2588363,
+          "title": "Yorushika - Deep Indigo [aika & kanor Collab Insane]",
+          "mapper": "Ryuusei Aika & Kanor",
+          "stars": 5.29,
+          "bpm": 210.0,
+          "drainSeconds": 205,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B12:P12"
+        },
+        {
+          "slot": "HR2",
+          "beatmapId": 2600667,
+          "title": "yuikonnu - Souzou Forest [deetz' Extra]",
+          "mapper": "Deetz",
+          "stars": 5.8,
+          "bpm": 180.0,
+          "drainSeconds": 206,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B13:P13"
+        },
+        {
+          "slot": "HR3",
+          "beatmapId": 2523311,
+          "title": "fiend - Morrissey [Extra]",
+          "mapper": "Apo11o",
+          "stars": 5.54,
+          "bpm": 170.0,
+          "drainSeconds": 74,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B14:P14"
+        },
+        {
+          "slot": "DT1",
+          "beatmapId": 1636976,
+          "title": "Younha - Houkiboshi [Insane]",
+          "mapper": "Seto Kousuke",
+          "stars": 5.56,
+          "bpm": 232.725,
+          "drainSeconds": 128,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B16:P16"
+        },
+        {
+          "slot": "DT2",
+          "beatmapId": 2664535,
+          "title": "Analog digitaL - IBUKI [Insane]",
+          "mapper": "Gibune",
+          "stars": 5.74,
+          "bpm": 207.0,
+          "drainSeconds": 93,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B17:P17"
+        },
+        {
+          "slot": "DT3",
+          "beatmapId": 2400965,
+          "title": "EGOIST - Saigo no Hanabira (The meaning of love) [Elegy]",
+          "mapper": "LunarSakuya",
+          "stars": 5.63,
+          "bpm": 112.5,
+          "drainSeconds": 142,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B18:P18"
+        },
+        {
+          "slot": "DT4",
+          "beatmapId": 1414553,
+          "title": "Itou Masumi - Yume no Naka no Watashi no Yume [Coda]",
+          "mapper": "RLC",
+          "stars": 5.86,
+          "bpm": 237.0,
+          "drainSeconds": 211,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B19:P19"
+        },
+        {
+          "slot": "TB1",
+          "beatmapId": 2085910,
+          "title": "Yamamoto Mineko - Rinne [Left & Mirash's Last Bullet]",
+          "mapper": "Left & Mirash",
+          "stars": 5.92,
+          "bpm": 179.0,
+          "drainSeconds": 251,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "第一轮赛图!B21:P21"
+        }
+      ]
+    },
+    {
+      "id": "pool-2",
+      "name": "二轮赛图数据",
+      "source": "二轮赛图数据",
+      "maps": [
+        {
+          "slot": "NM1",
+          "beatmapId": 2658824,
+          "title": "Limonene - (please) replay [(always) remember]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B2:P2"
+        },
+        {
+          "slot": "NM2",
+          "beatmapId": 1887384,
+          "title": "Two Steps From Hell - Invincible [Extreme]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B3:P3"
+        },
+        {
+          "slot": "NM3",
+          "beatmapId": 2572132,
+          "title": "Iwami Takashi - Noraneko no Shinryaku (Cut Ver.) [Expert]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B4:P4"
+        },
+        {
+          "slot": "NM4",
+          "beatmapId": 2455776,
+          "title": "Tatsh - Xevel [MASTER]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B5:P5"
+        },
+        {
+          "slot": "NM5",
+          "beatmapId": 2043907,
+          "title": "Brookes Brothers feat. Georgie Allen - New Wave [Yusomi's Extra]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B6:P6"
+        },
+        {
+          "slot": "HD1",
+          "beatmapId": 2656918,
+          "title": "ARForest - Qesia [Extra]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B8:P8"
+        },
+        {
+          "slot": "HD2",
+          "beatmapId": 2619918,
+          "title": "HyuN feat. YURI - Disorder [Sylas' Expert]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B9:P9"
+        },
+        {
+          "slot": "HD3",
+          "beatmapId": 2345617,
+          "title": "solfa feat. Ceui - primal [Blossom]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B10:P10"
+        },
+        {
+          "slot": "HR1",
+          "beatmapId": 2485990,
+          "title": "BAND-MAID - RINNE [INSANE]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B12:P12"
+        },
+        {
+          "slot": "HR2",
+          "beatmapId": 2273613,
+          "title": "canoue - Sora o Te ni Shita Tabibito [Petal]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B13:P13"
+        },
+        {
+          "slot": "HR3",
+          "beatmapId": 2686903,
+          "title": "BLOOD CODE - POP SHOVE-IT FEAT. TOFUKU [Extra]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B14:P14"
+        },
+        {
+          "slot": "DT1",
+          "beatmapId": 2489794,
+          "title": "Hannah Diamond & Danny L Harle - Part of Me [Insane]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B16:P16"
+        },
+        {
+          "slot": "DT2",
+          "beatmapId": 2567502,
+          "title": "Annabel - syncretism [Insane]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B17:P17"
+        },
+        {
+          "slot": "DT3",
+          "beatmapId": 2116610,
+          "title": "HyuN - Tokyo's Starlight [Insane]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B18:P18"
+        },
+        {
+          "slot": "DT4",
+          "beatmapId": 2720295,
+          "title": "Maeda Jun x yanaginagi - Before I Rise [Welcome to OCLR]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B19:P19"
+        },
+        {
+          "slot": "TB1",
+          "beatmapId": 1968486,
+          "title": "DJKurara - Goodbye [grumd's Extra]",
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "二轮赛图数据!B21:P21"
+        }
+      ]
+    },
+    {
+      "id": "pool-3",
+      "name": "季后赛R1图池",
+      "source": "季后赛R1图池",
+      "maps": [
+        {
+          "slot": "NM1",
+          "beatmapId": 2702294,
+          "title": "Lime - 8bit Voyager [Expert]",
+          "mapper": "Hazu-",
+          "stars": 5.81,
+          "bpm": 182.0,
+          "drainSeconds": 127,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B2:P2"
+        },
+        {
+          "slot": "NM2",
+          "beatmapId": 2395518,
+          "title": "Imy feat. Aitsuki Nakuru - Zanshou no Resonance [Silky & Satellite's Extra]",
+          "mapper": "Silky & Satellite",
+          "stars": 6.13,
+          "bpm": 175.0,
+          "drainSeconds": 201,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B3:P3"
+        },
+        {
+          "slot": "NM3",
+          "beatmapId": 2730613,
+          "title": "Dj Genki vs Gram - Einherjar Joker [OCLR]",
+          "mapper": "09Kami",
+          "stars": 5.94,
+          "bpm": 222.0,
+          "drainSeconds": 114,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B4:P4"
+        },
+        {
+          "slot": "NM4",
+          "beatmapId": 2416428,
+          "title": "Feryquitous - I can avoid it.#owo [Chaos]",
+          "mapper": "Natsume Shiki",
+          "stars": 5.29,
+          "bpm": 130.0,
+          "drainSeconds": 114,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B5:P5"
+        },
+        {
+          "slot": "NM5",
+          "beatmapId": 2603702,
+          "title": "YUC'e - Future Candy (Xignality Remix) (Cut Ver.) [Extra]",
+          "mapper": "Regou",
+          "stars": 5.71,
+          "bpm": 180.0,
+          "drainSeconds": 115,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B6:P6"
+        },
+        {
+          "slot": "NM6",
+          "beatmapId": 2240700,
+          "title": "Ice Nine Kills - IT Is The End [Nowa's Extra]",
+          "mapper": "DTM9 Nowa",
+          "stars": 5.53,
+          "bpm": 150.0,
+          "drainSeconds": 201,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B7:P7"
+        },
+        {
+          "slot": "HD1",
+          "beatmapId": 1353521,
+          "title": "Soleily - Tsumujikaze [Extra]",
+          "mapper": "Meg",
+          "stars": 5.57,
+          "bpm": 178.0,
+          "drainSeconds": 110,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B9:P9"
+        },
+        {
+          "slot": "HD2",
+          "beatmapId": 2615793,
+          "title": "Freezer feat. Kiichigo - Chocolate Planet [Dailycare's Extra (#1)]",
+          "mapper": "Dailycare",
+          "stars": 5.69,
+          "bpm": 185.0,
+          "drainSeconds": 116,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B10:P10"
+        },
+        {
+          "slot": "HD3",
+          "beatmapId": 2173973,
+          "title": "Yellow Claw - Good Day feat. DJ Snake & Elliphant [Noble]",
+          "mapper": "Xen",
+          "stars": 5.61,
+          "bpm": 104.0,
+          "drainSeconds": 210,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B11:P11"
+        },
+        {
+          "slot": "HD4",
+          "beatmapId": 2278245,
+          "title": "F-777 - Hydra [Expert]",
+          "mapper": "DTM9 Nowa",
+          "stars": 5.4,
+          "bpm": 200.0,
+          "drainSeconds": 182,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B12:P12"
+        },
+        {
+          "slot": "HR1",
+          "beatmapId": 637477,
+          "title": "BlackYooh vs. siromaru - BLACK or WHITE? [INFINITE]",
+          "mapper": "BluOxy",
+          "stars": 5.29,
+          "bpm": 185.0,
+          "drainSeconds": 115,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B14:P14"
+        },
+        {
+          "slot": "HR2",
+          "beatmapId": 2485108,
+          "title": "Hyper Potions & MYLK - Jelly [Insane]",
+          "mapper": "eiri-",
+          "stars": 5.87,
+          "bpm": 100.0,
+          "drainSeconds": 168,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B15:P15"
+        },
+        {
+          "slot": "HR3",
+          "beatmapId": 2744118,
+          "title": "Hana - Kuukirikigaku Shoujo to Shounen no Uta [Mirash & Delis' Collab Extra]",
+          "mapper": "Mirash & Delis",
+          "stars": 5.94,
+          "bpm": 182.0,
+          "drainSeconds": 247,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B16:P16"
+        },
+        {
+          "slot": "HR4",
+          "beatmapId": 556151,
+          "title": "P*Light - FUNKY SUMMER BEACH [yf's Another]",
+          "mapper": "yf_bmp",
+          "stars": 5.72,
+          "bpm": 175.0,
+          "drainSeconds": 101,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B17:P17"
+        },
+        {
+          "slot": "DT1",
+          "beatmapId": 2018062,
+          "title": "Fujimiya Kaori (CV: Amamiya Sora) - Kanade [Goodbye]",
+          "mapper": "domSaur",
+          "stars": 5.58,
+          "bpm": 114.0,
+          "drainSeconds": 200,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B19:P19"
+        },
+        {
+          "slot": "DT2",
+          "beatmapId": 2369074,
+          "title": "mimimemeMIMI - Sentimental Love [for you.]",
+          "mapper": "Ipas",
+          "stars": 5.86,
+          "bpm": 207.0,
+          "drainSeconds": 184,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B20:P20"
+        },
+        {
+          "slot": "DT3",
+          "beatmapId": 249438,
+          "title": "Infected Mushroom - Becoming Insane [LC]",
+          "mapper": "Nemis",
+          "stars": 6.14,
+          "bpm": 217.5,
+          "drainSeconds": 105,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B21:P21"
+        },
+        {
+          "slot": "DT4",
+          "beatmapId": 2719430,
+          "title": "Ayase Rie - Hijitsuzaikei Joshitachi wa Dou Surya Ii Desu ka? [Hard]",
+          "mapper": "Lasse",
+          "stars": 5.73,
+          "bpm": 237.0,
+          "drainSeconds": 132,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B22:P22"
+        },
+        {
+          "slot": "TB1",
+          "beatmapId": 2538074,
+          "title": "Demetori - Hoshi no Utsuwa ~ Casket of Star [Uniflake's Extra Stage]",
+          "mapper": "Flake & Uniform",
+          "stars": 5.98,
+          "bpm": 190.0,
+          "drainSeconds": 236,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "季后赛R1图池!B24:P24"
+        }
+      ]
+    },
+    {
+      "id": "pool-4",
+      "name": "Final 图池",
+      "source": "Final 图池",
+      "maps": [
+        {
+          "slot": "NM1",
+          "beatmapId": 2497195,
+          "title": "Umeboshi Chazuke - Panic! Pop'n! Picnic! [Party!]",
+          "mapper": "Dudamesh",
+          "stars": 5.85,
+          "bpm": 190.0,
+          "drainSeconds": 131,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B2:P2"
+        },
+        {
+          "slot": "NM2",
+          "beatmapId": 2618287,
+          "title": "Barbarian On The Groove feat. Shimotsuki Haruka - Nami no Zankyou [Affection]",
+          "mapper": "Lasse",
+          "stars": 6.11,
+          "bpm": 190.0,
+          "drainSeconds": 232,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B3:P3"
+        },
+        {
+          "slot": "NM3",
+          "beatmapId": 1373031,
+          "title": "SLAM & NATO - PARADOXX [Eiji's Extra]",
+          "mapper": "Eiji Kuinbii",
+          "stars": 5.79,
+          "bpm": 220.0,
+          "drainSeconds": 143,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B4:P4"
+        },
+        {
+          "slot": "NM4",
+          "beatmapId": 2756449,
+          "title": "fripSide - Hesitation Snow [Extra (OCLR ver.)]",
+          "mapper": "Fushimi Rio",
+          "stars": 5.65,
+          "bpm": 135.0,
+          "drainSeconds": 125,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B5:P5"
+        },
+        {
+          "slot": "NM5",
+          "beatmapId": 2153590,
+          "title": "Krewella - Killin' It (Sped Up Ver.) [Rapture]",
+          "mapper": "h3ct1c",
+          "stars": 5.88,
+          "bpm": 176.0,
+          "drainSeconds": 165,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B6:P6"
+        },
+        {
+          "slot": "NM6",
+          "beatmapId": 2240700,
+          "title": "Ice Nine Kills - IT Is The End [Nowa's Extra]",
+          "mapper": "DTM9 Nowa",
+          "stars": 5.53,
+          "bpm": 150.0,
+          "drainSeconds": 201,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B7:P7"
+        },
+        {
+          "slot": "HD1",
+          "beatmapId": 2293137,
+          "title": "Mazare & Luma - Nothing More [Love and Nothing More...]",
+          "mapper": "Flowziee",
+          "stars": 5.41,
+          "bpm": 180.0,
+          "drainSeconds": 213,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B9:P9"
+        },
+        {
+          "slot": "HD2",
+          "beatmapId": 2233954,
+          "title": "Denkishiki Karen Ongaku Shuudan - Lily Toxicity (Short Ver.) [Asaiga's Expert]",
+          "mapper": "asaiga",
+          "stars": 5.85,
+          "bpm": 170.0,
+          "drainSeconds": 74,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B10:P10"
+        },
+        {
+          "slot": "HD3",
+          "beatmapId": 2649270,
+          "title": "ChouCho - Haiiro no Saga [Wonder]",
+          "mapper": "Keqing",
+          "stars": 5.55,
+          "bpm": 184.0,
+          "drainSeconds": 189,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B11:P11"
+        },
+        {
+          "slot": "HD4",
+          "beatmapId": 2278245,
+          "title": "F-777 - Hydra [Expert]",
+          "mapper": "DTM9 Nowa",
+          "stars": 5.4,
+          "bpm": 200.0,
+          "drainSeconds": 182,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B12:P12"
+        },
+        {
+          "slot": "HR1",
+          "beatmapId": 757229,
+          "title": "sky_delta - Kreuz [Another]",
+          "mapper": "Meg",
+          "stars": 5.69,
+          "bpm": 183.0,
+          "drainSeconds": 110,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B14:P14"
+        },
+        {
+          "slot": "HR2",
+          "beatmapId": 1839666,
+          "title": "Yuna (CV: Kanda Sayaka) - Break Beat Bark! [Kalibe's Insane]",
+          "mapper": "Kalibe",
+          "stars": 5.83,
+          "bpm": 188.0,
+          "drainSeconds": 229,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B15:P15"
+        },
+        {
+          "slot": "HR3",
+          "beatmapId": 2228784,
+          "title": "Yonezu Kenshi - Flamingo [Yugu's Fla]",
+          "mapper": "Yugu",
+          "stars": 5.98,
+          "bpm": 114.0,
+          "drainSeconds": 194,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B16:P16"
+        },
+        {
+          "slot": "HR4",
+          "beatmapId": 556151,
+          "title": "P*Light - FUNKY SUMMER BEACH [yf's Another]",
+          "mapper": "yf_bmp",
+          "stars": 5.72,
+          "bpm": 175.0,
+          "drainSeconds": 101,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B17:P17"
+        },
+        {
+          "slot": "DT1",
+          "beatmapId": 2503454,
+          "title": "Yorushika - Tada Kimi ni Hare [Ayucchi's Insane]",
+          "mapper": "Ayucchi",
+          "stars": 5.52,
+          "bpm": 210.0,
+          "drainSeconds": 121,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B19:P19"
+        },
+        {
+          "slot": "DT2",
+          "beatmapId": 2610990,
+          "title": "Nekomata Master feat. *spiLa* - Clumsy thoughts [Insane]",
+          "mapper": "Gibune",
+          "stars": 6.1,
+          "bpm": 229.5,
+          "drainSeconds": 179,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B20:P20"
+        },
+        {
+          "slot": "DT3",
+          "beatmapId": 804801,
+          "title": "SoundTeMP - Be Nice 'n Easy [NotEasy]",
+          "mapper": "ErunamoJAZZ",
+          "stars": 5.93,
+          "bpm": 225.0,
+          "drainSeconds": 94,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B21:P21"
+        },
+        {
+          "slot": "DT4",
+          "beatmapId": 2240520,
+          "title": "Rita - MANA -Ano Hi, Mitsuketa Kirameki wa- [Insane]",
+          "mapper": "Lasse",
+          "stars": 6.08,
+          "bpm": 124.5,
+          "drainSeconds": 162,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B22:P22"
+        },
+        {
+          "slot": "TB1",
+          "beatmapId": 2662780,
+          "title": "Noah - Gentiana [Illusion]",
+          "mapper": "Adinda",
+          "stars": 6.12,
+          "bpm": 205.0,
+          "drainSeconds": 303,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "Final 图池!B25:P25"
+        }
+      ]
+    },
+    {
+      "id": "coach-qualifier",
+      "name": "教练资格赛",
+      "source": "教练赛积分!F2:R2",
+      "maps": [
+        {
+          "slot": "NM1",
+          "beatmapId": 792500,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        },
+        {
+          "slot": "NM2",
+          "beatmapId": 2629183,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        },
+        {
+          "slot": "NM3",
+          "beatmapId": 2557524,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        },
+        {
+          "slot": "HR1",
+          "beatmapId": 2332941,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        },
+        {
+          "slot": "HD1",
+          "beatmapId": 2097442,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        },
+        {
+          "slot": "DT1",
+          "beatmapId": 1919502,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        },
+        {
+          "slot": "DT2",
+          "beatmapId": 2247591,
+          "title": null,
+          "mapper": null,
+          "stars": null,
+          "bpm": null,
+          "drainSeconds": null,
+          "cs": null,
+          "ar": null,
+          "od": null,
+          "source": "教练赛积分!F2:R2"
+        }
+      ]
+    }
+  ],
+  "qualifiers": [
+    {
+      "name": "教练资格赛",
+      "poolId": "coach-qualifier",
+      "source": "教练赛积分",
+      "records": [
+        {
+          "username": "Kishin Sagume",
+          "source": "教练赛积分!D3:T3",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 339928
+            },
+            {
+              "slot": "NM2",
+              "score": 202016
+            },
+            {
+              "slot": "NM3",
+              "score": 205546
+            },
+            {
+              "slot": "HR1",
+              "score": 291302
+            },
+            {
+              "slot": "HD1",
+              "score": 311461
+            },
+            {
+              "slot": "DT1",
+              "score": 153537
+            },
+            {
+              "slot": "DT2",
+              "score": 379263
+            }
+          ]
+        },
+        {
+          "username": "milk-tea",
+          "source": "教练赛积分!D4:T4",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 758484
+            },
+            {
+              "slot": "NM2",
+              "score": 411404
+            },
+            {
+              "slot": "NM3",
+              "score": 675160
+            },
+            {
+              "slot": "HR1",
+              "score": 645182
+            },
+            {
+              "slot": "HD1",
+              "score": 312045
+            },
+            {
+              "slot": "DT1",
+              "score": 611524
+            },
+            {
+              "slot": "DT2",
+              "score": 675243
+            }
+          ]
+        },
+        {
+          "username": "Manasoy",
+          "source": "教练赛积分!D5:T5",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 744582
+            },
+            {
+              "slot": "NM2",
+              "score": 240402
+            },
+            {
+              "slot": "NM3",
+              "score": 399406
+            },
+            {
+              "slot": "HR1",
+              "score": 815051
+            },
+            {
+              "slot": "HD1",
+              "score": 206745
+            },
+            {
+              "slot": "DT1",
+              "score": 562064
+            },
+            {
+              "slot": "DT2",
+              "score": 815258
+            }
+          ]
+        },
+        {
+          "username": "[Kaffu Chile]",
+          "source": "教练赛积分!D6:T6",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 364569
+            },
+            {
+              "slot": "NM2",
+              "score": 270339
+            },
+            {
+              "slot": "NM3",
+              "score": 345922
+            },
+            {
+              "slot": "HR1",
+              "score": 648449
+            },
+            {
+              "slot": "HD1",
+              "score": 325736
+            },
+            {
+              "slot": "DT1",
+              "score": 370334
+            },
+            {
+              "slot": "DT2",
+              "score": 522343
+            }
+          ]
+        },
+        {
+          "username": "Neina",
+          "source": "教练赛积分!D7:T7",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 789501
+            },
+            {
+              "slot": "NM2",
+              "score": 177951
+            },
+            {
+              "slot": "NM3",
+              "score": 253566
+            },
+            {
+              "slot": "HR1",
+              "score": 183270
+            },
+            {
+              "slot": "HD1",
+              "score": 123090
+            },
+            {
+              "slot": "DT1",
+              "score": 232377
+            },
+            {
+              "slot": "DT2",
+              "score": 366564
+            }
+          ]
+        },
+        {
+          "username": "Old K",
+          "source": "教练赛积分!D8:T8",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 409134
+            },
+            {
+              "slot": "NM2",
+              "score": 227441
+            },
+            {
+              "slot": "NM3",
+              "score": 297250
+            },
+            {
+              "slot": "HR1",
+              "score": 431939
+            },
+            {
+              "slot": "HD1",
+              "score": 290569
+            },
+            {
+              "slot": "DT1",
+              "score": 271735
+            },
+            {
+              "slot": "DT2",
+              "score": 524290
+            }
+          ]
+        },
+        {
+          "username": "demisemiquaver",
+          "source": "教练赛积分!D9:T9",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 437299
+            },
+            {
+              "slot": "NM2",
+              "score": 196451
+            },
+            {
+              "slot": "NM3",
+              "score": 235967
+            },
+            {
+              "slot": "HR1",
+              "score": 301881
+            },
+            {
+              "slot": "HD1",
+              "score": 289436
+            },
+            {
+              "slot": "DT1",
+              "score": 261701
+            },
+            {
+              "slot": "DT2",
+              "score": 588664
+            }
+          ]
+        },
+        {
+          "username": "gxytcgxytc",
+          "source": "教练赛积分!D10:T10",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 193436
+            },
+            {
+              "slot": "NM2",
+              "score": 153664
+            },
+            {
+              "slot": "NM3",
+              "score": 142329
+            },
+            {
+              "slot": "HR1",
+              "score": 218310
+            },
+            {
+              "slot": "HD1",
+              "score": 230979
+            },
+            {
+              "slot": "DT1",
+              "score": 192054
+            },
+            {
+              "slot": "DT2",
+              "score": 483017
+            }
+          ]
+        },
+        {
+          "username": "Sayori_yui",
+          "source": "教练赛积分!D11:T11",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 250907
+            },
+            {
+              "slot": "NM2",
+              "score": 148499
+            },
+            {
+              "slot": "NM3",
+              "score": 116606
+            },
+            {
+              "slot": "HR1",
+              "score": 260434
+            },
+            {
+              "slot": "HD1",
+              "score": 138008
+            },
+            {
+              "slot": "DT1",
+              "score": 102610
+            },
+            {
+              "slot": "DT2",
+              "score": 257201
+            }
+          ]
+        },
+        {
+          "username": "silly me",
+          "source": "教练赛积分!D12:T12",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 307639
+            },
+            {
+              "slot": "NM2",
+              "score": 220310
+            },
+            {
+              "slot": "NM3",
+              "score": 144903
+            },
+            {
+              "slot": "HR1",
+              "score": 234502
+            },
+            {
+              "slot": "HD1",
+              "score": 414951
+            },
+            {
+              "slot": "DT1",
+              "score": 80853
+            },
+            {
+              "slot": "DT2",
+              "score": 326156
+            }
+          ]
+        },
+        {
+          "username": "B C",
+          "source": "教练赛积分!D13:T13",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 697522
+            },
+            {
+              "slot": "NM2",
+              "score": 215249
+            },
+            {
+              "slot": "NM3",
+              "score": 248726
+            },
+            {
+              "slot": "HR1",
+              "score": 266008
+            },
+            {
+              "slot": "HD1",
+              "score": 167630
+            },
+            {
+              "slot": "DT1",
+              "score": 149802
+            },
+            {
+              "slot": "DT2",
+              "score": 293404
+            }
+          ]
+        },
+        {
+          "username": "TiRa",
+          "source": "教练赛积分!D14:T14",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 838102
+            },
+            {
+              "slot": "NM2",
+              "score": 299877
+            },
+            {
+              "slot": "NM3",
+              "score": 360822
+            },
+            {
+              "slot": "HR1",
+              "score": 376732
+            },
+            {
+              "slot": "HD1",
+              "score": 248392
+            },
+            {
+              "slot": "DT1",
+              "score": 271372
+            },
+            {
+              "slot": "DT2",
+              "score": 433747
+            }
+          ]
+        },
+        {
+          "username": "Crystal",
+          "source": "教练赛积分!D15:T15",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 801986
+            },
+            {
+              "slot": "NM2",
+              "score": 957446
+            },
+            {
+              "slot": "NM3",
+              "score": 494065
+            },
+            {
+              "slot": "HR1",
+              "score": 778357
+            },
+            {
+              "slot": "HD1",
+              "score": 687556
+            },
+            {
+              "slot": "DT1",
+              "score": 688662
+            },
+            {
+              "slot": "DT2",
+              "score": 1176042
+            }
+          ]
+        },
+        {
+          "username": "Miracle",
+          "source": "教练赛积分!D16:T16",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 581811
+            },
+            {
+              "slot": "NM2",
+              "score": 122422
+            },
+            {
+              "slot": "NM3",
+              "score": 156154
+            },
+            {
+              "slot": "HR1",
+              "score": 245018
+            },
+            {
+              "slot": "HD1",
+              "score": 129336
+            },
+            {
+              "slot": "DT1",
+              "score": 306439
+            },
+            {
+              "slot": "DT2",
+              "score": 241747
+            }
+          ]
+        },
+        {
+          "username": "Segawa Emi",
+          "source": "教练赛积分!D17:T17",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 197374
+            },
+            {
+              "slot": "NM2",
+              "score": 37401
+            },
+            {
+              "slot": "NM3",
+              "score": 152034
+            },
+            {
+              "slot": "HR1",
+              "score": 217498
+            },
+            {
+              "slot": "HD1",
+              "score": 272510
+            },
+            {
+              "slot": "DT1",
+              "score": 110943
+            },
+            {
+              "slot": "DT2",
+              "score": 153736
+            }
+          ]
+        },
+        {
+          "username": "Harubi Lira",
+          "source": "教练赛积分!D18:T18",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 320327
+            },
+            {
+              "slot": "NM2",
+              "score": 189025
+            },
+            {
+              "slot": "NM3",
+              "score": 147668
+            },
+            {
+              "slot": "HR1",
+              "score": 166311
+            },
+            {
+              "slot": "HD1",
+              "score": 206741
+            },
+            {
+              "slot": "DT1",
+              "score": 104252
+            },
+            {
+              "slot": "DT2",
+              "score": 370113
+            }
+          ]
+        },
+        {
+          "username": "buhei",
+          "source": "教练赛积分!D19:T19",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 442186
+            },
+            {
+              "slot": "NM2",
+              "score": 212715
+            },
+            {
+              "slot": "NM3",
+              "score": 181092
+            },
+            {
+              "slot": "HR1",
+              "score": 375404
+            },
+            {
+              "slot": "HD1",
+              "score": 367140
+            },
+            {
+              "slot": "DT1",
+              "score": 256016
+            },
+            {
+              "slot": "DT2",
+              "score": 467193
+            }
+          ]
+        },
+        {
+          "username": "NekoKamui",
+          "source": "教练赛积分!D20:T20",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 977795
+            },
+            {
+              "slot": "NM2",
+              "score": 460908
+            },
+            {
+              "slot": "NM3",
+              "score": 932675
+            },
+            {
+              "slot": "HR1",
+              "score": 507255
+            },
+            {
+              "slot": "HD1",
+              "score": 525966
+            },
+            {
+              "slot": "DT1",
+              "score": 335775
+            },
+            {
+              "slot": "DT2",
+              "score": 628884
+            }
+          ]
+        },
+        {
+          "username": "davidqu2",
+          "source": "教练赛积分!D21:T21",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 622045
+            },
+            {
+              "slot": "NM2",
+              "score": 545394
+            },
+            {
+              "slot": "NM3",
+              "score": 483537
+            },
+            {
+              "slot": "HR1",
+              "score": 453513
+            },
+            {
+              "slot": "HD1",
+              "score": 941156
+            },
+            {
+              "slot": "DT1",
+              "score": 605842
+            },
+            {
+              "slot": "DT2",
+              "score": 682211
+            }
+          ]
+        },
+        {
+          "username": "im_a_burger_fox",
+          "source": "教练赛积分!D22:T22",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 884450
+            },
+            {
+              "slot": "NM2",
+              "score": 522316
+            },
+            {
+              "slot": "NM3",
+              "score": 635533
+            },
+            {
+              "slot": "HR1",
+              "score": 633170
+            },
+            {
+              "slot": "HD1",
+              "score": 744945
+            },
+            {
+              "slot": "DT1",
+              "score": 583596
+            },
+            {
+              "slot": "DT2",
+              "score": 1005151
+            }
+          ]
+        },
+        {
+          "username": "PurePeace",
+          "source": "教练赛积分!D23:T23",
+          "scores": [
+            {
+              "slot": "NM1",
+              "score": 431156
+            },
+            {
+              "slot": "NM2",
+              "score": 97682
+            },
+            {
+              "slot": "NM3",
+              "score": 153159
+            },
+            {
+              "slot": "HR1",
+              "score": 202449
+            },
+            {
+              "slot": "HD1",
+              "score": 260875
+            },
+            {
+              "slot": "DT1",
+              "score": 82012
+            },
+            {
+              "slot": "DT2",
+              "score": 395728
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reviewTables": [
+    {
+      "name": "前24場勝敗與局數加總",
+      "note": "由原表比分加總；非正式排名或種子順序，比分尚未覆核。",
+      "rows": [
+        {
+          "teamId": "b",
+          "wins": 4,
+          "losses": 0,
+          "mapsWon": 20,
+          "mapsLost": 9
+        },
+        {
+          "teamId": "c",
+          "wins": 3,
+          "losses": 1,
+          "mapsWon": 18,
+          "mapsLost": 14
+        },
+        {
+          "teamId": "e",
+          "wins": 3,
+          "losses": 1,
+          "mapsWon": 17,
+          "mapsLost": 7
+        },
+        {
+          "teamId": "g",
+          "wins": 3,
+          "losses": 1,
+          "mapsWon": 17,
+          "mapsLost": 8
+        },
+        {
+          "teamId": "a",
+          "wins": 2,
+          "losses": 2,
+          "mapsWon": 11,
+          "mapsLost": 13
+        },
+        {
+          "teamId": "h",
+          "wins": 2,
+          "losses": 2,
+          "mapsWon": 17,
+          "mapsLost": 14
+        },
+        {
+          "teamId": "i",
+          "wins": 2,
+          "losses": 2,
+          "mapsWon": 13,
+          "mapsLost": 14
+        },
+        {
+          "teamId": "j",
+          "wins": 2,
+          "losses": 2,
+          "mapsWon": 15,
+          "mapsLost": 13
+        },
+        {
+          "teamId": "d",
+          "wins": 1,
+          "losses": 3,
+          "mapsWon": 10,
+          "mapsLost": 16
+        },
+        {
+          "teamId": "k",
+          "wins": 1,
+          "losses": 3,
+          "mapsWon": 12,
+          "mapsLost": 15
+        },
+        {
+          "teamId": "l",
+          "wins": 1,
+          "losses": 3,
+          "mapsWon": 7,
+          "mapsLost": 17
+        },
+        {
+          "teamId": "f",
+          "wins": 0,
+          "losses": 4,
+          "mapsWon": 3,
+          "mapsLost": 20
+        }
+      ]
+    }
+  ],
+  "sourceFacts": [
+    {
+      "category": "provenance",
+      "label": "第一轮赛图 原始 EX 標記",
+      "text": "[\"NM1(EX)\", \"HD1(EX)\", \"HR1(EX)\", \"DT1(EX)\"]",
+      "source": "第一轮赛图"
+    },
+    {
+      "category": "provenance",
+      "label": "二轮赛图数据 原始 EX 標記",
+      "text": "[\"NM1(EX)\", \"HD1(EX)\", \"HR1(EX)\", \"DT1(EX)\"]",
+      "source": "二轮赛图数据"
+    },
+    {
+      "category": "provenance",
+      "label": "季后赛R1图池 原始 EX 標記",
+      "text": "[\"NM1(EX)\", \"HD1(EX)\", \"HR1(EX)\", \"DT1(EX)\"]",
+      "source": "季后赛R1图池"
+    },
+    {
+      "category": "provenance",
+      "label": "Final 图池 原始 EX 標記",
+      "text": "[\"NM1(EX)\", \"HD1(EX)\", \"HR1(EX)\", \"DT1(EX)\"]",
+      "source": "Final 图池"
+    },
+    {
+      "category": "review",
+      "label": "A1 · A–L 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A1\", \"teamA\": \"A\", \"teamB\": \"L\", \"score\": [5, 1], \"dateAsStored\": \"2020-11-21\", \"dateSerial\": \"44156\", \"timeAsStored\": \"20:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70214161\", \"videoLiteral\": \"BV1AZ4y157tS\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A2:L2"
+    },
+    {
+      "category": "review",
+      "label": "A2 · B–K 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A2\", \"teamA\": \"B\", \"teamB\": \"K\", \"score\": [5, 2], \"dateAsStored\": \"2020-11-21\", \"dateSerial\": \"44156\", \"timeAsStored\": \"21:15\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70217154\", \"videoLiteral\": \"BV1bz4y1y7Fe\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A3:L3"
+    },
+    {
+      "category": "review",
+      "label": "A3 · C–J 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A3\", \"teamA\": \"C\", \"teamB\": \"J\", \"score\": [3, 5], \"dateAsStored\": \"2020-11-21\", \"dateSerial\": \"44156\", \"timeAsStored\": \"21:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70219167\", \"videoLiteral\": \"BV11v411r7h8\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A4:L4"
+    },
+    {
+      "category": "review",
+      "label": "A4 · D–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A4\", \"teamA\": \"D\", \"teamB\": \"I\", \"score\": [5, 1], \"dateAsStored\": \"2020-11-21\", \"dateSerial\": \"44156\", \"timeAsStored\": \"19:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70211567\", \"videoLiteral\": \"BV1ty4y167iV\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A5:L5"
+    },
+    {
+      "category": "review",
+      "label": "A5 · E–H 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A5\", \"teamA\": \"E\", \"teamB\": \"H\", \"score\": [2, 5], \"dateAsStored\": \"2020-11-21\", \"dateSerial\": \"44156\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70216682\", \"videoLiteral\": \"BV11Z4y137Lx\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A6:L6"
+    },
+    {
+      "category": "review",
+      "label": "A6 · F–G 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A6\", \"teamA\": \"F\", \"teamB\": \"G\", \"score\": [0, 5], \"dateAsStored\": \"2020-11-22\", \"dateSerial\": \"44157\", \"timeAsStored\": \"21:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70279705\", \"videoLiteral\": \"BV1FK411V7x6\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A7:L7"
+    },
+    {
+      "category": "review",
+      "label": "A7 · F–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A7\", \"teamA\": \"F\", \"teamB\": \"I\", \"score\": [0, 5], \"dateAsStored\": \"2020-11-28\", \"dateSerial\": \"44163\", \"timeAsStored\": \"19:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70607908\", \"videoLiteral\": \"BV1Sy4y167ax\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A8:L8"
+    },
+    {
+      "category": "review",
+      "label": "A8 · E–K 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A8\", \"teamA\": \"E\", \"teamB\": \"K\", \"score\": [5, 1], \"dateAsStored\": \"2020-11-28\", \"dateSerial\": \"44163\", \"timeAsStored\": \"19:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70607142\", \"videoLiteral\": \"BV1tf4y1v7Wt\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A9:L9"
+    },
+    {
+      "category": "review",
+      "label": "A9 · C–L 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A9\", \"teamA\": \"C\", \"teamB\": \"L\", \"score\": [5, 1], \"dateAsStored\": \"2020-11-28\", \"dateSerial\": \"44163\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70611688\", \"videoLiteral\": \"BV1t541157pX\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A10:L10"
+    },
+    {
+      "category": "review",
+      "label": "A10 · D–G 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A10\", \"teamA\": \"D\", \"teamB\": \"G\", \"score\": [1, 5], \"dateAsStored\": \"2020-11-28\", \"dateSerial\": \"44163\", \"timeAsStored\": \"20:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70610187\", \"videoLiteral\": \"BV1iK411V7x1\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A11:L11"
+    },
+    {
+      "category": "review",
+      "label": "A11 · B–H 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A11\", \"teamA\": \"B\", \"teamB\": \"H\", \"score\": [5, 3], \"dateAsStored\": \"2020-11-29\", \"dateSerial\": \"44164\", \"timeAsStored\": \"21:15\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70673286\", \"videoLiteral\": \"BV16A411x75T\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A12:L12"
+    },
+    {
+      "category": "review",
+      "label": "A12 · A–J 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A12\", \"teamA\": \"A\", \"teamB\": \"J\", \"score\": [0, 5], \"dateAsStored\": \"2020-11-29\", \"dateSerial\": \"44164\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/70672935\", \"videoLiteral\": null, \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A13:L13"
+    },
+    {
+      "category": "review",
+      "label": "A13 · A–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A13\", \"teamA\": \"A\", \"teamB\": \"I\", \"score\": [5, 2], \"dateAsStored\": \"2020-12-05\", \"dateSerial\": \"44170\", \"timeAsStored\": \"19:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71008526\", \"videoLiteral\": \"BV1Uy4y1S7on\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A14:L14"
+    },
+    {
+      "category": "review",
+      "label": "A14 · D–C 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A14\", \"teamA\": \"D\", \"teamB\": \"C\", \"score\": [4, 5], \"dateAsStored\": \"2020-12-05\", \"dateSerial\": \"44170\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71012162\", \"videoLiteral\": \"BV1na4y1H7Ay\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A15:L15"
+    },
+    {
+      "category": "review",
+      "label": "A15 · F–E 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A15\", \"teamA\": \"F\", \"teamB\": \"E\", \"score\": [1, 5], \"dateAsStored\": \"2020-12-05\", \"dateSerial\": \"44170\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71012247\", \"videoLiteral\": \"无人直播\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A16:L16"
+    },
+    {
+      "category": "review",
+      "label": "A16 · G–H 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A16\", \"teamA\": \"G\", \"teamB\": \"H\", \"score\": [2, 5], \"dateAsStored\": \"2020-12-06\", \"dateSerial\": \"44171\", \"timeAsStored\": \"22:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71083712\", \"videoLiteral\": \"BV14p4y1z7Hz\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A17:L17"
+    },
+    {
+      "category": "review",
+      "label": "A17 · K–L 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A17\", \"teamA\": \"K\", \"teamB\": \"L\", \"score\": [5, 0], \"dateAsStored\": \"2020-12-06\", \"dateSerial\": \"44171\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71079961\", \"videoLiteral\": \"av543037600\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A18:L18"
+    },
+    {
+      "category": "review",
+      "label": "A18 · B–J 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A18\", \"teamA\": \"B\", \"teamB\": \"J\", \"score\": [5, 3], \"dateAsStored\": \"2020-12-05\", \"dateSerial\": \"44170\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71012199\", \"videoLiteral\": \"BV1Vz4y1C7oJ\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A19:L19"
+    },
+    {
+      "category": "review",
+      "label": "A19 · H–C 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A19\", \"teamA\": \"H\", \"teamB\": \"C\", \"score\": [4, 5], \"dateAsStored\": \"2020-12-13\", \"dateSerial\": \"44178\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71484949\", \"videoLiteral\": \"BV1Hz4y1r7e2\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A20:L20"
+    },
+    {
+      "category": "review",
+      "label": "A20 · J–G 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A20\", \"teamA\": \"J\", \"teamB\": \"G\", \"score\": [2, 5], \"dateAsStored\": \"2020-12-13\", \"dateSerial\": \"44178\", \"timeAsStored\": \"14:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71472736\", \"videoLiteral\": \"BV1DT4y1M789\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A21:L21"
+    },
+    {
+      "category": "review",
+      "label": "A21 · D–E 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A21\", \"teamA\": \"D\", \"teamB\": \"E\", \"score\": [0, 5], \"dateAsStored\": \"2020-12-12\", \"dateSerial\": \"44177\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71422298\", \"videoLiteral\": \"bv1kV41187Kk\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A22:L22"
+    },
+    {
+      "category": "review",
+      "label": "A22 · B–A 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A22\", \"teamA\": \"B\", \"teamB\": \"A\", \"score\": [5, 1], \"dateAsStored\": \"2020-12-12\", \"dateSerial\": \"44177\", \"timeAsStored\": \"20:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71421418\", \"videoLiteral\": \"BV1Zy4y1q7VG\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A23:L23"
+    },
+    {
+      "category": "review",
+      "label": "A23 · I–K 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A23\", \"teamA\": \"I\", \"teamB\": \"K\", \"score\": [5, 4], \"dateAsStored\": \"2020-12-12\", \"dateSerial\": \"44177\", \"timeAsStored\": \"19:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71419226\", \"videoLiteral\": \"没录\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A24:L24"
+    },
+    {
+      "category": "review",
+      "label": "A24 · L–F 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A24\", \"teamA\": \"L\", \"teamB\": \"F\", \"score\": [5, 2], \"dateAsStored\": \"2020-12-12\", \"dateSerial\": \"44177\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71422840\", \"videoLiteral\": \"BV14f4y1i7SA\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A25:L25"
+    },
+    {
+      "category": "review",
+      "label": "A25 · B–E 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A25\", \"teamA\": \"B\", \"teamB\": \"E\", \"score\": [6, 0], \"dateAsStored\": \"2020-12-20\", \"dateSerial\": \"44185\", \"timeAsStored\": \"14:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71900819\", \"videoLiteral\": \"BV1Nh411f739\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A26:L26"
+    },
+    {
+      "category": "review",
+      "label": "A26 · G–C 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"A26\", \"teamA\": \"G\", \"teamB\": \"C\", \"score\": [6, 4], \"dateAsStored\": \"2020-12-19\", \"dateSerial\": \"44184\", \"timeAsStored\": \"22:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71851009\", \"videoLiteral\": \"BV1ef4y1e7N3\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A27:L27"
+    },
+    {
+      "category": "review",
+      "label": "B27 · J–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"B27\", \"teamA\": \"J\", \"teamB\": \"I\", \"score\": [3, 6], \"dateAsStored\": \"2020-12-20\", \"dateSerial\": \"44185\", \"timeAsStored\": \"20:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71910710\", \"videoLiteral\": \"bv1MT4y1u7MV\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A28:L28"
+    },
+    {
+      "category": "review",
+      "label": "B28 · A–H 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"B28\", \"teamA\": \"A\", \"teamB\": \"H\", \"score\": [6, 2], \"dateAsStored\": \"2020-12-20\", \"dateSerial\": \"44185\", \"timeAsStored\": \"14:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/71900068\", \"videoLiteral\": \"BV1964y1f7nK\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A29:L29"
+    },
+    {
+      "category": "review",
+      "label": "WF · B–G 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"WF\", \"teamA\": \"B\", \"teamB\": \"G\", \"score\": [2, 7], \"dateAsStored\": \"2020-12-25\", \"dateSerial\": \"44190\", \"timeAsStored\": \"22:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/72198819\", \"videoLiteral\": \"Fuck Bancho\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A30:L30"
+    },
+    {
+      "category": "review",
+      "label": "B30 · C–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"B30\", \"teamA\": \"C\", \"teamB\": \"I\", \"score\": [1, 6], \"dateAsStored\": \"2020-12-27\", \"dateSerial\": \"44192\", \"timeAsStored\": \"21:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/72307852\", \"videoLiteral\": \"BV1bh411f7gM\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A31:L31"
+    },
+    {
+      "category": "review",
+      "label": "B31 · E–A 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"B31\", \"teamA\": \"E\", \"teamB\": \"A\", \"score\": [6, 4], \"dateAsStored\": \"2020-12-27\", \"dateSerial\": \"44192\", \"timeAsStored\": \"19:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/72304259\", \"videoLiteral\": \"av543251741\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A32:L32"
+    },
+    {
+      "category": "review",
+      "label": "B32 · I–E 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"B32\", \"teamA\": \"I\", \"teamB\": \"E\", \"score\": [6, 2], \"dateAsStored\": \"2020-01-01\", \"dateSerial\": \"43831\", \"timeAsStored\": \"20:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/72596333\", \"videoLiteral\": \"BV1aT4y1T7G3\", \"notes\": [\"Stored year predates this season; 2021-01-01 is a candidate correction, not applied.\"], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A33:L33"
+    },
+    {
+      "category": "review",
+      "label": "LF · B–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"LF\", \"teamA\": \"B\", \"teamB\": \"I\", \"score\": [6, 7], \"dateAsStored\": \"2021-01-03\", \"dateSerial\": \"44199\", \"timeAsStored\": \"20:30\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/72703300\", \"videoLiteral\": null, \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A34:L34"
+    },
+    {
+      "category": "review",
+      "label": "GF · G–I 原表比分／時間（待覆核）",
+      "text": "{\"id\": \"GF\", \"teamA\": \"G\", \"teamB\": \"I\", \"score\": [7, 4], \"dateAsStored\": \"2021-01-17\", \"dateSerial\": \"44213\", \"timeAsStored\": \"20:00\", \"timeZone\": null, \"mpUrl\": \"https://osu.ppy.sh/community/matches/73600572\", \"videoLiteral\": \"bv1Hy4y1m7L8\", \"notes\": [], \"status\": \"transcribed_not_approved\"}",
+      "source": "对阵表!A35:L35"
+    },
+    {
+      "category": "provenance",
+      "label": "來源與名單優先序",
+      "text": "{\"source\": {\"fileName\": \"OCLR β MainSheet.xlsx\", \"sha256\": \"fe4802980b7f0508b2cba7e9a29c9b5f799bb4c83e65c1750cb2022554bf3593\", \"issue\": \"https://github.com/OCLR-dev/OCLR-website/issues/288\", \"spreadsheet\": \"https://docs.google.com/spreadsheets/d/100CrQhmcX3lQ_7yn4xcP3cC316A7t35wK6kGfSW2tyM/edit\", \"readOn\": \"2026-10-25\"}, \"authority\": {\"source\": \"MainSheet\", \"confirmedBy\": \"organizer\", \"confirmedOn\": \"2026-10-25\", \"note\": \"Roster selection does not establish alias or transfer history\"}, \"differences\": [{\"team\": \"B\", \"role\": \"Tier 1\", \"screenshotName\": \"TaneshimaPopura\", \"workbookName\": \"Muziyami\", \"source\": \"队伍表!F7\", \"status\": \"workbook_selected_by_organizer\", \"resolution\": \"Use MainSheet roster per organizer, 2026-10-25; transfer/alias history not confirmed\"}, {\"team\": \"C\", \"role\": \"Captain\", \"screenshotName\": \"Crystal 1\", \"workbookName\": \"Azureus\", \"source\": \"队伍表!C11\", \"status\": \"workbook_selected_by_organizer\", \"resolution\": \"Use MainSheet roster per organizer, 2026-10-25; transfer/alias history not confirmed\"}, {\"team\": \"C\", \"role\": \"Tier 1\", \"screenshotName\": \"Muziyami\", \"workbookName\": \"TaneshimaPopura\", \"source\": \"队伍表!F11\", \"status\": \"workbook_selected_by_organizer\", \"resolution\": \"Use MainSheet roster per organizer, 2026-10-25; transfer/alias history not confirmed\"}, {\"team\": \"J\", \"role\": \"Captain\", \"screenshotName\": \"My Suck Aim\", \"workbookName\": \"My_Suck_Aim\", \"source\": \"队伍表!C39\", \"status\": \"workbook_selected_by_organizer\", \"resolution\": \"Use MainSheet roster per organizer, 2026-10-25; transfer/alias history not confirmed\"}, {\"team\": \"K\", \"role\": \"Captain\", \"screenshotName\": \"moe nyannyan\", \"workbookName\": \"moe_nyannyan\", \"source\": \"队伍表!C43\", \"status\": \"workbook_selected_by_organizer\", \"resolution\": \"Use MainSheet roster per organizer, 2026-10-25; transfer/alias history not confirmed\"}]}",
+      "source": "主辦者確認；MainSheet／選秀截圖"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group1（獨立歷史快照）",
+      "text": "{\"group\": 1, \"avgElo\": 947, \"members\": [{\"name\": \"-xxx Rumia-\", \"elo\": 1052, \"role\": \"Captain\", \"identity\": {\"osuId\": 5936405, \"name\": \"-xxx Rumia-\", \"source\": \"测试表!C12:D12\"}}, {\"name\": \"dhui\", \"elo\": 969, \"role\": \"VICE\", \"identity\": {\"osuId\": 7798860, \"name\": \"dhui\", \"source\": \"测试表!C14:D14\"}}, {\"name\": \"BurNing\", \"elo\": 1087, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 342558, \"name\": \"BurNing\", \"source\": \"测试表!C67:D67\"}}, {\"name\": \"Reecho\", \"elo\": 1015, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 1262507, \"name\": \"reecho\", \"source\": \"测试表!C31:D31\"}}, {\"name\": \"Dana Iclucia\", \"elo\": 656, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 13184288, \"name\": \"Dana Iclucia\", \"source\": \"测试表!C46:D46\"}}, {\"name\": \"Niwasaka_Rira\", \"elo\": 903, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 7083201, \"name\": \"Niwasaka_Rira\", \"source\": \"测试表!C32:D32\"}}], \"candidateTeam\": \"A\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 947.0, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group2（獨立歷史快照）",
+      "text": "{\"group\": 2, \"avgElo\": 1021, \"members\": [{\"name\": \"Curriescaz\", \"elo\": 1278, \"role\": \"Captain\", \"identity\": {\"osuId\": 8012734, \"name\": \"Curriescaz\", \"source\": \"测试表!C20:D20\"}}, {\"name\": \"akziyou\", \"elo\": 1206, \"role\": \"VICE\", \"identity\": {\"osuId\": 427033, \"name\": \"akziyou\", \"source\": \"测试表!C44:D44\"}}, {\"name\": \"TaneshimaPopura\", \"elo\": 1118, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 714369, \"name\": \"TaneshimaPopura\", \"source\": \"测试表!C72:D72\"}}, {\"name\": \"[-buki-]\", \"elo\": 1165, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 2927918, \"name\": \"[-buki-]\", \"source\": \"测试表!C57:D57\"}}, {\"name\": \"Aurora_fang\", \"elo\": 702, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 9887164, \"name\": \"Aurora_fang\", \"source\": \"测试表!C56:D56\"}}, {\"name\": \"huoyaoyuan\", \"elo\": 656, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 2428732, \"name\": \"huoyaoyuan\", \"source\": \"测试表!C5:D5\"}}], \"candidateTeam\": \"B\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 1020.833333, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group3（獨立歷史快照）",
+      "text": "{\"group\": 3, \"avgElo\": 991, \"members\": [{\"name\": \"Crystal 1\", \"elo\": 1113, \"role\": \"Captain\", \"identity\": {\"osuId\": 11237954, \"name\": \"Crystal 1\", \"source\": \"测试表!C30:D30\"}}, {\"name\": \"WhiteCookies\", \"elo\": 973, \"role\": \"VICE\", \"identity\": {\"osuId\": 13617153, \"name\": \"WhiteCookies\", \"source\": \"测试表!C25:D25\"}}, {\"name\": \"Muziyami\", \"elo\": 975, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 7003013, \"name\": \"Muziyami\", \"source\": \"测试表!C3:D3\"}}, {\"name\": \"M P I\", \"elo\": 695, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 12942584, \"name\": \"M P I\", \"source\": \"测试表!C74:D74\"}}, {\"name\": \"zhuangsi\", \"elo\": 1082, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 2401600, \"name\": \"zhuangsi\", \"source\": \"测试表!C50:D50\"}}, {\"name\": \"None1637\", \"elo\": 1107, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 7184125, \"name\": \"None1637\", \"source\": \"测试表!C64:D64\"}}], \"candidateTeam\": \"C\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 990.833333, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group4（獨立歷史快照）",
+      "text": "{\"group\": 4, \"avgElo\": 1017, \"members\": [{\"name\": \"1miss_Cozmo\", \"elo\": 1222, \"role\": \"Captain\", \"identity\": {\"osuId\": 12764539, \"name\": \"1miss_Cozmo\", \"source\": \"测试表!C58:D58\"}}, {\"name\": \"Guozi on Osu\", \"elo\": 996, \"role\": \"VICE\", \"identity\": {\"osuId\": 8692802, \"name\": \"Guozi on Osu\", \"source\": \"测试表!C9:D9\"}}, {\"name\": \"Hunxin\", \"elo\": 1293, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 6397367, \"name\": \"Hunxin\", \"source\": \"测试表!C63:D63\"}}, {\"name\": \"Qlinging\", \"elo\": 927, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 12403986, \"name\": \"Qlinging\", \"source\": \"测试表!C16:D16\"}}, {\"name\": \"Yuuki Yuuna\", \"elo\": 997, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 311610, \"name\": \"Yuuki Yuuna\", \"source\": \"测试表!C23:D23\"}}, {\"name\": \"[K I D]\", \"elo\": 664, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 4764449, \"name\": \"[K I D]\", \"source\": \"测试表!C49:D49\"}}], \"candidateTeam\": \"D\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 1016.5, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group5（獨立歷史快照）",
+      "text": "{\"group\": 5, \"avgElo\": 946, \"members\": [{\"name\": \"Soymana\", \"elo\": 1043, \"role\": \"Captain\", \"identity\": {\"osuId\": 8751122, \"name\": \"Soymana\", \"source\": \"测试表!C43:D43\"}}, {\"name\": \"MasterKotori\", \"elo\": 1344, \"role\": \"VICE\", \"identity\": {\"osuId\": 2351439, \"name\": \"MasterKotori\", \"source\": \"测试表!C79:D79\"}}, {\"name\": \"hotrock_\", \"elo\": 1145, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 8877531, \"name\": \"hotrock_\", \"source\": \"测试表!C70:D70\"}}, {\"name\": \"Moutreak\", \"elo\": 787, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 3911472, \"name\": \"Moutreak\", \"source\": \"测试表!C15:D15\"}}, {\"name\": \"Mars New\", \"elo\": 769, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 8926316, \"name\": \"mars new\", \"source\": \"测试表!C10:D10\"}}, {\"name\": \"LittleStone\", \"elo\": 589, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 13960915, \"name\": \"LittleStone\", \"source\": \"测试表!C37:D37\"}}], \"candidateTeam\": \"E\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 946.166667, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group6（獨立歷史快照）",
+      "text": "{\"group\": 6, \"avgElo\": 999, \"members\": [{\"name\": \"Slay_conceit\", \"elo\": 1358, \"role\": \"Captain\", \"identity\": {\"osuId\": 5568835, \"name\": \"Slay_conceit\", \"source\": \"测试表!C24:D24\"}}, {\"name\": \"Clivery_V\", \"elo\": 1008, \"role\": \"VICE\", \"identity\": {\"osuId\": 6918298, \"name\": \"Clivery_V\", \"source\": \"测试表!C77:D77\"}}, {\"name\": \"Rairakkuhana\", \"elo\": 896, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 12117924, \"name\": \"Rairakkuhana\", \"source\": \"测试表!C6:D6\"}}, {\"name\": \"alansword\", \"elo\": 1177, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 11230275, \"name\": \"Alansword\", \"source\": \"测试表!C1:D1\"}}, {\"name\": \"[RyuZu]\", \"elo\": 908, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 10933499, \"name\": \"[RyuZu]\", \"source\": \"测试表!C48:D48\"}}, {\"name\": \"SqcOc-\", \"elo\": 647, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 10040597, \"name\": \"SqcOc-\", \"source\": \"测试表!C33:D33\"}}], \"candidateTeam\": \"F\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 999.0, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group7（獨立歷史快照）",
+      "text": "{\"group\": 7, \"avgElo\": 987, \"members\": [{\"name\": \"CUWAN\", \"elo\": 1084, \"role\": \"Captain\", \"identity\": {\"osuId\": 7799707, \"name\": \"CUWAN\", \"source\": \"测试表!C60:D60\"}}, {\"name\": \"An Yanyan\", \"elo\": 1224, \"role\": \"VICE\", \"identity\": {\"osuId\": 1936416, \"name\": \"An Yanyan\", \"source\": \"测试表!C17:D17\"}}, {\"name\": \"Molli\", \"elo\": 1091, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 8893772, \"name\": \"Molli\", \"source\": \"测试表!C18:D18\"}}, {\"name\": \"- Rainbow -\", \"elo\": 1137, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 8742486, \"name\": \"- Rainbow -\", \"source\": \"测试表!C7:D7\"}}, {\"name\": \"Myoi Mina\", \"elo\": 828, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 9218431, \"name\": \"Myoi Mina\", \"source\": \"测试表!C75:D75\"}}, {\"name\": \"Hoshizora Rin\", \"elo\": 558, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 10743435, \"name\": \"Hoshizora Rin\", \"source\": \"测试表!C65:D65\"}}], \"candidateTeam\": \"G\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 987.0, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group8（獨立歷史快照）",
+      "text": "{\"group\": 8, \"avgElo\": 868, \"members\": [{\"name\": \"zmyk\", \"elo\": 1081, \"role\": \"Captain\", \"identity\": {\"osuId\": 11396041, \"name\": \"zmyk\", \"source\": \"测试表!C19:D19\"}}, {\"name\": \"[Illustrious]\", \"elo\": 1089, \"role\": \"VICE\", \"identity\": {\"osuId\": 4082595, \"name\": \"[illustrious]\", \"source\": \"测试表!C73:D73\"}}, {\"name\": \"X bol\", \"elo\": 898, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 1793139, \"name\": \"X bol\", \"source\": \"测试表!C13:D13\"}}, {\"name\": \"Shijie\", \"elo\": 1105, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 10927454, \"name\": \"Shijie\", \"source\": \"测试表!C71:D71\"}}, {\"name\": \"Kazumi Pager\", \"elo\": 517, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 15030466, \"name\": \"Kazumi Pager\", \"source\": \"测试表!C8:D8\"}}, {\"name\": \"lianlian514\", \"elo\": 515, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 8976508, \"name\": \"lianlian514\", \"source\": \"测试表!C76:D76\"}}], \"candidateTeam\": \"H\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 867.5, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group9（獨立歷史快照）",
+      "text": "{\"group\": 9, \"avgElo\": 994, \"members\": [{\"name\": \"feifeiis\", \"elo\": 1219, \"role\": \"Captain\", \"identity\": {\"osuId\": 4734497, \"name\": \"feifeiis\", \"source\": \"测试表!C22:D22\"}}, {\"name\": \"VinyeKk_Ame\", \"elo\": 1282, \"role\": \"VICE\", \"identity\": {\"osuId\": 4721007, \"name\": \"VinyeKk_Ame\", \"source\": \"测试表!C51:D51\"}}, {\"name\": \"Texas\", \"elo\": 998, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 8281276, \"name\": \"texas\", \"source\": \"测试表!C62:D62\"}}, {\"name\": \"qi_e\", \"elo\": 949, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 6963321, \"name\": \"qi_e\", \"source\": \"测试表!C59:D59\"}}, {\"name\": \"Pata-Mon\", \"elo\": 858, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 6149313, \"name\": \"Pata-Mon\", \"source\": \"测试表!C39:D39\"}}, {\"name\": \"Katamari\", \"elo\": 655, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 1221468, \"name\": \"katamari\", \"source\": \"测试表!C55:D55\"}}], \"candidateTeam\": \"I\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 993.5, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group10（獨立歷史快照）",
+      "text": "{\"group\": 10, \"avgElo\": 942, \"members\": [{\"name\": \"My Suck Aim\", \"elo\": 1100, \"role\": \"Captain\", \"identity\": {\"osuId\": 2361632, \"name\": \"My Suck Aim\", \"source\": \"测试表!C52:D52\"}}, {\"name\": \"No rank\", \"elo\": 988, \"role\": \"VICE\", \"identity\": {\"osuId\": 10436444, \"name\": \"No rank\", \"source\": \"测试表!C34:D34\"}}, {\"name\": \"Takagi San\", \"elo\": 1043, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 1405856, \"name\": \"Takagi San\", \"source\": \"测试表!C53:D53\"}}, {\"name\": \"Banana skin\", \"elo\": 1005, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 1371409, \"name\": \"Banana skin\", \"source\": \"测试表!C54:D54\"}}, {\"name\": \"foraphe\", \"elo\": 979, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 9633566, \"name\": \"foraphe\", \"source\": \"测试表!C36:D36\"}}, {\"name\": \"AnthV\", \"elo\": 537, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 13171674, \"name\": \"AnthV\", \"source\": \"测试表!C47:D47\"}}], \"candidateTeam\": \"J\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 942.0, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group11（獨立歷史快照）",
+      "text": "{\"group\": 11, \"avgElo\": 1012, \"members\": [{\"name\": \"moe nyannyan\", \"elo\": 1228, \"role\": \"Captain\", \"identity\": {\"osuId\": 4087427, \"name\": \"moe nyannyan\", \"source\": \"测试表!C29:D29\"}}, {\"name\": \"KobeNanami\", \"elo\": 1008, \"role\": \"VICE\", \"identity\": {\"osuId\": 8911619, \"name\": \"KobeNanami\", \"source\": \"测试表!C35:D35\"}}, {\"name\": \"acvyou\", \"elo\": 1166, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 11042554, \"name\": \"acvyou\", \"source\": \"测试表!C21:D21\"}}, {\"name\": \"[ Kuon ]\", \"elo\": 1010, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 10377846, \"name\": \"[ Kuon ]\", \"source\": \"测试表!C27:D27\"}}, {\"name\": \"SakurajimaMai\", \"elo\": 1151, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 4733339, \"name\": \"SakurajimaMai\", \"source\": \"测试表!C69:D69\"}}, {\"name\": \"Shiina Mafuyu\", \"elo\": 506, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 2957253, \"name\": \"Shiina Mafuyu\", \"source\": \"测试表!C28:D28\"}}], \"candidateTeam\": \"K\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 1011.5, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "選秀截圖 Group12（獨立歷史快照）",
+      "text": "{\"group\": 12, \"avgElo\": 790, \"members\": [{\"name\": \"Darcklh\", \"elo\": 823, \"role\": \"Captain\", \"identity\": {\"osuId\": 12039046, \"name\": \"DarckLH\", \"source\": \"测试表!C68:D68\"}}, {\"name\": \"hvick226\", \"elo\": 1039, \"role\": \"VICE\", \"identity\": {\"osuId\": 14406132, \"name\": \"hvick226\", \"source\": \"测试表!C42:D42\"}}, {\"name\": \"[1552828]\", \"elo\": 1110, \"role\": \"Tier 1\", \"identity\": {\"osuId\": 8208288, \"name\": \"[1552828]\", \"source\": \"测试表!C41:D41\"}}, {\"name\": \"Mikako\", \"elo\": 846, \"role\": \"Tier 2\", \"identity\": {\"osuId\": 2676427, \"name\": \"Mikako\", \"source\": \"测试表!C40:D40\"}}, {\"name\": \"Duraaa\", \"elo\": 762, \"role\": \"Tier 3\", \"identity\": {\"osuId\": 5185609, \"name\": \"Duraaa\", \"source\": \"测试表!C45:D45\"}}, {\"name\": \"- Ssooy -\", \"elo\": 654, \"role\": \"Tier 4\", \"identity\": {\"osuId\": 2806084, \"name\": \"- ssooy -\", \"source\": \"测试表!C80:D80\"}}, {\"name\": \"spead_come\", \"elo\": 294, \"role\": \"Tier 5\", \"identity\": {\"osuId\": 15706663, \"name\": \"spead_come\", \"source\": \"测试表!C61:D61\"}}], \"candidateTeam\": \"L\", \"mappingBasis\": \"Matching roster members and sequential labels; not draft pick order or competition group\", \"computedMeanElo\": 789.714286, \"avgEloNote\": \"Displayed AvgElo preserved; aggregation/rounding formula not supplied.\"}",
+      "source": "s5-draft-source.png"
+    },
+    {
+      "category": "provenance",
+      "label": "一轮赛图数据 圖池統計 1",
+      "text": "[{\"sheet\": \"一轮赛图数据\", \"slot\": \"NM1(EX)\", \"title\": \"x0o0x_ - / / // / / [Invisible Station]\", \"times\": \"2\", \"average\": \"722995\", \"topPlayer\": \"SqcOc-\", \"topScore\": \"965537\", \"source\": \"一轮赛图数据!M2:P2\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"NM2\", \"title\": \"Wake up, May'n! - One In A Billion [Yogurtt's Extra]\", \"times\": \"0\", \"average\": null, \"topPlayer\": null, \"topScore\": null, \"source\": \"一轮赛图数据!M3:P3\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"NM3\", \"title\": \"Igorrr - Moldy Eye [Insane]\", \"times\": \"8\", \"average\": \"548093\", \"topPlayer\": \"- Rainbow -\", \"topScore\": \"966044\", \"source\": \"一轮赛图数据!M4:P4\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"NM4\", \"title\": \"Skillet - Monster [Extra]\", \"times\": \"3\", \"average\": \"390160\", \"topPlayer\": \"[Illustrious]\", \"topScore\": \"781844\", \"source\": \"一轮赛图数据!M5:P5\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"NM5\", \"title\": \"Virtual Riot - Prove Them Wrong [Reform's Extra]\", \"times\": \"6\", \"average\": \"424649\", \"topPlayer\": \"Azureus\", \"topScore\": \"865817\", \"source\": \"一轮赛图数据!M6:P6\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"HD1(EX)\", \"title\": \"Dreamcatcher - GOOD NIGHT [toybot's Sunset]\", \"times\": \"4\", \"average\": \"609014\", \"topPlayer\": \"[Illustrious]\", \"topScore\": \"994550\", \"source\": \"一轮赛图数据!M8:P8\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"HD2\", \"title\": \"ZUN - Chiisana Chiisana Kenshou [Extra Stage]\", \"times\": \"3\", \"average\": \"469810\", \"topPlayer\": \"Muziyami\", \"topScore\": \"988792\", \"source\": \"一轮赛图数据!M9:P9\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"HD3\", \"title\": \"EBIMAYO - GOODTEK [T-Turn Up the Bass]\", \"times\": \"6\", \"average\": \"428242\", \"topPlayer\": \"No rank\", \"topScore\": \"1038335\", \"source\": \"一轮赛图数据!M10:P10\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"HR1(EX)\", \"title\": \"Yorushika - Deep Indigo [aika & kanor Collab Insane]\", \"times\": \"7\", \"average\": \"509415\", \"topPlayer\": \"No rank\", \"topScore\": \"997492\", \"source\": \"一轮赛图数据!M12:P12\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"HR2\", \"title\": \"yuikonnu - Souzou Forest [deetz' Extra]\", \"times\": \"4\", \"average\": \"510371\", \"topPlayer\": \"hotrock_\", \"topScore\": \"962318\", \"source\": \"一轮赛图数据!M13:P13\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "一轮赛图数据"
+    },
+    {
+      "category": "provenance",
+      "label": "一轮赛图数据 圖池統計 11",
+      "text": "[{\"sheet\": \"一轮赛图数据\", \"slot\": \"HR3\", \"title\": \"fiend - Morrissey [Extra]\", \"times\": \"7\", \"average\": \"408560\", \"topPlayer\": \"Azureus\", \"topScore\": \"915154\", \"source\": \"一轮赛图数据!M14:P14\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"DT1(EX)\", \"title\": \"Younha - Houkiboshi [Insane]\", \"times\": \"9\", \"average\": \"642742\", \"topPlayer\": \"CUWAN\", \"topScore\": \"1094072\", \"source\": \"一轮赛图数据!M16:P16\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"DT2\", \"title\": \"Analog digitaL - IBUKI [Insane]\", \"times\": \"8\", \"average\": \"508985\", \"topPlayer\": \"Curriescaz\", \"topScore\": \"1077886\", \"source\": \"一轮赛图数据!M17:P17\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"DT3\", \"title\": \"EGOIST - Saigo no Hanabira (The meaning of love) [Elegy]\", \"times\": \"3\", \"average\": \"619886\", \"topPlayer\": \"zmyk\", \"topScore\": \"1077138\", \"source\": \"一轮赛图数据!M18:P18\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"DT4\", \"title\": \"Itou Masumi - Yume no Naka no Watashi no Yume [Coda]\", \"times\": \"5\", \"average\": \"452426\", \"topPlayer\": \"hotrock_\", \"topScore\": \"926703\", \"source\": \"一轮赛图数据!M19:P19\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"一轮赛图数据\", \"slot\": \"TB\", \"title\": \"Yamamoto Mineko - Rinne [Left & Mirash's Last Bullet]\", \"times\": \"0\", \"average\": null, \"topPlayer\": null, \"topScore\": null, \"source\": \"一轮赛图数据!M21:P21\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "一轮赛图数据"
+    },
+    {
+      "category": "provenance",
+      "label": "二轮赛图数据 圖池統計 1",
+      "text": "[{\"sheet\": \"二轮赛图数据\", \"slot\": \"NM1(EX)\", \"title\": \"Limonene - (please) replay [(always) remember]\", \"times\": \"2\", \"average\": \"490403\", \"topPlayer\": \"CUWAN\", \"topScore\": \"873205\", \"source\": \"二轮赛图数据!M2:P2\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"NM2\", \"title\": \"Two Steps From Hell - Invincible [Extreme]\", \"times\": \"4\", \"average\": \"513351\", \"topPlayer\": \"zmyk\", \"topScore\": \"702093\", \"source\": \"二轮赛图数据!M3:P3\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"NM3\", \"title\": \"Iwami Takashi - Noraneko no Shinryaku (Cut Ver.) [Expert]\", \"times\": \"2\", \"average\": \"451512\", \"topPlayer\": \"hvick226\", \"topScore\": \"758831\", \"source\": \"二轮赛图数据!M4:P4\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"NM4\", \"title\": \"Tatsh - Xevel [MASTER]\", \"times\": \"3\", \"average\": \"266697\", \"topPlayer\": \"X bol\", \"topScore\": \"456113\", \"source\": \"二轮赛图数据!M5:P5\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"NM5\", \"title\": \"Brookes Brothers feat. Georgie Allen - New Wave [Yusomi's Extra]\", \"times\": \"5\", \"average\": \"422395\", \"topPlayer\": \"Reecho\", \"topScore\": \"814653\", \"source\": \"二轮赛图数据!M6:P6\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"HD1(EX)\", \"title\": \"ARForest - Qesia [Extra]\", \"times\": \"9\", \"average\": \"465338\", \"topPlayer\": \"WhiteCookies\", \"topScore\": \"993788\", \"source\": \"二轮赛图数据!M8:P8\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"HD2\", \"title\": \"HyuN feat. YURI - Disorder [Sylas' Expert]\", \"times\": \"10\", \"average\": \"467540\", \"topPlayer\": \"feifeiis\", \"topScore\": \"913366\", \"source\": \"二轮赛图数据!M9:P9\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"HD3\", \"title\": \"solfa feat. Ceui - primal [Blossom]\", \"times\": \"2\", \"average\": \"481878\", \"topPlayer\": \"Rairakkuhana\", \"topScore\": \"881265\", \"source\": \"二轮赛图数据!M10:P10\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"HR1(EX)\", \"title\": \"BAND-MAID - RINNE [INSANE]\", \"times\": \"8\", \"average\": \"527888\", \"topPlayer\": \"-xxx Rumia-\", \"topScore\": \"957779\", \"source\": \"二轮赛图数据!M12:P12\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"HR2\", \"title\": \"canoue - Sora o Te ni Shita Tabibito [Petal]\", \"times\": \"6\", \"average\": \"464395\", \"topPlayer\": \"moe nyannyan\", \"topScore\": \"835151\", \"source\": \"二轮赛图数据!M13:P13\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "二轮赛图数据"
+    },
+    {
+      "category": "provenance",
+      "label": "二轮赛图数据 圖池統計 11",
+      "text": "[{\"sheet\": \"二轮赛图数据\", \"slot\": \"HR3\", \"title\": \"BLOOD CODE - POP SHOVE-IT FEAT. TOFUKU [Extra]\", \"times\": \"5\", \"average\": \"489567\", \"topPlayer\": \"zmyk\", \"topScore\": \"838480\", \"source\": \"二轮赛图数据!M14:P14\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"DT1(EX)\", \"title\": \"Hannah Diamond & Danny L Harle - Part of Me [Insane]\", \"times\": \"7\", \"average\": \"633245\", \"topPlayer\": \"hvick226\", \"topScore\": \"1043032\", \"source\": \"二轮赛图数据!M16:P16\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"DT2\", \"title\": \"Annabel - syncretism [Insane]\", \"times\": \"6\", \"average\": \"460775\", \"topPlayer\": \"-xxx Rumia-\", \"topScore\": \"1078710\", \"source\": \"二轮赛图数据!M17:P17\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"DT3\", \"title\": \"HyuN - Tokyo's Starlight [Insane]\", \"times\": \"8\", \"average\": \"485045\", \"topPlayer\": \"Hunxin\", \"topScore\": \"960217\", \"source\": \"二轮赛图数据!M18:P18\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"DT4\", \"title\": \"Maeda Jun x yanaginagi - Before I Rise [Welcome to OCLR]\", \"times\": \"5\", \"average\": \"360240\", \"topPlayer\": \"1miss_Cozmo\", \"topScore\": \"600433\", \"source\": \"二轮赛图数据!M19:P19\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"二轮赛图数据\", \"slot\": \"TB\", \"title\": \"DJKurara - Goodbye [grumd's Extra]\", \"times\": \"3\", \"average\": \"306295\", \"topPlayer\": \"feifeiis\", \"topScore\": \"424131\", \"source\": \"二轮赛图数据!M21:P21\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "二轮赛图数据"
+    },
+    {
+      "category": "provenance",
+      "label": "季后赛R1图池数据 圖池統計 1",
+      "text": "[{\"sheet\": \"季后赛R1图池数据\", \"slot\": \"NM1(EX)\", \"title\": \"Lime - 8bit Voyager [Expert]\", \"times\": \"3\", \"average\": \"499281\", \"topPlayer\": \"zmyk\", \"topScore\": \"880845\", \"source\": \"季后赛R1图池数据!L2:O2\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"NM2\", \"title\": \"Imy feat. Aitsuki Nakuru - Zanshou no Resonance [Silky & Satellite's Extra]\", \"times\": \"2\", \"average\": \"522897\", \"topPlayer\": \"CUWAN\", \"topScore\": \"777187\", \"source\": \"季后赛R1图池数据!L3:O3\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"NM3\", \"title\": \"Dj Genki vs Gram - Einherjar Joker [OCLR]\", \"times\": \"4\", \"average\": \"300130\", \"topPlayer\": \"Curriescaz\", \"topScore\": \"796630\", \"source\": \"季后赛R1图池数据!L4:O4\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"NM4\", \"title\": \"Feryquitous - I can avoid it.#owo [Chaos]\", \"times\": \"3\", \"average\": \"429391\", \"topPlayer\": \"Muziyami\", \"topScore\": \"871758\", \"source\": \"季后赛R1图池数据!L5:O5\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"NM5\", \"title\": \"YUC'e - Future Candy (Xignality Remix) (Cut Ver.) [Extra]\", \"times\": \"2\", \"average\": \"390963\", \"topPlayer\": \"Muziyami\", \"topScore\": \"845943\", \"source\": \"季后赛R1图池数据!L6:O6\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"NM6\", \"title\": \"Ice Nine Kills - IT Is The End [Nowa's Extra]\", \"times\": \"1\", \"average\": \"343602\", \"topPlayer\": \"-xxx Rumia-\", \"topScore\": \"571958\", \"source\": \"季后赛R1图池数据!L7:O7\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HD1(EX)\", \"title\": \"Soleily - Tsumujikaze [Extra]\", \"times\": \"2\", \"average\": \"505515\", \"topPlayer\": \"feifeiis\", \"topScore\": \"894036\", \"source\": \"季后赛R1图池数据!L9:O9\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HD2\", \"title\": \"Freezer feat. Kiichigo - Chocolate Planet [Dailycare's Extra (#1)]\", \"times\": \"5\", \"average\": \"369865\", \"topPlayer\": \"feifeiis\", \"topScore\": \"987151\", \"source\": \"季后赛R1图池数据!L10:O10\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HD3\", \"title\": \"Yellow Claw - Good Day feat. DJ Snake & Elliphant [Noble]\", \"times\": \"5\", \"average\": \"443202\", \"topPlayer\": \"CUWAN\", \"topScore\": \"925484\", \"source\": \"季后赛R1图池数据!L11:O11\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HD4\", \"title\": \"F-777 - Hydra [Expert]\", \"times\": \"2\", \"average\": \"464451\", \"topPlayer\": \"Texas\", \"topScore\": \"845318\", \"source\": \"季后赛R1图池数据!L12:O12\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "季后赛R1图池数据"
+    },
+    {
+      "category": "provenance",
+      "label": "季后赛R1图池数据 圖池統計 11",
+      "text": "[{\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HR1(EX)\", \"title\": \"BlackYooh vs. siromaru - BLACK or WHITE? [INFINITE]\", \"times\": \"3\", \"average\": \"503029\", \"topPlayer\": \"WhiteCookies\", \"topScore\": \"942911\", \"source\": \"季后赛R1图池数据!L14:O14\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HR2\", \"title\": \"Hyper Potions & MYLK - Jelly [Insane]\", \"times\": \"5\", \"average\": \"601613\", \"topPlayer\": \"CUWAN\", \"topScore\": \"989570\", \"source\": \"季后赛R1图池数据!L15:O15\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HR3\", \"title\": \"Hana - Kuukirikigaku Shoujo to Shounen no Uta [Mirash & Delis' Collab Extra]\", \"times\": \"2\", \"average\": \"457204\", \"topPlayer\": \"-xxx Rumia-\", \"topScore\": \"991125\", \"source\": \"季后赛R1图池数据!L16:O16\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"HR4\", \"title\": \"P*Light - FUNKY SUMMER BEACH [yf's Another]\", \"times\": null, \"average\": null, \"topPlayer\": null, \"topScore\": null, \"source\": \"季后赛R1图池数据!L17:O17\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"DT1(EX)\", \"title\": \"Fujimiya Kaori (CV: Amamiya Sora) - Kanade [Goodbye]\", \"times\": \"7\", \"average\": \"726900\", \"topPlayer\": \"- Rainbow -\", \"topScore\": \"1116782\", \"source\": \"季后赛R1图池数据!L19:O19\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"DT2\", \"title\": \"mimimemeMIMI - Sentimental Love [for you.]\", \"times\": \"4\", \"average\": \"524495\", \"topPlayer\": \"CUWAN\", \"topScore\": \"707967\", \"source\": \"季后赛R1图池数据!L20:O20\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"DT3\", \"title\": \"Infected Mushroom - Becoming Insane [LC]\", \"times\": \"5\", \"average\": \"687535\", \"topPlayer\": \"Curriescaz\", \"topScore\": \"1085946\", \"source\": \"季后赛R1图池数据!L21:O21\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"DT4\", \"title\": \"Ayase Rie - Hijitsuzaikei Joshitachi wa Dou Surya Ii Desu ka? [Hard]\", \"times\": \"4\", \"average\": \"415945\", \"topPlayer\": \"hotrock_\", \"topScore\": \"707498\", \"source\": \"季后赛R1图池数据!L22:O22\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"季后赛R1图池数据\", \"slot\": \"TB\", \"title\": \"Demetori - Hoshi no Utsuwa ~ Casket of Star [Uniflake's Extra Stage]\", \"times\": \"0\", \"average\": null, \"topPlayer\": null, \"topScore\": null, \"source\": \"季后赛R1图池数据!L24:O24\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "季后赛R1图池数据"
+    },
+    {
+      "category": "provenance",
+      "label": "Final图池数据 圖池統計 1",
+      "text": "[{\"sheet\": \"Final图池数据\", \"slot\": \"NM1(EX)\", \"title\": \"Umeboshi Chazuke - Panic! Pop'n! Picnic! [Party!]\", \"times\": \"3\", \"average\": \"611351\", \"topPlayer\": \"feifeiis\", \"topScore\": \"985146\", \"source\": \"Final图池数据!L2:O2\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"NM2\", \"title\": \"Barbarian On The Groove feat. Shimotsuki Haruka - Nami no Zankyou [Affection]\", \"times\": \"N/A\", \"average\": null, \"topPlayer\": null, \"topScore\": null, \"source\": \"Final图池数据!L3:O3\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"NM3\", \"title\": \"SLAM & NATO - PARADOXX [Eiji's Extra]\", \"times\": \"3\", \"average\": \"369330\", \"topPlayer\": \"- Rainbow -\", \"topScore\": \"566964\", \"source\": \"Final图池数据!L4:O4\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"NM4\", \"title\": \"fripSide - Hesitation Snow [Extra (OCLR ver.)]\", \"times\": \"N/A\", \"average\": null, \"topPlayer\": null, \"topScore\": null, \"source\": \"Final图池数据!L5:O5\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"NM5\", \"title\": \"Krewella - Killin' It (Sped Up Ver.) [Rapture]\", \"times\": \"2\", \"average\": \"340077\", \"topPlayer\": \"CUWAN\", \"topScore\": \"580979\", \"source\": \"Final图池数据!L6:O6\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"NM6\", \"title\": \"Ice Nine Kills - IT Is The End [Nowa's Extra]\", \"times\": \"4\", \"average\": \"417431\", \"topPlayer\": \"Curriescaz\", \"topScore\": \"869033\", \"source\": \"Final图池数据!L7:O7\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HD1(EX)\", \"title\": \"Mazare & Luma - Nothing More [Love and Nothing More...]\", \"times\": \"2\", \"average\": \"414874\", \"topPlayer\": \"- Rainbow -\", \"topScore\": \"621759\", \"source\": \"Final图池数据!L9:O9\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HD2\", \"title\": \"Denkishiki Karen Ongaku Shuudan - Lily Toxicity (Short Ver.) [Asaiga's Expert]\", \"times\": \"2\", \"average\": \"235902\", \"topPlayer\": \"feifeiis\", \"topScore\": \"350658\", \"source\": \"Final图池数据!L10:O10\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HD3\", \"title\": \"ChouCho - Haiiro no Saga [Wonder]\", \"times\": \"1\", \"average\": \"540761\", \"topPlayer\": \"feifeiis\", \"topScore\": \"995900\", \"source\": \"Final图池数据!L11:O11\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HD4\", \"title\": \"F-777 - Hydra [Expert]\", \"times\": \"4\", \"average\": \"454678\", \"topPlayer\": \"Texas\", \"topScore\": \"845318\", \"source\": \"Final图池数据!L12:O12\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "Final图池数据"
+    },
+    {
+      "category": "provenance",
+      "label": "Final图池数据 圖池統計 11",
+      "text": "[{\"sheet\": \"Final图池数据\", \"slot\": \"HR1(EX)\", \"title\": \"sky_delta - Kreuz [Another]\", \"times\": \"2\", \"average\": \"418188\", \"topPlayer\": \"Curriescaz\", \"topScore\": \"914253\", \"source\": \"Final图池数据!L14:O14\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HR2\", \"title\": \"Yuna (CV: Kanda Sayaka) - Break Beat Bark! [Kalibe's Insane]\", \"times\": \"1\", \"average\": \"406820\", \"topPlayer\": \"[-buki-]\", \"topScore\": \"534839\", \"source\": \"Final图池数据!L15:O15\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HR3\", \"title\": \"Yonezu Kenshi - Flamingo [Yugu's Fla]\", \"times\": \"1\", \"average\": \"372595\", \"topPlayer\": \"feifeiis\", \"topScore\": \"467429\", \"source\": \"Final图池数据!L16:O16\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"HR4\", \"title\": \"P*Light - FUNKY SUMMER BEACH [yf's Another]\", \"times\": \"1\", \"average\": \"386665\", \"topPlayer\": \"feifeiis\", \"topScore\": \"600048\", \"source\": \"Final图池数据!L17:O17\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"DT1(EX)\", \"title\": \"Yorushika - Tada Kimi ni Hare [Ayucchi's Insane]\", \"times\": \"3\", \"average\": \"636386\", \"topPlayer\": \"CUWAN\", \"topScore\": \"1141730\", \"source\": \"Final图池数据!L19:O19\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"DT2\", \"title\": \"Nekomata Master feat. *spiLa* - Clumsy thoughts [Insane]\", \"times\": \"3\", \"average\": \"466412\", \"topPlayer\": \"feifeiis\", \"topScore\": \"760563\", \"source\": \"Final图池数据!L20:O20\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"DT3\", \"title\": \"SoundTeMP - Be Nice 'n Easy [NotEasy]\", \"times\": \"1\", \"average\": \"612938\", \"topPlayer\": \"Molli\", \"topScore\": \"1020283\", \"source\": \"Final图池数据!L21:O21\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"DT4\", \"title\": \"Rita - MANA -Ano Hi, Mitsuketa Kirameki wa- [Insane]\", \"times\": \"1\", \"average\": \"338434\", \"topPlayer\": \"Moutreak\", \"topScore\": \"439380\", \"source\": \"Final图池数据!L22:O22\", \"status\": \"source_summary_not_recomputed_from_MP\"}, {\"sheet\": \"Final图池数据\", \"slot\": \"TB\", \"title\": \"Noah - Gentiana [Illusion]\", \"times\": \"1\", \"average\": \"347424\", \"topPlayer\": \"feifeiis\", \"topScore\": \"621887\", \"source\": \"Final图池数据!L24:O24\", \"status\": \"source_summary_not_recomputed_from_MP\"}]",
+      "source": "Final图池数据"
+    },
+    {
+      "category": "review",
+      "label": "資格賽排名重算（非正式名次）",
+      "text": "[{\"name\": \"Kishin Sagume\", \"cachedRank\": {\"value\": \"12\", \"formula\": \"RANK(T3,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"92\", \"formula\": \"SUM(G3,I3,K3,M3,O3,Q3,S3)\"}, \"recomputedMapRanks\": [16, 13, 13, 12, 9, 15, 14], \"recomputedRankSum\": 92, \"recomputedRank\": 12, \"source\": \"教练赛积分!D3:T3\"}, {\"name\": \"milk-tea\", \"cachedRank\": {\"value\": \"5\", \"formula\": \"RANK(T4,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"32\", \"formula\": \"SUM(G4,I4,K4,M4,O4,Q4,S4)\"}, \"recomputedMapRanks\": [6, 5, 2, 4, 8, 2, 5], \"recomputedRankSum\": 32, \"recomputedRank\": 5, \"source\": \"教练赛积分!D4:T4\"}, {\"name\": \"Manasoy\", \"cachedRank\": {\"value\": \"6\", \"formula\": \"RANK(T5,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"46\", \"formula\": \"SUM(G5,I5,K5,M5,O5,Q5,S5)\"}, \"recomputedMapRanks\": [7, 8, 6, 1, 16, 5, 3], \"recomputedRankSum\": 46, \"recomputedRank\": 6, \"source\": \"教练赛积分!D5:T5\"}, {\"name\": \"[Kaffu Chile]\", \"cachedRank\": {\"value\": \"7\", \"formula\": \"RANK(T6,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"55\", \"formula\": \"SUM(G6,I6,K6,M6,O6,Q6,S6)\"}, \"recomputedMapRanks\": [15, 7, 8, 3, 7, 6, 9], \"recomputedRankSum\": 55, \"recomputedRank\": 7, \"source\": \"教练赛积分!D6:T6\"}, {\"name\": \"Neina\", \"cachedRank\": {\"value\": \"14\", \"formula\": \"RANK(T7,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"101\", \"formula\": \"SUM(G7,I7,K7,M7,O7,Q7,S7)\"}, \"recomputedMapRanks\": [5, 16, 10, 20, 21, 13, 16], \"recomputedRankSum\": 101, \"recomputedRank\": 14, \"source\": \"教练赛积分!D7:T7\"}, {\"name\": \"Old K\", \"cachedRank\": {\"value\": \"9\", \"formula\": \"RANK(T8,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"67\", \"formula\": \"SUM(G8,I8,K8,M8,O8,Q8,S8)\"}, \"recomputedMapRanks\": [14, 9, 9, 8, 10, 9, 8], \"recomputedRankSum\": 67, \"recomputedRank\": 9, \"source\": \"教练赛积分!D8:T8\"}, {\"name\": \"demisemiquaver\", \"cachedRank\": {\"value\": \"11\", \"formula\": \"RANK(T9,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"78\", \"formula\": \"SUM(G9,I9,K9,M9,O9,Q9,S9)\"}, \"recomputedMapRanks\": [12, 14, 12, 11, 11, 11, 7], \"recomputedRankSum\": 78, \"recomputedRank\": 11, \"source\": \"教练赛积分!D9:T9\"}, {\"name\": \"gxytcgxytc\", \"cachedRank\": {\"value\": \"17\", \"formula\": \"RANK(T10,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"114\", \"formula\": \"SUM(G10,I10,K10,M10,O10,Q10,S10)\"}, \"recomputedMapRanks\": [21, 17, 20, 17, 15, 14, 10], \"recomputedRankSum\": 114, \"recomputedRank\": 17, \"source\": \"教练赛积分!D10:T10\"}, {\"name\": \"Sayori_yui\", \"cachedRank\": {\"value\": \"21\", \"formula\": \"RANK(T11,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"129\", \"formula\": \"SUM(G11,I11,K11,M11,O11,Q11,S11)\"}, \"recomputedMapRanks\": [19, 18, 21, 14, 19, 19, 19], \"recomputedRankSum\": 129, \"recomputedRank\": 21, \"source\": \"教练赛积分!D11:T11\"}, {\"name\": \"silly me\", \"cachedRank\": {\"value\": \"15\", \"formula\": \"RANK(T12,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"106\", \"formula\": \"SUM(G12,I12,K12,M12,O12,Q12,S12)\"}, \"recomputedMapRanks\": [18, 10, 19, 16, 5, 21, 17], \"recomputedRankSum\": 106, \"recomputedRank\": 15, \"source\": \"教练赛积分!D12:T12\"}, {\"name\": \"B C\", \"cachedRank\": {\"value\": \"13\", \"formula\": \"RANK(T13,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"95\", \"formula\": \"SUM(G13,I13,K13,M13,O13,Q13,S13)\"}, \"recomputedMapRanks\": [8, 11, 11, 13, 18, 16, 18], \"recomputedRankSum\": 95, \"recomputedRank\": 13, \"source\": \"教练赛积分!D13:T13\"}, {\"name\": \"TiRa\", \"cachedRank\": {\"value\": \"8\", \"formula\": \"RANK(T14,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"61\", \"formula\": \"SUM(G14,I14,K14,M14,O14,Q14,S14)\"}, \"recomputedMapRanks\": [3, 6, 7, 9, 14, 10, 12], \"recomputedRankSum\": 61, \"recomputedRank\": 8, \"source\": \"教练赛积分!D14:T14\"}, {\"name\": \"Crystal\", \"cachedRank\": {\"value\": \"1\", \"formula\": \"RANK(T15,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"16\", \"formula\": \"SUM(G15,I15,K15,M15,O15,Q15,S15)\"}, \"recomputedMapRanks\": [4, 1, 4, 2, 3, 1, 1], \"recomputedRankSum\": 16, \"recomputedRank\": 1, \"source\": \"教练赛积分!D15:T15\"}, {\"name\": \"Miracle\", \"cachedRank\": {\"value\": \"16\", \"formula\": \"RANK(T16,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"107\", \"formula\": \"SUM(G16,I16,K16,M16,O16,Q16,S16)\"}, \"recomputedMapRanks\": [10, 19, 15, 15, 20, 8, 20], \"recomputedRankSum\": 107, \"recomputedRank\": 16, \"source\": \"教练赛积分!D16:T16\"}, {\"name\": \"Segawa Emi\", \"cachedRank\": {\"value\": \"20\", \"formula\": \"RANK(T17,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"126\", \"formula\": \"SUM(G17,I17,K17,M17,O17,Q17,S17)\"}, \"recomputedMapRanks\": [20, 21, 17, 18, 12, 17, 21], \"recomputedRankSum\": 126, \"recomputedRank\": 20, \"source\": \"教练赛积分!D17:T17\"}, {\"name\": \"Harubi Lira\", \"cachedRank\": {\"value\": \"19\", \"formula\": \"RANK(T18,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"121\", \"formula\": \"SUM(G18,I18,K18,M18,O18,Q18,S18)\"}, \"recomputedMapRanks\": [17, 15, 18, 21, 17, 18, 15], \"recomputedRankSum\": 121, \"recomputedRank\": 19, \"source\": \"教练赛积分!D18:T18\"}, {\"name\": \"buhei\", \"cachedRank\": {\"value\": \"10\", \"formula\": \"RANK(T19,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"76\", \"formula\": \"SUM(G19,I19,K19,M19,O19,Q19,S19)\"}, \"recomputedMapRanks\": [11, 12, 14, 10, 6, 12, 11], \"recomputedRankSum\": 76, \"recomputedRank\": 10, \"source\": \"教练赛积分!D19:T19\"}, {\"name\": \"NekoKamui\", \"cachedRank\": {\"value\": \"3\", \"formula\": \"RANK(T20,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"29\", \"formula\": \"SUM(G20,I20,K20,M20,O20,Q20,S20)\"}, \"recomputedMapRanks\": [1, 4, 1, 6, 4, 7, 6], \"recomputedRankSum\": 29, \"recomputedRank\": 3, \"source\": \"教练赛积分!D20:T20\"}, {\"name\": \"davidqu2\", \"cachedRank\": {\"value\": \"4\", \"formula\": \"RANK(T21,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"31\", \"formula\": \"SUM(G21,I21,K21,M21,O21,Q21,S21)\"}, \"recomputedMapRanks\": [9, 2, 5, 7, 1, 3, 4], \"recomputedRankSum\": 31, \"recomputedRank\": 4, \"source\": \"教练赛积分!D21:T21\"}, {\"name\": \"im_a_burger_fox\", \"cachedRank\": {\"value\": \"2\", \"formula\": \"RANK(T22,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"21\", \"formula\": \"SUM(G22,I22,K22,M22,O22,Q22,S22)\"}, \"recomputedMapRanks\": [2, 3, 3, 5, 2, 4, 2], \"recomputedRankSum\": 21, \"recomputedRank\": 2, \"source\": \"教练赛积分!D22:T22\"}, {\"name\": \"PurePeace\", \"cachedRank\": {\"value\": \"17\", \"formula\": \"RANK(T23,T:T,1)\"}, \"cachedRankSum\": {\"value\": \"114\", \"formula\": \"SUM(G23,I23,K23,M23,O23,Q23,S23)\"}, \"recomputedMapRanks\": [13, 20, 16, 19, 13, 20, 13], \"recomputedRankSum\": 114, \"recomputedRank\": 17, \"source\": \"教练赛积分!D23:T23\"}]",
+      "source": "教练赛积分"
+    },
+    {
+      "category": "provenance",
+      "label": "MP 來源分類 1",
+      "text": "[{\"label\": \"01-2021 - OCLR: (怎么还要想队名的) vs (想要睡觉)\", \"url\": \"https://osu.ppy.sh/community/matches/73600572\", \"classification\": \"matches_workbook\"}, {\"label\": \"01-2021 - OCLR: (B) VS (I)\", \"url\": \"https://osu.ppy.sh/community/matches/72703300\", \"classification\": \"matches_workbook\"}, {\"label\": \"01-2021 - OCLR: (想要睡觉) vs (小心管人痴)\", \"url\": \"https://osu.ppy.sh/community/matches/72596333\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR:(Final mappool)vs(Showcase)\", \"url\": \"https://osu.ppy.sh/community/matches/72419341\", \"classification\": \"showcase\"}, {\"label\": \"12-2020 - OCLR: (Team K) vs (想要睡觉)\", \"url\": \"https://osu.ppy.sh/community/matches/72307852\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (E) vs (A)\", \"url\": \"https://osu.ppy.sh/community/matches/72304259\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (B) vs (G)\", \"url\": \"https://osu.ppy.sh/community/matches/72198819\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (J) vs (I)\", \"url\": \"https://osu.ppy.sh/community/matches/71910710\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (男同竟在我身边?!) vs (队名怎么还要想的)\", \"url\": \"https://osu.ppy.sh/community/matches/71900068\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (G) vs (C)\", \"url\": \"https://osu.ppy.sh/community/matches/71851009\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR:(Playoff Mappool1)vs(Showcase)\", \"url\": \"https://osu.ppy.sh/community/matches/71537580\", \"classification\": \"showcase\"}, {\"label\": \"12-2020 - OCLR: (H 队名怎么还要想的) vs (C Team K)\", \"url\": \"https://osu.ppy.sh/community/matches/71484949\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR:(J) VS (G)\", \"url\": \"https://osu.ppy.sh/community/matches/71472736\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR:(L) vs (F)\", \"url\": \"https://osu.ppy.sh/community/matches/71422840\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (SpinEsc) vs (小心管人痴)\", \"url\": \"https://osu.ppy.sh/community/matches/71422298\", \"classification\": \"matches_workbook\"}]",
+      "source": "#288 MP 清單／对阵表"
+    },
+    {
+      "category": "provenance",
+      "label": "MP 來源分類 16",
+      "text": "[{\"label\": \"12-2020 - OCLR:(B)vs(A)\", \"url\": \"https://osu.ppy.sh/community/matches/71421418\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (I) vs (K)\", \"url\": \"https://osu.ppy.sh/community/matches/71419226\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR:(G(怎么还要想队名的))vs(H(队名怎么还要想的))\", \"url\": \"https://osu.ppy.sh/community/matches/71083712\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (K) vs (L)\", \"url\": \"https://osu.ppy.sh/community/matches/71079961\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR:(F) vs (E)\", \"url\": \"https://osu.ppy.sh/community/matches/71012247\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (白果子不讲武德) vs (No Name)\", \"url\": \"https://osu.ppy.sh/community/matches/71012199\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (D) vs (C)\", \"url\": \"https://osu.ppy.sh/community/matches/71012162\", \"classification\": \"matches_workbook\"}, {\"label\": \"12-2020 - OCLR: (A 男同竟在我身边?!) vs (I 想要睡觉)\", \"url\": \"https://osu.ppy.sh/community/matches/71008526\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR:(GS mappool2)vs(Showcase)\", \"url\": \"https://osu.ppy.sh/community/matches/70723206\", \"classification\": \"showcase\"}, {\"label\": \"11-2020 - OCLR: (白果子不讲武德) vs (队名怎么还要想的)\", \"url\": \"https://osu.ppy.sh/community/matches/70673286\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR: (A) vs (J)\", \"url\": \"https://osu.ppy.sh/community/matches/70672935\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR:(C) VS (L)\", \"url\": \"https://osu.ppy.sh/community/matches/70611688\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR:(D)vs(G)\", \"url\": \"https://osu.ppy.sh/community/matches/70610187\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR: (E 小心管人痴) vs (K Team C)\", \"url\": \"https://osu.ppy.sh/community/matches/70607142\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR:(B)vs(E)\", \"url\": \"https://osu.ppy.sh/community/matches/70393378\", \"classification\": \"needs_review_not_added_to_results\"}]",
+      "source": "#288 MP 清單／对阵表"
+    },
+    {
+      "category": "provenance",
+      "label": "MP 來源分類 31",
+      "text": "[{\"label\": \"11-2020 - OCLR: (F) vs (G)\", \"url\": \"https://osu.ppy.sh/community/matches/70279705\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR: (Explo) vs (sive)\", \"url\": \"https://osu.ppy.sh/community/matches/70278777\", \"classification\": \"needs_review_not_added_to_results\"}, {\"label\": \"11-2020 - OCLR:(C)vs(J)\", \"url\": \"https://osu.ppy.sh/community/matches/70219167\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR: (B) vs (K)\", \"url\": \"https://osu.ppy.sh/community/matches/70217154\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR:(E) VS(H)\", \"url\": \"https://osu.ppy.sh/community/matches/70216682\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR: (A) vs (L)\", \"url\": \"https://osu.ppy.sh/community/matches/70214161\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR: (SpinEsc) vs (想要睡觉)\", \"url\": \"https://osu.ppy.sh/community/matches/70211567\", \"classification\": \"matches_workbook\"}, {\"label\": \"11-2020 - OCLR:(Explo) vs (sive)\", \"url\": \"https://osu.ppy.sh/community/matches/70151139\", \"classification\": \"needs_review_not_added_to_results\"}, {\"label\": \"11-2020 - OCLR:(Explosive) vs (SakurajimaMai)\", \"url\": \"https://osu.ppy.sh/community/matches/70040895\", \"classification\": \"needs_review_not_added_to_results\"}, {\"label\": \"11-2020 - OCLR:(GS Mappool1)vs(Showcase)\", \"url\": \"https://osu.ppy.sh/community/matches/69935282\", \"classification\": \"showcase\"}, {\"label\": \"11-2020 - OCLR: (教练) vs (赛)\", \"url\": \"https://osu.ppy.sh/community/matches/69829754\", \"classification\": \"coach_qualification_or_exhibition\"}, {\"label\": \"11-2020 - OCLR: (模拟赛) vs (Lobby)\", \"url\": \"https://osu.ppy.sh/community/matches/69827226\", \"classification\": \"simulation\"}, {\"label\": \"11-2020 - OCLR:(Coach Qua)vs(Lobby #3)\", \"url\": \"https://osu.ppy.sh/community/matches/69817175\", \"classification\": \"coach_qualification_or_exhibition\"}, {\"label\": \"11-2020 - OCLR:(Coach Qua)vs(Lobby #2)\", \"url\": \"https://osu.ppy.sh/community/matches/69815174\", \"classification\": \"coach_qualification_or_exhibition\"}, {\"label\": \"11-2020 - OCLR:(Coach Qua) vs (Lobby #1)\", \"url\": \"https://osu.ppy.sh/community/matches/69812829\", \"classification\": \"coach_qualification_or_exhibition\"}]",
+      "source": "#288 MP 清單／对阵表"
+    },
+    {
+      "category": "provenance",
+      "label": "MP 來源分類 46",
+      "text": "[{\"label\": \"11-2020 - OCLR:(Team A)vs(Team B)\", \"url\": \"https://osu.ppy.sh/community/matches/69765866\", \"classification\": \"needs_review_not_added_to_results\"}, {\"label\": \"11-2020 - OCLR: (Team A) vs (Team B)\", \"url\": \"https://osu.ppy.sh/community/matches/69761101\", \"classification\": \"needs_review_not_added_to_results\"}]",
+      "source": "#288 MP 清單／对阵表"
+    },
+    {
+      "category": "provenance",
+      "label": "圖池欄位衝突與缺漏",
+      "text": "無標題 C 欄不採作 BID。季後賽 HR3 採 J16／D16 一致的 2744118，tmp I16=2428725 另存來源。Final 的跨池重複圖保留。規則只存來源連結，未套用 S6 規則。",
+      "source": "MainSheet"
+    }
+  ],
+  "notes": [
+    "S5 私人草稿；名單以 MainSheet 為準。",
+    "34 場原表比分尚未覆核；原始日期、時間及比分存於管理附錄。時區及 MP 紅藍隊未知，不補造 review sides 或 UTC 時間。",
+    "規則原文、最終名次、晉級連線及未知 UID 尚待核實。"
+  ],
+  "links": [
+    {
+      "label": "來源整理與差異記錄",
+      "url": "https://github.com/OCLR-dev/OCLR-website/blob/82032bce0a512ae99c9fa2e27d59b6470012d9e7/docs/s5-archive.md"
+    },
+    {
+      "label": "S5 規則來源（原文待取得）",
+      "url": "https://docs.qq.com/doc/DRU92Zm1JbGFFSEdq"
+    }
+  ]
+}
