@@ -130,3 +130,13 @@ For S4's five temporarily withheld draws, restore the organizer-confirmed 5:5 to
 Admin approval after deploying this compatibility fix. Do not automatically
 promote `possibleScore`: it may represent unconfirmed alternatives in other
 seasons. No database migration or automatic production-data change is required.
+
+S4's public archive reads its saved versioned rule sections when the source is
+the organizer's S4 workbook (`1QqF8leIqov2l3loi92hFHu82HEuplb9Iau2zPNUcySk`).
+The four original sections remain `赛程规则`, `比赛规则`, `赛程安排`, and `STAFF`;
+PDF layout whitespace was normalized during transcription, without rewriting
+the source wording. The original PDF is available at `/archive/s4/rules.pdf`.
+The same workbook identity supplies `/archive/s4/key-visual.avif` at its original
+1728×1080 size for public overview/directory fallbacks; explicit branding still
+takes priority. Admins can also select this asset in the existing branding fields.
+Neither source supplement changes results, publication, or source-appendix privacy.

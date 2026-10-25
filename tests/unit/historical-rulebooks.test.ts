@@ -109,3 +109,47 @@ describe("S9 historical rulebook supplement", () => {
       }
   });
 });
+
+describe("S4 saved original sections", () => {
+  const sourceUrl =
+    "https://docs.google.com/spreadsheets/d/1QqF8leIqov2l3loi92hFHu82HEuplb9Iau2zPNUcySk";
+  const sections = JSON.parse(
+    readFileSync("docs/imports/s4-rules.json", "utf8"),
+  ).map((s: { title: string; content: string }) => ({
+    heading: s.title,
+    body: s.content,
+  }));
+  const configured = { version: "OCLR S4规则说明（原文分段）", sections };
+  it("renders the saved source text and order without depending on the slug", () => {
+    for (const suffix of ["", "/edit"]) {
+      const source = {
+        ...archive,
+        sourceUrl: sourceUrl + suffix,
+        editionSlug: "renamed",
+      };
+      const rules = historicalRulebook(source, configured)!;
+      expect(rules.sections).toEqual(sections);
+      expect(rules.sections.map((s) => s.heading)).toEqual([
+        "赛程规则",
+        "比赛规则",
+        "赛程安排",
+        "STAFF",
+      ]);
+      expect(rules.version).toBe(configured.version);
+      expect(historicalRulebookSeason(rules)).toBe("4");
+      expect(
+        readFileSync("public" + rules.documentUrl)
+          .subarray(0, 4)
+          .toString(),
+      ).toBe("%PDF");
+      expect(historicalRulebook(source)).toBeNull();
+    }
+    expect(historicalRulebook(archive, configured)).toBe(s9);
+    expect(
+      historicalRulebook(
+        { ...archive, sourceUrl: "https://example.com/unknown" },
+        configured,
+      ),
+    ).toBeNull();
+  });
+});

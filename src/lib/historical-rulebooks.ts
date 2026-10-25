@@ -45,6 +45,21 @@ export function historicalRulebook(
     sections: HistoricalRulebook["sections"];
   } | null,
 ): HistoricalRulebook | null {
+  // S4's organizer-provided PDF is maintained in the native versioned editor.
+  // Match its source workbook, independently of the editable edition slug.
+  if (
+    configured &&
+    /^https:\/\/docs\.google\.com\/spreadsheets\/d\/1QqF8leIqov2l3loi92hFHu82HEuplb9Iau2zPNUcySk(?:\/edit)?$/.test(
+      archive.sourceUrl,
+    )
+  ) {
+    return {
+      title: "OCLR S4规则说明",
+      version: configured.version,
+      documentUrl: "/archive/s4/rules.pdf",
+      sections: configured.sections,
+    };
+  }
   // S5 uses the same versioned editor, bound to its evidenced source pair.
   if (
     configured &&
@@ -98,6 +113,11 @@ export function historicalRulebook(
 
 /** Identify the approved source pair independently of editable edition slugs. */
 export function historicalRulebookSeason(rules: HistoricalRulebook) {
+  if (
+    rules.title === "OCLR S4规则说明" &&
+    rules.documentUrl === "/archive/s4/rules.pdf"
+  )
+    return "4";
   if (
     rules.title === "OCLR β 规则表" &&
     rules.documentUrl === "https://docs.qq.com/doc/DRU92Zm1JbGFFSEdq"

@@ -18,3 +18,19 @@ for (const season of [5, 7, 8, 9, 10])
       ),
     ).toBeUndefined();
   });
+
+it("uses the S4 original dimensions with and without the workbook edit suffix", () => {
+  for (const suffix of ["", "/edit"])
+    expect(
+      archiveKeyVisual(
+        {
+          sourceUrl: `https://docs.google.com/spreadsheets/d/1QqF8leIqov2l3loi92hFHu82HEuplb9Iau2zPNUcySk${suffix}`,
+        },
+        null,
+      ),
+    ).toEqual({
+      src: "/archive/s4/key-visual.avif",
+      width: 1728,
+      height: 1080,
+    });
+});

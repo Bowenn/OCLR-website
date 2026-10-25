@@ -89,6 +89,88 @@ test.describe("historical archive browser workflow", () => {
         await expect(page.locator(".event-score")).toContainText("5 : 5");
     }
   });
+  test("shows S4 original artwork and the saved four rule sections publicly", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    const slug = `s4-content-${isMobile ? "mobile" : "desktop"}-test`;
+    const sections = JSON.parse(
+      readFileSync("docs/imports/s4-rules.json", "utf8"),
+    ).map((s: { title: string; content: string }) => ({
+      heading: s.title,
+      body: s.content,
+    }));
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        name: "S4 public content verification",
+        season: "4",
+        status: "completed",
+        published: true,
+        registration: null,
+        branding: { logo: null, keyVisual: null, background: null },
+        archive: {
+          ...historicalArchive,
+          editionSlug: slug,
+          sourceUrl:
+            "https://docs.google.com/spreadsheets/d/1QqF8leIqov2l3loi92hFHu82HEuplb9Iau2zPNUcySk",
+        },
+        rules: {
+          version: "OCLR S4规则说明（原文分段）",
+          sections,
+        },
+      },
+    ]);
+    for (const theme of ["light", "dark"]) {
+      await context.addCookies([
+        { name: "oclr-theme", value: theme, url: "http://127.0.0.1:3100" },
+      ]);
+      await page.goto("/tournaments");
+      const card = page
+        .locator(".edition-card")
+        .filter({ has: page.locator(`a[href="/tournaments/${slug}"]`) });
+      await card.scrollIntoViewIfNeeded();
+      await expect(card.locator("img")).toHaveAttribute(
+        "src",
+        "/archive/s4/key-visual.avif",
+      );
+      await expect(card.locator("img")).toHaveJSProperty("naturalWidth", 1728);
+      await expect(card.locator("img")).toHaveAttribute("width", "1728");
+      await expect(card.locator("img")).toHaveAttribute("height", "1080");
+      await page.goto(`/tournaments/${slug}`);
+      const visual = page.locator(".archive-key-visual img");
+      await expect(visual).toHaveJSProperty("naturalWidth", 1728);
+      await expect(visual).toHaveAttribute("height", "1080");
+      await expect(page.locator(".rules-article > section")).toHaveCount(4);
+      expect(
+        (
+          await page
+            .locator(".rules-article > section h2, .rules-article > section h3")
+            .allTextContents()
+        ).map((text) => text.replace(/^\d{2}/, "")),
+      ).toEqual(sections.map((s: { heading: string }) => s.heading));
+      for (let i = 0; i < sections.length; i++)
+        expect(
+          (
+            await page
+              .locator(".rules-article > section")
+              .nth(i)
+              .locator(".preserve-lines")
+              .textContent()
+          )?.trim(),
+        ).toBe(sections[i].body);
+      const pdf = await page.request.get("/archive/s4/rules.pdf");
+      expect(pdf.ok()).toBe(true);
+      expect((await pdf.body()).subarray(0, 4).toString()).toBe("%PDF");
+      await captureResponsiveLayout(page, info, `s4-content-${theme}`);
+      await page.screenshot({
+        path: info.outputPath(`s4-content-${theme}.png`),
+        fullPage: true,
+      });
+    }
+  });
   test("shows S6 source artwork in the directory and its configured rule sections", async ({
     page,
     context,
