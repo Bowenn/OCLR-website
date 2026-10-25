@@ -51,11 +51,33 @@ test.describe("tournament overview alignment (#265)", () => {
           await page.goto(`/tournaments/${slug}`);
           if (slug === "overview-test") {
             await expect(
-              page.locator(".information-page > .information-heading"),
+              page.locator(
+                ".information-page .rules-reading > .information-heading",
+              ),
             ).toBeVisible();
             await expect(
-              page.locator(".information-page > .information-banner"),
+              page.locator(
+                ".information-page .rules-reading > .information-banner",
+              ),
             ).toBeVisible();
+            await expect(page.locator(".information-contents")).toHaveCount(0);
+            const banner = await page
+              .locator(".information-banner")
+              .boundingBox();
+            if (!isMobile) {
+              const index = await page
+                .locator(".information-page .rules-desktop-contents")
+                .boundingBox();
+              expect(index!.x).toBeGreaterThanOrEqual(
+                banner!.x + banner!.width,
+              );
+              expect(index!.y).toBeLessThan(banner!.y);
+            } else {
+              const index = await page
+                .locator(".information-page .rules-mobile-contents")
+                .boundingBox();
+              expect(index!.y + index!.height).toBeLessThan(banner!.y);
+            }
             await expect(
               page.locator(
                 '#organization, #links, a[href="#organization"], a[href="#links"]',
@@ -102,6 +124,40 @@ test.describe("tournament overview alignment (#265)", () => {
         }
       }
     }
+    // The annotated report used a ~650px viewport: keep its index beside the banner.
+    await page.setViewportSize({ width: 647, height: 900 });
+    await page.goto("/tournaments/overview-test");
+    const tabletBanner = await page
+      .locator(".information-banner")
+      .boundingBox();
+    const tabletIndex = await page
+      .locator(".information-page .rules-desktop-contents")
+      .boundingBox();
+    expect(tabletIndex!.x).toBeGreaterThanOrEqual(
+      tabletBanner!.x + tabletBanner!.width,
+    );
+    expect(tabletIndex!.y).toBeLessThan(tabletBanner!.y);
+    await expect(page.locator(".rules-mobile-contents")).toBeHidden();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    const stage = page.locator(".stage-scroll-row.is-current");
+    const face = await stage.locator(".stage-scroll-face").boundingBox();
+    const copy = await stage.locator(".stage-scroll-copy").boundingBox();
+    const action = await stage.locator(".stage-scroll-action").boundingBox();
+    expect(copy!.y).toBeGreaterThanOrEqual(face!.y);
+    expect(action!.y).toBeGreaterThanOrEqual(copy!.y + copy!.height);
+    expect(action!.y + action!.height).toBeLessThanOrEqual(
+      face!.y + face!.height,
+    );
+    await page.screenshot({
+      path: info.outputPath("overview-tablet-right-index.png"),
+      fullPage: true,
+    });
+    await page.locator('.rules-desktop-contents a[href="#rules-2"]').click();
+    await expect(page.locator("#rules-2")).toBeInViewport();
     await page.goto("/tournaments/overview-test#rules-2");
     await expect(page.locator("#rules-2")).toBeInViewport();
     await page.goto("/tournaments/s10/rules");

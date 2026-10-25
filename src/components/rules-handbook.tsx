@@ -1,7 +1,7 @@
 "use client";
 import { useAppTranslations } from "@/i18n/shared";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import {
   rulesBodyText,
@@ -71,7 +71,11 @@ export function RulesHandbook({
   sections,
   cover,
   archiveSeason,
+  introduction,
+  heading,
 }: {
+  introduction?: ReactNode;
+  heading?: { id: string; title: string };
   sections: RuleSection[];
   archiveSeason?: string;
   cover?: Omit<RuleFigure, "after">;
@@ -123,7 +127,9 @@ export function RulesHandbook({
     );
   }
   return (
-    <div className="rules-handbook">
+    <div
+      className={`rules-handbook${introduction ? " rules-handbook-overview" : ""}`}
+    >
       <aside className="rules-desktop-contents">
         <p className="eyebrow">{tr("Contents")}</p>
         {contents()}
@@ -133,18 +139,27 @@ export function RulesHandbook({
           <summary>{tr("On this page")}</summary>
           {contents()}
         </details>
-        <article className="rules-article">
-          {cover && <RuleIllustration figure={cover} />}
-          {sections.map((s, i) => (
-            <section key={ids[i]} aria-labelledby={ids[i]}>
-              <h2 id={ids[i]} tabIndex={-1}>
-                <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-                {s.heading}
-              </h2>
-              <RuleBody section={s} archiveSeason={archiveSeason} />
-            </section>
-          ))}
-        </article>
+        {introduction}
+        <section
+          id={heading?.id}
+          className={heading ? "rules-overview-body" : undefined}
+        >
+          {heading && <h2>{heading.title}</h2>}
+          <article className="rules-article">
+            {cover && <RuleIllustration figure={cover} />}
+            {sections.map((s, i) => (
+              <section key={ids[i]} aria-labelledby={ids[i]}>
+                <h2 id={ids[i]} tabIndex={-1}>
+                  <span aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  {s.heading}
+                </h2>
+                <RuleBody section={s} archiveSeason={archiveSeason} />
+              </section>
+            ))}
+          </article>
+        </section>
       </div>
     </div>
   );

@@ -25,3 +25,15 @@ Before：基準 `6f1488b`。After：本次修改；相同合成資料、Chrome d
 - [mobile-overview-test-before.png](mobile-overview-test-before.png)
 - [mobile-s10-after.png](mobile-s10-after.png)
 - [mobile-s10-before.png](mobile-s10-before.png)
+
+## 2026-10-25 瀏覽器註解後續修復
+
+依 S11 四項瀏覽器註解，將標題、Banner、階段、賽程與規則置於同一左欄；唯一的規則目錄從右側頂部開始，隨主內容捲動。移除賽程前方的重複概覽目錄。600px 以上維持左右排版，包含回報約 650px 的寬度；更窄的手機只在 Banner 前提供可展開的規則目錄。規則原文與 `#rules`／`#rules-N` 保持有效。窄主欄的階段文字及操作分行，避免擠壓。
+
+- `npm run check`、production build 通過；未變更介面訊息。
+- 隔離 PostgreSQL 測試：127 檔案、910 項通過、1 項既有略過。
+- Chrome desktop／iPhone 13：2/2 情境通過；涵蓋當前與 S10、三種外觀 × 明暗、647px 右側目錄幾何位置、階段操作不重疊、錨點、無水平溢出與 Axe。
+- Production dependency audit：0 漏洞。CI 狀態另見 issue，未部署。
+- [桌面](desktop-unified-right-index-after.png)
+- [647px：右側規則目錄](tablet-right-index-after.png)
+- [手機：單一可展開目錄](mobile-unified-right-index-after.png)
