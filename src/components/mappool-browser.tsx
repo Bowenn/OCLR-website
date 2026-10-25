@@ -321,6 +321,7 @@ export function MappoolBrowser({
           pool={{ ...pool, entries }}
           headingLevel={headingLevel}
           onSelect={setSelected}
+          showCategoryLinks={false}
         />
       ) : (
         <>
@@ -397,6 +398,7 @@ export function MappoolBrowser({
                     compact
                     beatmapId={e.beatmapId}
                     setId={e.metadata.setId}
+                    name={slotLabel(e.category, e.position)}
                   />
                 </div>
               </article>

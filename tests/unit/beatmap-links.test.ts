@@ -1,36 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { beatmapLinks } from "../../src/lib/beatmap-links";
 
-describe("official beatmap destinations", () => {
-  it("keeps difficulty and set identities separate", () => {
-    expect(beatmapLinks(123, 456)).toEqual({
-      web: "https://osu.ppy.sh/beatmaps/123",
-      direct: "osu://dl/456",
-      download: "https://osu.ppy.sh/beatmapsets/456/download",
+describe("official beatmap actions", () => {
+  it("keeps difficulty and set destinations distinct", () => {
+    expect(beatmapLinks(3786810, 1843515)).toEqual({
+      web: "https://osu.ppy.sh/beatmaps/3786810",
+      direct: "osu://b/3786810",
     });
-    expect(beatmapLinks(null, 456).web).toBe(
-      "https://osu.ppy.sh/beatmapsets/456",
-    );
+  });
+  it("never treats a known difficulty as an unknown set ID", () => {
+    expect(beatmapLinks(3786810, null)).toEqual({
+      web: "https://osu.ppy.sh/beatmaps/3786810",
+      direct: "osu://b/3786810",
+    });
+  });
+  it("can use a verified set without a difficulty", () => {
+    expect(beatmapLinks(null, 1843515)).toEqual({
+      web: "https://osu.ppy.sh/beatmapsets/1843515",
+      direct: "osu://s/1843515",
+    });
   });
   it.each([
-    null,
     undefined,
+    null,
     0,
     -1,
     1.5,
     NaN,
     Infinity,
     Number.MAX_SAFE_INTEGER + 1,
-  ])("does not guess an invalid set ID (%s)", (id) => {
-    expect(beatmapLinks(123, id)).toEqual({
-      web: "https://osu.ppy.sh/beatmaps/123",
-      direct: null,
-      download: null,
-    });
+  ])("omits invalid destinations for %s", (id) => {
     expect(beatmapLinks(id, id)).toEqual({
       web: null,
       direct: null,
-      download: null,
     });
   });
 });

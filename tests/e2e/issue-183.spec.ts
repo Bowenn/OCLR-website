@@ -67,8 +67,7 @@ test.describe("issue 183 archive actions and details", () => {
           const direct = await first
             .locator('a[href^="osu://"]')
             .getAttribute("href");
-          expect(direct).toMatch(/^osu:\/\/dl\/\d+$/);
-          expect(direct).not.toBe("osu://dl/3786810");
+          expect(direct).toBe("osu://b/3786810");
           const trigger = first.locator(".map-open-button");
           await trigger.click();
           const dialog = page.getByRole("dialog");
@@ -77,10 +76,10 @@ test.describe("issue 183 archive actions and details", () => {
             "href",
             direct!,
           );
-          await expect(dialog.locator('a[href$="/download"]')).toHaveAttribute(
-            "href",
-            `https://osu.ppy.sh/beatmapsets/${direct!.split("/").at(-1)}/download`,
-          );
+          await expect(
+            dialog.locator('a[href^="https://osu.ppy.sh/"]'),
+          ).toHaveAttribute("href", "https://osu.ppy.sh/beatmaps/3786810");
+          await expect(dialog.locator('a[href$="/download"]')).toHaveCount(0);
           await expect(dialog.locator(".beatmap-cover img")).toHaveCount(0);
           expect(
             await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth),

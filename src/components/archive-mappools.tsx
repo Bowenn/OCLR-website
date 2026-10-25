@@ -295,6 +295,7 @@ export function ArchiveMappools({
                   <div className="archive-map-thumbnail">
                     <BeatmapCover
                       setId={m.beatmapId ? artworkSetIds[m.beatmapId] : null}
+                      compact
                     />
                     <span className="archive-map-slot">{m.slot}</span>
                   </div>
@@ -337,6 +338,7 @@ export function ArchiveMappools({
                     compact
                     beatmapId={m.beatmapId}
                     setId={m.beatmapId ? artworkSetIds[m.beatmapId] : null}
+                    name={m.slot}
                   />
                 </div>
               </li>

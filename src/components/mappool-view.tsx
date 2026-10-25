@@ -9,8 +9,8 @@ import {
   formatBeatmapDuration,
   formatBeatmapNumber,
 } from "@/lib/mappool-model";
-import { BeatmapActions } from "./beatmap-actions";
 import { BeatmapCover } from "./beatmap-cover";
+import { BeatmapActions } from "./beatmap-actions";
 
 type Pool = Awaited<ReturnType<typeof publicMappools>>[number];
 const columns = [
@@ -90,19 +90,34 @@ function MappoolRow({
   ];
   return (
     <tr id={`map-${e.id}`}>
-      <th scope="row">
+      <th scope="row" className="mappool-slot-cell">
         <span className="mappool-slot">
           {slotLabel(e.category, e.position)}
         </span>
       </th>
       <td className="mappool-map">
         <div className="mappool-map-identity">
-          <BeatmapCover setId={m.setId} />
+          <BeatmapCover setId={m.setId} compact />
           <div>
-            <a className="mappool-map-title" href={url}>
-              <span>{m.artist} — </span>
-              {m.title}
-            </a>
+            {onSelect ? (
+              <button
+                type="button"
+                className="map-open-button mappool-map-title"
+                onClick={() => onSelect(e.id)}
+                aria-label={tr("View {value0}: {value1}", {
+                  value0: slotLabel(e.category, e.position),
+                  value1: m.title,
+                })}
+              >
+                <span>{m.artist} — </span>
+                {m.title}
+              </button>
+            ) : (
+              <a className="mappool-map-title" href={url}>
+                <span>{m.artist} — </span>
+                {m.title}
+              </a>
+            )}
             <p className="mappool-difficulty">[{m.difficulty}]</p>
             <p className="mappool-map-credit">
               <span>{m.mapper}</span>
@@ -118,18 +133,6 @@ function MappoolRow({
               </p>
             )}
           </div>
-        </div>
-        <div className="beatmap-actions beatmap-actions-compact">
-          {onSelect && (
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => onSelect(e.id)}
-            >
-              {tr("Details")}
-            </button>
-          )}
-          <BeatmapActions compact beatmapId={e.beatmapId} setId={m.setId} />
         </div>
         <details className="mappool-mobile-details">
           <summary>
@@ -155,6 +158,14 @@ function MappoolRow({
           {value}
         </td>
       ))}
+      <td className="mappool-actions-cell">
+        <BeatmapActions
+          beatmapId={e.beatmapId}
+          setId={m.setId}
+          compact
+          name={slotLabel(e.category, e.position)}
+        />
+      </td>
     </tr>
   );
 }
@@ -162,10 +173,12 @@ export function MappoolView({
   pool,
   headingLevel = 2,
   onSelect,
+  showCategoryLinks = true,
 }: {
   pool: Pool;
   headingLevel?: 2 | 4 | 5;
   onSelect?: (id: string) => void;
+  showCategoryLinks?: boolean;
 }) {
   const tr = useAppTranslations();
 
@@ -182,7 +195,7 @@ export function MappoolView({
     );
   return (
     <div className="mappool-public">
-      {populated.length > 1 && (
+      {showCategoryLinks && populated.length > 1 && (
         <nav
           className="mappool-category-links"
           aria-label={tr("{value0}: map categories", { value0: pool.name })}
@@ -259,15 +272,30 @@ export function MappoolView({
                 >
                   {pool.name}: {category} / {tr(name)} {tr(" beatmaps")}
                 </caption>
+                <colgroup>
+                  <col className="mappool-col-slot" />
+                  <col />
+                  <col className="mappool-extra mappool-col-sr" />
+                  <col className="mappool-extra mappool-col-mod-sr" />
+                  <col className="mappool-extra mappool-col-bpm" />
+                  <col className="mappool-extra mappool-col-length" />
+                  <col className="mappool-extra mappool-col-parameters" />
+                  <col className="mappool-col-actions" />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th scope="col">{tr("Slot")}</th>
+                    <th scope="col" className="mappool-slot-cell">
+                      {tr("Slot")}
+                    </th>
                     <th scope="col">{tr("Beatmap / Difficulty")}</th>
                     {columns.map((label) => (
                       <th className="mappool-extra" scope="col" key={label}>
                         {tr(label)}
                       </th>
                     ))}
+                    <th scope="col" className="mappool-actions-cell">
+                      <span className="sr-only">{tr("Actions")}</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
