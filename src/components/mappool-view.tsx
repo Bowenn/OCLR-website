@@ -9,6 +9,7 @@ import {
   formatBeatmapDuration,
   formatBeatmapNumber,
 } from "@/lib/mappool-model";
+import { BeatmapActions } from "./beatmap-actions";
 import { BeatmapCover } from "./beatmap-cover";
 
 type Pool = Awaited<ReturnType<typeof publicMappools>>[number];
@@ -23,9 +24,11 @@ const columns = [
 function MappoolRow({
   entry: e,
   fmMode,
+  onSelect,
 }: {
   entry: Pool["entries"][number];
   fmMode: Pool["fmMode"];
+  onSelect?: (id: string) => void;
 }) {
   const tr = useAppTranslations();
 
@@ -116,6 +119,18 @@ function MappoolRow({
             )}
           </div>
         </div>
+        <div className="beatmap-actions beatmap-actions-compact">
+          {onSelect && (
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => onSelect(e.id)}
+            >
+              {tr("Details")}
+            </button>
+          )}
+          <BeatmapActions compact beatmapId={e.beatmapId} setId={m.setId} />
+        </div>
         <details className="mappool-mobile-details">
           <summary>
             <span>
@@ -146,9 +161,11 @@ function MappoolRow({
 export function MappoolView({
   pool,
   headingLevel = 2,
+  onSelect,
 }: {
   pool: Pool;
   headingLevel?: 2 | 4 | 5;
+  onSelect?: (id: string) => void;
 }) {
   const tr = useAppTranslations();
 
@@ -259,6 +276,7 @@ export function MappoolView({
                       key={entry.id}
                       entry={entry}
                       fmMode={pool.fmMode}
+                      onSelect={onSelect}
                     />
                   ))}
                 </tbody>

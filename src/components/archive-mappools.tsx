@@ -1,5 +1,6 @@
 "use client";
 
+import { BeatmapActions } from "./beatmap-actions";
 import { BeatmapCover } from "./beatmap-cover";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
@@ -12,6 +13,7 @@ type MapEntry = HistoricalArchive["pools"][number]["maps"][number];
 function ArchiveMapDetails({
   map,
   stats,
+  setId,
   previous,
   next,
   onMove,
@@ -19,6 +21,7 @@ function ArchiveMapDetails({
 }: {
   map: MapEntry;
   stats: React.ReactNode;
+  setId: number | null | undefined;
   previous?: MapEntry;
   next?: MapEntry;
   onMove: (slot: string) => void;
@@ -59,19 +62,19 @@ function ArchiveMapDetails({
         </button>
       </header>
       <div className="map-dialog-body">
-        <h2 id={title}>{map.title}</h2>
-        <p className="muted">{map.mapper ?? tr("Not recorded")}</p>
+        <div className="map-detail-identity">
+          <BeatmapCover setId={setId} />
+          <div>
+            <h2 id={title}>{map.title}</h2>
+            {map.mapper && !map.title.includes(map.mapper) && (
+              <p className="muted">
+                {tr("Mapper")}: {map.mapper}
+              </p>
+            )}
+          </div>
+        </div>
         {stats}
-        {map.beatmapId ? (
-          <a
-            className="button"
-            href={`https://osu.ppy.sh/beatmaps/${map.beatmapId}`}
-          >
-            {tr("Open on osu!")}
-          </a>
-        ) : (
-          <p>{tr("Beatmap ID unresolved")}</p>
-        )}
+        <BeatmapActions beatmapId={map.beatmapId} setId={setId} />
         <div className="map-dialog-navigation">
           <button
             type="button"
@@ -289,7 +292,12 @@ export function ArchiveMappools({
                     <span className="map-slot-badge">{m.slot}</span>
                   </div>
                 ) : (
-                  <span className="archive-map-slot">{m.slot}</span>
+                  <div className="archive-map-thumbnail">
+                    <BeatmapCover
+                      setId={m.beatmapId ? artworkSetIds[m.beatmapId] : null}
+                    />
+                    <span className="archive-map-slot">{m.slot}</span>
+                  </div>
                 )}
                 <div
                   className={
@@ -300,28 +308,17 @@ export function ArchiveMappools({
                 >
                   <div className="archive-map-identity">
                     <h3>
-                      {view === "cards" ? (
-                        <button
-                          type="button"
-                          className="map-open-button"
-                          aria-label={tr("View {value0}: {value1}", {
-                            value0: m.slot,
-                            value1: m.title,
-                          })}
-                          onClick={() => setSelected(m.slot)}
-                        >
-                          {m.title}
-                        </button>
-                      ) : m.beatmapId ? (
-                        <a
-                          className="context-link"
-                          href={`https://osu.ppy.sh/beatmaps/${m.beatmapId}`}
-                        >
-                          {m.title}
-                        </a>
-                      ) : (
-                        m.title
-                      )}
+                      <button
+                        type="button"
+                        className="map-open-button"
+                        aria-label={tr("View {value0}: {value1}", {
+                          value0: m.slot,
+                          value1: m.title,
+                        })}
+                        onClick={() => setSelected(m.slot)}
+                      >
+                        {m.title}
+                      </button>
                     </h3>
                     <p className="muted small">
                       {tr("Mapper")}: {m.mapper ?? tr("Not recorded")}
@@ -336,6 +333,11 @@ export function ArchiveMappools({
                     </p>
                   </div>
                   {stats(m)}
+                  <BeatmapActions
+                    compact
+                    beatmapId={m.beatmapId}
+                    setId={m.beatmapId ? artworkSetIds[m.beatmapId] : null}
+                  />
                 </div>
               </li>
             ))}
@@ -347,6 +349,11 @@ export function ArchiveMappools({
       {maps[activeIndex] && (
         <ArchiveMapDetails
           map={maps[activeIndex]}
+          setId={
+            maps[activeIndex].beatmapId
+              ? artworkSetIds[maps[activeIndex].beatmapId!]
+              : null
+          }
           stats={stats(maps[activeIndex])}
           previous={maps[activeIndex - 1]}
           next={maps[activeIndex + 1]}

@@ -13,6 +13,7 @@ import {
   formatBeatmapNumber as number,
   formatBeatmapDuration as duration,
 } from "@/lib/mappool-model";
+import { BeatmapActions } from "./beatmap-actions";
 import { BeatmapCover } from "./beatmap-cover";
 import { MappoolView } from "./mappool-view";
 type Pool = Awaited<ReturnType<typeof publicMappools>>[number];
@@ -83,12 +84,16 @@ function MapDetails({
         </button>
       </header>
       <div className="map-dialog-body">
-        <BeatmapCover key={m.setId} setId={m.setId} />
-        <p className="eyebrow">{m.artist}</p>
-        <h2 id={title}>{m.title}</h2>
-        <p className="muted">
-          [{m.difficulty}] · {m.mapper}
-        </p>
+        <div className="map-detail-identity">
+          <BeatmapCover key={m.setId} setId={m.setId} />
+          <div>
+            <p className="eyebrow">{m.artist}</p>
+            <h2 id={title}>{m.title}</h2>
+            <p className="muted">
+              [{m.difficulty}] · {m.mapper}
+            </p>
+          </div>
+        </div>
         <dl className="map-detail-grid">
           {[
             ["Beatmap ID", entry.beatmapId],
@@ -129,12 +134,7 @@ function MapDetails({
           </p>
         )}
         <div className="actions">
-          <a
-            className="button"
-            href={`https://osu.ppy.sh/beatmaps/${entry.beatmapId}`}
-          >
-            {tr("Open on osu!")}
-          </a>
+          <BeatmapActions beatmapId={entry.beatmapId} setId={m.setId} />
           <Link
             className="button secondary"
             href={`/tournaments/${slug}/mappools/${pool.id}#map-${entry.id}`}
@@ -317,7 +317,11 @@ export function MappoolBrowser({
       </div>
 
       {view === "compact" ? (
-        <MappoolView pool={{ ...pool, entries }} headingLevel={headingLevel} />
+        <MappoolView
+          pool={{ ...pool, entries }}
+          headingLevel={headingLevel}
+          onSelect={setSelected}
+        />
       ) : (
         <>
           <p className="map-values-note muted small">
@@ -389,6 +393,11 @@ export function MappoolBrowser({
                       {tr(modRating(e))}
                     </p>
                   )}
+                  <BeatmapActions
+                    compact
+                    beatmapId={e.beatmapId}
+                    setId={e.metadata.setId}
+                  />
                 </div>
               </article>
             ))}
