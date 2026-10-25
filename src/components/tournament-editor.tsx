@@ -17,6 +17,7 @@ import {
   type Edition,
 } from "@/lib/editions";
 import type { tournamentForAdmin } from "@/lib/tournaments";
+import { isBlankTournamentDraft } from "@/lib/tournament-draft";
 import { ConfirmMutation } from "./confirm-mutation";
 import { WorkspaceTabs } from "./workspace-tabs";
 import { TimeZonePicker } from "./time-zone-picker";
@@ -1044,8 +1045,14 @@ function Schedule({ data, saved }: EditorProps) {
     </ReadOnlyFields>
   );
 }
-function Publication({ data, saved }: EditorProps) {
+function Publication({
+  data,
+  saved,
+  canDeleteDraft,
+}: EditorProps & { canDeleteDraft: boolean }) {
   const tr = useAppTranslations();
+  const router = useRouter();
+  const [confirmSlug, setConfirmSlug] = useState("");
 
   return (
     <ReadOnlyFields>
@@ -1090,11 +1097,47 @@ function Publication({ data, saved }: EditorProps) {
             "Historical tournaments are retained. Mark an edition Completed in General settings; use visibility controls to archive it privately.",
           )}
         </p>
+        {canDeleteDraft && isBlankTournamentDraft(data.edition) && (
+          <ConfirmMutation
+            label={tr("Delete unused draft")}
+            title={tr("Delete this unused draft?")}
+            description={tr(
+              "Only blank drafts that have never been used can be deleted. Saved history is retained; the draft will disappear from tournament pages.",
+            )}
+            url={`/api/admin/tournaments/${data.edition.slug}/delete-draft`}
+            payload={{
+              expectedRevision: data.revision,
+              confirmed: true,
+              confirmSlug,
+            }}
+            canConfirm={confirmSlug === data.edition.slug}
+            onError={saved}
+            onSuccess={() => router.replace("/admin/tournaments")}
+          >
+            <p>
+              {data.edition.name} · {data.edition.slug}
+            </p>
+            <label className="field">
+              <span>{tr("Type the draft slug to confirm")}</span>
+              <input
+                autoComplete="off"
+                value={confirmSlug}
+                onChange={(event) => setConfirmSlug(event.target.value)}
+              />
+            </label>
+          </ConfirmMutation>
+        )}
       </section>
     </ReadOnlyFields>
   );
 }
-export function TournamentEditor({ data }: { data: Workspace }) {
+export function TournamentEditor({
+  data,
+  canDeleteDraft = false,
+}: {
+  data: Workspace;
+  canDeleteDraft?: boolean;
+}) {
   const tr = useAppTranslations();
 
   const id = useId();
@@ -1176,7 +1219,11 @@ export function TournamentEditor({ data }: { data: Workspace }) {
           <Schedule key={JSON.stringify(data.edition.schedule)} {...props} />
         </div>
         <div hidden={section !== "publication"}>
-          <Publication key={String(data.edition.published)} {...props} />
+          <Publication
+            key={String(data.edition.published)}
+            {...props}
+            canDeleteDraft={canDeleteDraft}
+          />
         </div>
       </div>
     </div>

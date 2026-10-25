@@ -2647,6 +2647,13 @@
     "m0f72b78cde62": "Source notes below are preserved from before approval.",
     "mf33498d31717": "Select a completed historical archive without registration.",
     "mc8eea82a6ed3": "Only pending saved match reviews with a score can be approved.",
-    "m0800ed867120": "Historical source appendix"
+    "m0800ed867120": "Historical source appendix",
+    "m08c8599c805f": "Delete unused draft",
+    "m8e1b5cdab0ca": "Delete this unused draft?",
+    "mfa7ea889103e": "Only blank drafts that have never been used can be deleted. Saved history is retained; the draft will disappear from tournament pages.",
+    "m5a693b4e8f7a": "Type the draft slug to confirm",
+    "m2c57b4d9ff9e": "Confirm the draft slug before deleting.",
+    "m782311e44383": "Only unused blank drafts can be deleted. Current and earlier saved content must be empty.",
+    "m4a7478e90801": "This draft has tournament data or staff history and cannot be deleted."
   }
 }
