@@ -1,0 +1,1587 @@
+[
+  {
+    "matchId": "a1",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70214161",
+    "source": "对阵表!A2:L2",
+    "score": [
+      5,
+      1
+    ],
+    "sides": {
+      "red": {
+        "teamId": "a",
+        "positiveScoreOccurrences": {
+          "a": 15
+        },
+        "supportingUids": [
+          342558,
+          5936405,
+          7083201,
+          7798860,
+          13184288
+        ]
+      },
+      "blue": {
+        "teamId": "l",
+        "positiveScoreOccurrences": {
+          "l": 18
+        },
+        "supportingUids": [
+          2676427,
+          5185609,
+          8208288,
+          12039046,
+          14406132,
+          15706663
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      367534051,
+      367535209,
+      367536192,
+      367537588,
+      367538898,
+      367540657
+    ]
+  },
+  {
+    "matchId": "a2",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70217154",
+    "source": "对阵表!A3:L3",
+    "score": [
+      5,
+      2
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 21
+        },
+        "supportingUids": [
+          427033,
+          2428732,
+          2927918,
+          7003013,
+          8012734,
+          9887164
+        ]
+      },
+      "blue": {
+        "teamId": "k",
+        "positiveScoreOccurrences": {
+          "k": 16
+        },
+        "supportingUids": [
+          2957253,
+          4733339,
+          8911619,
+          10377846,
+          11042554
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      367549814,
+      367551519,
+      367553344,
+      367554902,
+      367557216,
+      367558835,
+      367561643
+    ]
+  },
+  {
+    "matchId": "a3",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70219167",
+    "source": "对阵表!A4:L4",
+    "score": [
+      3,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "c",
+        "positiveScoreOccurrences": {
+          "c": 17
+        },
+        "supportingUids": [
+          714369,
+          2401600,
+          7184125,
+          12942584,
+          13617153
+        ]
+      },
+      "blue": {
+        "teamId": "j",
+        "positiveScoreOccurrences": {
+          "j": 23
+        },
+        "supportingUids": [
+          1371409,
+          1405856,
+          9633566,
+          10436444
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      367556251,
+      367557705,
+      367559731,
+      367561298,
+      367562576,
+      367565227,
+      367567595,
+      367569605
+    ]
+  },
+  {
+    "matchId": "a4",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70211567",
+    "source": "对阵表!A5:L5",
+    "score": [
+      5,
+      1
+    ],
+    "sides": {
+      "red": {
+        "teamId": "d",
+        "positiveScoreOccurrences": {
+          "d": 18
+        },
+        "supportingUids": [
+          311610,
+          4764449,
+          6397367,
+          8692802,
+          12764539
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 18
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      367521843,
+      367523448,
+      367524651,
+      367526024,
+      367527333,
+      367528481
+    ]
+  },
+  {
+    "matchId": "a5",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70216682",
+    "source": "对阵表!A6:L6",
+    "score": [
+      2,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 21
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8751122,
+          8877531,
+          8926316,
+          13960915
+        ]
+      },
+      "blue": {
+        "teamId": "h",
+        "positiveScoreOccurrences": {
+          "h": 21
+        },
+        "supportingUids": [
+          1793139,
+          4082595,
+          10927454,
+          11396041,
+          15030466
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      367545447,
+      367547386,
+      367549492,
+      367551388,
+      367552891,
+      367554591,
+      367555887
+    ]
+  },
+  {
+    "matchId": "a6",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70279705",
+    "source": "对阵表!A7:L7",
+    "score": [
+      0,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 15
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431
+        ]
+      },
+      "blue": {
+        "teamId": "f",
+        "positiveScoreOccurrences": {
+          "f": 15
+        },
+        "supportingUids": [
+          5568835,
+          6918298,
+          10040597,
+          10933499,
+          11230275,
+          12117924
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      367874371,
+      367875765,
+      367877262,
+      367878533,
+      367880350
+    ]
+  },
+  {
+    "matchId": "a7",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70607908",
+    "source": "对阵表!A8:L8",
+    "score": [
+      0,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "f",
+        "positiveScoreOccurrences": {
+          "f": 15
+        },
+        "supportingUids": [
+          5568835,
+          6918298,
+          10040597,
+          10933499,
+          11230275,
+          12117924
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 15
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      369525150,
+      369526191,
+      369527242,
+      369528422,
+      369529919
+    ]
+  },
+  {
+    "matchId": "a8",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70607142",
+    "source": "对阵表!A9:L9",
+    "score": [
+      5,
+      1
+    ],
+    "sides": {
+      "red": {
+        "teamId": "k",
+        "positiveScoreOccurrences": {
+          "k": 13
+        },
+        "supportingUids": [
+          2957253,
+          4733339,
+          11042554
+        ]
+      },
+      "blue": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 18
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8751122,
+          8877531,
+          13960915
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      369521497,
+      369522576,
+      369523932,
+      369525042,
+      369526232,
+      369527595
+    ]
+  },
+  {
+    "matchId": "a9",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70611688",
+    "source": "对阵表!A10:L10",
+    "score": [
+      5,
+      1
+    ],
+    "sides": {
+      "red": {
+        "teamId": "c",
+        "positiveScoreOccurrences": {
+          "c": 14
+        },
+        "supportingUids": [
+          714369,
+          2401600,
+          7184125,
+          12942584,
+          13617153
+        ]
+      },
+      "blue": {
+        "teamId": "l",
+        "positiveScoreOccurrences": {
+          "l": 18
+        },
+        "supportingUids": [
+          2676427,
+          5185609,
+          8208288,
+          12039046,
+          14406132
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      369546558,
+      369548097,
+      369549759,
+      369552118,
+      369554109,
+      369555784
+    ]
+  },
+  {
+    "matchId": "a10",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70610187",
+    "source": "对阵表!A11:L11",
+    "score": [
+      1,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "d",
+        "positiveScoreOccurrences": {
+          "d": 18
+        },
+        "supportingUids": [
+          4764449,
+          6397367,
+          8692802,
+          12403986,
+          12764539
+        ]
+      },
+      "blue": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 18
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      369539452,
+      369540902,
+      369542533,
+      369544264,
+      369546202,
+      369548527
+    ]
+  },
+  {
+    "matchId": "a11",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70673286",
+    "source": "对阵表!A12:L12",
+    "score": [
+      5,
+      3
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 24
+        },
+        "supportingUids": [
+          427033,
+          2428732,
+          2927918,
+          7003013,
+          8012734,
+          9887164
+        ]
+      },
+      "blue": {
+        "teamId": "h",
+        "positiveScoreOccurrences": {
+          "h": 24
+        },
+        "supportingUids": [
+          1793139,
+          4082595,
+          10927454,
+          11396041,
+          15030466
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      369865541,
+      369867282,
+      369868811,
+      369869754,
+      369871294,
+      369872660,
+      369874030,
+      369875733
+    ]
+  },
+  {
+    "matchId": "a12",
+    "mpUrl": "https://osu.ppy.sh/community/matches/70672935",
+    "source": "对阵表!A13:L13",
+    "score": [
+      0,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "a",
+        "positiveScoreOccurrences": {
+          "a": 11
+        },
+        "supportingUids": [
+          342558,
+          5936405,
+          7083201,
+          7798860,
+          13184288
+        ]
+      },
+      "blue": {
+        "teamId": "j",
+        "positiveScoreOccurrences": {
+          "j": 13
+        },
+        "supportingUids": [
+          1371409,
+          1405856,
+          9633566,
+          10436444
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      369861159,
+      369862954,
+      369864533,
+      369866142,
+      369867541
+    ]
+  },
+  {
+    "matchId": "a13",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71008526",
+    "source": "对阵表!A14:L14",
+    "score": [
+      5,
+      2
+    ],
+    "sides": {
+      "red": {
+        "teamId": "a",
+        "positiveScoreOccurrences": {
+          "a": 17
+        },
+        "supportingUids": [
+          342558,
+          5936405,
+          7083201,
+          7798860
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 21
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      371520029,
+      371520875,
+      371521983,
+      371523110,
+      371524232,
+      371525165,
+      371526418
+    ]
+  },
+  {
+    "matchId": "a14",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71012162",
+    "source": "对阵表!A15:L15",
+    "score": [
+      4,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "d",
+        "positiveScoreOccurrences": {
+          "d": 27
+        },
+        "supportingUids": [
+          311610,
+          4764449,
+          6397367,
+          8692802,
+          12403986,
+          12764539
+        ]
+      },
+      "blue": {
+        "teamId": "c",
+        "positiveScoreOccurrences": {
+          "c": 19
+        },
+        "supportingUids": [
+          714369,
+          2401600,
+          7184125,
+          12942584,
+          13617153
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      371538172,
+      371539357,
+      371540564,
+      371541768,
+      371543385,
+      371544581,
+      371546904,
+      371548358,
+      371549535
+    ]
+  },
+  {
+    "matchId": "a15",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71012247",
+    "source": "对阵表!A16:L16",
+    "score": [
+      1,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "f",
+        "positiveScoreOccurrences": {
+          "f": 18
+        },
+        "supportingUids": [
+          5568835,
+          6918298,
+          10040597,
+          10933499,
+          11230275,
+          12117924
+        ]
+      },
+      "blue": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 18
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8751122,
+          8877531,
+          13960915
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      371542467,
+      371544167,
+      371545755,
+      371547416,
+      371549244,
+      371550964
+    ]
+  },
+  {
+    "matchId": "a16",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71083712",
+    "source": "对阵表!A17:L17",
+    "score": [
+      2,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "h",
+        "positiveScoreOccurrences": {
+          "h": 21
+        },
+        "supportingUids": [
+          1793139,
+          4082595,
+          10927454,
+          11396041,
+          15030466
+        ]
+      },
+      "blue": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 21
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      371869336,
+      371871217,
+      371872793,
+      371874401,
+      371877221,
+      371879577,
+      371883303
+    ]
+  },
+  {
+    "matchId": "a17",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71079961",
+    "source": "对阵表!A18:L18",
+    "score": [
+      5,
+      0
+    ],
+    "sides": {
+      "red": {
+        "teamId": "k",
+        "positiveScoreOccurrences": {
+          "k": 11
+        },
+        "supportingUids": [
+          2957253,
+          4733339,
+          11042554
+        ]
+      },
+      "blue": {
+        "teamId": "l",
+        "positiveScoreOccurrences": {
+          "l": 15
+        },
+        "supportingUids": [
+          2676427,
+          2806084,
+          5185609,
+          8208288,
+          12039046,
+          14406132
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      371858704,
+      371860219,
+      371861838,
+      371863182,
+      371866151
+    ]
+  },
+  {
+    "matchId": "a18",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71012199",
+    "source": "对阵表!A19:L19",
+    "score": [
+      5,
+      3
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 24
+        },
+        "supportingUids": [
+          427033,
+          2428732,
+          2927918,
+          7003013,
+          8012734
+        ]
+      },
+      "blue": {
+        "teamId": "j",
+        "positiveScoreOccurrences": {
+          "j": 20
+        },
+        "supportingUids": [
+          1371409,
+          1405856,
+          9633566,
+          10436444
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      371537375,
+      371538905,
+      371540344,
+      371542002,
+      371543606,
+      371545075,
+      371547613,
+      371549930
+    ]
+  },
+  {
+    "matchId": "a19",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71484949",
+    "source": "对阵表!A20:L20",
+    "score": [
+      4,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "h",
+        "positiveScoreOccurrences": {
+          "h": 27
+        },
+        "supportingUids": [
+          1793139,
+          4082595,
+          10927454,
+          11396041,
+          15030466
+        ]
+      },
+      "blue": {
+        "teamId": "c",
+        "positiveScoreOccurrences": {
+          "c": 17
+        },
+        "supportingUids": [
+          714369,
+          7184125,
+          12942584,
+          13617153
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      373841570,
+      373842834,
+      373844691,
+      373845771,
+      373846735,
+      373848668,
+      373850267,
+      373852527,
+      373853708
+    ]
+  },
+  {
+    "matchId": "a20",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71472736",
+    "source": "对阵表!A21:L21",
+    "score": [
+      2,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "j",
+        "positiveScoreOccurrences": {
+          "j": 16
+        },
+        "supportingUids": [
+          1371409,
+          1405856,
+          9633566,
+          10436444
+        ]
+      },
+      "blue": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 21
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      373775655,
+      373776882,
+      373778540,
+      373779854,
+      373781113,
+      373782470,
+      373783629
+    ]
+  },
+  {
+    "matchId": "a21",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71422298",
+    "source": "对阵表!A22:L22",
+    "score": [
+      0,
+      5
+    ],
+    "sides": {
+      "red": {
+        "teamId": "d",
+        "positiveScoreOccurrences": {
+          "d": 15
+        },
+        "supportingUids": [
+          311610,
+          4764449,
+          6397367,
+          8692802,
+          12764539
+        ]
+      },
+      "blue": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 15
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8751122,
+          8877531,
+          8926316,
+          13960915
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      373522355,
+      373523588,
+      373525048,
+      373526359,
+      373528382
+    ]
+  },
+  {
+    "matchId": "a22",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71421418",
+    "source": "对阵表!A23:L23",
+    "score": [
+      5,
+      1
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 18
+        },
+        "supportingUids": [
+          2428732,
+          2927918,
+          7003013,
+          8012734
+        ]
+      },
+      "blue": {
+        "teamId": "a",
+        "positiveScoreOccurrences": {
+          "a": 13
+        },
+        "supportingUids": [
+          342558,
+          5936405,
+          7798860,
+          13184288
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      373515278,
+      373516367,
+      373517428,
+      373518802,
+      373520287,
+      373521930
+    ]
+  },
+  {
+    "matchId": "a23",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71419226",
+    "source": "对阵表!A24:L24",
+    "score": [
+      5,
+      4
+    ],
+    "sides": {
+      "red": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 27
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      },
+      "blue": {
+        "teamId": "k",
+        "positiveScoreOccurrences": {
+          "k": 19
+        },
+        "supportingUids": [
+          2957253,
+          4733339,
+          8911619,
+          10377846,
+          11042554
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      373505122,
+      373506237,
+      373507586,
+      373509009,
+      373510124,
+      373511450,
+      373512446,
+      373513471,
+      373514785
+    ]
+  },
+  {
+    "matchId": "a24",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71422840",
+    "source": "对阵表!A25:L25",
+    "score": [
+      5,
+      2
+    ],
+    "sides": {
+      "red": {
+        "teamId": "l",
+        "positiveScoreOccurrences": {
+          "l": 21
+        },
+        "supportingUids": [
+          2676427,
+          5185609,
+          8208288,
+          12039046,
+          14406132,
+          15706663
+        ]
+      },
+      "blue": {
+        "teamId": "f",
+        "positiveScoreOccurrences": {
+          "f": 21
+        },
+        "supportingUids": [
+          5568835,
+          6918298,
+          10040597,
+          10933499,
+          11230275,
+          12117924
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      373524016,
+      373526336,
+      373528059,
+      373530014,
+      373532853,
+      373534794,
+      373537966
+    ]
+  },
+  {
+    "matchId": "a25",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71900819",
+    "source": "对阵表!A26:L26",
+    "score": [
+      6,
+      0
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 18
+        },
+        "supportingUids": [
+          427033,
+          2428732,
+          2927918,
+          7003013,
+          8012734,
+          9887164
+        ]
+      },
+      "blue": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 17
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8751122,
+          8877531,
+          13960915
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      375835296,
+      375836156,
+      375837307,
+      375838426,
+      375839586,
+      375840807
+    ]
+  },
+  {
+    "matchId": "a26",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71851009",
+    "source": "对阵表!A27:L27",
+    "score": [
+      6,
+      4
+    ],
+    "sides": {
+      "red": {
+        "teamId": "c",
+        "positiveScoreOccurrences": {
+          "c": 21
+        },
+        "supportingUids": [
+          714369,
+          2401600,
+          7184125,
+          12942584,
+          13617153
+        ]
+      },
+      "blue": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 30
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431,
+          10743435
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      375595144,
+      375596827,
+      375598921,
+      375600682,
+      375602177,
+      375604187,
+      375605803,
+      375607503,
+      375608760,
+      375610572
+    ]
+  },
+  {
+    "matchId": "b27",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71910710",
+    "source": "对阵表!A28:L28",
+    "score": [
+      3,
+      6
+    ],
+    "sides": {
+      "red": {
+        "teamId": "j",
+        "positiveScoreOccurrences": {
+          "j": 21
+        },
+        "supportingUids": [
+          1371409,
+          1405856,
+          9633566,
+          10436444
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 27
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      375888470,
+      375889401,
+      375890664,
+      375891834,
+      375893330,
+      375895295,
+      375896576,
+      375897833,
+      375898969
+    ]
+  },
+  {
+    "matchId": "b28",
+    "mpUrl": "https://osu.ppy.sh/community/matches/71900068",
+    "source": "对阵表!A29:L29",
+    "score": [
+      6,
+      2
+    ],
+    "sides": {
+      "red": {
+        "teamId": "a",
+        "positiveScoreOccurrences": {
+          "a": 16
+        },
+        "supportingUids": [
+          342558,
+          5936405,
+          7083201,
+          7798860
+        ]
+      },
+      "blue": {
+        "teamId": "h",
+        "positiveScoreOccurrences": {
+          "h": 24
+        },
+        "supportingUids": [
+          1793139,
+          4082595,
+          10927454,
+          11396041,
+          15030466
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      375831038,
+      375832163,
+      375833696,
+      375834970,
+      375836502,
+      375838050,
+      375839034,
+      375840343
+    ]
+  },
+  {
+    "matchId": "wf",
+    "mpUrl": "https://osu.ppy.sh/community/matches/72198819",
+    "source": "对阵表!A30:L30",
+    "score": [
+      2,
+      7
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 27
+        },
+        "supportingUids": [
+          427033,
+          2428732,
+          2927918,
+          7003013,
+          8012734
+        ]
+      },
+      "blue": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 27
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      377366374,
+      377367836,
+      377369644,
+      377371725,
+      377374200,
+      377375505,
+      377376649,
+      377378134,
+      377380298
+    ]
+  },
+  {
+    "matchId": "b30",
+    "mpUrl": "https://osu.ppy.sh/community/matches/72307852",
+    "source": "对阵表!A31:L31",
+    "score": [
+      1,
+      6
+    ],
+    "sides": {
+      "red": {
+        "teamId": "c",
+        "positiveScoreOccurrences": {
+          "c": 16
+        },
+        "supportingUids": [
+          714369,
+          7184125,
+          12942584,
+          13617153
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 21
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      377934681,
+      377935570,
+      377937051,
+      377938390,
+      377939531,
+      377940897,
+      377942144
+    ]
+  },
+  {
+    "matchId": "b31",
+    "mpUrl": "https://osu.ppy.sh/community/matches/72304259",
+    "source": "对阵表!A32:L32",
+    "score": [
+      6,
+      4
+    ],
+    "sides": {
+      "red": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 30
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8751122,
+          8877531,
+          8926316,
+          13960915
+        ]
+      },
+      "blue": {
+        "teamId": "a",
+        "positiveScoreOccurrences": {
+          "a": 24
+        },
+        "supportingUids": [
+          342558,
+          5936405,
+          7083201,
+          7798860,
+          13184288
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      377914687,
+      377916340,
+      377917723,
+      377918933,
+      377920290,
+      377921906,
+      377923199,
+      377924345,
+      377925810,
+      377927382
+    ]
+  },
+  {
+    "matchId": "b32",
+    "mpUrl": "https://osu.ppy.sh/community/matches/72596333",
+    "source": "对阵表!A33:L33",
+    "score": [
+      6,
+      2
+    ],
+    "sides": {
+      "red": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 24
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      },
+      "blue": {
+        "teamId": "e",
+        "positiveScoreOccurrences": {
+          "e": 24
+        },
+        "supportingUids": [
+          2351439,
+          3911472,
+          8877531,
+          8926316,
+          13960915
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      379439378,
+      379440264,
+      379441482,
+      379442742,
+      379443912,
+      379445221,
+      379446266,
+      379446960
+    ]
+  },
+  {
+    "matchId": "lf",
+    "mpUrl": "https://osu.ppy.sh/community/matches/72703300",
+    "source": "对阵表!A34:L34",
+    "score": [
+      6,
+      7
+    ],
+    "sides": {
+      "red": {
+        "teamId": "b",
+        "positiveScoreOccurrences": {
+          "b": 38
+        },
+        "supportingUids": [
+          2428732,
+          2927918,
+          7003013,
+          8012734
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 39
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      380029396,
+      380030607,
+      380032375,
+      380033375,
+      380034751,
+      380036427,
+      380037788,
+      380039970,
+      380041180,
+      380042594,
+      380043530,
+      380045145,
+      380046898
+    ]
+  },
+  {
+    "matchId": "gf",
+    "mpUrl": "https://osu.ppy.sh/community/matches/73600572",
+    "source": "对阵表!A35:L35",
+    "score": [
+      7,
+      4
+    ],
+    "sides": {
+      "red": {
+        "teamId": "g",
+        "positiveScoreOccurrences": {
+          "g": 33
+        },
+        "supportingUids": [
+          1936416,
+          7799707,
+          8742486,
+          8893772,
+          9218431,
+          10743435
+        ]
+      },
+      "blue": {
+        "teamId": "i",
+        "positiveScoreOccurrences": {
+          "i": 31
+        },
+        "supportingUids": [
+          1221468,
+          4721007,
+          4734497,
+          6149313,
+          6963321,
+          8281276
+        ]
+      }
+    },
+    "evidenceGameIds": [
+      384403977,
+      384405479,
+      384408472,
+      384410218,
+      384411885,
+      384413038,
+      384414465,
+      384415997,
+      384417432,
+      384419406,
+      384421382
+    ]
+  }
+]

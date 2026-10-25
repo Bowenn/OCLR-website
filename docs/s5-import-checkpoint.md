@@ -30,3 +30,16 @@
 - 透過瀏覽器讀取已保存 JSON，逐欄深度比較整個 archive 與本機匯入包完全一致（僅忽略物件鍵順序）。
 - 私人預覽確認 B 隊 Tier 1 Muziyami、C 隊 Tier 1 TaneshimaPopura 與未知 UID 隊長 Azureus；管理附錄可見，概覽預覽沒有來源檢查附錄。
 - 34 場比分仍在管理來源附錄，正式結果為 0，沒有核准或公開。規則、時區、日期修正、最終名次等缺項仍保留待核實。
+
+## MP 紅藍隊核對、核准與公開
+
+主辦者後續授權直接依 MainSheet 比分核准，並要求紅藍隊由原始 MP 取得，再核准及公開。
+
+- 34 場原始 MP 皆完成 ascending event pagination／起迄界限核對，共 332 局。公開來源快照為 [s5-match-source-snapshot.json](imports/s5-match-source-snapshot.json)，不含帳號憑證、聊天或非競賽 profile 欄位。
+- [紅藍隊證據](imports/s5-match-side-evidence.json) 按比賽圖池內已完成遊戲的已知 UID 核對；每場每色均只對應一支來源隊伍。A6、A8、A16、A26 的紅藍順序與 MainSheet 左右欄相反，沒有依標題順序猜測。
+- `python3 scripts/prepare-s5-reviewed-import.py` 生成 [待核准匯入包](imports/s5-reviewed-import.json)。workingScore 使用 MainSheet teamA／teamB 順序；rawScore 留空，沒有假稱已重新裁定所有 MP 遊戲。332 局完整來源另存，不塞入要求重打／娛樂分類的 review.games。
+- 以 computer use 上傳、驗證、保存待覆核包，再點選原生「核准已覆核對局」及確認；重新載入顯示已記錄賽果34、未確認記錄0。
+- 以 computer use 於公開設定確認公開。最終回讀 revision 5、published=true、34個 review.status=approved；全部比分與MainSheet一致，全部紅藍隊與核對包一致。
+- [S5公開頁](https://oclr.org/tournaments/s5) 實際顯示12隊、85位選手與教練、34賽果、5圖池／77譜面。來源附錄不出現在公開概覽。
+- 此節取代上方私人匯入階段的「尚未核准／公開」狀態；規則、原表時區及日期修正、未知UID、最終名次與晉級連線仍未補造。誤建空白草稿仍未使用。
+- 實際 historicalArchiveSchema 驗證通過，完整來源界限、紅藍唯一對應、MainSheet比分與站上逐筆比對均通過。沒有變更應用程式或部署。
