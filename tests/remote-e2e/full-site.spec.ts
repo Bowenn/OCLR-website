@@ -102,6 +102,18 @@ test("renders the complete saved-read page and GET matrix without a frontend dat
       ).status(),
     ).toBe(201);
   }
+  async function visitSavedPage(path: string) {
+    const legacyRules = /^\/tournaments\/[^/]+\/rules$/.test(path);
+    const response = await page.goto(path, {
+      waitUntil: legacyRules ? "commit" : "load",
+    });
+    expect(response?.status(), path).toBe(200);
+    if (legacyRules) {
+      await expect(page).toHaveURL(local + path.replace(/\/rules$/, "#rules"));
+      await expect(page.locator("#rules")).toBeVisible();
+    }
+    return response!;
+  }
   const evidence: { file: string; path: string; status: number }[] = [];
   const before = await remoteBusinessState();
   const files = await remoteFileState();
@@ -138,8 +150,7 @@ test("renders the complete saved-read page and GET matrix without a frontend dat
         wikiArticles(english).find((a) => a.slug !== "introduction")!.slug,
       );
     await rotateForWorkload();
-    const response = await page.goto(path);
-    expect(response?.status(), path).toBe(200);
+    const response = await visitSavedPage(path);
     await expect(page.locator("body")).not.toContainText(
       "The remote backend is unavailable or returned invalid data.",
     );
@@ -179,8 +190,7 @@ test("renders the complete saved-read page and GET matrix without a frontend dat
     `matches/${historicalArchive.matches[0].id}`,
   ]) {
     await rotateForWorkload();
-    const response = await page.goto("/tournaments/s9/" + section);
-    expect(response?.status(), section).toBe(200);
+    await visitSavedPage("/tournaments/s9/" + section);
     await expect(page.locator("body")).not.toContainText(
       "The remote backend is unavailable or returned invalid data.",
     );

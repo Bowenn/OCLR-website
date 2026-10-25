@@ -297,6 +297,9 @@ describe.skipIf(!url)(
     it("retries are idempotent for both callers and reject altered payloads with the same key", async () => {
       const a = await input();
       const savedA = await pickPlayer(fixture.a, edition.slug, a);
+      expect(savedA.publicVersion).toBe(
+        (await publicDraft(edition.slug))!.version,
+      );
       expect(await pickPlayer(fixture.a, edition.slug, a)).toEqual(savedA);
       await expect(
         pickPlayer(fixture.a, edition.slug, {
@@ -307,6 +310,9 @@ describe.skipIf(!url)(
       await command("publish");
       const b = await input(fixture.players[1].osuId);
       const savedB = await pickPlayer(fixture.staff, edition.slug, b);
+      expect(savedB.publicVersion).toBe(
+        (await publicDraft(edition.slug))!.version,
+      );
       expect(await pickPlayer(fixture.staff, edition.slug, b)).toEqual(savedB);
       await expect(
         pickPlayer(fixture.staff, edition.slug, {

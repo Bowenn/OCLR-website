@@ -134,6 +134,7 @@ export function StaffDraftRoom({
   const [feedback, setFeedback] = useState<{
     message: string;
     version: number;
+    sessionId: string;
   } | null>(null);
   const { value: data, connected } = usePoll<StaffDraft>(
     `/api/admin/tournaments/${slug}/draft`,
@@ -194,11 +195,13 @@ export function StaffDraftRoom({
           ? tr("Connected · updates every 2s")
           : tr("Reconnecting · actions may be stale")}
       </p>
-      {feedback && feedback.version === session?.publicVersion && (
-        <p className="notice" role="status">
-          {tr(feedback.message)}
-        </p>
-      )}
+      {feedback &&
+        feedback.sessionId === session?.id &&
+        feedback.version === session.publicVersion && (
+          <p className="notice" role="status">
+            {tr(feedback.message)}
+          </p>
+        )}
       {session?.state === "live" && !data.availablePool.length && (
         <p className="notice" role="status">
           {tr(
@@ -232,8 +235,12 @@ export function StaffDraftRoom({
               pool={data.availablePool}
               staff
               enabled={canPick}
-              onFeedback={(message) =>
-                setFeedback({ message, version: session.publicVersion })
+              onFeedback={(message, publicVersion) =>
+                setFeedback({
+                  message,
+                  version: publicVersion ?? session.publicVersion,
+                  sessionId: session.id,
+                })
               }
             />
           )}

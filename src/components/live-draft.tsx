@@ -27,6 +27,7 @@ export function LiveDraft({
   const [feedback, setFeedback] = useState<{
     message: string;
     version: number;
+    sessionId: string;
   } | null>(null);
   const endpoint = `/api/tournaments/${slug}/draft${captainId ? "/captain" : ""}`;
   const {
@@ -98,11 +99,14 @@ export function LiveDraft({
             : tr("Reconnecting · showing last published state")}
         </p>
       </div>
-      {feedback && board && feedback.version === board.version && (
-        <p className="notice" role="status">
-          {tr(feedback.message)}
-        </p>
-      )}
+      {feedback &&
+        board &&
+        feedback.sessionId === board.sessionId &&
+        feedback.version === board.version && (
+          <p className="notice" role="status">
+            {tr(feedback.message)}
+          </p>
+        )}
       {board ? (
         <>
           {captainId && "eligiblePool" in board && (
@@ -149,8 +153,12 @@ export function LiveDraft({
                           ? "Waiting for your turn."
                           : "Picking is unavailable in the current published state."
                     }
-                    onFeedback={(message) =>
-                      setFeedback({ message, version: board.version })
+                    onFeedback={(message, publicVersion) =>
+                      setFeedback({
+                        message,
+                        version: publicVersion ?? board.version,
+                        sessionId: board.sessionId,
+                      })
                     }
                   />
                   <CaptainDraftOverview board={board} ownTeamId={own.team.id} />

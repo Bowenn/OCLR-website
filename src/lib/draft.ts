@@ -903,6 +903,7 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
         teamId: previous.teamId,
         playerId: previous.playerId,
         corrected: Boolean(previous.voidedAt),
+        publicVersion: session.publicVersion,
       };
     }
     const [team] = await tx
@@ -1020,6 +1021,7 @@ export async function pickPlayer(actor: User, slug: string, input: unknown) {
       teamId: pick.teamId,
       playerId: pick.playerId,
       corrected: false,
+      publicVersion: publication.publicVersion,
     };
   });
 }

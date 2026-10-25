@@ -264,6 +264,21 @@ test.describe("isolated multi-captain rehearsal", () => {
       fullPage: true,
       animations: "disabled",
     });
+    // Let the committed snapshot arrive before its HTTP receipt, so the old
+    // selection component has unmounted when it reports success to the room.
+    await a.page.route(
+      `**/api/tournaments/${slug}/draft/picks`,
+      async (route) => {
+        const response = await route.fetch();
+        expect(response.status()).toBe(200);
+        await expect(
+          a.page
+            .getByRole("list", { name: "My team roster", exact: true })
+            .locator("li"),
+        ).toHaveCount(2);
+        await route.fulfill({ response });
+      },
+    );
     await a.page
       .getByRole("button", { name: "Confirm Pick", exact: true })
       .click();
@@ -308,7 +323,24 @@ test.describe("isolated multi-captain rehearsal", () => {
     await expect(
       staff.page.getByLabel("Pending selection", { exact: true }),
     ).toContainText(fixture.players[1].username);
+    await staff.page.route(
+      `**/api/tournaments/${slug}/draft/picks`,
+      async (route) => {
+        const response = await route.fetch();
+        expect(response.status()).toBe(200);
+        await expect(
+          staff.page.getByRole("region", {
+            name: "Receiving team",
+            exact: true,
+          }),
+        ).toHaveCount(0);
+        await route.fulfill({ response });
+      },
+    );
     await staffConfirm.click();
+    await expect(
+      staff.page.getByText(/Pick committed to/).first(),
+    ).toBeVisible();
 
     await expect(spectator.page.locator(".draft-picks > li")).toHaveCount(2);
     await expect(

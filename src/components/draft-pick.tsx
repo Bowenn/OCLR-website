@@ -48,7 +48,7 @@ export function DraftPick({
   staff: boolean;
   enabled: boolean;
   unavailableMessage: string;
-  onFeedback: (message: string) => void;
+  onFeedback: (message: string, publicVersion?: number) => void;
 }) {
   const tr = useAppTranslations();
 
@@ -91,9 +91,9 @@ export function DraftPick({
       p.username.toLowerCase().includes(query.toLowerCase()) ||
       String(p.osuId).includes(query.trim()),
   );
-  function report(message: string) {
+  function report(message: string, publicVersion?: number) {
     setStatus(message);
-    onFeedback(message);
+    onFeedback(message, publicVersion);
   }
   function choose(osuId: number) {
     if (!canStage || !pool.some((p) => p.osuId === osuId)) return;
@@ -142,6 +142,7 @@ export function DraftPick({
         result.corrected
           ? "This earlier pick was corrected. Follow the current snapshot."
           : `Pick committed to ${team.name}.`,
+        result.publicVersion,
       );
     } catch {
       report(
