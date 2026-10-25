@@ -30,8 +30,8 @@ real grants/OAuth/deployment and new Chinese wording acceptance remain separate.
 ## Historical source preparation
 
 - [S6 surviving sources and missing evidence](s6-archive.md) — source review,
-  original artwork and format 2 private-review import package; compatible release
-  required before UI import (#289).
+  original artwork and format 2 organizer-confirmed package; S6 is imported and
+  published, with remaining source/result review items recorded separately (#289).
 - [S6 match and bracket reconstruction](s6-match-reconstruction.md) — corrected
   2021 MP histories, preliminary/knockout tables, replay and format uncertainties.
 - [S7 archive](s7-archive.md), [S8 archive](s8-archive.md),
