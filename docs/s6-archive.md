@@ -75,6 +75,22 @@ python3 scripts/prepare-s6-archive.py
 The JSON file is below the existing 450,000-byte file limit and 524,288-byte
 request limit. The application still strictly rejects unrecognized object fields.
 
+Compatibility verification on 2026-10-25: Node.js 24.19.0, `npm ci`, `npm run
+check`, `npm test` (145 files; 1,026 passed, one existing skipped), `npm run build`,
+i18n extraction/checks and production dependency audit (zero vulnerabilities)
+passed. Tests used the separately provisioned loopback-only `oclr_s6_test`
+database; no demo/production database or credentials were used. The first full
+test run detected stale generated read DTOs; after regeneration the affected
+checks and final full run passed. Source validation includes exact regeneration,
+all 348 game records, missing qualifiers, null titles, version 1 compatibility,
+strict private-field rejection and pending scores that never become winners.
+
+The full 616-case local browser run was started and intentionally interrupted
+so the existing CI shards can execute the full suite. Local focused desktop/
+mobile archive checks include uploading and round-tripping the complete S6 file,
+not just a smaller synthetic example. Their final results, exact commit and
+commit-specific CI status are recorded on #289; no pending check is a pass.
+
 The organizer then supplied [OCLR Mappool Collections](https://docs.google.com/spreadsheets/d/14o3t0nEwp5YnRZHbjgX8OBr9tj7yeajzV5FlVIZM0Vg/edit)
 and selected **S6GS, S6ES and S6FS** only. The organizer reiterated that match
 results are lost. Other seasons in that collection are outside this task.

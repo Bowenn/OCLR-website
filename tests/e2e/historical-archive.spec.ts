@@ -14,6 +14,93 @@ test.describe("historical archive browser workflow", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.setTimeout(120000);
   test.afterAll(async () => closeDb());
+  test("imports the complete S6 review package privately without resolving pending interpretations", async ({
+    page,
+    context,
+    isMobile,
+  }, info) => {
+    const slug = `s6-${isMobile ? "mobile" : "desktop"}-test`;
+    const archive = historicalArchiveSchema.parse({
+      ...JSON.parse(readFileSync("docs/imports/s6-archive.json", "utf8")),
+      editionSlug: slug,
+    });
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await seedEditions([
+      {
+        ...edition,
+        slug,
+        name: "S6 private import verification",
+        season: "6",
+        published: false,
+        status: "completed",
+        registration: null,
+      },
+    ]);
+    await page.goto(`/admin/tournaments/${slug}/archive`);
+    await page
+      .getByLabel("Archive JSON file", { exact: true })
+      .setInputFiles({
+        name: "s6-archive.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(JSON.stringify(archive, null, 2)),
+      });
+    await page
+      .getByRole("button", { name: "Validate and review archive" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Review source records" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Save archive draft", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirm", exact: true })
+      .click();
+    await expect(page.getByRole("status")).toContainText("Archive draft saved");
+    const saved = await (
+      await context.request.get(`/api/admin/tournaments/${slug}`)
+    ).json();
+    expect(saved.edition.published).toBe(false);
+    expect(saved.edition.archive).toEqual(archive);
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=match&id=mp-84398168`,
+    );
+    await expect(
+      page.getByText("Unconfirmed records · 3 : 5", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".archive-match")).toContainText("原始整房 3:6");
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=match&id=mp-85503945`,
+    );
+    await expect(
+      page.getByText("Unconfirmed records · 2 : 5", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".archive-match")).toContainText(
+      "實際可能為 2:6，待確認",
+    );
+    await captureResponsiveLayout(page, info, "s6-pending-results");
+    await page.goto(`/admin/tournaments/${slug}/archive/preview?section=teams`);
+    await expect(page.getByText("Fushimi Rio", { exact: true })).toBeVisible();
+    await expect(page.getByText("VICE", { exact: true })).toHaveCount(12);
+    expect(
+      await page.locator('a[href*="8425774"],a[href*="14947596"]').count(),
+    ).toBe(0);
+    await page.goto(
+      `/admin/tournaments/${slug}/archive/preview?section=pool&id=es`,
+    );
+    await expect(page.locator(".archive-map-item")).toHaveCount(19);
+    await expect(page.locator(".map-open-button").first()).toHaveText(
+      "Not recorded",
+    );
+    const guest = await context.browser()!.newContext();
+    expect(
+      (
+        await guest.request.get(`http://127.0.0.1:3100/tournaments/${slug}`)
+      ).status(),
+    ).toBe(404);
+    await guest.close();
+  });
   test("preserves unknown identities, replacement evidence and pending scores in a private draft", async ({
     page,
     context,
