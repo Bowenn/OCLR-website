@@ -26,3 +26,10 @@ The repository root README ([English](../README.md) / [简体中文](../README.z
 
 Local synthetic acceptance and actual CI are recorded per commit on #271/#272;
 real grants/OAuth/deployment and new Chinese wording acceptance remain separate.
+
+## Historical source preparation
+
+- [S6 surviving sources and missing evidence](s6-archive.md) — source review and
+  original artwork; not yet an uploadable archive package (#289).
+- [S7 archive](s7-archive.md), [S8 archive](s8-archive.md),
+  [S9 archive](s9-archive.md), [S10 archive](s10-archive.md).

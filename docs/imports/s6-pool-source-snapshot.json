@@ -1,0 +1,1857 @@
+{
+  "artifactKind": "oclr-s6-pool-source-snapshot",
+  "capturedOn": "2026-10-25",
+  "sourceUrl": "https://docs.google.com/spreadsheets/d/14o3t0nEwp5YnRZHbjgX8OBr9tj7yeajzV5FlVIZM0Vg/edit",
+  "spreadsheetId": "14o3t0nEwp5YnRZHbjgX8OBr9tj7yeajzV5FlVIZM0Vg",
+  "title": "OCLR Mappool Collections",
+  "sheets": [
+    {
+      "name": "S6GS",
+      "sheetId": 405667568,
+      "range": "S6GS!B4:J70",
+      "emptyTailRange": "S6GS!J71:J1000",
+      "maps": [
+        {
+          "sourceSlot": "NM1",
+          "beatmapId": 2245984,
+          "source": "S6GS!C6:J6",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM2",
+          "beatmapId": 2842819,
+          "source": "S6GS!C7:J7",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM3",
+          "beatmapId": 2659369,
+          "source": "S6GS!C8:J8",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Extra",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM4",
+          "beatmapId": 2945758,
+          "source": "S6GS!C9:J9",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM5",
+          "beatmapId": 2234164,
+          "source": "S6GS!C10:J10",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Expert",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM6",
+          "beatmapId": 2218593,
+          "source": "S6GS!C11:J11",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD1",
+          "beatmapId": 1805552,
+          "source": "S6GS!C13:J13",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD2",
+          "beatmapId": 2147636,
+          "source": "S6GS!C14:J14",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD3",
+          "beatmapId": 2643868,
+          "source": "S6GS!C15:J15",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Collab Vision",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD4",
+          "beatmapId": 2794531,
+          "source": "S6GS!C16:J16",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR1",
+          "beatmapId": 2780579,
+          "source": "S6GS!C18:J18",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "too's Insane",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR2",
+          "beatmapId": 2872474,
+          "source": "S6GS!C19:J19",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR3",
+          "beatmapId": 2736957,
+          "source": "S6GS!C20:J20",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "cRyo's Insane",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR4",
+          "beatmapId": 1408480,
+          "source": "S6GS!C21:J21",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "MrSergio's Insane",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT1",
+          "beatmapId": 2344887,
+          "source": "S6GS!C23:J23",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT2",
+          "beatmapId": 2694599,
+          "source": "S6GS!C24:J24",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Gibune's Insane",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT3",
+          "beatmapId": 2519731,
+          "source": "S6GS!C25:J25",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Light Insane",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT4",
+          "beatmapId": 475188,
+          "source": "S6GS!C26:J26",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "TB",
+          "beatmapId": 2349180,
+          "source": "S6GS!C28:J28",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Future",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "S6ES",
+      "sheetId": 1310799675,
+      "range": "S6ES!B4:J70",
+      "emptyTailRange": "S6ES!J71:J1000",
+      "maps": [
+        {
+          "sourceSlot": "NM1",
+          "beatmapId": 2277760,
+          "source": "S6ES!C6:J6",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM2",
+          "beatmapId": 2688310,
+          "source": "S6ES!C7:J7",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Extreme",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM3",
+          "beatmapId": 736394,
+          "source": "S6ES!C8:J8",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM4",
+          "beatmapId": 2794464,
+          "source": "S6ES!C9:J9",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Sakura's Extra",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM5",
+          "beatmapId": 1700344,
+          "source": "S6ES!C10:J10",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM6",
+          "beatmapId": 2689525,
+          "source": "S6ES!C11:J11",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD1",
+          "beatmapId": 2394275,
+          "source": "S6ES!C13:J13",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD2",
+          "beatmapId": 2844989,
+          "source": "S6ES!C14:J14",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD3",
+          "beatmapId": 2667195,
+          "source": "S6ES!C15:J15",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Master",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD4",
+          "beatmapId": 2603745,
+          "source": "S6ES!C16:J16",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR1",
+          "beatmapId": 2602768,
+          "source": "S6ES!C18:J18",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR2",
+          "beatmapId": 896077,
+          "source": "S6ES!C19:J19",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Light Extra",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR3",
+          "beatmapId": 1919770,
+          "source": "S6ES!C20:J20",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Lastopia's Insane",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR4",
+          "beatmapId": 2811662,
+          "source": "S6ES!C21:J21",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT1",
+          "beatmapId": 285600,
+          "source": "S6ES!C23:J23",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT2",
+          "beatmapId": 2879668,
+          "source": "S6ES!C24:J24",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT3",
+          "beatmapId": 1126462,
+          "source": "S6ES!C25:J25",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT4",
+          "beatmapId": 1749103,
+          "source": "S6ES!C26:J26",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "TB",
+          "beatmapId": 2968871,
+          "source": "S6ES!C28:J28",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "S6FS",
+      "sheetId": 1503362078,
+      "range": "S6FS!B4:J70",
+      "emptyTailRange": "S6FS!J71:J1000",
+      "maps": [
+        {
+          "sourceSlot": "NM1",
+          "beatmapId": 2733463,
+          "source": "S6FS!C6:J6",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM2",
+          "beatmapId": 2452099,
+          "source": "S6FS!C7:J7",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM3",
+          "beatmapId": 2668594,
+          "source": "S6FS!C8:J8",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Leader's Extra",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM4",
+          "beatmapId": 2411485,
+          "source": "S6FS!C9:J9",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM5",
+          "beatmapId": 2498021,
+          "source": "S6FS!C10:J10",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Starfall",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "NM6",
+          "beatmapId": 2718124,
+          "source": "S6FS!C11:J11",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "King Tide",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD1",
+          "beatmapId": 2178010,
+          "source": "S6FS!C13:J13",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "irotuk's Extra",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD2",
+          "beatmapId": 2765459,
+          "source": "S6FS!C14:J14",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD3",
+          "beatmapId": 2139064,
+          "source": "S6FS!C15:J15",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "Mistake.",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HD4",
+          "beatmapId": 1321943,
+          "source": "S6FS!C16:J16",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR1",
+          "beatmapId": 2922034,
+          "source": "S6FS!C18:J18",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR2",
+          "beatmapId": 483199,
+          "source": "S6FS!C19:J19",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR3",
+          "beatmapId": 2789683,
+          "source": "S6FS!C20:J20",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "HR4",
+          "beatmapId": 2661684,
+          "source": "S6FS!C21:J21",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT1",
+          "beatmapId": 2595180,
+          "source": "S6FS!C23:J23",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT2",
+          "beatmapId": 2243631,
+          "source": "S6FS!C24:J24",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT3",
+          "beatmapId": 168080,
+          "source": "S6FS!C25:J25",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "N_A",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "DT4",
+          "beatmapId": 1493901,
+          "source": "S6FS!C26:J26",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        },
+        {
+          "sourceSlot": "TB",
+          "beatmapId": 2510638,
+          "source": "S6FS!C28:J28",
+          "observedMetadata": {
+            "title": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "difficulty": {
+              "value": "DEVOTION",
+              "error": null,
+              "formulaDerived": true
+            },
+            "length": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "stars": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            },
+            "bpm": {
+              "value": null,
+              "error": "LOADING",
+              "formulaDerived": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
