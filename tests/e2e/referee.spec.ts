@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { db, closeDb } from "../../src/db";
-import { staffRoles, users } from "../../src/db/schema";
+import { eq } from "drizzle-orm";
+import { matchResults, staffRoles, users } from "../../src/db/schema";
 import { createSession } from "../../src/lib/auth/sessions";
 import {
   seedRefereeFixture,
@@ -72,6 +73,16 @@ test.describe("referee command workspace", () => {
     });
     const path = `/admin/tournaments/test-cup/matches/${seeded.fixtureId}/referee`;
     const api = `/api/admin/tournaments/test-cup/matches/${seeded.fixtureId}/referee`;
+    const officialResult = () =>
+      db()
+        .select({
+          version: matchResults.version,
+          publishedRevision: matchResults.publishedRevision,
+        })
+        .from(matchResults)
+        .where(eq(matchResults.fixtureId, seeded.fixtureId));
+    const officialBefore = await officialResult();
+
     const read = async () =>
       (await (await context.request.get(api)).json()) as RefereeWorkspace;
     await page.goto("/admin/tournaments/test-cup/matches");
@@ -222,7 +233,9 @@ test.describe("referee command workspace", () => {
       .poll(async () => (await read()).projection.score[away.id])
       .toBe(1);
     await page.reload();
-    await expect(page.getByText(/^Attempt 3 · Completed · Winner:/)).toBeVisible();
+    await expect(
+      page.getByText(/^Attempt 3 · Completed · Winner:/),
+    ).toBeVisible();
     expect((await read()).projection.activeSelections[1].attempts).toHaveLength(
       3,
     );
@@ -241,6 +254,7 @@ test.describe("referee command workspace", () => {
     await expect(
       page.getByRole("link", { name: "Referee panel", exact: true }),
     ).toBeVisible();
+    expect(await officialResult()).toEqual(officialBefore);
     const guest = await browser.newContext({
       storageState: englishStorage,
       baseURL,
