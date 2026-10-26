@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MatchReviewPanel } from "@/components/match-review";
 import { MatchSourceCompletion } from "@/components/match-source-completion";
 import { PlayerRatings } from "@/components/player-ratings";
@@ -74,6 +75,14 @@ async function Issue271Page({
             {fixtureSlot(workspace, fixture, "home").label} {tr(" vs")}{" "}
             {fixtureSlot(workspace, fixture, "away").label}
           </PageHeading>
+          <div className="actions">
+            <Link
+              className="button"
+              href={`/admin/tournaments/${edition}/matches/${fixtureId}/referee`}
+            >
+              {tr("Referee panel")}
+            </Link>
+          </div>
           {streamingPanel}
           <div className="panel form-stack planned-match-panel">
             <p>
@@ -138,6 +147,14 @@ async function Issue271Page({
               ? tr("Associated pool: {value0}", { value0: data.pool.name })
               : tr("No mappool associated")}
           </p>
+        </div>
+        <div className="actions">
+          <Link
+            className="button"
+            href={`/admin/tournaments/${edition}/matches/${fixtureId}/referee`}
+          >
+            {tr("Referee panel")}
+          </Link>
         </div>
         {streamingPanel}
         <MatchReviewPanel data={review} slug={edition} />

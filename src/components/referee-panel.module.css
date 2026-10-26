@@ -1,0 +1,104 @@
+.workspace {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+.topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.orders {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.commands {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.ledger {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+}
+.pool {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+}
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+.maplist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem;
+}
+.map {
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: grid;
+  gap: 0.25rem;
+}
+.map[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.record {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
+}
+.record:first-child {
+  padding-top: 0;
+}
+.record:last-child {
+  border-bottom: 0;
+}
+.history {
+  max-height: 24rem;
+  overflow: auto;
+}
+@media (max-width: 800px) {
+  .columns {
+    display: flex;
+    flex-direction: column;
+  }
+  .commands,
+  .ledger,
+  .pool {
+    width: 100%;
+  }
+  .commands {
+    order: 0;
+  }
+  .ledger {
+    order: 1;
+  }
+  .pool {
+    order: 2;
+  }
+}
+@media (max-width: 480px) {
+  .orders {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,372 @@
+"use client";
+import { useState } from "react";
+import { useAppTranslations } from "@/i18n/shared";
+import {
+  refereePolicySchema,
+  type RefereePolicy,
+  type RefereeMap,
+} from "@/lib/referee-model";
+import { commandMods, type RefereeCommandPolicy } from "@/lib/referee-commands";
+
+export function RefereePolicyEditor({
+  policy,
+  maps,
+  busy,
+  onSave,
+}: {
+  policy: RefereePolicy | null;
+  maps: RefereeMap[];
+  busy: boolean;
+  onSave: (policy: RefereePolicy) => Promise<void>;
+}) {
+  const tr = useAppTranslations();
+  const [steps, setSteps] = useState<RefereePolicy["steps"]>(
+    policy?.steps ?? [],
+  );
+  const [roomSize, setRoomSize] = useState(
+    policy?.commands?.roomSize.toString() ?? "",
+  );
+  const [noFail, setNoFail] = useState(policy?.commands?.noFail ?? false);
+  const [durations, setDurations] = useState({
+    banSeconds: policy?.commands?.banSeconds?.toString() ?? "",
+    pickSeconds: policy?.commands?.pickSeconds?.toString() ?? "",
+    prepareSeconds: policy?.commands?.prepareSeconds?.toString() ?? "",
+    startSeconds: policy?.commands?.startSeconds?.toString() ?? "",
+  });
+  const [mods, setMods] = useState<Record<string, string>>(
+    Object.fromEntries(
+      Object.entries(policy?.commands?.categoryMods ?? {}).map(([k, v]) => [
+        k,
+        v.mods.join(" "),
+      ]),
+    ),
+  );
+  const [free, setFree] = useState<Record<string, boolean>>(
+    Object.fromEntries(
+      Object.entries(policy?.commands?.categoryMods ?? {}).map(([k, v]) => [
+        k,
+        v.freemod,
+      ]),
+    ),
+  );
+  const [error, setError] = useState("");
+  const categories = Array.from(new Set(maps.map((m) => m.category)));
+  function update(
+    index: number,
+    patch: Partial<RefereePolicy["steps"][number]>,
+  ) {
+    setSteps((s) => s.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  }
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    const commands: RefereeCommandPolicy | null = roomSize
+      ? {
+          roomSize: Number(roomSize),
+          noFail,
+          categoryMods: Object.fromEntries(
+            categories.map((c) => [
+              c,
+              {
+                mods: (mods[c] ?? "")
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean) as (typeof commandMods)[number][],
+                freemod: free[c] ?? false,
+              },
+            ]),
+          ),
+          ...(Object.fromEntries(
+            Object.entries(durations).map(([k, v]) => [
+              k,
+              v ? Number(v) : null,
+            ]),
+          ) as Pick<
+            RefereeCommandPolicy,
+            "banSeconds" | "pickSeconds" | "prepareSeconds" | "startSeconds"
+          >),
+        }
+      : null;
+    const parsed = refereePolicySchema.safeParse({ steps, commands });
+    if (!parsed.success) {
+      setError(
+        tr("Review the step order, tiebreak conditions and command settings."),
+      );
+      return;
+    }
+    await onSave(parsed.data);
+  }
+  return (
+    <details className="panel">
+      <summary>{tr("Configure round referee policy")}</summary>
+      <form className="form-stack" onSubmit={submit}>
+        <p className="muted">
+          {tr(
+            "These settings apply to every fixture in this round. Enter the approved rules; no tournament defaults are assumed.",
+          )}
+        </p>
+        <fieldset disabled={busy} className="staff-readonly-fields form-stack">
+          <h3>{tr("Finite Ban / Pick sequence")}</h3>
+          {steps.map((step, index) => (
+            <div className="panel form-stack" key={index}>
+              <strong>{tr("Step {number}", { number: index + 1 })}</strong>
+              <label className="field">
+                <span>{tr("Action")}</span>
+                <select
+                  value={step.kind}
+                  onChange={(e) => {
+                    const kind = e.target.value as typeof step.kind;
+                    update(index, {
+                      kind,
+                      actor:
+                        kind === "ban"
+                          ? "firstBan"
+                          : kind === "tb"
+                            ? "neutral"
+                            : "firstPick",
+                      tiedAt: kind === "tb" ? 0 : null,
+                    });
+                  }}
+                >
+                  <option value="ban">Ban</option>
+                  <option value="pick">Pick</option>
+                  <option value="tb">TB</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>{tr("Acting order")}</span>
+                <select
+                  value={step.actor}
+                  onChange={(e) =>
+                    update(index, {
+                      actor: e.target.value as typeof step.actor,
+                    })
+                  }
+                >
+                  {(step.kind === "ban"
+                    ? ["firstBan", "secondBan"]
+                    : step.kind === "tb"
+                      ? ["firstPick", "secondPick", "neutral"]
+                      : ["firstPick", "secondPick"]
+                  ).map((v) => (
+                    <option key={v} value={v}>
+                      {tr(
+                        (
+                          {
+                            firstBan: "First Ban team",
+                            secondBan: "Second Ban team",
+                            firstPick: "First Pick team",
+                            secondPick: "Second Pick team",
+                            neutral: "Neutral tiebreaker",
+                          } as Record<string, string>
+                        )[v],
+                      )}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span>{tr("Allowed categories (empty allows all)")}</span>
+                <select
+                  multiple
+                  value={step.categories}
+                  onChange={(e) =>
+                    update(index, {
+                      categories: Array.from(
+                        e.target.selectedOptions,
+                        (o) => o.value,
+                      ),
+                    })
+                  }
+                >
+                  {categories.map((category) => (
+                    <option key={category}>{category}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span>{tr("Allowed pool entries (optional)")}</span>
+                <select
+                  multiple
+                  value={step.entryIds}
+                  onChange={(e) =>
+                    update(index, {
+                      entryIds: Array.from(
+                        e.target.selectedOptions,
+                        (o) => o.value,
+                      ),
+                    })
+                  }
+                >
+                  {maps.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.category}
+                      {m.position} · {m.beatmapId}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {step.kind === "tb" && (
+                <label className="field">
+                  <span>{tr("Both teams must have this score before TB")}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={98}
+                    required
+                    value={step.tiedAt ?? ""}
+                    onChange={(e) =>
+                      update(index, {
+                        tiedAt:
+                          e.target.value === "" ? null : Number(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+              )}
+              {step.kind !== "ban" && (
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={step.avoidRepeatCategory}
+                    onChange={(e) =>
+                      update(index, { avoidRepeatCategory: e.target.checked })
+                    }
+                  />{" "}
+                  {tr("This team cannot repeat a picked category")}
+                </label>
+              )}
+              <div className="actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={index === 0}
+                  onClick={() =>
+                    setSteps((s) => {
+                      const a = [...s];
+                      [a[index - 1], a[index]] = [a[index], a[index - 1]];
+                      return a;
+                    })
+                  }
+                >
+                  {tr("Move up")}
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() =>
+                    setSteps((s) => s.filter((_, i) => i !== index))
+                  }
+                >
+                  {tr("Remove step")}
+                </button>
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="secondary"
+            disabled={steps.length >= 200}
+            onClick={() =>
+              setSteps((s) => [
+                ...s,
+                {
+                  kind: "ban",
+                  actor: "firstBan",
+                  categories: [],
+                  entryIds: [],
+                  avoidRepeatCategory: false,
+                  tiedAt: null,
+                },
+              ])
+            }
+          >
+            {tr("Add step")}
+          </button>
+          <h3>{tr("Round command settings")}</h3>
+          <label className="field">
+            <span>{tr("Room size (separate from players per team)")}</span>
+            <input
+              type="number"
+              min={1}
+              max={16}
+              value={roomSize}
+              onChange={(e) => setRoomSize(e.target.value)}
+            />
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={noFail}
+              onChange={(e) => setNoFail(e.target.checked)}
+            />{" "}
+            {tr("Require No Fail for every map")}
+          </label>
+          {(
+            [
+              "banSeconds",
+              "pickSeconds",
+              "prepareSeconds",
+              "startSeconds",
+            ] as const
+          ).map((key) => (
+            <label className="field" key={key}>
+              <span>
+                {tr(
+                  {
+                    banSeconds: "Ban timer seconds",
+                    pickSeconds: "Pick timer seconds",
+                    prepareSeconds: "Preparation timer seconds",
+                    startSeconds: "Start countdown seconds",
+                  }[key],
+                )}
+              </span>
+              <input
+                type="number"
+                min={1}
+                value={durations[key]}
+                onChange={(e) =>
+                  setDurations((d) => ({ ...d, [key]: e.target.value }))
+                }
+              />
+            </label>
+          ))}
+          {categories.map((category) => (
+            <div className="form-stack" key={category}>
+              <label className="field">
+                <span>
+                  {tr(
+                    "Mods for {category} (space separated; empty clears Mods)",
+                    { category },
+                  )}
+                </span>
+                <input
+                  value={mods[category] ?? ""}
+                  onChange={(e) =>
+                    setMods((m) => ({
+                      ...m,
+                      [category]: e.target.value.toUpperCase(),
+                    }))
+                  }
+                  placeholder="HD"
+                />
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={free[category] ?? false}
+                  onChange={(e) =>
+                    setFree((f) => ({ ...f, [category]: e.target.checked }))
+                  }
+                />{" "}
+                {category} · Freemod
+              </label>
+            </div>
+          ))}
+          <button type="submit">{tr("Save round referee policy")}</button>
+        </fieldset>
+        {error && <p role="alert">{error}</p>}
+      </form>
+    </details>
+  );
+}
