@@ -28,6 +28,30 @@ function CommandLine({ command }: { command: RefereeCommand }) {
     start: tr("Start countdown"),
     abort: tr("Abort game"),
   };
+  const reasons: Record<string, string> = {
+    "Enter a valid room name.": tr("Enter a valid room name."),
+    "Configure the round rules and room size first.": tr(
+      "Configure the round rules and room size first.",
+    ),
+    "Enter a valid osu! username for the Streamer.": tr(
+      "Enter a valid osu! username for the Streamer.",
+    ),
+    "This team's saved captain UID is missing.": tr(
+      "This team's saved captain UID is missing.",
+    ),
+    "Choose a positive timer duration.": tr(
+      "Choose a positive timer duration.",
+    ),
+    "Select a saved pool map and configure the ruleset first.": tr(
+      "Select a saved pool map and configure the ruleset first.",
+    ),
+    "Configure this pool category's Mods policy first.": tr(
+      "Configure this pool category's Mods policy first.",
+    ),
+    "Configure the independent start countdown first.": tr(
+      "Configure the independent start countdown first.",
+    ),
+  };
   const label = command.teamName
     ? `${labels[command.kind]} · ${command.teamName}`
     : labels[command.kind];
@@ -64,7 +88,7 @@ function CommandLine({ command }: { command: RefereeCommand }) {
           />
         ) : (
           <span className="small muted">
-            {tr(command.reason ?? "Command unavailable.")}
+            {reasons[command.reason ?? ""] ?? tr("Command unavailable.")}
           </span>
         )}
       </label>
