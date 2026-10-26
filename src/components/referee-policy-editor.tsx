@@ -129,8 +129,8 @@ export function RefereePolicyEditor({
                     });
                   }}
                 >
-                  <option value="ban">Ban</option>
-                  <option value="pick">Pick</option>
+                  <option value="ban">{tr("Ban")}</option>
+                  <option value="pick">{tr("Pick")}</option>
                   <option value="tb">TB</option>
                 </select>
               </label>
@@ -341,7 +341,7 @@ export function RefereePolicyEditor({
                     setFree((f) => ({ ...f, [category]: e.target.checked }))
                   }
                 />{" "}
-                {category} · Freemod
+                {category} · {tr("Freemod")}
               </label>
             </div>
           ))}
