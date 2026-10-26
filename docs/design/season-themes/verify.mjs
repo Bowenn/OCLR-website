@@ -40,10 +40,17 @@ const server = createServer(async (request, response) => {
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}/docs/design/season-themes/`;
 const browser = await chromium.launch({ channel: "chrome", headless: true });
+const seasons = process.argv.slice(2).length
+  ? process.argv.slice(2)
+  : ["s9", "s8", "s7"];
+if (seasons.some((season) => !["s9", "s8", "s7"].includes(season)))
+  throw new Error(
+    "S10 now uses actual application routes: node --import tsx docs/design/season-themes/s10/capture.mjs. This static verifier accepts s9 s8 s7 only.",
+  );
 const results = [];
 const errors = [];
 try {
-  for (const season of ["s10", "s9", "s8", "s7"]) {
+  for (const season of seasons) {
     mkdirSync(join(root, season), { recursive: true });
     const context = await browser.newContext({ reducedMotion: "reduce" });
     const page = await context.newPage();
@@ -175,10 +182,12 @@ try {
   await new Promise((resolve) => server.close(resolve));
 }
 writeFileSync(
-  join(root, "verification.json"),
+  join(root, "verification-static.json"),
   JSON.stringify(
     {
-      date: "2026-10-24",
+      date: new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Taipei",
+      }).format(new Date()),
       browser: "Headless Google Chrome",
       scope:
         "Static design samples; not application regression or production verification",
