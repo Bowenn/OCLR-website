@@ -13,6 +13,7 @@ export function EditionArtwork({
   const image =
     logo === undefined && slug === "s11" ? "/oclr-s11-square-logo.webp" : logo;
   const landscape =
+    image === "/archive/s3/key-visual.avif" ||
     image === "/archive/s4/key-visual.avif" ||
     image === "/archive/s5/key-visual.png" ||
     image === "/archive/s6/key-visual.jpg" ||
@@ -30,13 +31,21 @@ export function EditionArtwork({
           unoptimized
           alt=""
           width={
-            image === "/archive/s4/key-visual.avif"
-              ? 1728
+            image === "/archive/s3/key-visual.avif"
+              ? 995
+              : image === "/archive/s4/key-visual.avif"
+                ? 1728
+                : landscape
+                  ? 1920
+                  : 1200
+          }
+          height={
+            image === "/archive/s3/key-visual.avif"
+              ? 621
               : landscape
-                ? 1920
+                ? 1080
                 : 1200
           }
-          height={landscape ? 1080 : 1200}
           sizes="(max-width: 760px) 240px, 220px"
         />
       ) : (
