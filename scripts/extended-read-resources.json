@@ -513,5 +513,27 @@
     "query": ["edition"],
     "scope": "tournaments:read",
     "issues": [277]
+  },
+  {
+    "module": "referee",
+    "fn": "refereeWorkspace",
+    "model": "readRefereeWorkspace",
+    "id": "refereeWorkspace",
+    "path": "/staff/tournaments/{edition}/matches/{id}/referee",
+    "args": ["actor", "slug", "fixtureId"],
+    "public": false,
+    "query": [],
+    "scope": "tournaments:private:read"
+  },
+  {
+    "module": "referee-reconciliation",
+    "fn": "refereeReconciliation",
+    "model": "databaseRefereeReconciliation",
+    "id": "refereeReconciliation",
+    "path": "/staff/tournaments/{edition}/matches/{id}/referee/reconciliation",
+    "args": ["actor", "slug", "fixtureId"],
+    "public": false,
+    "query": [],
+    "scope": "tournaments:private:read"
   }
 ]
