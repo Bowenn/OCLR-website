@@ -140,3 +140,88 @@ The same workbook identity supplies `/archive/s4/key-visual.avif` at its origina
 1728×1080 size for public overview/directory fallbacks; explicit branding still
 takes priority. Admins can also select this asset in the existing branding fields.
 Neither source supplement changes results, publication, or source-appendix privacy.
+
+## Referee workspace (#312–#317)
+
+The private **Referee panel** opens from a fixture card in **Fixtures & results**
+(Admin) or **My assigned matches** (Referee), and from the existing match review
+page. Its route is `/admin/tournaments/[edition]/matches/[fixtureId]/referee`.
+An edition Admin can supervise fixtures in that edition; a Referee needs both an
+active edition role and the fixture assignment. Explicit Developer access adds
+saved reads only, including through the remote frontend. Other roles do not
+implicitly gain access. Every read/write rechecks current grants and assignments.
+
+The workspace is a command-copy assistant with a persistent private officiating
+record. It neither listens to IRC/BanchoBot nor sends commands to osu!, and copying
+a command does not start a timer, record a pick, create a room, or publish a result.
+The official result pipeline remains MP import → Referee review → Admin approval
+and publication.
+
+### Before play
+
+An Admin explicitly configures the round's finite Ban/Pick/TB steps, permitted
+categories/entries, repeated-category restrictions, and TB score conditions.
+The first Ban and first Pick teams are independent fixture settings. Changing one
+does not change the other. The preview is unsaved until **Apply order** succeeds.
+Conflicting recorded steps must be withdrawn in reverse order before changing
+an already-used order. Missing teams, rules, pool, policy, or stale dependencies
+are shown as missing configuration, never replaced with assumed tournament rules.
+
+The command assistant supports `!mp make`, `!mp set`, `!mp addref`, `!mp invite`,
+`!mp timer`, `!mp map`, `!mp mods`, `!mp start`, and `!mp abort`.
+Room capacity and players-per-team are distinct. The map mode comes from the
+round's scoring rules; Mods/NF/Freemod and timer defaults require explicit policy.
+`make` creates a new room through BanchoBot; `name` renames an existing room.
+`addref` requires the osu! room creator and grants room control, not a website role.
+Captain invites use saved UID relationships. Every command is separately copyable;
+clipboard rejection provides a selectable manual-copy field. Names cannot contain
+control characters or injected extra command lines.
+
+### During play
+
+Selecting a map prepares command previews. **Record selected Ban / Pick** is a
+separate mutation checked against the authoritative finite sequence. The ledger
+separates picking team from winner. Each pick has its own numbered attempts;
+replays preserve prior attempts and consume no new pick. Only the latest valid
+attempt contributes to provisional scoring. Ties follow the configured round
+policy; aborted/unresolved/withdrawn attempts never fabricate a winning point.
+Corrections retain append-only history; later steps must be withdrawn before an
+earlier pick can be corrected. Refresh or a legitimate referee handoff resumes
+saved state, rather than a browser-only copy.
+
+### After play
+
+**Post-match reconciliation** reads already saved MP imports; it does not refresh
+provider data on GET. Each attempt is explicitly linked to an exact import/game
+identity and fingerprint. Equal beatmap IDs are not an automatic match: warmups
+and multiple replays can use the same map. One game cannot be linked to multiple
+active attempts. Source refresh or ledger/dependency changes mark old confirmations
+stale. Link changes retain their history and the exact referee revision reviewed.
+Incomplete sources, unresolved winners and disagreements remain visible.
+
+Use **Open MP review** to perform the existing include/exclude, substitution,
+compliance and official submission workflow. A manual ledger winner never creates
+MP player scores, Rating credit, a result revision or an approval. Published and
+approved revisions remain immutable; changing a referee record does not change
+public standings, bracket advancement, or OBS output.
+
+### Persistence and recovery
+
+Migrations `0045_referee_workspace` and `0046_referee_reconciliation` add private
+round policy, fixture session, append-only event and reconciliation receipt tables.
+Each session stores its dependency snapshot, revision, independent first teams and
+command settings. Service DTOs reuse fixture/team/pool identities without copying
+registration answers or credentials. GET does not create sessions. Commands use
+actor-scoped UUID request keys, payload hashes, expected revisions, transactional
+locks and audit history. Retrying the same payload returns the original receipt;
+a different payload with the same key or a stale revision returns a conflict.
+
+If a save's network outcome is unknown, retry the same request before editing.
+If another operator changed state, refresh and review the new state. Changed
+fixture/round/pool/roster dependencies require explicit rechecking; prior steps
+are never silently interpreted using new data. Workspaces with saved history
+cannot be erased by deleting their fixture.
+
+All demonstration policies, identities and games are synthetic. The S9 reference
+sheet does not establish defaults for another edition. First-version Chinese
+labels and the complete operator flow remain subject to organizer review.
