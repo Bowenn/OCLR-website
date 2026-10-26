@@ -148,8 +148,9 @@ export function adminBreadcrumbs(
       if (pathname !== active.href)
         crumbs.push({
           href: pathname,
-          label:
-            active.label === "Registrations"
+          label: pathname.endsWith("/referee")
+            ? "Referee panel"
+            : active.label === "Registrations"
               ? "Application review"
               : "Match review",
         });

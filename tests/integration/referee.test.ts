@@ -121,6 +121,32 @@ describe.skipIf(!url)("private persistent referee workspace", () => {
       "The round referee policy has not been configured.",
     );
   });
+  it("initializes the first session with the newly configured command defaults", async () => {
+    await configure();
+    expect(w.session?.settings).toMatchObject({
+      timerSeconds: 90,
+      startSeconds: 5,
+      roomSize: 8,
+    });
+    expect(w.session?.settings.roomName).toBe(w.defaultSettings.roomName);
+  });
+  it("preserves existing explicit session settings when configuring the round policy", async () => {
+    const settings = {
+      ...emptyRefereeSettings,
+      roomName: "Synthetic manually configured room",
+      timerSeconds: 30,
+      startSeconds: 3,
+      roomSize: 4,
+    };
+    await command({ action: "save_settings", settings });
+    await configure();
+    expect(w.session?.settings).toEqual(settings);
+    expect(w.defaultSettings).toMatchObject({
+      timerSeconds: 90,
+      startSeconds: 5,
+      roomSize: 8,
+    });
+  });
   it("requires edition roles and current assignment, while Developer reads never grant writes", async () => {
     await expect(
       refereeWorkspace(outsider, "test-cup", fixtureId),

@@ -573,6 +573,9 @@ export async function refereeCommand(
           },
         });
       const next = await readRefereeWorkspace(tx, actor, slug, fixtureId);
+      // The first session inherits the policy just saved, not the previous empty policy.
+      // Existing session settings are explicit saved choices and remain unchanged.
+      if (!workspace.session) settings = next.defaultSettings;
       basis = { ...currentBasis, policy: command.policy };
       dependencyFingerprint = next.dependencyFingerprint;
       payload = {
