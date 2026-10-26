@@ -20,6 +20,7 @@ import {
   tournamentStages,
   users,
 } from "../../src/db/schema";
+import { assertEditionConfigurationsReady } from "../../scripts/release-editions-check";
 import { deleteUnusedTournamentDraft } from "../../src/lib/delete-tournament-draft";
 import {
   createTournament,
@@ -97,6 +98,69 @@ describe.skipIf(!url)("unused blank tournament draft deletion", () => {
     ).rejects.toMatchObject({ status: 409 });
     expect(await db().select().from(editionEvents)).toHaveLength(2);
   });
+
+  it("allows release after an audited deletion without restoring or removing its tombstone", async () => {
+    await expect(assertEditionConfigurationsReady()).resolves.toBeUndefined();
+    await remove();
+    const before = await db().select().from(editionState);
+    await expect(assertEditionConfigurationsReady()).resolves.toBeUndefined();
+    expect(await db().select().from(editionState)).toEqual(before);
+    expect(await readTournament(slug)).toBeUndefined();
+    await db()
+      .insert(editionState)
+      .values({ slug: "unconfigured-legacy-test" });
+    await expect(assertEditionConfigurationsReady()).rejects.toThrow(
+      "Legacy edition anchors",
+    );
+  });
+
+  it("retains the deletion exemption if the actor account was later removed", async () => {
+    await remove();
+    await db()
+      .update(editionEvents)
+      .set({ actorId: null })
+      .where(eq(editionEvents.kind, "tournament_delete_draft"));
+    await expect(assertEditionConfigurationsReady()).resolves.toBeUndefined();
+  });
+
+  it.each([
+    "stale-revision",
+    "missing-after",
+    "missing-configuration",
+    "wrong-entity",
+    "wrong-event",
+  ])(
+    "does not treat incomplete deletion evidence as an exemption: %s",
+    async (change) => {
+      await remove();
+      const [event] = await db()
+        .select()
+        .from(editionEvents)
+        .where(eq(editionEvents.kind, "tournament_delete_draft"));
+      if (change === "stale-revision") {
+        await db()
+          .update(editionState)
+          .set({ configurationVersion: 2 })
+          .where(eq(editionState.slug, slug));
+      } else {
+        const detail = structuredClone(event.detail) as Record<string, unknown>;
+        if (change === "missing-after") delete detail.after;
+        if (change === "missing-configuration") detail.after = { revision: 1 };
+        if (change === "wrong-entity")
+          detail.entity = { type: "tournament", id: "other-test" };
+        await db()
+          .update(editionEvents)
+          .set({
+            detail,
+            ...(change === "wrong-event" ? { kind: "tournament_general" } : {}),
+          })
+          .where(eq(editionEvents.id, event.id));
+      }
+      await expect(assertEditionConfigurationsReady()).rejects.toThrow(
+        "Legacy edition anchors",
+      );
+    },
+  );
 
   it("allows correcting identity on an otherwise empty, unused draft", async () => {
     const current = await readTournament(slug);

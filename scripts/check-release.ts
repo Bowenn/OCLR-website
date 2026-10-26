@@ -4,6 +4,7 @@ import { getAnnouncements } from "../src/lib/announcements";
 import { getBrackets } from "../src/lib/brackets";
 import { db, closeDb } from "../src/db";
 import { sql } from "drizzle-orm";
+import { assertEditionConfigurationsReady } from "./release-editions-check";
 try {
   if (!authReady())
     throw new Error(
@@ -30,13 +31,7 @@ try {
   await db().execute(
     sql`SELECT configuration, configuration_version, registration_paused_at FROM edition_state LIMIT 0`,
   );
-  const missing = await db().execute(
-    sql`SELECT slug FROM edition_state WHERE configuration IS NULL LIMIT 1`,
-  );
-  if (missing.rows.length)
-    throw new Error(
-      "Legacy edition anchors need an approved one-time configuration import before release.",
-    );
+  await assertEditionConfigurationsReady();
   getBrackets();
   getAnnouncements();
   const contact = privacyContact()!; // authReady() already validated the explicit contact.
