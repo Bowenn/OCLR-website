@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { refereeMessage } from "@/i18n/referee";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { RefereeWorkspace, RefereeCommand } from "@/lib/referee";
 import {
@@ -27,6 +27,7 @@ export function RefereePanel({
   slug: string;
 }) {
   const tr = useAppTranslations();
+  const controlId = useId();
   const [data, setData] = useState(initial);
   const [firstBan, setFirstBan] = useState(
     initial.session?.firstBanTeamId ?? "",
@@ -258,9 +259,13 @@ export function RefereePanel({
           </button>
         )}
         <div className={styles.orders}>
-          <label className="field">
-            <span>{tr("First Ban team")}</span>
+          <label className="field" htmlFor={`${controlId}-first-ban`}>
+            <span id={`${controlId}-first-ban-label`}>
+              {tr("First Ban team")}
+            </span>
             <select
+              id={`${controlId}-first-ban`}
+              aria-labelledby={`${controlId}-first-ban-label`}
               value={firstBan}
               disabled={disabled || stale}
               onChange={(e) => setFirstBan(e.target.value)}
@@ -273,9 +278,13 @@ export function RefereePanel({
               ))}
             </select>
           </label>
-          <label className="field">
-            <span>{tr("First Pick team")}</span>
+          <label className="field" htmlFor={`${controlId}-first-pick`}>
+            <span id={`${controlId}-first-pick-label`}>
+              {tr("First Pick team")}
+            </span>
             <select
+              id={`${controlId}-first-pick`}
+              aria-labelledby={`${controlId}-first-pick-label`}
               value={firstPick}
               disabled={disabled || stale}
               onChange={(e) => setFirstPick(e.target.value)}

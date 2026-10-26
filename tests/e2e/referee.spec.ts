@@ -54,6 +54,7 @@ test.describe("referee command workspace", () => {
     context,
     browser,
     isMobile,
+    baseURL,
   }) => {
     test.setTimeout(120000);
     const seeded = await seed();
@@ -221,7 +222,7 @@ test.describe("referee command workspace", () => {
       .poll(async () => (await read()).projection.score[away.id])
       .toBe(1);
     await page.reload();
-    await expect(page.getByText("Attempt 3", { exact: false })).toBeVisible();
+    await expect(page.getByText(/^Attempt 3 · Completed · Winner:/)).toBeVisible();
     expect((await read()).projection.activeSelections[1].attempts).toHaveLength(
       3,
     );
@@ -242,7 +243,7 @@ test.describe("referee command workspace", () => {
     ).toBeVisible();
     const guest = await browser.newContext({
       storageState: englishStorage,
-      baseURL: "http://127.0.0.1:3100",
+      baseURL,
     });
     expect((await guest.request.get(api)).status()).toBe(401);
     const outsiderId = 891099;
@@ -270,6 +271,7 @@ test.describe("referee command workspace", () => {
     page,
     context,
     isMobile,
+    baseURL,
   }, info) => {
     test.setTimeout(180000);
     const seeded = await seed();
@@ -283,9 +285,9 @@ test.describe("referee command workspace", () => {
           {
             name: "oclr-appearance",
             value: appearance,
-            url: "http://127.0.0.1:3100",
+            url: baseURL!,
           },
-          { name: "oclr-theme", value: theme, url: "http://127.0.0.1:3100" },
+          { name: "oclr-theme", value: theme, url: baseURL! },
         ]);
         await page.goto(path);
         await expect(
@@ -303,7 +305,7 @@ test.describe("referee command workspace", () => {
       }
     for (const locale of ["zh-Hans", "zh-Hant", "en"]) {
       await context.addCookies([
-        { name: "oclr-locale", value: locale, url: "http://127.0.0.1:3100" },
+        { name: "oclr-locale", value: locale, url: baseURL! },
       ]);
       await page.goto(path);
       expect(
