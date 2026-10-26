@@ -182,6 +182,14 @@ export function refereeCommands(input: RefereeCommandInput): RefereeCommand[] {
         ...(mods.freemod ? ["Freemod"] : []),
       ]
     : null;
+  const modeCompatible =
+    mode !== undefined &&
+    Boolean(mods) &&
+    mods!.mods.every((mod) => {
+      if (["FI", "MR"].includes(mod) || /^\dK$/.test(mod)) return mode === 3;
+      if (mod === "SO") return mode === 0;
+      return true;
+    });
   const startSeconds = settings.startSeconds ?? policy?.startSeconds;
   return [
     command(
@@ -228,10 +236,12 @@ export function refereeCommands(input: RefereeCommandInput): RefereeCommand[] {
     ),
     command(
       "mods",
-      mapValid && modWords
+      mapValid && modWords && modeCompatible
         ? `!mp mods ${modWords.length ? modWords.join(" ") : "None"}`
         : null,
-      "Configure this pool category's Mods policy first.",
+      mods && !modeCompatible
+        ? "Configure Mods compatible with the round ruleset."
+        : "Configure this pool category's Mods policy first.",
     ),
     command(
       "start",

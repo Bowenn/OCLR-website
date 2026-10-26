@@ -29,6 +29,9 @@ function CommandLine({ command }: { command: RefereeCommand }) {
     abort: tr("Abort game"),
   };
   const reasons: Record<string, string> = {
+    "Configure Mods compatible with the round ruleset.": tr(
+      "Configure Mods compatible with the round ruleset.",
+    ),
     "Enter a valid room name.": tr("Enter a valid room name."),
     "Configure the round rules and room size first.": tr(
       "Configure the round rules and room size first.",

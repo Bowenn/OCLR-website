@@ -54,6 +54,39 @@ const input: RefereeCommandInput = {
 const command = (value: RefereeCommandInput, kind: string) =>
   refereeCommands(value).find((c) => c.id === kind)?.text;
 describe("referee command generation", () => {
+  it("blocks ruleset-specific Mods in incompatible rooms", () => {
+    for (const mods of [["FI"], ["MR"], ["4K"]] as const) {
+      const policy = {
+        ...input.policy!,
+        categoryMods: { HD: { mods: [...mods], freemod: false } },
+      };
+      expect(command({ ...input, policy }, "mods")).toBeNull();
+      expect(
+        command(
+          { ...input, policy, rules: { ...input.rules!, mode: "mania" } },
+          "mods",
+        ),
+      ).toBe(`!mp mods NF ${mods[0]}`);
+    }
+    const policy = {
+      ...input.policy!,
+      categoryMods: { HD: { mods: ["SO"] as const, freemod: false } },
+    };
+    expect(
+      command(
+        {
+          ...input,
+          policy: {
+            ...policy,
+            categoryMods: { HD: { ...policy.categoryMods.HD, mods: ["SO"] } },
+          },
+          rules: { ...input.rules!, mode: "taiko" },
+        },
+        "mods",
+      ),
+    ).toBeNull();
+    expect(command({ ...input, rules: null }, "mods")).toBeNull();
+  });
   it("treats inherited object property names as unconfigured categories", () => {
     expect(
       command(
