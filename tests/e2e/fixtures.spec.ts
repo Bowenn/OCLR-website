@@ -744,6 +744,13 @@ test.describe("staff fixtures and referee assignments over HTTP", () => {
       expect(workspace.fixtures[0].version).toBe(1); // Only fixture publication changed this version.
       expect(workspace.fixtures[0].assignmentRevision).toBe(4);
       await page.getByRole("tab", { name: "Bracket", exact: true }).click();
+      // This tab changes the route query; wait for the new document metadata
+      // before scanning so Axe does not inspect the transient streaming state.
+      await expect(
+        page.getByRole("tab", { name: "Bracket", exact: true }),
+      ).toHaveAttribute("aria-selected", "true");
+      await expect(page).toHaveTitle("Competition fixtures");
+
       expect(
         (
           await new AxeBuilder({ page })
