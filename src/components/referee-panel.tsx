@@ -7,6 +7,7 @@ import type { RefereeWorkspace, RefereeCommand } from "@/lib/referee";
 import {
   refereeOrderConflicts,
   resolveRefereeActor,
+  type RefereeEvent,
 } from "@/lib/referee-model";
 import { RefereeCommands } from "./referee-commands";
 import { RefereeReconciliation } from "./referee-reconciliation";
@@ -149,6 +150,44 @@ export function RefereePanel({
   }
   const disabled = busy || uncertain || !data.canRecord;
   const state = data.projection;
+  function historyDetail(event: RefereeEvent) {
+    const p = event.payload;
+    if (p.type === "order_set") {
+      return `${tr("First Ban team")}: ${teamName(p.firstBanTeamId)} · ${tr("First Pick team")}: ${teamName(p.firstPickTeamId)}`;
+    }
+    if (p.type === "selection_recorded") {
+      return `${tr("Step {number}", { number: p.stepIndex + 1 })} · ${p.kind.toUpperCase()} · ${tr("Selected by {team}", { team: teamName(p.teamId) })} · ${p.category} · ${p.beatmapId}`;
+    }
+    if (p.type === "settings_saved") {
+      return `${tr("Room name")}: ${p.settings.roomName || tr("Not set")} · ${tr("Timer seconds")}: ${p.settings.timerSeconds ?? tr("Not set")} · ${tr("Start countdown seconds")}: ${p.settings.startSeconds ?? tr("Not set")}`;
+    }
+    if (p.type === "policy_configured") {
+      return p.policy.steps
+        .map((step, index) => `${index + 1}. ${step.kind.toUpperCase()}`)
+        .join(" → ");
+    }
+    if (p.type === "dependencies_reconfirmed") return "";
+    const pickId = p.type === "selection_voided" ? p.selectionId : p.pickId;
+    const selection = state.selections.find((item) => item.id === pickId);
+    if (!selection) return "";
+    const step = `${tr("Step {number}", { number: selection.stepIndex + 1 })} · ${selection.category} · ${selection.beatmapId}`;
+    if (p.type === "selection_voided") return step;
+    const attemptId = p.type === "attempt_replayed" ? event.id : p.attemptId;
+    const attempt = selection.attempts.find((item) => item.id === attemptId);
+    const description = `${step} · ${tr("Attempt {number}", { number: attempt?.number ?? 1 })}`;
+    if (p.type !== "attempt_resolved") return description;
+    const outcome = (status: string, winner: string | null) =>
+      `${refereeMessage(tr, status)}${winner ? ` · ${tr("Winner")}: ${teamName(winner)}` : ""}`;
+    const previous = data.events
+      .filter(
+        (item) =>
+          item.ordinal < event.ordinal &&
+          item.payload.type === "attempt_resolved" &&
+          item.payload.attemptId === p.attemptId,
+      )
+      .at(-1)?.payload;
+    return `${description} · ${previous?.type === "attempt_resolved" ? `${outcome(previous.status, previous.winnerTeamId)} → ` : ""}${outcome(p.status, p.winnerTeamId)}`;
+  }
   return (
     <div className={styles.workspace}>
       <div className="actions">
@@ -489,9 +528,14 @@ export function RefereePanel({
             <ol className={styles.history}>
               {data.events.map((e) => (
                 <li key={e.id}>
-                  {e.ordinal}. {refereeMessage(tr, e.payload.type)} ·{" "}
-                  {e.actorId} ·{" "}
-                  <time dateTime={e.createdAt}>{e.createdAt}</time>
+                  <strong>
+                    {e.ordinal}. {refereeMessage(tr, e.payload.type)}
+                  </strong>
+                  <p>{historyDetail(e)}</p>
+                  <p className="small muted">
+                    {e.actorId} ·{" "}
+                    <time dateTime={e.createdAt}>{e.createdAt}</time>
+                  </p>
                 </li>
               ))}
             </ol>

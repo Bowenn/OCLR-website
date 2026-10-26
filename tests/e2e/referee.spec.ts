@@ -178,6 +178,25 @@ test.describe("referee command workspace", () => {
       .poll(async () => (await read()).projection.score[home.id])
       .toBe(1);
     await page
+      .getByRole("button", { name: `Record win: ${away.name}`, exact: true })
+      .click();
+    await expect
+      .poll(async () => (await read()).projection.score[away.id])
+      .toBe(1);
+    await page.getByText("Full correction history", { exact: true }).click();
+    await expect(
+      page.getByText(
+        `Completed · Winner: ${home.name} → Completed · Winner: ${away.name}`,
+        { exact: false },
+      ),
+    ).toBeVisible();
+    await page.getByText("Full correction history", { exact: true }).click();
+    await win.click();
+    await expect
+      .poll(async () => (await read()).projection.score[home.id])
+      .toBe(1);
+
+    await page
       .getByRole("button", { name: "Record replay", exact: true })
       .click();
     await expect
