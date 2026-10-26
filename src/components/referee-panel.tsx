@@ -393,12 +393,6 @@ export function RefereePanel({
           className={styles.commands}
           aria-label={tr("Current commands")}
         >
-          {map && (
-            <p className="notice">
-              {tr("Selected map")}: {map.category}
-              {map.position} · {map.metadata.artist} — {map.metadata.title}
-            </p>
-          )}
           <RefereeCommands
             key={data.session?.revision ?? 0}
             settings={data.session?.settings ?? data.defaultSettings}
@@ -406,6 +400,28 @@ export function RefereePanel({
             rules={data.rules}
             teams={data.teams}
             selectedMap={map}
+            mapSelector={
+              <label className="field" htmlFor={`${controlId}-command-map`}>
+                <span id={`${controlId}-command-map-label`}>
+                  {tr("Selected map")}
+                </span>
+                <select
+                  id={`${controlId}-command-map`}
+                  aria-labelledby={`${controlId}-command-map-label`}
+                  value={selected}
+                  onChange={(event) => setSelected(event.target.value)}
+                >
+                  <option value="">{tr("Not set")}</option>
+                  {data.maps.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {entry.category}
+                      {entry.position} · {entry.metadata.artist} —{" "}
+                      {entry.metadata.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            }
             canRecord={data.canRecord && !stale && !uncertain}
             busy={busy}
             onSave={(settings) => send({ action: "save_settings", settings })}

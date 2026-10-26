@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
+import styles from "./referee-commands.module.css";
 import { useAppTranslations } from "@/i18n/shared";
 import {
   copyRefereeCommand,
@@ -69,8 +70,8 @@ function CommandLine({ command }: { command: RefereeCommand }) {
     }
   }
   return (
-    <div className="form-stack" style={{ minWidth: 0 }}>
-      <label>
+    <div className={styles.command}>
+      <label className={styles.commandField}>
         <span>{label}</span>
         {command.text ? (
           <textarea
@@ -78,15 +79,9 @@ function CommandLine({ command }: { command: RefereeCommand }) {
             aria-label={label}
             value={command.text}
             readOnly
-            rows={2}
+            rows={command.kind === "make" ? 2 : 1}
             spellCheck={false}
-            style={{
-              width: "100%",
-              minWidth: 0,
-              maxWidth: "100%",
-              fontFamily: "monospace",
-              overflowWrap: "anywhere",
-            }}
+            className={styles.commandText}
             onFocus={(event) => event.currentTarget.select()}
           />
         ) : (
@@ -95,7 +90,7 @@ function CommandLine({ command }: { command: RefereeCommand }) {
           </span>
         )}
       </label>
-      <div className="actions">
+      <div className={styles.copyAction}>
         <button
           type="button"
           className="secondary"
@@ -109,7 +104,7 @@ function CommandLine({ command }: { command: RefereeCommand }) {
               ? tr("Copied")
               : tr("Copy command")}
         </button>
-        <span className="small muted" role="status">
+        <span className={`small muted ${styles.copyStatus}`} role="status">
           {status === "copied"
             ? tr("Copied. Execute this command yourself in osu!.")
             : status === "manual"
@@ -133,10 +128,12 @@ export function RefereeCommands({
   onSave,
   canRecord,
   busy = false,
+  mapSelector,
 }: RefereeCommandInput & {
   onSave: (settings: RefereeSettings) => void | Promise<void>;
   canRecord: boolean;
   busy?: boolean;
+  mapSelector?: ReactNode;
 }) {
   const tr = useAppTranslations();
   const id = useId();
@@ -183,7 +180,7 @@ export function RefereeCommands({
     label: string,
     max?: number,
   ) => (
-    <label htmlFor={`${id}-${key}`}>
+    <label className={styles.field} htmlFor={`${id}-${key}`}>
       {label}
       <input
         id={`${id}-${key}`}
@@ -199,9 +196,8 @@ export function RefereeCommands({
   );
   return (
     <section
-      className="panel form-stack"
+      className={`panel ${styles.assistant}`}
       aria-label={tr("Command assistant")}
-      style={{ minWidth: 0 }}
     >
       <div>
         <h2>{tr("Command assistant")}</h2>
@@ -211,9 +207,11 @@ export function RefereeCommands({
           )}
         </p>
       </div>
-      <div className="form-stack">
+      {mapSelector}
+      <div className={styles.timers}>
         {numberField("timerSeconds", tr("Timer seconds"))}
-        <div className="actions">
+        {numberField("startSeconds", tr("Start countdown seconds"))}
+        <div className={`actions ${styles.presets}`}>
           {(
             [
               ["banSeconds", tr("Ban timer")],
@@ -233,8 +231,7 @@ export function RefereeCommands({
             </button>
           ))}
         </div>
-        {numberField("startSeconds", tr("Start countdown seconds"))}
-        <p className="small muted">
+        <p className={`small muted ${styles.timerHint}`}>
           {tr(
             "The start countdown is independent of the Ban, Pick and preparation timers.",
           )}
@@ -247,7 +244,7 @@ export function RefereeCommands({
           )}
         </p>
       )}
-      <div className="form-stack">
+      <div className={styles.stack}>
         {live.map((command) => (
           <CommandLine
             key={`${command.id}:${command.text}`}
@@ -257,8 +254,8 @@ export function RefereeCommands({
       </div>
       <details>
         <summary>{tr("Room setup and invitations")}</summary>
-        <div className="form-stack">
-          <label htmlFor={`${id}-room`}>
+        <div className={styles.stack}>
+          <label className={styles.field} htmlFor={`${id}-room`}>
             {tr("Room name")}
             <input
               id={`${id}-room`}
@@ -286,7 +283,7 @@ export function RefereeCommands({
               · {rules.scoringType === "scorev2" ? "Score V2" : "Score"}
             </p>
           )}
-          <label htmlFor={`${id}-streamer`}>
+          <label className={styles.field} htmlFor={`${id}-streamer`}>
             {tr("Streamer osu! username")}
             <input
               id={`${id}-streamer`}

@@ -1,0 +1,90 @@
+.assistant {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.assistant p,
+.assistant h2 {
+  margin-block: 0;
+}
+.assistant h2 + p {
+  margin-top: 0.4rem;
+}
+.stack {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+details > .stack {
+  margin-top: 0.75rem;
+}
+.field,
+.commandField {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.timers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.presets,
+.timerHint {
+  grid-column: 1 / -1;
+}
+.command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+.commandText {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.75rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+.copyAction {
+  display: contents;
+}
+.copyAction button {
+  min-height: 2.75rem;
+  white-space: normal;
+}
+.copyStatus {
+  grid-column: 1 / -1;
+}
+.copyStatus:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+@media (max-width: 480px) {
+  .command {
+    column-gap: 0.5rem;
+  }
+  .copyAction button {
+    max-width: 6.5rem;
+  }
+  .commandText {
+    min-height: 4rem;
+  }
+}
+@media (forced-colors: active) {
+  .command {
+    border-color: CanvasText;
+  }
+}
