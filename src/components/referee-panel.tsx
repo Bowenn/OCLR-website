@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { refereeMessage } from "@/i18n/referee";
 import { useRef, useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import type { RefereeWorkspace, RefereeCommand } from "@/lib/referee";
@@ -42,7 +43,7 @@ export function RefereePanel({
   const endpoint = `/api/admin/tournaments/${slug}/matches/${data.fixture.id}/referee`;
   const teamName = (id: string | null, neutral = true) =>
     data.teams.find((t) => t.id === id)?.name ??
-    tr(neutral ? "Neutral tiebreaker" : "Not set");
+    refereeMessage(tr, neutral ? "Neutral tiebreaker" : "Not set");
   const dirtyOrder =
     firstBan !== (data.session?.firstBanTeamId ?? "") ||
     firstPick !== (data.session?.firstPickTeamId ?? "");
@@ -87,7 +88,8 @@ export function RefereePanel({
       setNotice(tr("Reloaded saved referee state."));
     } catch (e) {
       setError(
-        tr(
+        refereeMessage(
+          tr,
           e instanceof Error
             ? e.message
             : "Unable to reload the referee workspace.",
@@ -136,7 +138,8 @@ export function RefereePanel({
     } catch (e) {
       if (pending.current) setUncertain(true);
       setError(
-        tr(
+        refereeMessage(
+          tr,
           e instanceof Error ? e.message : "Unable to save the referee action.",
         ),
       );
@@ -201,7 +204,7 @@ export function RefereePanel({
         {data.readiness.length > 0 && (
           <ul className="notice">
             {data.readiness.map((message, i) => (
-              <li key={i}>{tr(message)}</li>
+              <li key={i}>{refereeMessage(tr, message)}</li>
             ))}
           </ul>
         )}
@@ -384,15 +387,7 @@ export function RefereePanel({
                 {s.attempts.map((a) => (
                   <p className="small" key={a.id}>
                     {tr("Attempt {number}", { number: a.number })} ·{" "}
-                    {tr(
-                      {
-                        pending: "Pending",
-                        playing: "In progress",
-                        completed: "Completed",
-                        tied: "Tied",
-                        aborted: "Aborted",
-                      }[a.status],
-                    )}
+                    {refereeMessage(tr, a.status)}
                     {a.winnerTeamId
                       ? ` · ${tr("Winner")}: ${teamName(a.winnerTeamId)}`
                       : ""}
@@ -494,21 +489,8 @@ export function RefereePanel({
             <ol className={styles.history}>
               {data.events.map((e) => (
                 <li key={e.id}>
-                  {e.ordinal}.{" "}
-                  {tr(
-                    {
-                      order_set: "Order applied",
-                      selection_recorded: "Selection recorded",
-                      attempt_started: "Actual start recorded",
-                      attempt_resolved: "Attempt outcome recorded",
-                      attempt_replayed: "Replay recorded",
-                      selection_voided: "Selection withdrawn",
-                      settings_saved: "Command settings saved",
-                      policy_configured: "Round policy saved",
-                      dependencies_reconfirmed: "Dependencies rechecked",
-                    }[e.payload.type],
-                  )}{" "}
-                  · {e.actorId} ·{" "}
+                  {e.ordinal}. {refereeMessage(tr, e.payload.type)} ·{" "}
+                  {e.actorId} ·{" "}
                   <time dateTime={e.createdAt}>{e.createdAt}</time>
                 </li>
               ))}
@@ -562,7 +544,7 @@ export function RefereePanel({
                       {m.metadata.artist} — {m.metadata.title}
                     </span>
                     <span className="small">
-                      [{m.metadata.version}] · {m.beatmapId}
+                      [{m.metadata.difficulty}] · {m.beatmapId}
                     </span>
                     <span className="small">
                       {used ? used.kind.toUpperCase() : tr("Available")}
@@ -585,7 +567,7 @@ export function RefereePanel({
             </p>
             {state.issues.map((message, i) => (
               <p className="small muted" key={i}>
-                {tr(message)}
+                {refereeMessage(tr, message)}
               </p>
             ))}
             <button

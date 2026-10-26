@@ -1,4 +1,5 @@
 "use client";
+import { refereeMessage } from "@/i18n/referee";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import {
@@ -150,17 +151,7 @@ export function RefereePolicyEditor({
                       : ["firstPick", "secondPick"]
                   ).map((v) => (
                     <option key={v} value={v}>
-                      {tr(
-                        (
-                          {
-                            firstBan: "First Ban team",
-                            secondBan: "Second Ban team",
-                            firstPick: "First Pick team",
-                            secondPick: "Second Pick team",
-                            neutral: "Neutral tiebreaker",
-                          } as Record<string, string>
-                        )[v],
-                      )}
+                      {refereeMessage(tr, v)}
                     </option>
                   ))}
                 </select>
@@ -311,16 +302,7 @@ export function RefereePolicyEditor({
             ] as const
           ).map((key) => (
             <label className="field" key={key}>
-              <span>
-                {tr(
-                  {
-                    banSeconds: "Ban timer seconds",
-                    pickSeconds: "Pick timer seconds",
-                    prepareSeconds: "Preparation timer seconds",
-                    startSeconds: "Start countdown seconds",
-                  }[key],
-                )}
-              </span>
+              <span>{refereeMessage(tr, key)}</span>
               <input
                 type="number"
                 min={1}
