@@ -38,23 +38,29 @@ test.describe("concise public tournament surfaces", () => {
     await expect(page.locator("footer")).not.toContainText("Emik");
     const credit = page
       .locator("footer")
-      .getByRole("link", { name: "Lapis", exact: true });
-    await expect(credit).toHaveAttribute(
-      "href",
-      "https://osu.ppy.sh/users/1176704",
-    );
+      .getByRole("link", { name: "OCLR Dev Team.", exact: true });
+    await expect(credit).toHaveAttribute("href", "https://github.com/OCLR-dev");
     await expect(credit).toHaveAttribute("rel", "noopener noreferrer");
     await expect(credit).toHaveAttribute("target", "_blank");
     const github = page
       .locator("footer")
-      .getByRole("link", { name: "GitHub", exact: true });
+      .getByRole("link", { name: "GitHub repository", exact: true });
     await expect(github).toHaveAttribute(
       "href",
-      "https://github.com/PhoenixEmik/OCLR-website",
+      "https://github.com/OCLR-dev/OCLR-website",
     );
     await expect(github).toHaveAttribute("rel", "noopener noreferrer");
     await expect(github).toHaveAttribute("target", "_blank");
-    await expect(page.locator("footer a")).toHaveCount(2);
+    const reportIssue = page
+      .locator("footer")
+      .getByRole("link", { name: "Report an issue", exact: true });
+    await expect(reportIssue).toHaveAttribute(
+      "href",
+      "https://github.com/OCLR-dev/OCLR-website/issues/new",
+    );
+    await expect(reportIssue).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(reportIssue).toHaveAttribute("target", "_blank");
+    await expect(page.locator("footer a")).toHaveCount(3);
     await expect(page.locator("footer button, footer nav")).toHaveCount(0);
     await page.goto("/about");
     await page
