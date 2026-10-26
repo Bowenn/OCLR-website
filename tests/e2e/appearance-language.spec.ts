@@ -8,6 +8,9 @@ import { edition } from "../fixtures/edition";
 import { seedSession } from "./session";
 
 test.describe("appearance and language preferences", () => {
+  // Clearing preferences exposes browser detection, so make the initial
+  // Simplified Chinese locale explicit before testing manual overrides.
+  test.use({ locale: "zh-CN" });
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(closeDb);
   test("keeps locale, theme and publication boundaries across public and private navigation", async ({
