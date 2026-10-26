@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { historicalArchiveSchema } from "../../src/lib/historical-archive";
+import {
+  historicalArchiveSchema,
+  publicHistoricalArchive,
+} from "../../src/lib/historical-archive";
 import {
   historicalRulebook,
   historicalRulebookSeason,
@@ -107,6 +110,65 @@ describe("S9 historical rulebook supplement", () => {
         expect(image.readUInt32BE(16)).toBe(figure.width);
         expect(image.readUInt32BE(20)).toBe(figure.height);
       }
+  });
+});
+
+describe("S3 saved original sections after public projection", () => {
+  const sourceUrl =
+    "https://docs.google.com/spreadsheets/d/1o4asx7nZQTAWwNjK_TyB_aq2ZWD471BHAxcdLp-TPAo";
+  const sections = JSON.parse(
+    readFileSync("docs/imports/s3-rules.json", "utf8"),
+  ).map((s: { title: string; content: string }) => ({
+    heading: s.title,
+    body: s.content,
+  }));
+  const configured = { version: "OCLR S3总规则（原文分段）", sections };
+  it("reads the current saved sections without requiring private source facts", () => {
+    for (const suffix of ["", "/edit"]) {
+      const source = publicHistoricalArchive({
+        ...archive,
+        sourceUrl: sourceUrl + suffix,
+        editionSlug: "renamed",
+        sourceFacts: [
+          {
+            category: "rules",
+            label: "Private backup",
+            text: "Outdated private source must not become public rules.",
+            source: "Synthetic admin appendix",
+          },
+        ],
+      });
+      expect(source.sourceFacts).toBeUndefined();
+      const rules = historicalRulebook(source, configured)!;
+      expect(rules.sections).toEqual(sections);
+      expect(rules.sections.map((s) => s.heading)).toEqual([
+        "赛程规则",
+        "比赛规则",
+        "赛程安排",
+        "STAFF",
+      ]);
+      expect(rules.version).toBe(configured.version);
+      expect(historicalRulebookSeason(rules)).toBe("3");
+      expect(
+        readFileSync("public" + rules.documentUrl)
+          .subarray(0, 4)
+          .toString(),
+      ).toBe("%PDF");
+      expect(historicalRulebook(source)).toBeNull();
+      const updated = {
+        version: "synthetic-new-version",
+        sections: [
+          { heading: "Saved update", body: "Current native content." },
+        ],
+      };
+      expect(historicalRulebook(source, updated)).toMatchObject(updated);
+    }
+    expect(
+      historicalRulebook(
+        { ...archive, sourceUrl: "https://example.com/unknown" },
+        configured,
+      ),
+    ).toBeNull();
   });
 });
 

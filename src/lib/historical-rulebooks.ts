@@ -48,6 +48,21 @@ export function historicalRulebook(
     sections: HistoricalRulebook["sections"];
   } | null,
 ): HistoricalRulebook | null {
+  // S3 uses the saved native sections, including after private source facts
+  // have been removed from public page/API models.
+  if (
+    configured &&
+    /^https:\/\/docs\.google\.com\/spreadsheets\/d\/1o4asx7nZQTAWwNjK_TyB_aq2ZWD471BHAxcdLp-TPAo(?:\/edit)?$/.test(
+      archive.sourceUrl,
+    )
+  ) {
+    return {
+      title: "OCLR S3总规则",
+      version: configured.version,
+      documentUrl: "/archive/s3/rules.pdf",
+      sections: configured.sections,
+    };
+  }
   // S4's organizer-provided PDF is maintained in the native versioned editor.
   // Match its source workbook, independently of the editable edition slug.
   if (
@@ -126,6 +141,11 @@ export function historicalRulebook(
 
 /** Identify the approved source pair independently of editable edition slugs. */
 export function historicalRulebookSeason(rules: HistoricalRulebook) {
+  if (
+    rules.title === "OCLR S3总规则" &&
+    rules.documentUrl === "/archive/s3/rules.pdf"
+  )
+    return "3";
   if (
     rules.title === "OCLR S4规则说明" &&
     rules.documentUrl === "/archive/s4/rules.pdf"
