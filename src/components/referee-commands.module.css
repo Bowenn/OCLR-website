@@ -4,10 +4,10 @@
   min-width: 0;
 }
 .assistant p,
-.assistant h2 {
+.assistant h3 {
   margin-block: 0;
 }
-.assistant h2 + p {
+.assistant h3 + p {
   margin-top: 0.4rem;
 }
 .stack {
@@ -86,5 +86,17 @@ details > .stack {
 @media (forced-colors: active) {
   .command {
     border-color: CanvasText;
+  }
+}
+
+.setupGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .setupGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

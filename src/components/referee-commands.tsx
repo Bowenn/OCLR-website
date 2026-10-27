@@ -129,15 +129,26 @@ export function RefereeCommands({
   canRecord,
   busy = false,
   mapSelector,
+  stage,
+  draft: controlledDraft,
+  onDraftChange,
 }: RefereeCommandInput & {
   onSave: (settings: RefereeSettings) => void | Promise<void>;
   canRecord: boolean;
   busy?: boolean;
   mapSelector?: ReactNode;
+  stage?: "preparation" | "play";
+  draft?: RefereeSettings;
+  onDraftChange?: (settings: RefereeSettings) => void;
 }) {
   const tr = useAppTranslations();
   const id = useId();
-  const [draft, setDraft] = useState(settings);
+  const [localDraft, setLocalDraft] = useState(settings);
+  const draft = controlledDraft ?? localDraft;
+  const setDraft = (value: RefereeSettings) => {
+    if (onDraftChange) onDraftChange(value);
+    else setLocalDraft(value);
+  };
   const [error, setError] = useState("");
   const changed = JSON.stringify(draft) !== JSON.stringify(settings);
   const commands = refereeCommands({
@@ -155,7 +166,7 @@ export function RefereeCommands({
   const update = <K extends keyof RefereeSettings>(
     key: K,
     value: RefereeSettings[K],
-  ) => setDraft((current) => ({ ...current, [key]: value }));
+  ) => setDraft({ ...draft, [key]: value });
   async function save() {
     const parsed = refereeSettingsSchema.safeParse(draft);
     if (!parsed.success) {
@@ -197,117 +208,138 @@ export function RefereeCommands({
   return (
     <section
       className={`panel ${styles.assistant}`}
-      aria-label={tr("Command assistant")}
+      aria-label={
+        stage === "preparation"
+          ? tr("Room setup and invitations")
+          : tr("Current commands")
+      }
     >
       <div>
-        <h2>{tr("Command assistant")}</h2>
+        <h3>
+          {stage === "preparation"
+            ? tr("Room setup and invitations")
+            : tr("Current commands")}
+        </h3>
         <p className="small muted">
           {tr(
             "Copy commands here, then execute them in osu!. Copying never records a Ban, Pick or game result.",
           )}
         </p>
       </div>
-      {mapSelector}
-      <div className={styles.timers}>
-        {numberField("timerSeconds", tr("Timer seconds"))}
-        {numberField("startSeconds", tr("Start countdown seconds"))}
-        <div className={`actions ${styles.presets}`}>
-          {(
-            [
-              ["banSeconds", tr("Ban timer")],
-              ["pickSeconds", tr("Pick timer")],
-              ["prepareSeconds", tr("Preparation timer")],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              className="secondary"
-              disabled={!canRecord || busy || !policy?.[key]}
-              onClick={() => update("timerSeconds", policy?.[key] ?? null)}
-            >
-              {label}
-              {policy?.[key] ? ` · ${policy[key]}s` : ""}
-            </button>
-          ))}
-        </div>
-        <p className={`small muted ${styles.timerHint}`}>
-          {tr(
-            "The start countdown is independent of the Ban, Pick and preparation timers.",
-          )}
-        </p>
-      </div>
-      {changed && (
-        <p className="small" role="status">
-          {tr(
-            "Unsaved command settings. Command previews use the values shown here.",
-          )}
-        </p>
+      {stage !== "play" && (
+        <>
+          <div className={styles.setupGrid}>
+            <div className={styles.stack}>
+              <label className={styles.field} htmlFor={`${id}-room`}>
+                {tr("Room name")}
+                <input
+                  id={`${id}-room`}
+                  value={draft.roomName}
+                  maxLength={200}
+                  disabled={!canRecord || busy}
+                  onChange={(event) => update("roomName", event.target.value)}
+                />
+              </label>
+              <p className="small muted">
+                {tr(
+                  "!mp make creates a new room. Send it to BanchoBot. To rename an existing room, use !mp name instead.",
+                )}
+              </p>
+              {numberField(
+                "roomSize",
+                tr("Room slots (not players per team)"),
+                16,
+              )}
+              {rules && (
+                <p className="small muted">
+                  {tr("Players per team: {value0}", {
+                    value0: rules.playersPerTeam,
+                  })}{" "}
+                  ·{" "}
+                  {rules.teamType === "team-vs"
+                    ? tr("Team Vs")
+                    : tr("Head To Head")}{" "}
+                  · {rules.scoringType === "scorev2" ? "Score V2" : "Score"}
+                </p>
+              )}
+              <label className={styles.field} htmlFor={`${id}-streamer`}>
+                {tr("Streamer osu! username")}
+                <input
+                  id={`${id}-streamer`}
+                  value={draft.streamerUsername}
+                  maxLength={50}
+                  disabled={!canRecord || busy}
+                  onChange={(event) =>
+                    update("streamerUsername", event.target.value)
+                  }
+                />
+              </label>
+              <p className="small muted">
+                {tr(
+                  "Only the room creator can execute !mp addref. It grants osu! room controls and does not change website roles.",
+                )}
+              </p>
+            </div>
+            <div className={styles.stack}>
+              {setup.map((command) => (
+                <CommandLine
+                  key={`${command.id}:${command.text}`}
+                  command={command}
+                />
+              ))}
+            </div>
+          </div>
+        </>
       )}
-      <div className={styles.stack}>
-        {live.map((command) => (
-          <CommandLine
-            key={`${command.id}:${command.text}`}
-            command={command}
-          />
-        ))}
-      </div>
-      <details>
-        <summary>{tr("Room setup and invitations")}</summary>
-        <div className={styles.stack}>
-          <label className={styles.field} htmlFor={`${id}-room`}>
-            {tr("Room name")}
-            <input
-              id={`${id}-room`}
-              value={draft.roomName}
-              maxLength={200}
-              disabled={!canRecord || busy}
-              onChange={(event) => update("roomName", event.target.value)}
-            />
-          </label>
-          <p className="small muted">
-            {tr(
-              "!mp make creates a new room. Send it to BanchoBot. To rename an existing room, use !mp name instead.",
-            )}
-          </p>
-          {numberField("roomSize", tr("Room slots (not players per team)"), 16)}
-          {rules && (
-            <p className="small muted">
-              {tr("Players per team: {value0}", {
-                value0: rules.playersPerTeam,
-              })}{" "}
-              ·{" "}
-              {rules.teamType === "team-vs"
-                ? tr("Team Vs")
-                : tr("Head To Head")}{" "}
-              · {rules.scoringType === "scorev2" ? "Score V2" : "Score"}
+      {stage !== "preparation" && (
+        <>
+          {mapSelector}
+          <div className={styles.timers}>
+            {numberField("timerSeconds", tr("Timer seconds"))}
+            {numberField("startSeconds", tr("Start countdown seconds"))}
+            <div className={`actions ${styles.presets}`}>
+              {(
+                [
+                  ["banSeconds", tr("Ban timer")],
+                  ["pickSeconds", tr("Pick timer")],
+                  ["prepareSeconds", tr("Preparation timer")],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className="secondary"
+                  disabled={!canRecord || busy || !policy?.[key]}
+                  onClick={() => update("timerSeconds", policy?.[key] ?? null)}
+                >
+                  {label}
+                  {policy?.[key] ? ` · ${policy[key]}s` : ""}
+                </button>
+              ))}
+            </div>
+            <p className={`small muted ${styles.timerHint}`}>
+              {tr(
+                "The start countdown is independent of the Ban, Pick and preparation timers.",
+              )}
+            </p>
+          </div>
+          {changed && (
+            <p className="small" role="status">
+              {tr(
+                "Unsaved command settings. Command previews use the values shown here.",
+              )}
             </p>
           )}
-          <label className={styles.field} htmlFor={`${id}-streamer`}>
-            {tr("Streamer osu! username")}
-            <input
-              id={`${id}-streamer`}
-              value={draft.streamerUsername}
-              maxLength={50}
-              disabled={!canRecord || busy}
-              onChange={(event) =>
-                update("streamerUsername", event.target.value)
-              }
-            />
-          </label>
-          <p className="small muted">
-            {tr(
-              "Only the room creator can execute !mp addref. It grants osu! room controls and does not change website roles.",
-            )}
-          </p>
-          {setup.map((command) => (
-            <CommandLine
-              key={`${command.id}:${command.text}`}
-              command={command}
-            />
-          ))}
-        </div>
-      </details>
+          <div className={styles.stack}>
+            {live.map((command) => (
+              <CommandLine
+                key={`${command.id}:${command.text}`}
+                command={command}
+              />
+            ))}
+          </div>
+        </>
+      )}
       {error && (
         <p className="error" role="alert">
           {error}
