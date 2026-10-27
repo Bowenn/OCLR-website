@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { db, closeDb } from "../../src/db";
 import { assertTestDatabase } from "../database";
 import { seedBrowserEditions } from "./setup";
+import { seedSession } from "./session";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 import { chooseTheme } from "./theme";
@@ -41,6 +42,242 @@ test.describe("S7 Graphite Arena appearance", () => {
     await seedBrowserEditions();
   });
   test.afterAll(closeDb);
+
+  test("keeps the admin sidebar rectangular and follows the current route", async ({
+    context,
+    isMobile,
+  }) => {
+    test.setTimeout(180000);
+    await context.addCookies([await seedSession(isMobile ? 70001 : 60001)]);
+    await context.route("https://a.ppy.sh/**", (route) =>
+      route.fulfill({ status: 404, body: "" }),
+    );
+    const errors: string[] = [];
+    for (const locale of ["en", "zh-Hans", "zh-Hant"])
+      for (const theme of ["light", "dark"])
+        for (const width of isMobile ? [320, 390, 760] : [768, 937, 1440]) {
+          const page = await context.newPage();
+          page.on("pageerror", (error) => errors.push(error.message));
+          await page.setViewportSize({ width, height: 815 });
+          await context.addCookies(
+            [
+              ["oclr-locale", locale],
+              ["oclr-theme", theme],
+              ["oclr-appearance", "graphite-arena"],
+            ].map(([name, value]) => ({ name, value, url: origin })),
+          );
+          expect((await page.goto("/admin/tournaments/s7"))?.status()).toBe(
+            200,
+          );
+          await page.waitForLoadState("networkidle");
+          const toggle = page.locator(".admin-menu-toggle");
+          if (width <= 760) {
+            await expect(page.locator("#admin-menu")).toBeHidden();
+            await toggle.click();
+            await expect(toggle).toHaveAttribute("aria-expanded", "true");
+          }
+          const group = page.locator("#admin-menu .admin-nav-group").first();
+          const links = group.locator("a");
+          await expect(links).toHaveCount(4);
+          const expected = ["", "/archive", "/statistics", "/settings"];
+          for (let i = 0; i < expected.length; i++)
+            await expect(links.nth(i)).toHaveAttribute(
+              "href",
+              `/admin/tournaments/s7${expected[i]}`,
+            );
+          for (const link of await links.all()) {
+            await expect(link).toBeVisible();
+            await expect(link).toHaveCSS("border-radius", "2px");
+            expect(
+              await link.evaluate(
+                (n) =>
+                  n.getBoundingClientRect().height >= 44 &&
+                  n.scrollWidth <= n.clientWidth,
+              ),
+            ).toBe(true);
+          }
+          const current = group.locator('a[aria-current="page"]');
+          await expect(current).toHaveCount(1);
+          await expect(current).toHaveAttribute(
+            "href",
+            "/admin/tournaments/s7",
+          );
+          await expect(current).toHaveCSS("border-inline-start-width", "3px");
+          expect(
+            await current.evaluate((n) => getComputedStyle(n).backgroundImage),
+          ).toContain("linear-gradient");
+          expect(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth <= innerWidth,
+            ),
+          ).toBe(true);
+          if (width === (isMobile ? 390 : 937)) {
+            expect(
+              (
+                await new AxeBuilder({ page })
+                  .include(".sidebar")
+                  .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+                  .analyze()
+              ).violations,
+            ).toEqual([]);
+            // Switch from the touch-opened menu to keyboard focus modality.
+            await page.keyboard.press("Tab");
+            await links.last().focus();
+            await expect(links.last()).toHaveCSS("outline-style", /solid|auto/);
+            await page.keyboard.press("Enter");
+            await expect(page).toHaveURL(/\/admin\/tournaments\/s7\/settings$/);
+            await page.waitForLoadState("networkidle");
+            if (width <= 760) {
+              await expect(toggle).toHaveAttribute("aria-expanded", "false");
+              await toggle.click();
+            }
+            const selected = page.locator('#admin-menu a[aria-current="page"]');
+            await expect(selected).toHaveCount(1);
+            await expect(selected).toHaveAttribute(
+              "href",
+              "/admin/tournaments/s7/settings",
+            );
+            await page.emulateMedia({ forcedColors: "active" });
+            await expect(selected).toHaveCSS("background-image", "none");
+            await expect(selected).toHaveCSS("box-shadow", "none");
+            await expect(selected).toHaveCSS("outline-style", "solid");
+          }
+          await page.waitForLoadState("networkidle");
+          await page.close();
+        }
+    expect(errors).toEqual([]);
+  });
+
+  test("keeps mappool text actions clear and long titles readable", async ({
+    context,
+    isMobile,
+  }) => {
+    test.setTimeout(180000);
+    const errors: string[] = [];
+    // Cover-provider failures must not affect title layout or the real controls.
+    await context.route("https://assets.ppy.sh/**", (route) =>
+      route.fulfill({ status: 404, body: "" }),
+    );
+    for (const locale of ["en", "zh-Hans", "zh-Hant"])
+      for (const theme of ["light", "dark"])
+        for (const width of isMobile ? [320, 390, 699] : [655, 699, 1440]) {
+          // Keep matrix cases on independent pages so a deliberate preference or
+          // viewport change never interrupts the previous page's RSC prefetches.
+          const page = await context.newPage();
+          page.on("pageerror", (error) => errors.push(error.message));
+          await page.setViewportSize({ width, height: 815 });
+          await context.addCookies(
+            [
+              ["oclr-locale", locale],
+              ["oclr-theme", theme],
+              ["oclr-appearance", "graphite-arena"],
+            ].map(([name, value]) => ({ name, value, url: origin })),
+          );
+          expect((await page.goto("/tournaments/s7/mappools"))?.status()).toBe(
+            200,
+          );
+          await page.waitForLoadState("networkidle");
+          const control = page.locator(".map-view-control");
+          await expect(control).toHaveCSS("border-top-width", "0px");
+          await expect(control).toHaveCSS("border-radius", "0px");
+          await expect(control).toHaveCSS(
+            "background-color",
+            "rgba(0, 0, 0, 0)",
+          );
+          await expect(control.locator("button").first()).toHaveAttribute(
+            "aria-pressed",
+            "true",
+          );
+          for (const [slot, literal] of [
+            ["NM2", "DragonForce - My Heart Will Go On [Expert]"],
+            ["ACE1", "Shimotsuki Haruka - Secret Liqueur [Last Order]"],
+          ]) {
+            const title = page.locator(`#map-${slot} .map-open-button`);
+            await expect(title).toHaveText(literal);
+            await expect(title).toHaveCSS("background-image", "none");
+            await expect(title).toHaveCSS("box-shadow", "none");
+            const geometry = await title.evaluate((node) => {
+              const button = node.getBoundingClientRect();
+              const heading = node.parentElement!.getBoundingClientRect();
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              return {
+                largeEnough: button.height >= 44,
+                fillsHeading: Math.abs(button.width - heading.width) < 1,
+                unclipped:
+                  node.scrollWidth <= node.clientWidth &&
+                  node.scrollHeight <= node.clientHeight,
+                textInside: [...range.getClientRects()].every(
+                  (r) =>
+                    r.left >= button.left - 1 && r.right <= button.right + 1,
+                ),
+              };
+            });
+            expect(geometry).toEqual({
+              largeEnough: true,
+              fillsHeading: true,
+              unclipped: true,
+              textInside: true,
+            });
+          }
+          expect(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth <= innerWidth,
+            ),
+          ).toBe(true);
+          if (width === 699) {
+            expect(
+              (
+                await new AxeBuilder({ page })
+                  .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+                  .analyze()
+              ).violations,
+            ).toEqual([]);
+          }
+          if (locale === "zh-Hant" && theme === "dark" && width === 699) {
+            // Keyboard activation still opens the full title and restores focus on close.
+            const title = page.locator("#map-ACE1 .map-open-button");
+            await title.focus();
+            await expect(title).toHaveCSS("outline-style", /solid|auto/);
+            await page.keyboard.down("Space");
+            await expect(title).toHaveCSS("background-image", "none");
+            await expect(title).toHaveCSS("box-shadow", "none");
+            await expect(title).toHaveCSS("transform", "none");
+            await page.keyboard.up("Space");
+            const dialog = page.getByRole("dialog");
+            await expect(dialog.getByRole("heading").first()).toHaveText(
+              "Shimotsuki Haruka - Secret Liqueur [Last Order]",
+            );
+            await page.keyboard.press("Escape");
+            await expect(title).toBeFocused();
+            await page.locator(".map-view-control button").last().click();
+            await expect(page.locator(".archive-map-list")).toBeVisible();
+            await expect(
+              page.locator(".map-view-control button").last(),
+            ).toHaveAttribute("aria-pressed", "true");
+            await expect(page.locator("#map-NM2 .map-open-button")).toHaveCSS(
+              "background-image",
+              "none",
+            );
+            await page.locator("#map-NM2 .map-open-button").click();
+            await expect(dialog.getByRole("heading").first()).toHaveText(
+              "DragonForce - My Heart Will Go On [Expert]",
+            );
+            await page.keyboard.press("Escape");
+            await page.emulateMedia({ forcedColors: "active" });
+            await expect(page.locator(".map-view-control")).toHaveCSS(
+              "border-top-width",
+              "0px",
+            );
+            await expect(
+              page.locator('.map-view-control button[aria-pressed="true"]'),
+            ).toHaveCSS("outline-style", "solid");
+          }
+          await page.waitForLoadState("networkidle");
+          await page.close();
+        }
+    expect(errors).toEqual([]);
+  });
 
   test("follows system brightness and retains S7 through manual overrides and navigation", async ({
     page,

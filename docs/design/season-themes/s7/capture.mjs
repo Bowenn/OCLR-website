@@ -17,7 +17,7 @@ if (!["127.0.0.1", "localhost"].includes(origin.hostname))
   throw new Error("Use the isolated loopback preview application.");
 const out = fileURLToPath(new URL(".", import.meta.url));
 const uiBaseline =
-  process.env.S7_UI_BASELINE ?? "182075a9021b27ab470a6872b18bd8f73da41e8a";
+  process.env.S7_UI_BASELINE ?? "5c9f0834548ebe4c0ce91ca5bc24efa94138fb32";
 execFileSync("git", [
   "diff",
   "--exit-code",
@@ -367,6 +367,8 @@ try {
       return route.continue();
     });
     for (const theme of ["light", "dark"]) {
+      await detailContext.clearCookies();
+      await detailPage.setViewportSize({ width: 1440, height: 1000 });
       await detailContext.addCookies([
         { name: "oclr-locale", value: "zh-Hans", url: base },
         { name: "oclr-appearance", value: "graphite-arena", url: base },
@@ -396,6 +398,70 @@ try {
         height: 1000,
         detail: { ...clip, deviceScaleFactor: 2 },
       });
+      // Match the reported narrow-desktop mappool controls and literal long titles.
+      await detailPage.setViewportSize({ width: 699, height: 815 });
+      await detailPage.goto(base + "/tournaments/s7/mappools");
+      await detailPage.waitForLoadState("networkidle");
+      for (const [name, selector] of [
+        ["map-controls", ".map-browse-toolbar"],
+        ["map-nm2", "#map-NM2"],
+        ["map-ace1", "#map-ACE1"],
+      ]) {
+        const target = detailPage.locator(selector);
+        await target.evaluate((node) =>
+          node.scrollIntoView({ block: "center" }),
+        );
+        const file = `${name}-${theme}.png`;
+        await target.screenshot({ path: out + file, animations: "disabled" });
+        shots.push({
+          file,
+          path: "/tournaments/s7/mappools",
+          theme,
+          width: 699,
+          height: 815,
+          detail: { selector, deviceScaleFactor: 2 },
+        });
+      }
+      await detailContext.addCookies([
+        {
+          name: "oclr_session",
+          value: session.token,
+          domain: origin.hostname,
+          path: "/",
+          httpOnly: true,
+          sameSite: "Lax",
+          secure: false,
+        },
+        { name: "oclr-locale", value: "zh-Hant", url: base },
+      ]);
+      for (const width of [937, 390]) {
+        await detailPage.setViewportSize({ width, height: 815 });
+        if ((await detailPage.goto(base + "/admin/tournaments/s7")).status() !== 200)
+          throw new Error("Synthetic edition Admin preview unavailable.");
+        await detailPage.waitForLoadState("networkidle");
+        if (width === 390) await detailPage.locator(".admin-menu-toggle").click();
+        const selector = "#admin-menu .admin-nav-group:first-child";
+        const target = detailPage.locator(selector);
+        const violations = (
+          await new AxeBuilder({ page: detailPage })
+            .include(".sidebar")
+            .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+            .analyze()
+        ).violations;
+        if (violations.length) throw new Error("Admin sidebar accessibility violation.");
+        const file = `admin-sidebar-${width === 390 ? "mobile-" : ""}${theme}.png`;
+        await target.screenshot({ path: out + file, animations: "disabled" });
+        shots.push({
+          file,
+          path: "/admin/tournaments/s7",
+          theme,
+          locale: "zh-Hant",
+          width,
+          height: 815,
+          detail: { selector, deviceScaleFactor: 2 },
+          axeViolations: 0,
+        });
+      }
     }
   } finally {
     await detailContext.close();
