@@ -154,6 +154,11 @@ describe.skipIf(!url)("private persistent referee workspace", () => {
     const read = await refereeWorkspace(referee, "test-cup", fixtureId);
     expect(read.canRecord).toBe(true);
     expect(read.canConfigure).toBe(false);
+    expect(read.teams.every((t) => t.members.length === 2)).toBe(true);
+    expect(Object.keys(read.teams[0].members[0]).sort()).toEqual([
+      "osuId",
+      "username",
+    ]);
     expect(JSON.stringify(read)).not.toContain("SYNTHETIC_PRIVATE_CONTACT");
     expect(JSON.stringify(read)).not.toContain("SYNTHETIC_INTERNAL_REASON");
     expect(read.readiness).toContain(

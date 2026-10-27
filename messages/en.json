@@ -2931,6 +2931,20 @@
     "m362ed9ed9b48": "Maximum replays per map",
     "m39e0c552d867": "The replay limit for this map has been reached.",
     "m4726112ec563": "Up to {count} replays per map",
-    "md65ccb500209": "Edit room settings"
+    "md65ccb500209": "Edit room settings",
+    "m5fa7e7e525ae": "Invite player",
+    "m4733c5fe3881": "This player's saved UID is missing.",
+    "ma0802efbae4d": "Room creation and rules",
+    "ma0b9999b91f2": "Send make to BanchoBot to create the room, then set its team mode, scoring and capacity.",
+    "maa90d958f931": "Players and room staff",
+    "m1fed149e755a": "The room creator adds the Streamer as a referee. Invite every player from both saved rosters by UID, including substitutes.",
+    "mb15093ace71c": "Map and Mods",
+    "maaf641bead82": "Choose a pool map, then copy both map and Mods commands. Mods include this round's NF and Freemod settings.",
+    "m550bde387809": "Timers and start",
+    "m78251208ca8c": "Timer starts a preparation countdown. Start begins the game after its separate countdown.",
+    "m934dd261b56c": "Game interruption",
+    "mfe8900a855d4": "Abort stops the game in osu!. Record the actual outcome or replay separately in the BP stage.",
+    "m30d24c3a696a": "Preparation map",
+    "m2b679ba3d58c": "Command list"
   }
 }

@@ -29,7 +29,7 @@ function CommandLine({
     make: tr("Create room"),
     set: tr("Room rules"),
     addref: tr("Add Streamer to room"),
-    invite: tr("Invite captain"),
+    invite: tr("Invite player"),
     timer: tr("Timer"),
     map: tr("Change beatmap"),
     mods: tr("Set Mods"),
@@ -47,8 +47,8 @@ function CommandLine({
     "Enter a valid osu! username for the Streamer.": tr(
       "Enter a valid osu! username for the Streamer.",
     ),
-    "This team's saved captain UID is missing.": tr(
-      "This team's saved captain UID is missing.",
+    "This player's saved UID is missing.": tr(
+      "This player's saved UID is missing.",
     ),
     "Choose a positive timer duration.": tr(
       "Choose a positive timer duration.",
@@ -64,7 +64,7 @@ function CommandLine({
     ),
   };
   const label = command.teamName
-    ? `${labels[command.kind]} · ${command.teamName}`
+    ? `${command.teamName} · ${command.playerName || labels[command.kind]}`
     : labels[command.kind];
   async function copy() {
     if (!command.text) return;
@@ -199,7 +199,43 @@ export function RefereeCommands({
   const live = commands.filter((command) =>
     ["timer", "map", "mods", "start", "abort"].includes(command.kind),
   );
-  const setup = commands.filter((command) => !live.includes(command));
+  const modules = [
+    {
+      title: tr("Room creation and rules"),
+      kinds: ["make", "set"],
+      hint: tr(
+        "Send make to BanchoBot to create the room, then set its team mode, scoring and capacity.",
+      ),
+    },
+    {
+      title: tr("Players and room staff"),
+      kinds: ["addref", "invite"],
+      hint: tr(
+        "The room creator adds the Streamer as a referee. Invite every player from both saved rosters by UID, including substitutes.",
+      ),
+    },
+    {
+      title: tr("Map and Mods"),
+      kinds: ["map", "mods"],
+      hint: tr(
+        "Choose a pool map, then copy both map and Mods commands. Mods include this round's NF and Freemod settings.",
+      ),
+    },
+    {
+      title: tr("Timers and start"),
+      kinds: ["timer", "start"],
+      hint: tr(
+        "Timer starts a preparation countdown. Start begins the game after its separate countdown.",
+      ),
+    },
+    {
+      title: tr("Game interruption"),
+      kinds: ["abort"],
+      hint: tr(
+        "Abort stops the game in osu!. Record the actual outcome or replay separately in the BP stage.",
+      ),
+    },
+  ];
   const integer = (value: string) => (value === "" ? null : Number(value));
   const update = <K extends keyof RefereeSettings>(
     key: K,
@@ -247,15 +283,13 @@ export function RefereeCommands({
     <section
       className={`panel ${styles.assistant}`}
       aria-label={
-        stage === "preparation"
-          ? tr("Room setup and invitations")
-          : tr("Current commands")
+        stage === "preparation" ? tr("Command list") : tr("Current commands")
       }
     >
       <div>
         <h3>
           {stage === "preparation"
-            ? tr("Room setup and invitations")
+            ? tr("Command list")
             : tr("Current commands")}
         </h3>
         {stage !== "preparation" && (
@@ -268,13 +302,32 @@ export function RefereeCommands({
       </div>
       {stage !== "play" && (
         <>
-          <div className={styles.commandList}>
-            {setup.map((command) => (
-              <CommandLine
-                key={`${command.id}:${command.text}`}
-                command={command}
-                compact
-              />
+          <div className={styles.modules}>
+            {modules.map((module) => (
+              <section
+                className={styles.commandModule}
+                key={module.title}
+                aria-label={module.title}
+              >
+                <h4>{module.title}</h4>
+                <div className={styles.moduleColumns}>
+                  <div className={styles.commandList}>
+                    {commands
+                      .filter((command) => module.kinds.includes(command.kind))
+                      .map((command) => (
+                        <CommandLine
+                          key={`${command.id}:${command.text}`}
+                          command={command}
+                          compact
+                        />
+                      ))}
+                  </div>
+                  <div className={styles.commandHint}>
+                    <p>{module.hint}</p>
+                    {module.kinds.includes("map") && mapSelector}
+                  </div>
+                </div>
+              </section>
             ))}
           </div>
           <details className={styles.setupSettings}>
@@ -295,6 +348,8 @@ export function RefereeCommands({
                   "!mp make creates a new room. Send it to BanchoBot. To rename an existing room, use !mp name instead.",
                 )}
               </p>
+              {numberField("timerSeconds", tr("Timer seconds"))}
+              {numberField("startSeconds", tr("Start countdown seconds"))}
               {numberField(
                 "roomSize",
                 tr("Room slots (not players per team)"),

@@ -272,6 +272,27 @@ export function RefereePanel({
           <RefereeCommands
             key={`preparation-${data.session?.revision ?? 0}`}
             stage="preparation"
+            mapSelector={
+              <label className="field" htmlFor={`${controlId}-preparation-map`}>
+                <span id={`${controlId}-preparation-map-label`}>
+                  {tr("Preparation map")}
+                </span>
+                <select
+                  id={`${controlId}-preparation-map`}
+                  aria-labelledby={`${controlId}-preparation-map-label`}
+                  value={selected}
+                  onChange={(e) => setSelected(e.target.value)}
+                >
+                  <option value="">{tr("Not set")}</option>
+                  {data.maps.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {entry.category}
+                      {entry.position} · {entry.metadata.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            }
             settings={data.session?.settings ?? data.defaultSettings}
             draft={commandDraft}
             onDraftChange={setCommandDraft}

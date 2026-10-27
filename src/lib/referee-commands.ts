@@ -102,6 +102,7 @@ export type RefereeCommandTeam = {
   name: string;
   captainId: number | null;
   captainUsername: string | null;
+  members?: readonly { osuId: number; username: string }[];
 };
 export type RefereeCommandInput = {
   settings: RefereeSettings;
@@ -125,6 +126,7 @@ export type RefereeCommand = {
   text: string | null;
   reason: string | null;
   teamName?: string;
+  playerName?: string;
 };
 const positiveInteger = (value: unknown): value is number =>
   typeof value === "number" && Number.isSafeInteger(value) && value > 0;
@@ -209,17 +211,23 @@ export function refereeCommands(input: RefereeCommandInput): RefereeCommand[] {
       username ? `!mp addref ${username}` : null,
       "Enter a valid osu! username for the Streamer.",
     ),
-    ...teams.map((team) => ({
-      ...command(
-        "invite",
-        positiveInteger(team.captainId)
-          ? `!mp invite #${team.captainId}`
-          : null,
-        "This team's saved captain UID is missing.",
-      ),
-      id: `invite:${team.id}`,
-      teamName: team.name,
-    })),
+    ...teams.flatMap((team) => {
+      const players = team.members ?? [
+        { osuId: team.captainId, username: team.captainUsername ?? "" },
+      ];
+      return players.map((player) => ({
+        ...command(
+          "invite",
+          positiveInteger(player.osuId) ? `!mp invite #${player.osuId}` : null,
+          "This player's saved UID is missing.",
+        ),
+        id: team.members
+          ? `invite:${team.id}:${player.osuId}`
+          : `invite:${team.id}`,
+        teamName: team.name,
+        playerName: player.username,
+      }));
+    }),
     command(
       "timer",
       positiveInteger(settings.timerSeconds)

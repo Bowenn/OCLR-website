@@ -202,11 +202,15 @@ export async function readRefereeWorkspace(
     : [];
   const readiness: string[] = [];
   let officialDependencies: unknown = null;
+  const commandRosters = new Map<
+    string,
+    { osuId: number; username: string }[]
+  >();
   if (orderedTeams.length !== 2)
     readiness.push("Both fixture teams must be resolved.");
   else {
     try {
-      // Reuse the existing finalized-team and appointment boundary; the projection below excludes rosters.
+      // Reuse the finalized-team and appointment boundary; expose only saved playing identities.
       const review = await fixtureForReview(
         actor,
         slug,
@@ -214,6 +218,14 @@ export async function readRefereeWorkspace(
         reader,
         true,
       );
+      for (const team of review.teams)
+        commandRosters.set(
+          team.id,
+          team.members.map((member) => ({
+            osuId: member.osuId,
+            username: member.username,
+          })),
+        );
       officialDependencies = review.teams.map((t) => ({
         id: t.id,
         members: t.members.map((m) => m.osuId).sort((a, b) => a - b),
@@ -326,6 +338,7 @@ export async function readRefereeWorkspace(
       captainId: t.captainId,
       captainUsername:
         names.find((n) => n.osuId === t.captainId)?.username ?? null,
+      members: commandRosters.get(t.id) ?? [],
     })),
     defaultSettings: {
       ...emptyRefereeSettings,

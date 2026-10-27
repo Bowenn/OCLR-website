@@ -54,6 +54,29 @@ const input: RefereeCommandInput = {
 const command = (value: RefereeCommandInput, kind: string) =>
   refereeCommands(value).find((c) => c.id === kind)?.text;
 describe("referee command generation", () => {
+  it("invites all twelve roster players by saved UID, not only captains or starters", () => {
+    const teams = input.teams.map((team, index) => ({
+      ...team,
+      members: Array.from({ length: 6 }, (_, n) => ({
+        osuId: 9000 + index * 10 + n,
+        username: `Player ${index}-${n}`,
+      })),
+    }));
+    const invites = refereeCommands({ ...input, teams }).filter(
+      (c) => c.kind === "invite",
+    );
+    expect(invites).toHaveLength(12);
+    expect(invites.map((c) => c.text)).toEqual(
+      teams.flatMap((t) => t.members.map((m) => `!mp invite #${m.osuId}`)),
+    );
+    expect(invites.at(-1)?.playerName).toBe("Player 1-5");
+    expect(
+      refereeCommands({
+        ...input,
+        teams: teams.map((t) => ({ ...t, members: [] })),
+      }).filter((c) => c.kind === "invite"),
+    ).toHaveLength(0);
+  });
   it("blocks ruleset-specific Mods in incompatible rooms", () => {
     for (const mods of [["FI"], ["MR"], ["4K"]] as const) {
       const policy = {
