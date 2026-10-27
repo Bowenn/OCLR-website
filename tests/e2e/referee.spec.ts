@@ -91,7 +91,7 @@ test.describe("referee command workspace", () => {
       .click();
     await expect(page).toHaveURL(new RegExp(`${seeded.fixtureId}/referee$`));
     await expect(
-      page.getByRole("heading", { name: "Command assistant", exact: true }),
+      page.getByRole("heading", { name: "Current commands", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByText("Configure round referee policy", { exact: true }),
@@ -305,7 +305,7 @@ test.describe("referee command workspace", () => {
         ]);
         await page.goto(path);
         await expect(
-          page.getByRole("heading", { name: "Command assistant", exact: true }),
+          page.getByRole("heading", { name: "Current commands", exact: true }),
         ).toBeVisible();
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),

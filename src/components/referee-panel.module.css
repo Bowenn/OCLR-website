@@ -1,6 +1,8 @@
 .workspace {
   display: grid;
-  gap: 1.5rem;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  align-items: start;
+  gap: 2rem;
   min-width: 0;
 }
 .topline {
@@ -100,5 +102,94 @@
 @media (max-width: 480px) {
   .orders {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stageNav {
+  position: sticky;
+  top: 7rem;
+  display: grid;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+.stageNav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.75rem;
+  border-inline-start: 3px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--site-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+.stageNav a:hover {
+  background: var(--site-tint);
+  color: var(--site-foreground);
+}
+.stageNav a[aria-current="location"] {
+  border-color: var(--site-accent);
+  color: var(--site-accent-strong);
+  background: var(--site-tint);
+}
+.stageNav a:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 3px;
+}
+.navNumber {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.stageContent {
+  display: grid;
+  gap: 2rem;
+  min-width: 0;
+}
+.stage {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  scroll-margin-top: 9rem;
+}
+.stage + .stage {
+  border-top: 1px solid var(--site-border);
+  padding-top: 2rem;
+}
+.stageHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.stageHeading h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.stageNumber {
+  color: var(--site-muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  .stageNav {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+  .stageNav a {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    border-inline-start: 0;
+    border-bottom: 3px solid transparent;
+  }
+  .stageContent {
+    gap: 1.5rem;
   }
 }

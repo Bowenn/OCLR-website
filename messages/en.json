@@ -2922,6 +2922,10 @@
     "mf0675d783e31": "Choose valid pool categories for the referee policy.",
     "me900b6e808e3": "Configure Mods compatible with the round ruleset.",
     "m520ed297c96f": "Ban",
-    "m1efe8e3f936f": "Freemod"
+    "m1efe8e3f936f": "Freemod",
+    "m1df7f18584ba": "Referee stages",
+    "mc5cd76930c23": "Pre-match preparation",
+    "ma1b7dd0742cd": "BP stage",
+    "m3328b1d07cc5": "Post-match calculation"
   }
 }

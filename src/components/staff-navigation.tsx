@@ -37,6 +37,8 @@ export function StaffNavigation({
 
   const pathname = usePathname();
   const router = useRouter();
+  const refereeWorkspace =
+    /^\/admin\/tournaments\/[^/]+\/matches\/[^/]+\/referee\/?$/.test(pathname);
   const readOnly =
     developer &&
     !writablePaths.some(
@@ -54,99 +56,108 @@ export function StaffNavigation({
   const crumbs = adminBreadcrumbs(pathname, selected);
   return (
     <StaffReadOnlyContext value={readOnly}>
-      <div className="container page workspace admin-workspace">
-        <aside className="sidebar">
-          {!selected && <p className="eyebrow">{tr("ADMINISTRATION")}</p>}
-          {selected ? (
-            <div className="admin-context">
-              <div className="admin-context-heading">
-                <span className="muted small">{tr("Tournament")}</span>
-                {!selected.published ? (
-                  <span className="badge">{tr("Draft")}</span>
-                ) : selected.status === "live" ? (
-                  <span className="badge">{tr("Live")}</span>
-                ) : null}
-              </div>
-              <label className="field">
-                <span className="sr-only">{tr("Selected tournament")}</span>
-                <select
-                  aria-label={tr("Selected tournament")}
-                  value={selected.slug}
-                  onChange={(event) => {
-                    setOpenPath(null);
-                    const next = editions.find(
-                      (edition) => edition.slug === event.target.value,
-                    );
-                    if (next) router.push(`/admin/tournaments/${next.slug}`);
-                  }}
-                >
-                  {editions.map((e) => (
-                    <option key={e.slug} value={e.slug}>
-                      {e.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <Link
-                href="/admin/tournaments"
-                className="button secondary admin-return"
-                onClick={() => setOpenPath(null)}
-              >
-                {tr("← All tournaments")}
-              </Link>
-            </div>
-          ) : (
-            <h2>{tr("OCLR operations")}</h2>
-          )}
-          <button
-            className="secondary admin-menu-toggle"
-            aria-controls="admin-menu"
-            aria-expanded={open}
-            onClick={() => setOpenPath(open ? null : pathname)}
-          >
-            {open
-              ? tr("Close administration menu")
-              : tr("Open administration menu")}
-          </button>
-          <div
-            id="admin-menu"
-            className={`admin-menu${open ? " is-open" : ""}`}
-          >
-            <nav
-              aria-label={
-                selected
-                  ? tr("Tournament navigation")
-                  : tr("Administration navigation")
-              }
-            >
-              {[...new Set(links.map((link) => link.group))].map((group) => (
-                <div className="admin-nav-group" key={group}>
-                  {!(selected && group === "Tournament") && (
-                    <p className="eyebrow">{tr(group)}</p>
-                  )}
-                  {links
-                    .filter((link) => link.group === group)
-                    .map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        aria-current={
-                          active?.href === link.href ? "page" : undefined
-                        }
-                        onClick={() => setOpenPath(null)}
-                      >
-                        {tr(link.label)}
-                      </Link>
-                    ))}
+      <div
+        className="container page workspace admin-workspace"
+        style={
+          refereeWorkspace
+            ? { gridTemplateColumns: "minmax(0, 1fr)" }
+            : undefined
+        }
+      >
+        {!refereeWorkspace && (
+          <aside className="sidebar">
+            {!selected && <p className="eyebrow">{tr("ADMINISTRATION")}</p>}
+            {selected ? (
+              <div className="admin-context">
+                <div className="admin-context-heading">
+                  <span className="muted small">{tr("Tournament")}</span>
+                  {!selected.published ? (
+                    <span className="badge">{tr("Draft")}</span>
+                  ) : selected.status === "live" ? (
+                    <span className="badge">{tr("Live")}</span>
+                  ) : null}
                 </div>
-              ))}
-            </nav>
-            <p className="admin-identity muted small">
-              {tr("Signed in as ")}
-              {username}
-            </p>
-          </div>
-        </aside>
+                <label className="field">
+                  <span className="sr-only">{tr("Selected tournament")}</span>
+                  <select
+                    aria-label={tr("Selected tournament")}
+                    value={selected.slug}
+                    onChange={(event) => {
+                      setOpenPath(null);
+                      const next = editions.find(
+                        (edition) => edition.slug === event.target.value,
+                      );
+                      if (next) router.push(`/admin/tournaments/${next.slug}`);
+                    }}
+                  >
+                    {editions.map((e) => (
+                      <option key={e.slug} value={e.slug}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Link
+                  href="/admin/tournaments"
+                  className="button secondary admin-return"
+                  onClick={() => setOpenPath(null)}
+                >
+                  {tr("← All tournaments")}
+                </Link>
+              </div>
+            ) : (
+              <h2>{tr("OCLR operations")}</h2>
+            )}
+            <button
+              className="secondary admin-menu-toggle"
+              aria-controls="admin-menu"
+              aria-expanded={open}
+              onClick={() => setOpenPath(open ? null : pathname)}
+            >
+              {open
+                ? tr("Close administration menu")
+                : tr("Open administration menu")}
+            </button>
+            <div
+              id="admin-menu"
+              className={`admin-menu${open ? " is-open" : ""}`}
+            >
+              <nav
+                aria-label={
+                  selected
+                    ? tr("Tournament navigation")
+                    : tr("Administration navigation")
+                }
+              >
+                {[...new Set(links.map((link) => link.group))].map((group) => (
+                  <div className="admin-nav-group" key={group}>
+                    {!(selected && group === "Tournament") && (
+                      <p className="eyebrow">{tr(group)}</p>
+                    )}
+                    {links
+                      .filter((link) => link.group === group)
+                      .map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          aria-current={
+                            active?.href === link.href ? "page" : undefined
+                          }
+                          onClick={() => setOpenPath(null)}
+                        >
+                          {tr(link.label)}
+                        </Link>
+                      ))}
+                  </div>
+                ))}
+              </nav>
+              <p className="admin-identity muted small">
+                {tr("Signed in as ")}
+                {username}
+              </p>
+            </div>
+          </aside>
+        )}
         <div className="workspace-main">
           <nav className="admin-breadcrumbs" aria-label={tr("Breadcrumb")}>
             <ol>
