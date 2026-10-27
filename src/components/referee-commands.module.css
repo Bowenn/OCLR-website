@@ -89,14 +89,74 @@ details > .stack {
   }
 }
 
-.setupGrid {
+.commandList {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  gap: 1.5rem;
-  align-items: start;
+  min-width: 0;
 }
-@media (max-width: 1100px) {
-  .setupGrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.compactCommand {
+  align-items: center;
+  gap: 0.25rem 1rem;
+  padding-block: 0.625rem;
+}
+.compactCommand:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.compactCommand .commandField {
+  gap: 0.25rem;
+  font-weight: 400;
+}
+.compactCommand .commandField > span:first-child {
+  font-size: 0.75rem;
+  color: var(--site-muted);
+}
+.inlineCommand {
+  font-size: 0.875rem;
+  font-family: monospace;
+  line-height: 1.5;
+  color: var(--site-foreground);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.compactCommand .iconCopy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: var(--site-tint);
+  color: var(--site-accent-strong);
+  box-shadow: none;
+}
+.compactCommand .iconCopy[data-copied="true"] {
+  background: transparent;
+  color: #71717a;
+}
+.compactCommand .iconCopy:hover {
+  border-color: currentColor;
+}
+.compactCommand .iconCopy:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.compactCommand .iconCopy:disabled {
+  opacity: 0.45;
+}
+.setupSettings {
+  border-top: 1px solid var(--site-border);
+  padding-top: 0.75rem;
+}
+.setupSettings > summary {
+  color: var(--site-muted);
+  font-size: 0.875rem;
+}
+.setupSettings > div {
+  margin-top: 1rem;
+}
+
+:global(html[data-theme="dark"]) .compactCommand .iconCopy[data-copied="true"] {
+  color: #a1a1aa;
 }

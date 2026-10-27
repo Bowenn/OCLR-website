@@ -12,9 +12,16 @@ import {
   type RefereeSettings,
 } from "@/lib/referee-commands";
 
-function CommandLine({ command }: { command: RefereeCommand }) {
+function CommandLine({
+  command,
+  compact = false,
+}: {
+  command: RefereeCommand;
+  compact?: boolean;
+}) {
   const tr = useAppTranslations();
   const text = useRef<HTMLTextAreaElement>(null);
+  const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "copying" | "copied" | "manual"
   >("idle");
@@ -64,47 +71,78 @@ function CommandLine({ command }: { command: RefereeCommand }) {
     setStatus("copying");
     const next = await copyRefereeCommand(command.text, navigator.clipboard);
     setStatus(next);
+    if (next === "copied") setCopied(true);
     if (next === "manual") {
-      text.current?.focus();
-      text.current?.select();
+      requestAnimationFrame(() => {
+        text.current?.focus();
+        text.current?.select();
+      });
     }
   }
   return (
-    <div className={styles.command}>
-      <label className={styles.commandField}>
+    <div
+      className={`${styles.command} ${compact ? styles.compactCommand : ""}`}
+    >
+      <div className={styles.commandField}>
         <span>{label}</span>
         {command.text ? (
-          <textarea
-            ref={text}
-            aria-label={label}
-            value={command.text}
-            readOnly
-            rows={command.kind === "make" ? 2 : 1}
-            spellCheck={false}
-            className={styles.commandText}
-            onFocus={(event) => event.currentTarget.select()}
-          />
+          compact && status !== "manual" ? (
+            <code className={styles.inlineCommand}>{command.text}</code>
+          ) : (
+            <textarea
+              ref={text}
+              aria-label={label}
+              value={command.text}
+              readOnly
+              rows={command.kind === "make" ? 2 : 1}
+              spellCheck={false}
+              className={styles.commandText}
+              onFocus={(event) => event.currentTarget.select()}
+            />
+          )
         ) : (
           <span className="small muted">
             {reasons[command.reason ?? ""] ?? tr("Command unavailable.")}
           </span>
         )}
-      </label>
+      </div>
       <div className={styles.copyAction}>
         <button
           type="button"
-          className="secondary"
+          className={compact ? styles.iconCopy : "secondary"}
+          data-copied={copied}
+          title={copied ? tr("Copied") : tr("Copy command")}
           disabled={!command.text || status === "copying"}
           onClick={copy}
           aria-label={tr("Copy {value0}", { value0: label })}
         >
-          {status === "copying"
-            ? tr("Copying…")
-            : status === "copied"
-              ? tr("Copied")
-              : tr("Copy command")}
+          {compact ? (
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="8" y="8" width="12" height="12" rx="2" />
+              <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
+            </svg>
+          ) : status === "copying" ? (
+            tr("Copying…")
+          ) : status === "copied" ? (
+            tr("Copied")
+          ) : (
+            tr("Copy command")
+          )}
         </button>
-        <span className={`small muted ${styles.copyStatus}`} role="status">
+        <span
+          className={`small muted ${styles.copyStatus} ${compact && status !== "manual" ? "sr-only" : ""}`}
+          role="status"
+        >
           {status === "copied"
             ? tr("Copied. Execute this command yourself in osu!.")
             : status === "manual"
@@ -220,15 +258,27 @@ export function RefereeCommands({
             ? tr("Room setup and invitations")
             : tr("Current commands")}
         </h3>
-        <p className="small muted">
-          {tr(
-            "Copy commands here, then execute them in osu!. Copying never records a Ban, Pick or game result.",
-          )}
-        </p>
+        {stage !== "preparation" && (
+          <p className="small muted">
+            {tr(
+              "Copy commands here, then execute them in osu!. Copying never records a Ban, Pick or game result.",
+            )}
+          </p>
+        )}
       </div>
       {stage !== "play" && (
         <>
-          <div className={styles.setupGrid}>
+          <div className={styles.commandList}>
+            {setup.map((command) => (
+              <CommandLine
+                key={`${command.id}:${command.text}`}
+                command={command}
+                compact
+              />
+            ))}
+          </div>
+          <details className={styles.setupSettings}>
+            <summary>{tr("Edit room settings")}</summary>
             <div className={styles.stack}>
               <label className={styles.field} htmlFor={`${id}-room`}>
                 {tr("Room name")}
@@ -280,17 +330,10 @@ export function RefereeCommands({
                 )}
               </p>
             </div>
-            <div className={styles.stack}>
-              {setup.map((command) => (
-                <CommandLine
-                  key={`${command.id}:${command.text}`}
-                  command={command}
-                />
-              ))}
-            </div>
-          </div>
+          </details>
         </>
       )}
+
       {stage !== "preparation" && (
         <>
           {mapSelector}
@@ -345,7 +388,7 @@ export function RefereeCommands({
           {error}
         </p>
       )}
-      {canRecord && (
+      {canRecord && (stage !== "preparation" || changed) && (
         <div className="actions">
           <button type="button" disabled={busy || !changed} onClick={save}>
             {tr("Save command settings")}
