@@ -182,7 +182,11 @@ control characters or injected extra command lines.
 Selecting a map prepares command previews. **Record selected Ban / Pick** is a
 separate mutation checked against the authoritative finite sequence. The ledger
 separates picking team from winner. Each pick has its own numbered attempts;
-replays preserve prior attempts and consume no new pick. Only the latest valid
+replays preserve prior attempts and consume no new pick. An optional round
+`maxReplaysPerMap` caps additional attempts (two replays allow three attempts in
+total); the server rejects further replays without advancing the revision or
+appending an event. Older policies without this field retain their existing
+behavior. Only the latest valid
 attempt contributes to provisional scoring. Ties follow the configured round
 policy; aborted/unresolved/withdrawn attempts never fabricate a winning point.
 Corrections retain append-only history; later steps must be withdrawn before an
@@ -225,3 +229,11 @@ cannot be erased by deleting their fixture.
 All demonstration policies, identities and games are synthetic. The S9 reference
 sheet does not establish defaults for another edition. First-version Chinese
 labels and the complete operator flow remain subject to organizer review.
+
+For the dedicated local referee review database, `scripts/referee-preview.ts`
+updates an existing, unplayed preview fixture with short fictional names, two
+six-player teams, 3v3 BO9 rules, a 5/2/2/3/2/1 NM/HD/HR/DT/FM/TB pool and a
+two-replay cap per map. It accepts the existing fixture UUID, requires the exact
+loopback review database on port 55436, and refuses recorded play. It does not
+truncate tables or alter production data. The authored names and beatmap metadata
+are UI fixtures, not provider snapshots or approved tournament selections.
