@@ -29,7 +29,13 @@ async function RefereePage({
           eyebrow={tr("REFEREE WORKSPACE")}
           title={data.fixture.label}
         >
-          {data.round.name} · {data.teams.map((t) => t.name).join(" vs ")}
+          {data.round.name}
+          {data.rules &&
+            ` · ${data.rules.playersPerTeam}v${data.rules.playersPerTeam}`}
+          {data.series?.type === "first_to" &&
+            ` · BO${data.series.wins * 2 - 1}`}
+          {data.policy?.maxReplaysPerMap !== undefined &&
+            ` · ${tr("Up to {count} replays per map", { count: data.policy.maxReplaysPerMap })}`}
         </PageHeading>
         <RefereePanel data={data} slug={edition} />
       </>

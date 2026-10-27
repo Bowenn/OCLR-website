@@ -108,6 +108,45 @@ describe.skipIf(!url)("private persistent referee workspace", () => {
       firstPickTeamId: w.teams[1].id,
     });
   }
+  it("persists a two-replay cap and rejects an extra replay without writes", async () => {
+    await configure();
+    await command(
+      {
+        action: "configure_policy",
+        policy: { ...w.policy!, maxReplaysPerMap: 2 },
+        expectedPolicyRevision: w.policyRevision,
+      },
+      admin,
+    );
+    const maps = w.maps.filter((m) => m.category === "NM");
+    await command({ action: "record_selection", entryId: maps[0].id });
+    await command({ action: "record_selection", entryId: maps[1].id });
+    const pickId = w.projection.lastSelectionId!;
+    for (let n = 0; n < 2; n++) {
+      await command({
+        action: "resolve_attempt",
+        pickId,
+        status: "aborted",
+        winnerTeamId: null,
+      });
+      await command({ action: "replay_attempt", pickId });
+    }
+    await command({
+      action: "resolve_attempt",
+      pickId,
+      status: "aborted",
+      winnerTeamId: null,
+    });
+    const revision = w.session!.revision;
+    const eventCount = w.events.length;
+    await expect(command({ action: "replay_attempt", pickId })).rejects.toThrow(
+      "The replay limit for this map has been reached.",
+    );
+    const saved = await refereeWorkspace(referee, "test-cup", fixtureId);
+    expect(saved.session!.revision).toBe(revision);
+    expect(saved.events).toHaveLength(eventCount);
+    expect(saved.projection.activeSelections.at(-1)!.attempts).toHaveLength(3);
+  });
   it("reads do not create sessions, and private DTOs omit answers and provider data", async () => {
     expect(w.session).toBeNull();
     expect(await db().select().from(refereeSessions)).toHaveLength(0);

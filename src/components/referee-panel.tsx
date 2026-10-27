@@ -551,6 +551,15 @@ export function RefereePanel({
                       {tr("Selected by {team}", { team: teamName(s.teamId) })} ·{" "}
                       {s.beatmapId}
                     </p>
+                    {s.kind !== "ban" &&
+                      basis.policy?.maxReplaysPerMap !== undefined && (
+                        <p className="small muted">
+                          {tr("Replays used: {used} / {limit}", {
+                            used: s.attempts.length - 1,
+                            limit: basis.policy.maxReplaysPerMap,
+                          })}
+                        </p>
+                      )}
                     {s.attempts.map((a) => (
                       <p className="small" key={a.id}>
                         {tr("Attempt {number}", { number: a.number })} ·{" "}
@@ -630,7 +639,10 @@ export function RefereePanel({
                             disabled={
                               disabled ||
                               stale ||
-                              ["pending", "playing"].includes(attempt.status)
+                              ["pending", "playing"].includes(attempt.status) ||
+                              (basis.policy?.maxReplaysPerMap !== undefined &&
+                                s.attempts.length - 1 >=
+                                  basis.policy.maxReplaysPerMap)
                             }
                             onClick={() =>
                               send({ action: "replay_attempt", pickId: s.id })

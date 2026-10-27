@@ -86,6 +86,31 @@ function act(i: RefereeModelInput, a: RefereeAction) {
   return append(i, validateRefereeAction(i, a));
 }
 describe("referee finite workflow", () => {
+  it("allows two replays per map and rejects a third without adding an attempt", () => {
+    const i = input();
+    i.policy!.maxReplaysPerMap = 2;
+    act(i, { action: "record_selection", entryId: id(10) });
+    const pickId = act(i, { action: "record_selection", entryId: id(11) });
+    for (let replay = 0; replay < 2; replay++) {
+      act(i, {
+        action: "resolve_attempt",
+        pickId,
+        status: "aborted",
+        winnerTeamId: null,
+      });
+      act(i, { action: "replay_attempt", pickId });
+    }
+    act(i, {
+      action: "resolve_attempt",
+      pickId,
+      status: "aborted",
+      winnerTeamId: null,
+    });
+    expect(() => act(i, { action: "replay_attempt", pickId })).toThrow(
+      "The replay limit for this map has been reached.",
+    );
+    expect(projectReferee(i).activeSelections.at(-1)?.attempts).toHaveLength(3);
+  });
   it.each([
     [a, a],
     [a, b],

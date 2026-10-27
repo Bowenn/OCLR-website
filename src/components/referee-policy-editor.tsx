@@ -50,6 +50,9 @@ export function RefereePolicyEditor({
       ]),
     ),
   );
+  const [maxReplays, setMaxReplays] = useState(
+    policy?.maxReplaysPerMap?.toString() ?? "",
+  );
   const [error, setError] = useState("");
   const categories = Array.from(new Set(maps.map((m) => m.category)));
   function update(
@@ -88,7 +91,11 @@ export function RefereePolicyEditor({
           >),
         }
       : null;
-    const parsed = refereePolicySchema.safeParse({ steps, commands });
+    const parsed = refereePolicySchema.safeParse({
+      steps,
+      commands,
+      ...(maxReplays === "" ? {} : { maxReplaysPerMap: Number(maxReplays) }),
+    });
     if (!parsed.success) {
       setError(
         tr("Review the step order, tiebreak conditions and command settings."),
@@ -107,6 +114,17 @@ export function RefereePolicyEditor({
           )}
         </p>
         <fieldset disabled={busy} className="staff-readonly-fields form-stack">
+          <label className="field">
+            {tr("Maximum replays per map")}
+            <input
+              type="number"
+              min={0}
+              max={20}
+              step={1}
+              value={maxReplays}
+              onChange={(e) => setMaxReplays(e.target.value)}
+            />
+          </label>
           <h3>{tr("Finite Ban / Pick sequence")}</h3>
           {steps.map((step, index) => (
             <div className="panel form-stack" key={index}>

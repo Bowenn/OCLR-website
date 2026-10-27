@@ -126,6 +126,8 @@ export function refereeMessage(tr: AppTranslator, message: string): string {
       return tr("Unable to save the referee action.");
     case "Withdraw later steps before correcting this pick.":
       return tr("Withdraw later steps before correcting this pick.");
+    case "The replay limit for this map has been reached.":
+      return tr("The replay limit for this map has been reached.");
     default:
       return tr(message);
   }

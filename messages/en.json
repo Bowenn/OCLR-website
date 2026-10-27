@@ -2926,6 +2926,10 @@
     "m1df7f18584ba": "Referee stages",
     "mc5cd76930c23": "Pre-match preparation",
     "ma1b7dd0742cd": "BP stage",
-    "m3328b1d07cc5": "Post-match calculation"
+    "m3328b1d07cc5": "Post-match calculation",
+    "m3d8c8a0a322f": "Replays used: {used} / {limit}",
+    "m362ed9ed9b48": "Maximum replays per map",
+    "m39e0c552d867": "The replay limit for this map has been reached.",
+    "m4726112ec563": "Up to {count} replays per map"
   }
 }

@@ -29,6 +29,7 @@ export const refereePolicySchema = z
   .object({
     steps: z.array(refereeStepSchema).min(1).max(200),
     commands: refereeCommandPolicySchema.nullable(),
+    maxReplaysPerMap: z.number().int().min(0).max(20).optional(),
   })
   .strict()
   .superRefine((p, ctx) => {
@@ -420,6 +421,11 @@ export function validateRefereeAction(
     };
   }
   if (action.action === "replay_attempt") {
+    if (
+      input.policy?.maxReplaysPerMap !== undefined &&
+      selection!.attempts.length - 1 >= input.policy.maxReplaysPerMap
+    )
+      fail("The replay limit for this map has been reached.");
     if (["pending", "playing"].includes(attempt.status))
       fail("Record the current outcome before creating a replay.");
     return { type: "attempt_replayed", pickId: selection!.id };
