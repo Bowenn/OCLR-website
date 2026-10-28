@@ -126,6 +126,7 @@ test.describe("referee command workspace", () => {
     async function record(entryId: string) {
       const workspace = await read();
       const response = await context.request.patch(api, {
+        headers: { Origin: baseURL! },
         data: {
           action: "record_selection",
           entryId,
