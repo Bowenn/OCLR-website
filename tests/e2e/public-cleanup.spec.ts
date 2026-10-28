@@ -1,3 +1,4 @@
+import { isAutomaticPreferenceCookie } from "../fixtures/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { eq, sql } from "drizzle-orm";
@@ -36,30 +37,21 @@ test.describe("concise public tournament surfaces", () => {
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await captureResponsiveLayout(page, info, "compact-empty-players");
     await expect(page.locator("footer")).not.toContainText("Emik");
-    const credit = page
-      .locator("footer")
-      .getByRole("link", { name: "OCLR Dev Team.", exact: true });
-    await expect(credit).toHaveAttribute("href", "https://github.com/OCLR-dev");
-    await expect(credit).toHaveAttribute("rel", "noopener noreferrer");
-    await expect(credit).toHaveAttribute("target", "_blank");
-    const github = page
-      .locator("footer")
-      .getByRole("link", { name: "GitHub repository", exact: true });
-    await expect(github).toHaveAttribute(
-      "href",
-      "https://github.com/OCLR-dev/OCLR-website",
-    );
-    await expect(github).toHaveAttribute("rel", "noopener noreferrer");
-    await expect(github).toHaveAttribute("target", "_blank");
-    const reportIssue = page
-      .locator("footer")
-      .getByRole("link", { name: "Report an issue", exact: true });
-    await expect(reportIssue).toHaveAttribute(
-      "href",
-      "https://github.com/OCLR-dev/OCLR-website/issues/new",
-    );
-    await expect(reportIssue).toHaveAttribute("rel", "noopener noreferrer");
-    await expect(reportIssue).toHaveAttribute("target", "_blank");
+    for (const [name, href] of [
+      ["OCLR Dev Team.", "https://github.com/OCLR-dev"],
+      [
+        "Report an issue",
+        "https://github.com/OCLR-dev/OCLR-website/issues/new",
+      ],
+      ["GitHub repository", "https://github.com/OCLR-dev/OCLR-website"],
+    ]) {
+      const link = page
+        .locator("footer")
+        .getByRole("link", { name, exact: true });
+      await expect(link).toHaveAttribute("href", href);
+      await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+      await expect(link).toHaveAttribute("target", "_blank");
+    }
     await expect(page.locator("footer a")).toHaveCount(3);
     await expect(page.locator("footer button, footer nav")).toHaveCount(0);
     await page.goto("/about");
@@ -72,7 +64,9 @@ test.describe("concise public tournament surfaces", () => {
       page.getByRole("link", { name: "privacy notice", exact: true }),
     ).toHaveAttribute("href", "/privacy");
     expect(
-      (await context.cookies()).filter((c) => c.name !== "oclr-locale"),
+      (await context.cookies()).filter(
+        (cookie) => !isAutomaticPreferenceCookie(cookie),
+      ),
     ).toEqual([]);
     expect(
       (

@@ -50,7 +50,7 @@ async function seed() {
 test.describe("referee command workspace", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(async () => closeDb());
-  test("copies commands, applies independent order, records replay and reloads without publishing", async ({
+  test("keeps mock IRC disconnected in production and preserves authorized saved records", async ({
     page,
     context,
     browser,
@@ -91,169 +91,83 @@ test.describe("referee command workspace", () => {
       .click();
     await expect(page).toHaveURL(new RegExp(`${seeded.fixtureId}/referee$`));
     await expect(
-      page.getByRole("heading", { name: "Current commands", exact: true }),
+      page.getByRole("heading", { name: "Command list", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText("Configure round referee policy", { exact: true }),
-    ).toHaveCount(0);
+      page.getByText("IRC not connected", { exact: true }),
+    ).toBeVisible();
     const [home, away] = seeded.workspace.teams;
-    for (const [ban, pick] of [
-      [home.id, home.id],
-      [home.id, away.id],
-      [away.id, home.id],
-      [away.id, away.id],
-    ]) {
-      await page
-        .getByLabel("First Ban team", { exact: true })
-        .selectOption(ban);
-      await page
-        .getByLabel("First Pick team", { exact: true })
-        .selectOption(pick);
-      await page
-        .getByRole("button", { name: "Apply order", exact: true })
-        .click();
-      await expect
-        .poll(async () => {
-          const w = await read();
-          return [w.session?.firstBanTeamId, w.session?.firstPickTeamId];
-        })
-        .toEqual([ban, pick]);
-    }
     await page
       .getByLabel("First Ban team", { exact: true })
       .selectOption(home.id);
-    await page
-      .getByLabel("First Pick team", { exact: true })
-      .selectOption(away.id);
+    await expect(
+      page.getByLabel("First Pick team", { exact: true }),
+    ).toHaveValue(away.id);
     await page
       .getByRole("button", { name: "Apply order", exact: true })
       .click();
-    await expect(
-      page.getByText("Showing applied order", { exact: true }),
-    ).toBeVisible();
-    const pool = page.getByRole("region", {
-      name: "Round mappool",
-      exact: true,
-    });
-    await pool.getByRole("button", { name: /NM1/ }).click();
-    const beforeCopy = (await read()).events.length;
-    await page
-      .getByRole("button", { name: "Copy Change beatmap", exact: true })
-      .click();
     await expect
-      .poll(() =>
-        page.evaluate(
-          () => (window as unknown as { lastCopied: string }).lastCopied,
-        ),
-      )
-      .toBe("!mp map 10001 0");
-    expect((await read()).events).toHaveLength(beforeCopy);
-    await page.evaluate(() =>
-      Object.defineProperty(navigator, "clipboard", {
-        configurable: true,
-        value: {
-          writeText: async () => {
-            throw new Error("synthetic clipboard denial");
-          },
+      .poll(async () => (await read()).session?.firstBanTeamId)
+      .toBe(home.id);
+    const beforePrepare = (await read()).events.length;
+    await page
+      .locator("#referee-preparation button[data-copied]:not([disabled])")
+      .first()
+      .click();
+    await expect(
+      page.getByLabel("IRC command", { exact: true }),
+    ).not.toHaveValue("");
+    await expect(
+      page.getByRole("button", { name: "Simulate send", exact: true }),
+    ).toBeDisabled();
+    expect((await read()).events).toHaveLength(beforePrepare);
+    // The independent saved-record API is still authorized and persistent; the
+    // disconnected IRC UI must never pretend it acknowledged these commands.
+    async function record(entryId: string) {
+      const workspace = await read();
+      const response = await context.request.patch(api, {
+        data: {
+          action: "record_selection",
+          entryId,
+          requestKey: crypto.randomUUID(),
+          expectedRevision: workspace.session?.revision ?? 0,
+          dependencyFingerprint: workspace.dependencyFingerprint,
         },
-      }),
-    );
-    await page
-      .getByRole("button", { name: "Copy Abort game", exact: true })
-      .click();
-    await expect(
-      page.getByText(
-        "Clipboard unavailable. Select the command and copy it manually.",
-        { exact: true },
-      ),
-    ).toBeVisible();
-    expect((await read()).events).toHaveLength(beforeCopy);
-    await page
-      .getByRole("button", { name: "Record selected Ban / Pick", exact: true })
-      .click();
-    await expect
-      .poll(async () => (await read()).projection.activeSelections.length)
-      .toBe(1);
-    await pool.getByRole("button", { name: /NM2/ }).click();
-    await page
-      .getByRole("button", { name: "Record selected Ban / Pick", exact: true })
-      .click();
-    await expect
-      .poll(async () => (await read()).projection.activeSelections.length)
-      .toBe(2);
-    const win = page.getByRole("button", {
-      name: `Record win: ${home.name}`,
+      });
+      expect(response.status()).toBe(200);
+    }
+    await record(seeded.workspace.maps.find((m) => m.beatmapId === 10001)!.id);
+    await record(seeded.workspace.maps.find((m) => m.beatmapId === 10002)!.id);
+    await page.reload();
+    const summary = page.getByRole("region", {
+      name: "Referee records",
       exact: true,
     });
-    await win.click();
-    await expect
-      .poll(async () => (await read()).projection.score[home.id])
-      .toBe(1);
+    await expect(summary).toContainText("BAN NM1");
+    await expect(summary).toContainText("PICK NM2");
+    await expect(summary.locator("button")).toHaveCount(0);
     await page
-      .getByRole("button", { name: `Record win: ${away.name}`, exact: true })
+      .getByText("Record and correct outcomes", { exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: `Record win: ${home.name}`, exact: true })
       .click();
     await expect
-      .poll(async () => (await read()).projection.score[away.id])
-      .toBe(1);
-    await page.getByText("Full correction history", { exact: true }).click();
-    await expect(
-      page.getByText(
-        `Completed · Winner: ${home.name} → Completed · Winner: ${away.name}`,
-        { exact: false },
-      ),
-    ).toBeVisible();
-    await page.getByText("Full correction history", { exact: true }).click();
-    await win.click();
-    await expect
       .poll(async () => (await read()).projection.score[home.id])
       .toBe(1);
-
+    await expect(summary).toContainText(`${home.name} 1`);
     await page
       .getByRole("button", { name: "Record replay", exact: true })
       .click();
     await expect
       .poll(async () => (await read()).projection.score[home.id])
       .toBe(0);
-    await page
-      .getByRole("button", { name: "Record abort", exact: true })
-      .click();
-    await expect
-      .poll(
-        async () =>
-          (await read()).projection.activeSelections[1].attempts.at(-1)?.status,
-      )
-      .toBe("aborted");
-    await page
-      .getByRole("button", { name: "Record replay", exact: true })
-      .click();
-    await page
-      .getByRole("button", { name: `Record win: ${away.name}`, exact: true })
-      .click();
-    await expect
-      .poll(async () => (await read()).projection.score[away.id])
-      .toBe(1);
+    await expect(summary).toContainText("Replays used: 1");
     await page.reload();
-    await expect(
-      page.getByText(/^Attempt 3 · Completed · Winner:/),
-    ).toBeVisible();
+    await expect(summary).toContainText("Replays used: 1");
     expect((await read()).projection.activeSelections[1].attempts).toHaveLength(
-      3,
+      2,
     );
-    await page
-      .getByRole("button", { name: "Withdraw last Ban / Pick", exact: true })
-      .click();
-    await expect
-      .poll(async () => (await read()).projection.activeSelections.length)
-      .toBe(1);
-    expect((await read()).projection.score[away.id]).toBe(0);
-    await page
-      .getByRole("link", { name: "Post-match review", exact: true })
-      .first()
-      .click();
-    await expect(page).toHaveURL(new RegExp(`${seeded.fixtureId}$`));
-    await expect(
-      page.getByRole("link", { name: "Referee panel", exact: true }),
-    ).toBeVisible();
     expect(await officialResult()).toEqual(officialBefore);
     const guest = await browser.newContext({
       storageState: englishStorage,
@@ -305,7 +219,7 @@ test.describe("referee command workspace", () => {
         ]);
         await page.goto(path);
         await expect(
-          page.getByRole("heading", { name: "Current commands", exact: true }),
+          page.getByRole("heading", { name: "Command list", exact: true }),
         ).toBeVisible();
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),

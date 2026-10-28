@@ -28,13 +28,21 @@ import "./glass-theme.css";
 import "./esports-theme.css";
 import "./arcade-theme.css";
 import "./frutiger-theme.css";
+import "./skyline-theme.css";
+import "./glacier-theme.css";
+import "./sakura-theme.css";
+import "./graphite-theme.css";
 import { AppearanceProvider } from "@/components/appearance-provider";
 import { inheritedAppearance } from "@/lib/appearance-scope";
 import { tournamentAppearanceScopes } from "@/lib/tournaments";
 import { cookies, headers } from "next/headers";
 import {
+  readThemePreference,
   readTheme,
+  resolveTheme,
   themeCookie,
+  systemThemeCookie,
+  themeScript,
   readAppearance,
   appearanceCookie,
   isAppearance,
@@ -99,7 +107,11 @@ export default async function RootLayout({
   const tr = await getAppTranslations();
 
   const preferences = await cookies();
-  const theme = readTheme(preferences.get(themeCookie)?.value);
+  const themePreference = readThemePreference(
+    preferences.get(themeCookie)?.value,
+  );
+  const systemTheme = readTheme(preferences.get(systemThemeCookie)?.value);
+  const theme = resolveTheme(themePreference, systemTheme);
   const remote = remoteMode();
   const route = await headers();
   let remoteFailure: string | undefined;
@@ -178,7 +190,21 @@ export default async function RootLayout({
   );
   const appearance = readAppearance(appearanceValue, inherited.appearance);
   return (
-    <html lang={locale} data-theme={theme} data-appearance={appearance}>
+    // The head script may correct data-theme from the visitor's system before paint.
+    <html
+      lang={locale}
+      data-theme={theme}
+      data-theme-preference={themePreference}
+      data-appearance={appearance}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          nonce={route.get("x-nonce") ?? undefined}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
+      </head>
       <body>
         <NextIntlClientProvider>
           <AppearanceProvider
@@ -193,7 +219,8 @@ export default async function RootLayout({
               <Header
                 remote={remote}
                 informationHref={informationHref}
-                theme={theme}
+                themePreference={themePreference}
+                systemTheme={systemTheme}
                 appearance={appearance}
                 defaultAppearance={defaultAppearance}
                 appearancePreference={appearancePreference}
@@ -238,6 +265,11 @@ export default async function RootLayout({
                     {"OCLR Dev Team."}
                   </a>{" "}
                   {"· OCLR — osu! Chinese League Rookie"}
+                </p>
+                <p className="glacier-attribution">
+                  {tr(
+                    "Touhou Project fan art · Cirno © Team Shanghai Alice / ZUN",
+                  )}
                 </p>
                 <div className="footer-actions">
                   <a

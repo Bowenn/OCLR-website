@@ -215,7 +215,7 @@ public standings, bracket advancement, or OBS output.
 
 ### Persistence and recovery
 
-Migrations `0045_referee_workspace` and `0046_referee_reconciliation` add private
+Migrations `0050_referee_workspace` and `0051_referee_reconciliation` add private
 round policy, fixture session, append-only event and reconciliation receipt tables.
 Each session stores its dependency snapshot, revision, independent first teams and
 command settings. Service DTOs reuse fixture/team/pool identities without copying

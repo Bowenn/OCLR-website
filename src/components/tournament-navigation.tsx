@@ -13,6 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { publicTournamentSection } from "@/lib/public-navigation";
+import { supportsArchiveStatistics } from "@/lib/archive-statistics-model";
 
 function Navigation({
   slug,
@@ -56,7 +57,7 @@ function Navigation({
     ...(liveDraft ? [["draft", "Live draft"]] : []),
     ...(archived ? [["draft", "Draft results"]] : []),
     ...(archived ? [["staff", "Staff"]] : []),
-    ...(archived && ["s7", "s8", "s9", "s10"].includes(slug)
+    ...(archived && supportsArchiveStatistics(slug)
       ? [["statistics", "Player statistics"]]
       : []),
   ];
@@ -68,7 +69,9 @@ function Navigation({
         ["draft", "Draft results"],
         ["schedule", "Schedule"],
         ["mappools", "Mappools"],
-        ["statistics", "Statistics"],
+        ...(!archived || supportsArchiveStatistics(slug)
+          ? [["statistics", "Statistics"]]
+          : []),
         ...(archived ? [["staff", "Staff"]] : []),
       ]
     : legacyLinks;
