@@ -161,8 +161,8 @@ and publication.
 
 An Admin explicitly configures the round's finite Ban/Pick/TB steps, permitted
 categories/entries, repeated-category restrictions, and TB score conditions.
-The first Ban and first Pick teams are independent fixture settings. Changing one
-does not change the other. The preview is unsaved until **Apply order** succeeds.
+The first Ban and first Pick remain separate stored fields for historical compatibility.
+The current UI links them: selecting either team chooses its opponent for the other. The preview is unsaved until **Apply order** succeeds.
 Conflicting recorded steps must be withdrawn in reverse order before changing
 an already-used order. Missing teams, rules, pool, policy, or stale dependencies
 are shown as missing configuration, never replaced with assumed tournament rules.
@@ -174,14 +174,17 @@ round's scoring rules; Mods/NF/Freemod and timer defaults require explicit polic
 `make` creates a new room through BanchoBot; `name` renames an existing room.
 `addref` requires the osu! room creator and grants room control, not a website role.
 Player invites include every member of both saved playing rosters, including
-captains and substitutes, using their saved UID relationships. Every command is separately copyable;
-clipboard rejection provides a selectable manual-copy field. Names cannot contain
+captains and substitutes, resolving roster membership through saved UID relationships and
+using saved usernames (spaces converted to underscores) in invitation text. Each command
+can be prepared in the IRC console; pool actions also attempt a clipboard copy. Names cannot contain
 control characters or injected extra command lines.
 
 ### During play
 
-Selecting a map prepares command previews. **Record selected Ban / Pick** is a
-separate mutation checked against the authoritative finite sequence. The ledger
+Selecting a map prepares an IRC command without recording a selection. The current
+local simulation records a step only after explicit simulated confirmation, checked
+against the finite sequence. See the simulation limitations below. The underlying
+persistent referee API remains separate and is not called by simulated sends. The ledger
 separates picking team from winner. Each pick has its own numbered attempts;
 replays preserve prior attempts and consume no new pick. An optional round
 `maxReplaysPerMap` caps additional attempts (two replays allow three attempts in
@@ -190,9 +193,9 @@ appending an event. Older policies without this field retain their existing
 behavior. Only the latest valid
 attempt contributes to provisional scoring. Ties follow the configured round
 policy; aborted/unresolved/withdrawn attempts never fabricate a winning point.
-Corrections retain append-only history; later steps must be withdrawn before an
-earlier pick can be corrected. Refresh or a legitimate referee handoff resumes
-saved state, rather than a browser-only copy.
+Persistent corrections retain append-only history; later steps must be withdrawn before an
+earlier pick can be corrected. Refresh or a legitimate referee handoff resumes persisted
+state; temporary IRC simulation events are deliberately discarded on refresh.
 
 ### After play
 
@@ -238,3 +241,11 @@ two-replay cap per map. It accepts the existing fixture UUID, requires the exact
 loopback review database on port 55436, and refuses recorded play. It does not
 truncate tables or alter production data. The authored names and beatmap metadata
 are UI fixtures, not provider snapshots or approved tournament selections.
+
+### IRC 操作入口（本地模拟审核）
+
+本轮审核版将右侧 IRC 控制台固定，左侧命令点击后填入输入框。邀请命令使用保存的选手用户名（空格转下划线），包括两队全部成员与替补。先 Ban／先 Pick 在界面上自动选择相反队伍；底层历史契约仍可读取旧独立先手记录。
+
+图池按 Mod 分组逐行展示，两队各有 Ban／Pick 操作，当前流程不允许的操作禁用。Ban 和 Pick 都准备 `!mp map`；填入、复制不推进步骤，确认后才记录。常用 30／60／120 秒计时、start 与取消计时位于控制台底部。
+
+**尚未连接真实 osu! IRC。** `next dev` 预览明确显示“模拟模式”，模拟确认使用现有流程校验器在页面内生成临时记录，刷新即清除，不请求业务写入 API、不生成持久化执裁事件或发布结果。生产构建入口显示“IRC 未连接”，发送禁用。真实连接、身份认证、目标房间绑定、服务端回执及持久化幂等确认均尚未实现，不能将模拟成功视为 osu! 命令执行成功。

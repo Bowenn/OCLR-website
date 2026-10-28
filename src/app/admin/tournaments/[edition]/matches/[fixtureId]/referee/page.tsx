@@ -37,7 +37,11 @@ async function RefereePage({
           {data.policy?.maxReplaysPerMap !== undefined &&
             ` · ${tr("Up to {count} replays per map", { count: data.policy.maxReplaysPerMap })}`}
         </PageHeading>
-        <RefereePanel data={data} slug={edition} />
+        <RefereePanel
+          data={data}
+          slug={edition}
+          simulation={process.env.NODE_ENV === "development"}
+        />
       </>
     );
   });

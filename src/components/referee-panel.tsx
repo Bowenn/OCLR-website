@@ -6,9 +6,14 @@ import { useAppTranslations } from "@/i18n/shared";
 import type { RefereeWorkspace, RefereeCommand } from "@/lib/referee";
 import {
   refereeOrderConflicts,
+  projectReferee,
+  validateRefereeAction,
+  refereeActionSchema,
   resolveRefereeActor,
   type RefereeEvent,
 } from "@/lib/referee-model";
+import { refereeCommands } from "@/lib/referee-commands";
+import { RefereeIrc } from "./referee-irc";
 import { RefereeCommands } from "./referee-commands";
 import { RefereeReconciliation } from "./referee-reconciliation";
 import { RefereePolicyEditor } from "./referee-policy-editor";
@@ -22,9 +27,11 @@ type Action = RefereeCommand extends infer C
 export function RefereePanel({
   data: initial,
   slug,
+  simulation = false,
 }: {
   data: RefereeWorkspace;
   slug: string;
+  simulation?: boolean;
 }) {
   const tr = useAppTranslations();
   const controlId = useId();
@@ -59,7 +66,30 @@ export function RefereePanel({
     return () => window.removeEventListener("scroll", updateStage);
   }, []);
   const [selected, setSelected] = useState("");
-  const [category, setCategory] = useState("");
+  const [simulationEpoch, setSimulationEpoch] = useState(0);
+  const [simulationEvents, setSimulationEvents] = useState<RefereeEvent[]>([]);
+  const [simulationOrders, setSimulationOrders] = useState({
+    firstBanTeamId: initial.session?.firstBanTeamId ?? null,
+    firstPickTeamId: initial.session?.firstPickTeamId ?? null,
+  });
+  const [ircDraft, setIrcDraft] = useState("");
+  const [ircSelection, setIrcSelection] = useState<{
+    entryId: string;
+    text: string;
+    stepIndex: number;
+    teamId: string | null;
+  } | null>(null);
+  const [sentCommands, setSentCommands] = useState<string[]>([]);
+  function prepareCommand(text: string) {
+    setIrcDraft(text);
+    setIrcSelection(null);
+  }
+  const appliedOrders = simulation
+    ? simulationOrders
+    : {
+        firstBanTeamId: data.session?.firstBanTeamId ?? null,
+        firstPickTeamId: data.session?.firstPickTeamId ?? null,
+      };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -70,8 +100,8 @@ export function RefereePanel({
     data.teams.find((t) => t.id === id)?.name ??
     refereeMessage(tr, neutral ? "Neutral tiebreaker" : "Not set");
   const dirtyOrder =
-    firstBan !== (data.session?.firstBanTeamId ?? "") ||
-    firstPick !== (data.session?.firstPickTeamId ?? "");
+    firstBan !== (appliedOrders.firstBanTeamId ?? "") ||
+    firstPick !== (appliedOrders.firstPickTeamId ?? "");
   const stale = Boolean(
     data.session &&
     data.session.dependencyFingerprint !== data.dependencyFingerprint,
@@ -82,17 +112,15 @@ export function RefereePanel({
     maps: data.maps,
     series: data.series,
   };
-  const conflicts = refereeOrderConflicts(
-    {
-      ...basis,
-      orders: {
-        firstBanTeamId: data.session?.firstBanTeamId ?? null,
-        firstPickTeamId: data.session?.firstPickTeamId ?? null,
-      },
-      events: data.events,
-    },
-    { firstBanTeamId: firstBan || null, firstPickTeamId: firstPick || null },
-  );
+  const model = {
+    ...basis,
+    orders: appliedOrders,
+    events: simulation ? [...data.events, ...simulationEvents] : data.events,
+  };
+  const conflicts = refereeOrderConflicts(model, {
+    firstBanTeamId: firstBan || null,
+    firstPickTeamId: firstPick || null,
+  });
   const map = data.maps.find((m) => m.id === selected) ?? null;
   function accept(next: RefereeWorkspace) {
     setData(next);
@@ -101,6 +129,21 @@ export function RefereePanel({
     setFirstPick(next.session?.firstPickTeamId ?? "");
   }
   async function refresh() {
+    if (simulation) {
+      setSimulationEvents([]);
+      setSimulationOrders({
+        firstBanTeamId: initial.session?.firstBanTeamId ?? null,
+        firstPickTeamId: initial.session?.firstPickTeamId ?? null,
+      });
+      setFirstBan(initial.session?.firstBanTeamId ?? "");
+      setFirstPick(initial.session?.firstPickTeamId ?? "");
+      setIrcDraft("");
+      setIrcSelection(null);
+      setSentCommands([]);
+      setError("");
+      setSimulationEpoch((v) => v + 1);
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -126,7 +169,41 @@ export function RefereePanel({
     }
   }
   async function send(action?: Action) {
-    if (busy) return;
+    if (busy) return false;
+    if (simulation) {
+      if (!action || !data.canRecord) return false;
+      try {
+        if (action.action === "save_settings") {
+          setCommandDraft(action.settings);
+          return true;
+        }
+        const parsed = refereeActionSchema.parse(action);
+        const payload = validateRefereeAction(model, parsed);
+        if (payload.type === "order_set") setSimulationOrders(payload);
+        setSimulationEvents((events) => [
+          ...events,
+          {
+            id: crypto.randomUUID(),
+            ordinal: data.events.length + events.length + 1,
+            actorId: 0,
+            createdAt: new Date().toISOString(),
+            payload,
+          },
+        ]);
+        setError("");
+        return true;
+      } catch (e) {
+        setError(
+          refereeMessage(
+            tr,
+            e instanceof Error
+              ? e.message
+              : "Unable to save the referee action.",
+          ),
+        );
+        return false;
+      }
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -174,7 +251,7 @@ export function RefereePanel({
     }
   }
   const disabled = busy || uncertain || !data.canRecord;
-  const state = data.projection;
+  const state = simulation ? projectReferee(model) : data.projection;
   function historyDetail(event: RefereeEvent) {
     const p = event.payload;
     if (p.type === "order_set") {
@@ -235,6 +312,13 @@ export function RefereePanel({
         ))}
       </nav>
       <div className={styles.stageContent}>
+        {simulation && (
+          <p className="notice">
+            {tr(
+              "Simulation records stay in this page and reset on reload. No IRC command or match result is submitted.",
+            )}
+          </p>
+        )}
         <div className="actions">
           <Link
             className="button secondary"
@@ -272,6 +356,8 @@ export function RefereePanel({
           <RefereeCommands
             key={`preparation-${data.session?.revision ?? 0}`}
             stage="preparation"
+            onPrepare={prepareCommand}
+            sentCommands={sentCommands}
             mapSelector={
               <label className="field" htmlFor={`${controlId}-preparation-map`}>
                 <span id={`${controlId}-preparation-map-label`}>
@@ -302,21 +388,23 @@ export function RefereePanel({
             selectedMap={map}
             canRecord={data.canRecord && !stale && !uncertain}
             busy={busy}
-            onSave={(settings) => send({ action: "save_settings", settings })}
+            onSave={async (settings) => {
+              await send({ action: "save_settings", settings });
+            }}
           />
-          {data.canConfigure && (
+          {data.canConfigure && !simulation && (
             <RefereePolicyEditor
               key={data.policyRevision}
               policy={data.policy}
               maps={data.maps}
               busy={busy || uncertain}
-              onSave={(policy) =>
-                send({
+              onSave={async (policy) => {
+                await send({
                   action: "configure_policy",
                   expectedPolicyRevision: data.policyRevision,
                   policy,
-                })
-              }
+                });
+              }}
             />
           )}
         </section>
@@ -349,7 +437,7 @@ export function RefereePanel({
             </div>
             <p className="muted">
               {tr(
-                "Copy commands into osu! yourself. Record actual play separately. Temporary scores do not publish results.",
+                "Prepare a map command, then confirm it in IRC to advance the Ban / Pick record.",
               )}
             </p>
             {!data.canRecord && (
@@ -384,7 +472,16 @@ export function RefereePanel({
                   aria-labelledby={`${controlId}-first-ban-label`}
                   value={firstBan}
                   disabled={disabled || stale}
-                  onChange={(e) => setFirstBan(e.target.value)}
+                  onChange={(e) => {
+                    setFirstBan(e.target.value);
+                    setFirstPick(
+                      e.target.value
+                        ? (data.teams.find((t) => t.id !== e.target.value)
+                            ?.id ?? "")
+                        : "",
+                    );
+                    setIrcSelection(null);
+                  }}
                 >
                   <option value="">{tr("Not set")}</option>
                   {data.teams.map((t) => (
@@ -403,7 +500,16 @@ export function RefereePanel({
                   aria-labelledby={`${controlId}-first-pick-label`}
                   value={firstPick}
                   disabled={disabled || stale}
-                  onChange={(e) => setFirstPick(e.target.value)}
+                  onChange={(e) => {
+                    setFirstPick(e.target.value);
+                    setFirstBan(
+                      e.target.value
+                        ? (data.teams.find((t) => t.id !== e.target.value)
+                            ?.id ?? "")
+                        : "",
+                    );
+                    setIrcSelection(null);
+                  }}
                 >
                   <option value="">{tr("Not set")}</option>
                   {data.teams.map((t) => (
@@ -440,8 +546,8 @@ export function RefereePanel({
                 className="secondary"
                 disabled={busy || !dirtyOrder}
                 onClick={() => {
-                  setFirstBan(data.session?.firstBanTeamId ?? "");
-                  setFirstPick(data.session?.firstPickTeamId ?? "");
+                  setFirstBan(appliedOrders.firstBanTeamId ?? "");
+                  setFirstPick(appliedOrders.firstPickTeamId ?? "");
                 }}
               >
                 {tr("Discard unsaved order")}
@@ -507,49 +613,6 @@ export function RefereePanel({
             )}
           </div>
           <div className={styles.columns}>
-            <section
-              className={styles.commands}
-              aria-label={tr("Current commands")}
-            >
-              <RefereeCommands
-                stage="play"
-                draft={commandDraft}
-                onDraftChange={setCommandDraft}
-                key={data.session?.revision ?? 0}
-                settings={data.session?.settings ?? data.defaultSettings}
-                policy={data.policy?.commands ?? null}
-                rules={data.rules}
-                teams={data.teams}
-                selectedMap={map}
-                mapSelector={
-                  <label className="field" htmlFor={`${controlId}-command-map`}>
-                    <span id={`${controlId}-command-map-label`}>
-                      {tr("Selected map")}
-                    </span>
-                    <select
-                      id={`${controlId}-command-map`}
-                      aria-labelledby={`${controlId}-command-map-label`}
-                      value={selected}
-                      onChange={(event) => setSelected(event.target.value)}
-                    >
-                      <option value="">{tr("Not set")}</option>
-                      {data.maps.map((entry) => (
-                        <option key={entry.id} value={entry.id}>
-                          {entry.category}
-                          {entry.position} · {entry.metadata.artist} —{" "}
-                          {entry.metadata.title}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                }
-                canRecord={data.canRecord && !stale && !uncertain}
-                busy={busy}
-                onSave={(settings) =>
-                  send({ action: "save_settings", settings })
-                }
-              />
-            </section>
             <section
               className={`panel ${styles.ledger}`}
               aria-labelledby="referee-records"
@@ -687,7 +750,7 @@ export function RefereePanel({
               <details>
                 <summary>{tr("Full correction history")}</summary>
                 <ol className={styles.history}>
-                  {data.events.map((e) => (
+                  {model.events.map((e) => (
                     <li key={e.id}>
                       <strong>
                         {e.ordinal}. {refereeMessage(tr, e.payload.type)}
@@ -707,93 +770,132 @@ export function RefereePanel({
               aria-labelledby="referee-pool"
             >
               <h2 id="referee-pool">{tr("Round mappool")}</h2>
-              <p className="muted">
-                {tr(
-                  "Selecting a map only prepares commands. Save Ban / Pick separately.",
-                )}
+              <p role="status">
+                {state.nextStep
+                  ? tr("Step {number}: {action} · {team}", {
+                      number: state.nextStep.index + 1,
+                      action: state.nextStep.kind.toUpperCase(),
+                      team: teamName(state.nextStep.teamId),
+                    })
+                  : tr("No further configured step")}
               </p>
-              <label className="field">
-                <span>{tr("Category")}</span>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="">{tr("All categories")}</option>
-                  {Array.from(new Set(data.maps.map((m) => m.category))).map(
-                    (c) => (
-                      <option key={c}>{c}</option>
-                    ),
-                  )}
-                </select>
-              </label>
-              <div className={styles.maplist}>
-                {data.maps
-                  .filter((m) => !category || m.category === category)
-                  .map((m) => {
-                    const used = state.activeSelections.find(
-                      (s) => s.entryId === m.id,
-                    );
-                    return (
-                      <button
-                        type="button"
-                        key={m.id}
-                        aria-pressed={selected === m.id}
-                        className={`secondary ${styles.map}`}
-                        onClick={() => setSelected(m.id)}
-                      >
-                        <strong>
-                          {m.category}
-                          {m.position}
-                        </strong>
-                        <span>
-                          {m.metadata.artist} — {m.metadata.title}
-                        </span>
-                        <span className="small">
-                          [{m.metadata.difficulty}] · {m.beatmapId}
-                        </span>
-                        <span className="small">
-                          {used ? used.kind.toUpperCase() : tr("Available")}
-                        </span>
-                      </button>
-                    );
-                  })}
-              </div>
-              <div className="form-stack">
-                <p>
-                  {state.nextStep
-                    ? tr("Next: {action} · {team}", {
-                        action: state.nextStep.kind.toUpperCase(),
-                        team: teamName(
-                          state.nextStep.teamId,
-                          state.nextStep.actor === "neutral",
-                        ),
-                      })
-                    : tr("No further configured step")}
+              {Array.from(new Set(data.maps.map((m) => m.category))).map(
+                (category) => (
+                  <section
+                    className={styles.poolGroup}
+                    key={category}
+                    aria-label={category}
+                  >
+                    <h3>
+                      {(
+                        {
+                          NM: "No Mod",
+                          HD: "Hidden",
+                          HR: "Hard Rock",
+                          DT: "Double Time",
+                          FM: "Free Mod",
+                          TB: "Tiebreaker",
+                        } as Record<string, string>
+                      )[category] ?? category}
+                    </h3>
+                    {data.maps
+                      .filter((m) => m.category === category)
+                      .map((m) => {
+                        const used = state.activeSelections.find(
+                          (s) => s.entryId === m.id,
+                        );
+                        let allowed = true;
+                        try {
+                          validateRefereeAction(model, {
+                            action: "record_selection",
+                            entryId: m.id,
+                          });
+                        } catch {
+                          allowed = false;
+                        }
+                        return (
+                          <div
+                            className={styles.poolRow}
+                            key={m.id}
+                            data-selected={ircSelection?.entryId === m.id}
+                          >
+                            <div>
+                              <strong>
+                                {m.category}
+                                {m.position}
+                              </strong>{" "}
+                              <span>{m.metadata.title}</span>
+                              <small>
+                                {m.metadata.artist} · {m.metadata.difficulty}
+                              </small>
+                            </div>
+                            {used ? (
+                              <span className="badge">
+                                {teamName(used.teamId)} ·{" "}
+                                {used.kind.toUpperCase()}
+                              </span>
+                            ) : (
+                              <div className={styles.poolActions}>
+                                {(["ban", "pick"] as const).flatMap((kind) =>
+                                  data.teams.map((team, index) => (
+                                    <button
+                                      key={`${kind}-${team.id}`}
+                                      type="button"
+                                      className="secondary"
+                                      data-team={index === 0 ? "blue" : "red"}
+                                      disabled={
+                                        disabled ||
+                                        stale ||
+                                        dirtyOrder ||
+                                        !allowed ||
+                                        (state.nextStep?.kind === "tb"
+                                          ? kind !== "pick"
+                                          : state.nextStep?.kind !== kind) ||
+                                        (state.nextStep?.teamId !== null &&
+                                          state.nextStep?.teamId !== team.id)
+                                      }
+                                      onClick={() => {
+                                        const text = refereeCommands({
+                                          settings: commandDraft,
+                                          policy: data.policy?.commands ?? null,
+                                          rules: data.rules,
+                                          teams: data.teams,
+                                          selectedMap: m,
+                                        }).find((c) => c.kind === "map")?.text;
+                                        if (!text || !state.nextStep) return;
+                                        setSelected(m.id);
+                                        setIrcDraft(text);
+                                        setIrcSelection({
+                                          entryId: m.id,
+                                          text,
+                                          stepIndex: state.nextStep.index,
+                                          teamId: state.nextStep.teamId,
+                                        });
+                                        void navigator.clipboard
+                                          ?.writeText(text)
+                                          .catch(() => {});
+                                      }}
+                                    >
+                                      {index === 0
+                                        ? tr("Blue team")
+                                        : tr("Red team")}{" "}
+                                      {kind.toUpperCase()}
+                                    </button>
+                                  )),
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </section>
+                ),
+              )}
+              {state.issues.map((message, i) => (
+                <p className="small muted" key={i}>
+                  {refereeMessage(tr, message)}
                 </p>
-                {state.issues.map((message, i) => (
-                  <p className="small muted" key={i}>
-                    {refereeMessage(tr, message)}
-                  </p>
-                ))}
-                <button
-                  disabled={
-                    disabled ||
-                    stale ||
-                    dirtyOrder ||
-                    !map ||
-                    state.issues.length > 0 ||
-                    !state.nextStep ||
-                    Boolean(
-                      state.activeSelections.find((s) => s.entryId === map?.id),
-                    )
-                  }
-                  onClick={() =>
-                    map && send({ action: "record_selection", entryId: map.id })
-                  }
-                >
-                  {tr("Record selected Ban / Pick")}
-                </button>
-              </div>
+              ))}
             </section>
           </div>
         </section>
@@ -808,13 +910,62 @@ export function RefereePanel({
               {tr("Post-match calculation")}
             </h2>
           </header>
-          <RefereeReconciliation
-            key={data.session?.revision ?? 0}
-            slug={slug}
-            fixtureId={data.fixture.id}
-          />
+          {simulation ? (
+            <p className="notice">
+              {tr(
+                "Simulation records stay in this page and reset on reload. No IRC command or match result is submitted.",
+              )}
+            </p>
+          ) : (
+            <RefereeReconciliation
+              key={data.session?.revision ?? 0}
+              slug={slug}
+              fixtureId={data.fixture.id}
+            />
+          )}
         </section>
       </div>
+      <RefereeIrc
+        key={simulationEpoch}
+        draft={ircDraft}
+        simulation={simulation}
+        disabled={disabled || stale}
+        startSeconds={commandDraft.startSeconds ?? 5}
+        onChange={(text) => {
+          setIrcDraft(text);
+          if (text !== ircSelection?.text) setIrcSelection(null);
+        }}
+        onPrepare={prepareCommand}
+        selectionLabel={
+          ircSelection && state.nextStep
+            ? `${state.nextStep.kind.toUpperCase()} · ${teamName(state.nextStep.teamId)} · ${map?.category}${map?.position}`
+            : null
+        }
+        onConfirm={async () => {
+          if (!simulation || disabled || stale || !ircDraft.trim())
+            return false;
+          if (ircSelection) {
+            if (
+              dirtyOrder ||
+              ircDraft !== ircSelection.text ||
+              state.nextStep?.index !== ircSelection.stepIndex ||
+              state.nextStep.teamId !== ircSelection.teamId
+            )
+              return false;
+            if (
+              !(await send({
+                action: "record_selection",
+                entryId: ircSelection.entryId,
+              }))
+            )
+              return false;
+          }
+          setSentCommands((sent) => [...new Set([...sent, ircDraft])]);
+          setIrcDraft("");
+          setIrcSelection(null);
+          return true;
+        }}
+      />
     </div>
   );
 }
