@@ -327,37 +327,46 @@ export function RefereeCommands({
       {stage !== "play" && (
         <>
           <div className={styles.modules}>
-            {modules.map((module) => (
-              <section
-                className={styles.commandModule}
-                key={module.title}
-                aria-label={module.title}
-              >
-                <h4>{module.title}</h4>
-                <div className={styles.moduleColumns}>
-                  <div className={styles.commandList}>
-                    {commands
-                      .filter((command) => module.kinds.includes(command.kind))
-                      .map((command) => (
-                        <CommandLine
-                          key={`${command.id}:${command.text}`}
-                          command={command}
-                          onPrepare={onPrepare}
-                          sent={
-                            !!command.text &&
-                            sentCommands.includes(command.text)
-                          }
-                          compact
-                        />
-                      ))}
+            {modules
+              .filter(
+                (module) =>
+                  stage !== "preparation" ||
+                  module.kinds.includes("make") ||
+                  module.kinds.includes("invite"),
+              )
+              .map((module) => (
+                <section
+                  className={styles.commandModule}
+                  key={module.title}
+                  aria-label={module.title}
+                >
+                  <h4>{module.title}</h4>
+                  <div className={styles.moduleColumns}>
+                    <div className={styles.commandList}>
+                      {commands
+                        .filter((command) =>
+                          module.kinds.includes(command.kind),
+                        )
+                        .map((command) => (
+                          <CommandLine
+                            key={`${command.id}:${command.text}`}
+                            command={command}
+                            onPrepare={onPrepare}
+                            sent={
+                              !!command.text &&
+                              sentCommands.includes(command.text)
+                            }
+                            compact
+                          />
+                        ))}
+                    </div>
+                    <div className={styles.commandHint}>
+                      <p>{module.hint}</p>
+                      {module.kinds.includes("map") && mapSelector}
+                    </div>
                   </div>
-                  <div className={styles.commandHint}>
-                    <p>{module.hint}</p>
-                    {module.kinds.includes("map") && mapSelector}
-                  </div>
-                </div>
-              </section>
-            ))}
+                </section>
+              ))}
           </div>
           <details className={styles.setupSettings}>
             <summary>{tr("Edit room settings")}</summary>
