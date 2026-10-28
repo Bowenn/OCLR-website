@@ -1972,6 +1972,9 @@
     "m28f5de31a4eb": "Only released draft information appears in the overlay.",
     "m13e98440497e": "URL copied.",
     "m27b5bf60e9a9": "Copy failed. Select the URL and copy it manually.",
+    "m010ba54c338a": "Copy beatmap ID",
+    "m60e1bc18c130": "Beatmap ID copied.",
+    "mbf38b78eb0e1": "Could not copy the beatmap ID.",
     "m374c2d10ab46": "MVP: at least 6 appearances.",
     "m0dd0ec414d67": "MIP: from week 2, at least 5 appearances in both adjacent weeks and positive absolute improvement.",
     "m999840c1cbca": "Rookie: at least 5 appearances and draft-derived Tier of T4, T5 or below.",
@@ -2817,7 +2820,6 @@
     "m639bd5a1b055": "Blue team",
     "m384f67964b50": "{count, plural, one {# tournament} other {# tournaments}}",
     "ma26fd9587aee": "Tournament pages",
-    "m240ab6d8dc2c": "Page {page} of {pages}",
     "m8302f8272d51": "Historical staff identities",
     "maf651a89df5b": "Historical staff member",
     "m947abd9a0de6": "Look up osu! username",
@@ -2832,6 +2834,9 @@
     "m3d49996608d3": "This historical name has conflicting confirmed IDs. Keep it unresolved.",
     "mc85f646eb175": "The verified osu! ID changed. Look up the username again.",
     "m8696b935422a": "Select an unresolved historical staff member without conflicting identity evidence.",
-    "mc7b8af5ade4b": "S6 · Orbital Pulse"
+    "mc7b8af5ade4b": "S6 · Orbital Pulse",
+    "m240ab6d8dc2c": "Page {page} of {pages}",
+    "m2cb4b217a9d7": "Open original map on osu!",
+    "m52aed7a53987": "osu!direct (original map)"
   }
 }
