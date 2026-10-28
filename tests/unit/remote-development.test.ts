@@ -9,7 +9,7 @@ import {
   remoteMode,
   remotePageSupported,
 } from "../../src/lib/data-source";
-import { remoteOperation } from "../../src/lib/remote-transport";
+import { remoteOperation, remoteRead } from "../../src/lib/remote-transport";
 import { proxy } from "../../src/proxy";
 import { bundledSeasonThemes } from "../fixtures/theme-assets";
 beforeEach(() => {
@@ -18,7 +18,10 @@ beforeEach(() => {
   vi.stubEnv("APP_URL", "http://localhost:3000");
   vi.stubEnv("OCLR_API_BASE_URL", "https://backend.example");
 });
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 describe("explicit remote frontend boundaries", () => {
   it("keeps app and API origins separate and refuses production, unknown modes and unsafe origins", () => {
     expect(remoteMode()).toBe(true);
@@ -109,6 +112,66 @@ describe("explicit remote frontend boundaries", () => {
     expect(unsupported.status).toBe(200);
     expect(unsupported.headers.get("location")).toBeNull();
     expect(unsupported.headers.get("cache-control")).toBe("no-store");
+  });
+  it("allows cross-site top-level page navigation while rejecting cross-site data access and writes", () => {
+    const request = (path = "/", overrides = {}, method = "GET") =>
+      new NextRequest(`http://localhost:3000${path}`, {
+        method,
+        headers: {
+          host: "localhost:3000",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-dest": "document",
+          ...overrides,
+        },
+      });
+    for (const path of ["/", "/remote", "/tournaments/s11"])
+      expect(proxy(request(path)).status).toBe(200);
+    for (const path of [
+      "/api/remote/read/me",
+      "/api/remote/connection",
+      "/auth/osu",
+    ])
+      expect(proxy(request(path)).status).toBe(403);
+    for (const method of ["POST", "PUT", "DELETE"])
+      expect(proxy(request("/", {}, method)).status).toBe(403);
+    for (const headers of [
+      { "sec-fetch-mode": "cors", "sec-fetch-dest": "empty" },
+      { "sec-fetch-dest": "iframe" },
+      { "sec-fetch-mode": "no-cors", "sec-fetch-dest": "image" },
+      { host: "evil.example" },
+      { authorization: "Bearer synthetic" },
+    ])
+      expect(proxy(request("/", headers)).status).toBe(403);
+  });
+  it("preserves safe backend denial codes instead of blaming every 403 on token scopes", async () => {
+    for (const code of [
+      "ORIGIN_NOT_ALLOWED",
+      "INSUFFICIENT_SCOPE",
+      "DEVELOPER_REQUIRED",
+      "UNKNOWN_BACKEND_CODE",
+    ]) {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () =>
+          Response.json(
+            {
+              error: {
+                code,
+                message: "Do not relay arbitrary backend messages",
+              },
+            },
+            { status: 403 },
+          ),
+        ),
+      );
+      await expect(
+        remoteRead("/me", undefined, "synthetic-test-token"),
+      ).rejects.toMatchObject({
+        status: 403,
+        code: code === "UNKNOWN_BACKEND_CODE" ? "REMOTE_FORBIDDEN" : code,
+      });
+    }
   });
   it("refuses any local database pool even with a configured URL", () => {
     vi.stubEnv(
