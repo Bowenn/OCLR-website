@@ -203,3 +203,11 @@ details > .stack {
   align-items: center;
   gap: 0.5rem;
 }
+.moduleColumns {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+.commandHint {
+  border: 0;
+  padding: 0;
+}

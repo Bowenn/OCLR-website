@@ -218,8 +218,10 @@ export function refereeCommands(input: RefereeCommandInput): RefereeCommand[] {
       return players.map((player) => ({
         ...command(
           "invite",
-          positiveInteger(player.osuId) ? `!mp invite #${player.osuId}` : null,
-          "This player's saved UID is missing.",
+          positiveInteger(player.osuId) && validLine(player.username, 50)
+            ? `!mp invite ${player.username.trim().replace(/\s+/gu, "_")}`
+            : null,
+          "This player's saved username is missing or invalid.",
         ),
         id: team.members
           ? `invite:${team.id}:${player.osuId}`

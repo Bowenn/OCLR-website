@@ -15,9 +15,13 @@ import {
 function CommandLine({
   command,
   compact = false,
+  onPrepare,
+  sent = false,
 }: {
   command: RefereeCommand;
   compact?: boolean;
+  onPrepare?: (text: string) => void;
+  sent?: boolean;
 }) {
   const tr = useAppTranslations();
   const text = useRef<HTMLTextAreaElement>(null);
@@ -47,8 +51,8 @@ function CommandLine({
     "Enter a valid osu! username for the Streamer.": tr(
       "Enter a valid osu! username for the Streamer.",
     ),
-    "This player's saved UID is missing.": tr(
-      "This player's saved UID is missing.",
+    "This player's saved username is missing or invalid.": tr(
+      "This player's saved username is missing or invalid.",
     ),
     "Choose a positive timer duration.": tr(
       "Choose a positive timer duration.",
@@ -68,6 +72,10 @@ function CommandLine({
     : labels[command.kind];
   async function copy() {
     if (!command.text) return;
+    if (onPrepare) {
+      onPrepare(command.text);
+      return;
+    }
     setStatus("copying");
     const next = await copyRefereeCommand(command.text, navigator.clipboard);
     setStatus(next);
@@ -110,11 +118,23 @@ function CommandLine({
         <button
           type="button"
           className={compact ? styles.iconCopy : "secondary"}
-          data-copied={copied}
-          title={copied ? tr("Copied") : tr("Copy command")}
+          data-copied={onPrepare ? sent : copied}
+          title={
+            onPrepare
+              ? sent
+                ? tr("Simulation confirmed")
+                : tr("Prepare in IRC")
+              : copied
+                ? tr("Copied")
+                : tr("Copy command")
+          }
           disabled={!command.text || status === "copying"}
           onClick={copy}
-          aria-label={tr("Copy {value0}", { value0: label })}
+          aria-label={
+            onPrepare
+              ? tr("Prepare {value0} in IRC", { value0: label })
+              : tr("Copy {value0}", { value0: label })
+          }
         >
           {compact ? (
             <svg
@@ -170,6 +190,8 @@ export function RefereeCommands({
   stage,
   draft: controlledDraft,
   onDraftChange,
+  onPrepare,
+  sentCommands = [],
 }: RefereeCommandInput & {
   onSave: (settings: RefereeSettings) => void | Promise<void>;
   canRecord: boolean;
@@ -178,6 +200,8 @@ export function RefereeCommands({
   stage?: "preparation" | "play";
   draft?: RefereeSettings;
   onDraftChange?: (settings: RefereeSettings) => void;
+  onPrepare?: (text: string) => void;
+  sentCommands?: string[];
 }) {
   const tr = useAppTranslations();
   const id = useId();
@@ -211,7 +235,7 @@ export function RefereeCommands({
       title: tr("Players and room staff"),
       kinds: ["addref", "invite"],
       hint: tr(
-        "The room creator adds the Streamer as a referee. Invite every player from both saved rosters by UID, including substitutes.",
+        "The room creator adds the Streamer as a referee. Invite every player from both saved rosters by username, including substitutes.",
       ),
     },
     {
@@ -318,6 +342,11 @@ export function RefereeCommands({
                         <CommandLine
                           key={`${command.id}:${command.text}`}
                           command={command}
+                          onPrepare={onPrepare}
+                          sent={
+                            !!command.text &&
+                            sentCommands.includes(command.text)
+                          }
                           compact
                         />
                       ))}

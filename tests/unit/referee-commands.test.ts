@@ -54,7 +54,7 @@ const input: RefereeCommandInput = {
 const command = (value: RefereeCommandInput, kind: string) =>
   refereeCommands(value).find((c) => c.id === kind)?.text;
 describe("referee command generation", () => {
-  it("invites all twelve roster players by saved UID, not only captains or starters", () => {
+  it("invites all twelve roster players by saved username, not only captains or starters", () => {
     const teams = input.teams.map((team, index) => ({
       ...team,
       members: Array.from({ length: 6 }, (_, n) => ({
@@ -67,7 +67,9 @@ describe("referee command generation", () => {
     );
     expect(invites).toHaveLength(12);
     expect(invites.map((c) => c.text)).toEqual(
-      teams.flatMap((t) => t.members.map((m) => `!mp invite #${m.osuId}`)),
+      teams.flatMap((t) =>
+        t.members.map((m) => `!mp invite ${m.username.replace(/\s+/g, "_")}`),
+      ),
     );
     expect(invites.at(-1)?.playerName).toBe("Player 1-5");
     expect(
@@ -77,6 +79,20 @@ describe("referee command generation", () => {
       }).filter((c) => c.kind === "invite"),
     ).toHaveLength(0);
   });
+  it.each(["", " ", "Player\n!mp abort", "Player\tName"])(
+    "rejects unsafe invitation names %j",
+    (username) => {
+      expect(
+        command(
+          {
+            ...input,
+            teams: [{ ...input.teams[0], captainUsername: username }],
+          },
+          "invite:a",
+        ),
+      ).toBeNull();
+    },
+  );
   it("blocks ruleset-specific Mods in incompatible rooms", () => {
     for (const mods of [["FI"], ["MR"], ["4K"]] as const) {
       const policy = {
@@ -123,8 +139,8 @@ describe("referee command generation", () => {
       "!mp make TEST: A vs B",
       "!mp set 2 3 16",
       "!mp addref Caster_Name",
-      "!mp invite #123",
-      "!mp invite #456",
+      "!mp invite Captain_A",
+      "!mp invite Captain_B",
       "!mp timer 90",
       "!mp map 789 0",
       "!mp mods NF HD",

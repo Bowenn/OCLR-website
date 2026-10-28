@@ -28,18 +28,18 @@ if (
   );
 const fixtureId = process.argv[2];
 if (!fixtureId) throw new Error("Provide the existing preview fixture ID.");
-const actor = { osuId: 891001, username: "阿澈" };
+const actor = { osuId: 891001, username: "Archer" };
 const slug = "test-cup";
 const roster = [
   {
     name: "星河",
     base: 891100,
-    names: ["星野", "白露", "Nagi", "小满", "Rin", "阿空"],
+    names: ["Hoshino", "Shiro", "Nagi", "Milo", "Rin", "Aki"],
   },
   {
     name: "青岚",
     base: 891110,
-    names: ["青禾", "林间", "Sora", "月见", "Yuki", "小舟"],
+    names: ["Aoba", "Hayate", "Sora", "Tsuki", "Yuki", "Fune"],
   },
 ];
 const slots = [
@@ -175,11 +175,11 @@ await db().transaction(async (tx) => {
   }
   await tx
     .update(users)
-    .set({ username: "阿澈" })
+    .set({ username: "Archer" })
     .where(eq(users.osuId, 891001));
   await tx
     .update(users)
-    .set({ username: "小雨" })
+    .set({ username: "Rain" })
     .where(eq(users.osuId, 891002));
   const [round] = await tx
     .select()
@@ -310,7 +310,7 @@ await send({
   settings: {
     ...workspace.session!.settings,
     roomName: "OCLR: 星河 vs 青岚",
-    streamerUsername: "小雨",
+    streamerUsername: "Rain",
   },
 });
 console.log("星河 vs 青岚 · 6人队伍 · 3v3 · BO9 · 15图 · 每图最多2次重赛");
