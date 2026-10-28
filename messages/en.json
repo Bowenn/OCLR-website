@@ -2967,6 +2967,12 @@
     "m44188183a82e": "Step {number}: {action} · {team}",
     "m639bd5a1b055": "Blue team",
     "m3e84d806a3b1": "Red team",
-    "mcf6775191859": "Simulation records stay in this page and reset on reload. No IRC command or match result is submitted."
+    "mcf6775191859": "Simulation records stay in this page and reset on reload. No IRC command or match result is submitted.",
+    "m257c059b95af": "BP sequence",
+    "md3a2bc54e063": "Replay history",
+    "m0295ac22de40": "Map outcomes",
+    "mb3097459e80c": "Winner: {team}",
+    "m56ef34bfac76": "Record and correct outcomes",
+    "me638c720624d": "Series score"
   }
 }

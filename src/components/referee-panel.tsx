@@ -614,10 +614,224 @@ export function RefereePanel({
           </div>
           <div className={styles.columns}>
             <section
-              className={`panel ${styles.ledger}`}
-              aria-labelledby="referee-records"
+              className={`panel ${styles.pinnedSummary}`}
+              aria-label={tr("Referee records")}
             >
-              <h2 id="referee-records">{tr("Referee records")}</h2>
+              <div className={styles.summaryScore}>
+                <span>{tr("Series score")}</span>
+                <strong>
+                  {data.teams
+                    .map((t) => `${t.name} ${state.score[t.id] ?? 0}`)
+                    .join(" — ")}
+                </strong>
+              </div>
+              <dl className={styles.summaryRows}>
+                <div>
+                  <dt>{tr("BP sequence")}</dt>
+                  <dd>
+                    {state.activeSelections.length
+                      ? state.activeSelections.map((s) => (
+                          <span key={s.id}>
+                            {teamName(s.teamId)} {s.kind.toUpperCase()}{" "}
+                            {s.category}
+                            {
+                              data.maps.find((m) => m.id === s.entryId)
+                                ?.position
+                            }
+                          </span>
+                        ))
+                      : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{tr("Replay history")}</dt>
+                  <dd>
+                    {state.activeSelections.some((s) => s.attempts.length > 1)
+                      ? state.activeSelections
+                          .filter((s) => s.attempts.length > 1)
+                          .map((s) => (
+                            <span key={s.id}>
+                              {s.category}
+                              {
+                                data.maps.find((m) => m.id === s.entryId)
+                                  ?.position
+                              }{" "}
+                              ·{" "}
+                              {tr("Replays used: {used} / {limit}", {
+                                used: s.attempts.length - 1,
+                                limit: basis.policy?.maxReplaysPerMap ?? "—",
+                              })}
+                            </span>
+                          ))
+                      : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{tr("Map outcomes")}</dt>
+                  <dd>
+                    {state.activeSelections.some((s) => s.kind !== "ban")
+                      ? state.activeSelections
+                          .filter((s) => s.kind !== "ban")
+                          .map((s) => {
+                            const attempt = s.attempts.at(-1);
+                            return (
+                              <span key={s.id}>
+                                {s.category}
+                                {
+                                  data.maps.find((m) => m.id === s.entryId)
+                                    ?.position
+                                }{" "}
+                                ·{" "}
+                                {attempt?.winnerTeamId
+                                  ? tr("Winner: {team}", {
+                                      team: teamName(attempt.winnerTeamId),
+                                    })
+                                  : refereeMessage(
+                                      tr,
+                                      attempt?.status ?? "pending",
+                                    )}
+                              </span>
+                            );
+                          })
+                      : "—"}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+            <section
+              className={`panel ${styles.pool}`}
+              aria-labelledby="referee-pool"
+            >
+              <h2 id="referee-pool">{tr("Round mappool")}</h2>
+              <p role="status">
+                {state.nextStep
+                  ? tr("Step {number}: {action} · {team}", {
+                      number: state.nextStep.index + 1,
+                      action: state.nextStep.kind.toUpperCase(),
+                      team: teamName(state.nextStep.teamId),
+                    })
+                  : tr("No further configured step")}
+              </p>
+              {Array.from(new Set(data.maps.map((m) => m.category))).map(
+                (category) => (
+                  <section
+                    className={styles.poolGroup}
+                    key={category}
+                    aria-label={category}
+                  >
+                    <h3>
+                      {(
+                        {
+                          NM: "No Mod",
+                          HD: "Hidden",
+                          HR: "Hard Rock",
+                          DT: "Double Time",
+                          FM: "Free Mod",
+                          TB: "Tiebreaker",
+                        } as Record<string, string>
+                      )[category] ?? category}
+                    </h3>
+                    {data.maps
+                      .filter((m) => m.category === category)
+                      .map((m) => {
+                        const used = state.activeSelections.find(
+                          (s) => s.entryId === m.id,
+                        );
+                        let allowed = true;
+                        try {
+                          validateRefereeAction(model, {
+                            action: "record_selection",
+                            entryId: m.id,
+                          });
+                        } catch {
+                          allowed = false;
+                        }
+                        return (
+                          <div
+                            className={styles.poolRow}
+                            key={m.id}
+                            data-selected={ircSelection?.entryId === m.id}
+                          >
+                            <div>
+                              <strong>
+                                {m.category}
+                                {m.position}
+                              </strong>{" "}
+                              <span>{m.metadata.title}</span>
+                              <small>
+                                {m.metadata.artist} · {m.metadata.difficulty}
+                              </small>
+                            </div>
+                            {used ? (
+                              <span className="badge">
+                                {teamName(used.teamId)} ·{" "}
+                                {used.kind.toUpperCase()}
+                              </span>
+                            ) : (
+                              <div className={styles.poolActions}>
+                                {(["ban", "pick"] as const).flatMap((kind) =>
+                                  data.teams.map((team, index) => (
+                                    <button
+                                      key={`${kind}-${team.id}`}
+                                      type="button"
+                                      className="secondary"
+                                      data-team={index === 0 ? "blue" : "red"}
+                                      disabled={
+                                        disabled ||
+                                        stale ||
+                                        dirtyOrder ||
+                                        !allowed ||
+                                        (state.nextStep?.kind === "tb"
+                                          ? kind !== "pick"
+                                          : state.nextStep?.kind !== kind) ||
+                                        (state.nextStep?.teamId !== null &&
+                                          state.nextStep?.teamId !== team.id)
+                                      }
+                                      onClick={() => {
+                                        const text = refereeCommands({
+                                          settings: commandDraft,
+                                          policy: data.policy?.commands ?? null,
+                                          rules: data.rules,
+                                          teams: data.teams,
+                                          selectedMap: m,
+                                        }).find((c) => c.kind === "map")?.text;
+                                        if (!text || !state.nextStep) return;
+                                        setSelected(m.id);
+                                        setIrcDraft(text);
+                                        setIrcSelection({
+                                          entryId: m.id,
+                                          text,
+                                          stepIndex: state.nextStep.index,
+                                          teamId: state.nextStep.teamId,
+                                        });
+                                        void navigator.clipboard
+                                          ?.writeText(text)
+                                          .catch(() => {});
+                                      }}
+                                    >
+                                      {index === 0
+                                        ? tr("Blue team")
+                                        : tr("Red team")}{" "}
+                                      {kind.toUpperCase()}
+                                    </button>
+                                  )),
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </section>
+                ),
+              )}
+              {state.issues.map((message, i) => (
+                <p className="small muted" key={i}>
+                  {refereeMessage(tr, message)}
+                </p>
+              ))}
+            </section>
+            <details className={`panel ${styles.recordControls}`}>
+              <summary>{tr("Record and correct outcomes")}</summary>
               {!state.activeSelections.length && (
                 <p className="muted">{tr("No Ban or Pick recorded yet.")}</p>
               )}
@@ -764,139 +978,7 @@ export function RefereePanel({
                   ))}
                 </ol>
               </details>
-            </section>
-            <section
-              className={`panel ${styles.pool}`}
-              aria-labelledby="referee-pool"
-            >
-              <h2 id="referee-pool">{tr("Round mappool")}</h2>
-              <p role="status">
-                {state.nextStep
-                  ? tr("Step {number}: {action} · {team}", {
-                      number: state.nextStep.index + 1,
-                      action: state.nextStep.kind.toUpperCase(),
-                      team: teamName(state.nextStep.teamId),
-                    })
-                  : tr("No further configured step")}
-              </p>
-              {Array.from(new Set(data.maps.map((m) => m.category))).map(
-                (category) => (
-                  <section
-                    className={styles.poolGroup}
-                    key={category}
-                    aria-label={category}
-                  >
-                    <h3>
-                      {(
-                        {
-                          NM: "No Mod",
-                          HD: "Hidden",
-                          HR: "Hard Rock",
-                          DT: "Double Time",
-                          FM: "Free Mod",
-                          TB: "Tiebreaker",
-                        } as Record<string, string>
-                      )[category] ?? category}
-                    </h3>
-                    {data.maps
-                      .filter((m) => m.category === category)
-                      .map((m) => {
-                        const used = state.activeSelections.find(
-                          (s) => s.entryId === m.id,
-                        );
-                        let allowed = true;
-                        try {
-                          validateRefereeAction(model, {
-                            action: "record_selection",
-                            entryId: m.id,
-                          });
-                        } catch {
-                          allowed = false;
-                        }
-                        return (
-                          <div
-                            className={styles.poolRow}
-                            key={m.id}
-                            data-selected={ircSelection?.entryId === m.id}
-                          >
-                            <div>
-                              <strong>
-                                {m.category}
-                                {m.position}
-                              </strong>{" "}
-                              <span>{m.metadata.title}</span>
-                              <small>
-                                {m.metadata.artist} · {m.metadata.difficulty}
-                              </small>
-                            </div>
-                            {used ? (
-                              <span className="badge">
-                                {teamName(used.teamId)} ·{" "}
-                                {used.kind.toUpperCase()}
-                              </span>
-                            ) : (
-                              <div className={styles.poolActions}>
-                                {(["ban", "pick"] as const).flatMap((kind) =>
-                                  data.teams.map((team, index) => (
-                                    <button
-                                      key={`${kind}-${team.id}`}
-                                      type="button"
-                                      className="secondary"
-                                      data-team={index === 0 ? "blue" : "red"}
-                                      disabled={
-                                        disabled ||
-                                        stale ||
-                                        dirtyOrder ||
-                                        !allowed ||
-                                        (state.nextStep?.kind === "tb"
-                                          ? kind !== "pick"
-                                          : state.nextStep?.kind !== kind) ||
-                                        (state.nextStep?.teamId !== null &&
-                                          state.nextStep?.teamId !== team.id)
-                                      }
-                                      onClick={() => {
-                                        const text = refereeCommands({
-                                          settings: commandDraft,
-                                          policy: data.policy?.commands ?? null,
-                                          rules: data.rules,
-                                          teams: data.teams,
-                                          selectedMap: m,
-                                        }).find((c) => c.kind === "map")?.text;
-                                        if (!text || !state.nextStep) return;
-                                        setSelected(m.id);
-                                        setIrcDraft(text);
-                                        setIrcSelection({
-                                          entryId: m.id,
-                                          text,
-                                          stepIndex: state.nextStep.index,
-                                          teamId: state.nextStep.teamId,
-                                        });
-                                        void navigator.clipboard
-                                          ?.writeText(text)
-                                          .catch(() => {});
-                                      }}
-                                    >
-                                      {index === 0
-                                        ? tr("Blue team")
-                                        : tr("Red team")}{" "}
-                                      {kind.toUpperCase()}
-                                    </button>
-                                  )),
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                  </section>
-                ),
-              )}
-              {state.issues.map((message, i) => (
-                <p className="small muted" key={i}>
-                  {refereeMessage(tr, message)}
-                </p>
-              ))}
-            </section>
+            </details>
           </div>
         </section>
         <section
@@ -931,6 +1013,15 @@ export function RefereePanel({
         simulation={simulation}
         disabled={disabled || stale}
         startSeconds={commandDraft.startSeconds ?? 5}
+        selectedMods={
+          refereeCommands({
+            settings: commandDraft,
+            policy: data.policy?.commands ?? null,
+            rules: data.rules,
+            teams: data.teams,
+            selectedMap: map,
+          }).find((c) => c.kind === "mods")?.text ?? null
+        }
         onChange={(text) => {
           setIrcDraft(text);
           if (text !== ircSelection?.text) setIrcSelection(null);

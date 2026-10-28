@@ -8,6 +8,7 @@ export function RefereeIrc({
   simulation,
   disabled,
   startSeconds,
+  selectedMods,
   selectionLabel,
   onChange,
   onPrepare,
@@ -17,6 +18,7 @@ export function RefereeIrc({
   simulation: boolean;
   disabled: boolean;
   startSeconds: number;
+  selectedMods: string | null;
   selectionLabel: string | null;
   onChange: (text: string) => void;
   onPrepare: (text: string) => void;
@@ -166,6 +168,24 @@ export function RefereeIrc({
           onClick={() => onPrepare("!mp aborttimer")}
         >
           {"!mp aborttimer"}
+        </button>
+        {selectedMods && (
+          <button
+            type="button"
+            className="secondary"
+            disabled={disabled || sending}
+            onClick={() => onPrepare(selectedMods)}
+          >
+            {selectedMods}
+          </button>
+        )}
+        <button
+          type="button"
+          className="secondary"
+          disabled={disabled || sending}
+          onClick={() => onPrepare("!mp abort")}
+        >
+          {"!mp abort"}
         </button>
       </footer>
     </aside>
