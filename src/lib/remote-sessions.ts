@@ -1,3 +1,4 @@
+import { remoteCredentialVault } from "./remote-credential-vault";
 import { randomBytes } from "node:crypto";
 import { apiIdentitySchema } from "./read-api-operations";
 import { remoteRead } from "./remote-transport";
@@ -8,7 +9,7 @@ export const remoteCookie = "oclr_remote_session";
 export type RemoteIdentity = z.infer<typeof apiIdentitySchema>;
 type Connection = {
   mode: "developer" | "anonymous";
-  token?: string;
+  sealedToken?: Buffer;
   expiresAt: number;
   publicCache?: RemotePublicCache;
 };
@@ -16,7 +17,7 @@ const globalConnections = globalThis as unknown as {
   oclrRemoteConnections?: Map<string, Connection>;
 };
 const entries = () => (globalConnections.oclrRemoteConnections ??= new Map());
-const lifetime = 60 * 60 * 1000;
+export const remoteSessionLifetime = 15 * 60 * 1000;
 function prune() {
   for (const [key, item] of entries())
     if (item.expiresAt <= Date.now()) disconnectRemote(key);
@@ -24,6 +25,7 @@ function prune() {
 export function disconnectRemote(id?: string) {
   if (id) {
     entries().get(id)?.publicCache?.clear();
+    entries().get(id)?.sealedToken?.fill(0);
     entries().delete(id);
   }
 }
@@ -45,14 +47,17 @@ export async function connectRemote(
     throw new RemoteDataError("REMOTE_UNAVAILABLE", 503);
   const id = randomBytes(32).toString("base64url");
   const expiresAt = Math.min(
-    Date.now() + lifetime,
+    Date.now() + remoteSessionLifetime,
     identity ? Date.parse(identity.access.expiresAt) : Infinity,
   );
   if (expiresAt <= Date.now()) throw new RemoteDataError("REMOTE_EXPIRED", 401);
   disconnectRemote(previous);
   entries().set(id, {
     mode: input.mode,
-    token: input.mode === "developer" ? input.token : undefined,
+    sealedToken:
+      input.mode === "developer"
+        ? remoteCredentialVault.seal(input.token!)
+        : undefined,
     expiresAt,
   });
   return { id, expiresAt };
@@ -75,16 +80,33 @@ export async function verifiedConnection(id?: string) {
   let contractVersion: string | null = null;
   try {
     if (connection.mode === "developer") {
-      const result = await remoteRead("/me", undefined, connection.token);
+      const result = await remoteRead(
+        "/me",
+        undefined,
+        remoteCredentialVault.open(connection.sealedToken!),
+      );
       identity = apiIdentitySchema.parse(result.data);
       contractVersion = result.contractVersion;
     }
     if (connection.mode === "anonymous")
       contractVersion = (await remoteRead("/site")).contractVersion;
-    return { ...connection, identity, contractVersion };
+    // Plaintext exists only in this request context, never in the connection map.
+    return {
+      ...connection,
+      token: connection.sealedToken
+        ? remoteCredentialVault.open(connection.sealedToken)
+        : undefined,
+      identity,
+      contractVersion,
+    };
   } catch (error) {
     if (error instanceof RemoteDataError && [401, 403].includes(error.status))
       disconnectRemote(id);
     throw error;
   }
 }
+
+const cleanupState = globalThis as typeof globalThis & {
+  oclrRemoteSessionCleanup?: ReturnType<typeof setInterval>;
+};
+cleanupState.oclrRemoteSessionCleanup ??= setInterval(prune, 60_000).unref();
