@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useId, useRef, useState } from "react";
@@ -178,15 +180,17 @@ export function DraftPick({
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
-        <p className="muted small">
-          {canStage
-            ? tr("Drag a player into {value0}, or choose a player below.", {
-                value0: tr(staff ? "the receiving team" : "your team"),
-              })
-            : staff
-              ? tr("Current eligible players.")
-              : tr("Last published eligible players.")}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {canStage
+              ? tr("Drag a player into {value0}, or choose a player below.", {
+                  value0: tr(staff ? "the receiving team" : "your team"),
+                })
+              : staff
+                ? tr("Current eligible players.")
+                : tr("Last published eligible players.")}
+          </p>
+        </InfoNote>
         <ul
           className="draft-player-list"
           aria-label={tr("Eligible players")}

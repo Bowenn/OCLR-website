@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import {
   ReadOnlyFields,
   StaffReadOnlyContext,
@@ -247,11 +250,13 @@ function FixtureForm({
               </select>
             </label>
             <TimeZonePicker value={timeZone} onChange={setZone} />
-            <p className="muted small">
-              {tr(
-                "Changing the time zone keeps the scheduled instant and updates the displayed local time.",
-              )}
-            </p>
+            <InfoNote>
+              <p className="muted small">
+                {tr(
+                  "Changing the time zone keeps the scheduled instant and updates the displayed local time.",
+                )}
+              </p>
+            </InfoNote>
 
             <label className="field">
               <span>{tr("Fixture status")}</span>
@@ -267,11 +272,13 @@ function FixtureForm({
             {round?.stage === "knockout" && (
               <fieldset className="settings-card form-stack">
                 <legend>{tr("Explicit bracket progression")}</legend>
-                <p className="muted">
-                  {tr(
-                    "Link planned slots to a previous match. Confirm the official teams before reporting results.",
-                  )}
-                </p>
+                <InfoNote>
+                  <p className="muted">
+                    {tr(
+                      "Link planned slots to a previous match. Confirm the official teams before reporting results.",
+                    )}
+                  </p>
+                </InfoNote>
                 {sourceSelect("home")}
                 {sourceSelect("away")}
               </fieldset>
@@ -376,11 +383,13 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
                 ))}
               </select>
             </label>
-            <p className="small muted">
-              {tr(
-                "Automatic scoring supports configured roster aggregation with Score or Score v2. Other provider modes require review and cannot silently produce winners.",
-              )}
-            </p>
+            <InfoNote>
+              <p className="small muted">
+                {tr(
+                  "Automatic scoring supports configured roster aggregation with Score or Score v2. Other provider modes require review and cannot silently produce winners.",
+                )}
+              </p>
+            </InfoNote>
             <label className="field">
               <span>{tr("Multiplayer team mode")}</span>
               <select
@@ -580,11 +589,13 @@ function RoundRules({ slug, entry }: { slug: string; entry: Round }) {
                     placeholder={tr("Approved criteria only")}
                   />
                 </label>
-                <p className="small muted">
-                  {tr(
-                    "Supported explicit criteria: points, wins, map_difference, maps_won. Separate by commas. Unresolved ties remain tied.",
-                  )}
-                </p>
+                <InfoNote>
+                  <p className="small muted">
+                    {tr(
+                      "Supported explicit criteria: points, wins, map_difference, maps_won. Separate by commas. Unresolved ties remain tied.",
+                    )}
+                  </p>
+                </InfoNote>
               </>
             )}
           </>
@@ -659,11 +670,13 @@ function StageGroups({
     <ReadOnlyFields>
       <section className="settings-card form-stack">
         <h3>{tr("Approved Group Stage assignments")}</h3>
-        <p className="muted">
-          {tr(
-            "Configure the actual groups and team membership. Unpublished assignments never appear in standings. Each team may belong to one group in this stage.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted">
+            {tr(
+              "Configure the actual groups and team membership. Unpublished assignments never appear in standings. Each team may belong to one group in this stage.",
+            )}
+          </p>
+        </InfoNote>
         {groups.map((group, index) => (
           <fieldset key={index}>
             <legend>

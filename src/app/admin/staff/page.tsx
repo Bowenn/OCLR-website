@@ -1,3 +1,4 @@
+import { InfoNote } from "@/components/info-note";
 import { StaffReadOnlyContext } from "@/components/staff-read-only";
 import {
   RevokeRole,
@@ -142,11 +143,13 @@ async function Issue271Page({
                     aria-label={tr("About visibility and revocation")}
                   >
                     <summary>{tr("About visibility and revocation")}</summary>
-                    <p className="muted staff-role-help">
-                      {tr(
-                        "These actions apply to saved roles independently of the role selection above.",
-                      )}
-                    </p>
+                    <InfoNote>
+                      <p className="muted staff-role-help">
+                        {tr(
+                          "These actions apply to saved roles independently of the role selection above.",
+                        )}
+                      </p>
+                    </InfoNote>
                     {rows.map(({ grant: g }) => (
                       <div className="staff-role-row" key={g.id}>
                         <div className="staff-role-row-info">

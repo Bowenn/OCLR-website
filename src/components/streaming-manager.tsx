@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import Link from "next/link";
 import { useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
@@ -188,16 +191,20 @@ export function StreamingManager({
   const tr = useAppTranslations();
   return (
     <section className="form-stack" aria-label={tr("Streaming tasks")}>
-      <p className="muted">
-        {tr(
-          "Streaming arrangements are internal. No streaming identity or link is published by booking a task.",
-        )}
-      </p>
-      <p className="muted small">
-        {tr(
-          "Same-start warnings cover this edition only. End times are unavailable; this is not a complete overlap check. Warnings do not block booking.",
-        )}
-      </p>
+      <InfoNote>
+        <p className="muted">
+          {tr(
+            "Streaming arrangements are internal. No streaming identity or link is published by booking a task.",
+          )}
+        </p>
+      </InfoNote>
+      <InfoNote>
+        <p className="muted small">
+          {tr(
+            "Same-start warnings cover this edition only. End times are unavailable; this is not a complete overlap check. Warnings do not block booking.",
+          )}
+        </p>
+      </InfoNote>
       {detail ? (
         <Link href={`/admin/tournaments/${slug}/streaming?view=mine`}>
           {tr("My streaming tasks")}

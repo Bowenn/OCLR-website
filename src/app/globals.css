@@ -5839,3 +5839,16 @@ button.staff-role-save {
 .staff-role-group .staff-role-option {
   padding-block: 0.25rem;
 }
+
+.profile-info-trigger.profile-info-inline {
+  position: static;
+  display: inline-grid;
+  vertical-align: middle;
+  flex: 0 0 auto;
+  margin-block: 0.25rem;
+}
+.profile-info-popover .page-notes {
+  margin-block-start: 0;
+  padding-block-start: 0;
+  border-block-start: 0;
+}

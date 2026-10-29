@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppTranslations } from "@/i18n/shared";
@@ -109,9 +112,11 @@ export function SeasonCountdown({
         </>
       )}
       {!clock?.target && (
-        <p className="muted small">
-          {tr("Individual entry. Captain-led team draft.")}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr("Individual entry. Captain-led team draft.")}
+          </p>
+        </InfoNote>
       )}
     </div>
   );

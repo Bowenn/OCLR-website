@@ -1,3 +1,4 @@
+import { InfoNote } from "@/components/info-note";
 import { historicalPage } from "@/components/historical-archive";
 import { MatchDetailsView } from "@/components/match-details";
 import { PageHeading } from "@/components/ui";
@@ -106,7 +107,11 @@ async function Issue271Page({
                     value0: teamName(result.winnerTeamId),
                   })}
             </p>
-            {result.publicNote && <p className="notice">{result.publicNote}</p>}
+            {result.publicNote && (
+              <InfoNote>
+                <p className="notice">{result.publicNote}</p>
+              </InfoNote>
+            )}
             <a
               className="text-link"
               href={result.mpUrl}
@@ -122,11 +127,13 @@ async function Issue271Page({
             </p>
           </>
         ) : (
-          <p className="muted">
-            {tr(
-              "Scores and source links appear after separate review, approval and publication.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="muted">
+              {tr(
+                "Scores and source links appear after separate review, approval and publication.",
+              )}
+            </p>
+          </InfoNote>
         )}
       </section>
       <MatchDetailsView

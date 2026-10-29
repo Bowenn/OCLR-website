@@ -5,9 +5,11 @@ import { useId, useRef, type ReactNode } from "react";
 export function ProfileInfo({
   label,
   children,
+  inline = false,
 }: {
   label: string;
   children: ReactNode;
+  inline?: boolean;
 }) {
   const id = useId();
   const panel = useRef<HTMLDivElement>(null);
@@ -15,7 +17,7 @@ export function ProfileInfo({
     <>
       <button
         type="button"
-        className="profile-info-trigger"
+        className={`profile-info-trigger${inline ? " profile-info-inline" : ""}`}
         aria-label={label}
         title={label}
         popoverTarget={id}

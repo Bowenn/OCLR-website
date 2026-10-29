@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { LoadingRegion } from "./loading-region";
 
 import { useState, type FormEvent } from "react";
@@ -217,9 +220,11 @@ export function DeveloperAccess({
       )}
       <section aria-labelledby="developer-existing">
         <h2 id="developer-existing">{tr("Your API access")}</h2>
-        <p className="muted small">
-          {tr("Up to 50 recent entries are shown. Times are in UTC.")}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr("Up to 50 recent entries are shown. Times are in UTC.")}
+          </p>
+        </InfoNote>
         {tokens.length ? (
           <div className="stack">
             {tokens.map((entry) => (

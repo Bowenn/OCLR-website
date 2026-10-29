@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { ReadOnlyFields } from "./staff-read-only";
 import Link from "next/link";
 import { useState } from "react";
@@ -195,11 +198,13 @@ export function ArchiveImporter({
             "Import source records into an unpublished, completed edition. Review the saved preview, then publish the tournament separately.",
           )}
         </p>
-        <p className="muted">
-          {tr(
-            "Archive identities do not create accounts, registrations or staff permissions.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted">
+            {tr(
+              "Archive identities do not create accounts, registrations or staff permissions.",
+            )}
+          </p>
+        </InfoNote>
         <Link href={`/admin/tournaments/${slug}/settings`}>
           {tr("Tournament settings")}
         </Link>

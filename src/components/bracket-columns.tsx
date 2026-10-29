@@ -1,4 +1,5 @@
-"use client";
+import { InfoNote } from "./info-note";
+("use client");
 
 import { TeamAvatar } from "./team-avatar";
 import { useAppTranslations } from "@/i18n/shared";
@@ -87,13 +88,16 @@ export function BracketColumns({
         </div>
       )}
       {!flat && (
-        <p className="muted small">
-          {renderMatch
-            ? tr(
-                "Scroll across rounds. Switch to Schedule for a chronological list.",
-              )
-            : tr("Scroll across rounds.")}
-        </p>
+        <InfoNote>
+          {" "}
+          <p className="muted small">
+            {renderMatch
+              ? tr(
+                  "Scroll across rounds. Switch to Schedule for a chronological list.",
+                )
+              : tr("Scroll across rounds.")}
+          </p>
+        </InfoNote>
       )}
       <div
         className={`bracket-scroll${flat ? " bracket-group-scroll" : ""}`}

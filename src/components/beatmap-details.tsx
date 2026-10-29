@@ -1,3 +1,4 @@
+import { InfoNote } from "@/components/info-note";
 import { useAppTranslations } from "@/i18n/shared";
 import type { BeatmapMetadata, MappoolCategory } from "@/lib/mappool-model";
 import {
@@ -96,15 +97,20 @@ export function BeatmapDetails({
           )
         )}
         {fetchedAt && (
-          <p className="muted small">
-            {tr("Official osu! API · Beatmap ")}
-            {beatmapId} {tr(" / Set ")}
-            {m.setId} {tr(" · Fetched")}{" "}
-            <time dateTime={fetchedAt}>
-              {new Date(fetchedAt).toISOString().replace("T", " ").slice(0, 19)}{" "}
-              UTC
-            </time>
-          </p>
+          <InfoNote>
+            <p className="muted small">
+              {tr("Official osu! API · Beatmap ")}
+              {beatmapId} {tr(" / Set ")}
+              {m.setId} {tr(" · Fetched")}{" "}
+              <time dateTime={fetchedAt}>
+                {new Date(fetchedAt)
+                  .toISOString()
+                  .replace("T", " ")
+                  .slice(0, 19)}{" "}
+                UTC
+              </time>
+            </p>
+          </InfoNote>
         )}
       </div>
     </div>

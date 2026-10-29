@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { LoadingRegion } from "./loading-region";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { usePendingRefresh } from "./use-pending-refresh";
@@ -313,11 +316,13 @@ export function MappoolReplays({
           {slotLabel(entry.category, entry.position)} · {tr("Beatmap ID")}{" "}
           {entry.beatmapId}
         </p>
-        <p className="notice small">
-          {tr(
-            "Replay player names are file contents, not verified account identities. Replays do not change registrations, Tiers or results.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="notice small">
+            {tr(
+              "Replay player names are file contents, not verified account identities. Replays do not change registrations, Tiers or results.",
+            )}
+          </p>
+        </InfoNote>
         {!open && (
           <p className="notice">
             {tr(
@@ -396,11 +401,13 @@ export function MappoolReplays({
         </ul>
         {canManage && (
           <form onSubmit={upload} className="form-stack" aria-busy={pending}>
-            <p id={`${id}-help`} className="small muted">
-              {tr(
-                "Stable .osr only (version 20140721 or later; no lazer). Up to 8 MiB per file and 10 files per map. Upload one file at a time.",
-              )}
-            </p>
+            <InfoNote>
+              <p id={`${id}-help`} className="small muted">
+                {tr(
+                  "Stable .osr only (version 20140721 or later; no lazer). Up to 8 MiB per file and 10 files per map. Upload one file at a time.",
+                )}
+              </p>
+            </InfoNote>
             <label className="field">
               <span>{tr("Replay file")}</span>
               <input

@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { LoadingRegion } from "./loading-region";
 import { useStaffReadOnly } from "./staff-read-only";
 import { useState } from "react";
@@ -77,11 +80,13 @@ export function BwsReview({ slug, id }: { slug: string; id: string }) {
           <BwsSummary value={data.summary} />
           {data.snapshot.profile.badges?.length ? (
             <>
-              <p className="small muted">
-                {tr(
-                  "Classify only previous tournament prize badges in their actual ruleset. Contributor, mapper and contest awards are not tournament prizes.",
-                )}
-              </p>
+              <InfoNote>
+                <p className="small muted">
+                  {tr(
+                    "Classify only previous tournament prize badges in their actual ruleset. Contributor, mapper and contest awards are not tournament prizes.",
+                  )}
+                </p>
+              </InfoNote>
               <ol className="badge-review-list">
                 {data.snapshot.profile.badges.map((b, i) => (
                   <li key={i}>

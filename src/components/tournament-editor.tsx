@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { ReadOnlyFields } from "./staff-read-only";
 import { appearanceLabel } from "@/i18n/appearance";
 import { appearances, type Appearance } from "@/lib/preferences";
@@ -404,11 +407,13 @@ function General({ data, saved }: EditorProps) {
             ))}
           </select>
         </label>
-        <p className="muted small">
-          {tr(
-            "Use tournament/site defaults: the current tournament takes priority, otherwise use the site default. Explicit visitor preferences take priority over both.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr(
+              "Use tournament/site defaults: the current tournament takes priority, otherwise use the site default. Explicit visitor preferences take priority over both.",
+            )}
+          </p>
+        </InfoNote>
         <Save
           data={data}
           saved={saved}
@@ -451,11 +456,13 @@ function Rules({ data, saved }: EditorProps) {
     <ReadOnlyFields>
       <section className="panel form-stack">
         <h2>{tr("Rules & eligibility")}</h2>
-        <p className="muted small">
-          {tr(
-            "Optional. Use a new version when rules change; past acknowledgments are preserved.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr(
+              "Optional. Use a new version when rules change; past acknowledgments are preserved.",
+            )}
+          </p>
+        </InfoNote>
         {
           <label className="check-field">
             <input
@@ -470,11 +477,13 @@ function Rules({ data, saved }: EditorProps) {
           <>
             <fieldset className="settings-card form-stack">
               <legend>{tr("Rules release")}</legend>
-              <p className="small muted">
-                {tr(
-                  "This is the published identifier players acknowledge. Use a new identifier when rules change; past acknowledgments remain attached to the original release.",
-                )}
-              </p>
+              <InfoNote>
+                <p className="small muted">
+                  {tr(
+                    "This is the published identifier players acknowledge. Use a new identifier when rules change; past acknowledgments remain attached to the original release.",
+                  )}
+                </p>
+              </InfoNote>
               <label className="field">
                 <span>{tr("Rules version")}</span>
                 <input
@@ -585,12 +594,14 @@ function Rules({ data, saved }: EditorProps) {
         </fieldset>
         <fieldset className="settings-card form-stack">
           <legend>{tr("Automatic eligibility")}</legend>
-          <p className="small muted">
-            {"osu!standard"} ·{" "}
-            {tr(
-              "All configured limits apply together, inclusively. Empty fields impose no restriction.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="small muted">
+              {"osu!standard"} ·{" "}
+              {tr(
+                "All configured limits apply together, inclusively. Empty fields impose no restriction.",
+              )}
+            </p>
+          </InfoNote>
           <div className="form-grid">
             {(["minPp", "maxPp", "minRank", "maxRank"] as const).map((key) => (
               <label className="field" key={key}>
@@ -624,11 +635,13 @@ function Rules({ data, saved }: EditorProps) {
         </fieldset>
         <fieldset className="settings-card form-stack">
           <legend>{tr("Rank grace range (manual review)")}</legend>
-          <p className="small muted">
-            {tr(
-              "Optional organizer-approved numeric rank range. Rank-only failures in this range may submit for review; PP limits still apply. No application is automatically accepted or deferred.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="small muted">
+              {tr(
+                "Optional organizer-approved numeric rank range. Rank-only failures in this range may submit for review; PP limits still apply. No application is automatically accepted or deferred.",
+              )}
+            </p>
+          </InfoNote>
           <div className="form-grid">
             <label className="field">
               <span>{tr("Grace minimum numeric rank")}</span>
@@ -731,11 +744,13 @@ function Registration({ data, saved }: EditorProps) {
             />
           </div>
         )}
-        <p className="muted small">
-          {tr(
-            "Enable ahead of time; applications are accepted only within this window.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr(
+              "Enable ahead of time; applications are accepted only within this window.",
+            )}
+          </p>
+        </InfoNote>
         <fieldset className="settings-card form-stack">
           <legend>{tr("Registration window & enablement")}</legend>
           <label className="check-field">
@@ -830,16 +845,20 @@ function Registration({ data, saved }: EditorProps) {
               })}
             </p>
             <div className="form-stack">
-              <p className="muted small">
-                {tr(
-                  "Collect only necessary information. Saved applications retain their original answers.",
-                )}
-              </p>
-              <p className="muted small">
-                {tr(
-                  "Changes to question types, options or labels only affect future applications. Submitted answers retain their original version.",
-                )}
-              </p>
+              <InfoNote>
+                <p className="muted small">
+                  {tr(
+                    "Collect only necessary information. Saved applications retain their original answers.",
+                  )}
+                </p>
+              </InfoNote>
+              <InfoNote>
+                <p className="muted small">
+                  {tr(
+                    "Changes to question types, options or labels only affect future applications. Submitted answers retain their original version.",
+                  )}
+                </p>
+              </InfoNote>
               {questions.map((q, i) => (
                 <fieldset
                   className="application-question form-stack"
@@ -965,12 +984,16 @@ function Schedule({ data, saved }: EditorProps) {
     <ReadOnlyFields>
       <section className="panel form-stack">
         <h2>{tr("Competition times and milestones")}</h2>
-        <p className="muted small">
-          {tr("Registration dates are maintained in Registration settings.")}
-        </p>
-        <p className="muted small">
-          {tr("Leave unconfirmed dates blank for TBA.")}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr("Registration dates are maintained in Registration settings.")}
+          </p>
+        </InfoNote>
+        <InfoNote>
+          <p className="muted small">
+            {tr("Leave unconfirmed dates blank for TBA.")}
+          </p>
+        </InfoNote>
         {schedule.map((s, i) => (
           <fieldset key={s.id} className="form-stack">
             <legend>
@@ -1183,11 +1206,13 @@ function Publication({
             saved("Publication updated.");
           }}
         />
-        <p className="muted small">
-          {tr(
-            "Historical tournaments are retained. Mark an edition Completed in General settings; use visibility controls to archive it privately.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr(
+              "Historical tournaments are retained. Mark an edition Completed in General settings; use visibility controls to archive it privately.",
+            )}
+          </p>
+        </InfoNote>
         {canDeleteDraft && isBlankTournamentDraft(data.edition) && (
           <ConfirmMutation
             label={tr("Delete unused draft")}
