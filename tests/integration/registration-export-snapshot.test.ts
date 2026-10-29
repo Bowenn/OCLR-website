@@ -30,7 +30,7 @@ const config = (label: string, value: string) => ({
   rules: null,
   eligibility: null,
   registration: {
-    ...edition.registration,
+    ...edition.registration!,
     questions: [
       {
         id: "choice",

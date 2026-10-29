@@ -150,6 +150,10 @@ async function exportApplicationSnapshot(actor: User, input: unknown) {
       ]),
     ).values(),
   ];
+  const knownRevisions = selectedRevisions.filter(
+    (revision): revision is { slug: string; version: number } =>
+      revision.version !== null,
+  );
   const revisions = await db()
     .select({
       slug: editionRevisions.editionSlug,
@@ -161,7 +165,7 @@ async function exportApplicationSnapshot(actor: User, input: unknown) {
     .from(editionRevisions)
     .where(
       or(
-        ...selectedRevisions.map((revision) =>
+        ...knownRevisions.map((revision) =>
           and(
             eq(editionRevisions.editionSlug, revision.slug),
             eq(editionRevisions.version, revision.version),
