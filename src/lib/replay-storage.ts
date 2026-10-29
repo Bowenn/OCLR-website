@@ -1,15 +1,8 @@
+import { mediaDirectory } from "./media-directory";
 import { randomUUID, createHash } from "node:crypto";
 import { constants } from "node:fs";
-import {
-  mkdir,
-  open,
-  rename,
-  unlink,
-  lstat,
-  readdir,
-  realpath,
-} from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
+import { open, rename, unlink, lstat, readdir } from "node:fs/promises";
+import { join } from "node:path";
 import { HttpError } from "./http";
 import {
   REPLAY_MAX_BYTES,
@@ -17,34 +10,7 @@ import {
   REPLAY_STORAGE_MAX_FILES,
 } from "./replay-model";
 const keyPattern = /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/;
-export async function replayDirectory() {
-  const root = process.env.OCLR_MEDIA_DIR;
-  if (
-    !root?.startsWith("/") ||
-    /\/(?:releases|public)(?:\/|$)/.test(resolve(root))
-  )
-    throw new HttpError(
-      503,
-      "Configure durable private replay storage outside application releases.",
-    );
-  const resolved = await realpath(root).catch(() => "");
-  if (
-    !resolved ||
-    resolved !== resolve(root) ||
-    resolved === process.cwd() ||
-    resolved.startsWith(process.cwd() + sep)
-  )
-    throw new HttpError(
-      503,
-      "Configure durable private replay storage outside application releases.",
-    );
-  const directory = join(resolved, "replays");
-  await mkdir(directory, { mode: 0o700, recursive: true });
-  const stat = await lstat(directory);
-  if (!stat.isDirectory() || stat.isSymbolicLink())
-    throw new HttpError(503, "Replay storage is unavailable.");
-  return directory;
-}
+export const replayDirectory = () => mediaDirectory("replays");
 function replayPath(directory: string, key: string) {
   if (!keyPattern.test(key)) throw new HttpError(404, "Replay not found.");
   return join(directory, `${key}.osr`);

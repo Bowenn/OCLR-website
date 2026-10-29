@@ -149,6 +149,9 @@ phase='building and checking the new release'
 run bash scripts/production.sh prepare --apply
 phase='checking database target and migration history'
 run database inspect
+if [[ -n ${OCLR_MEDIA_DIR-} ]]; then
+  run node --import tsx scripts/check-media-directory.ts "$source_dir"
+fi
 log 'Stopping writes before backup/migration; this is a maintenance-window deployment.'
 phase='stopping service writes'
 stopped=true
@@ -156,7 +159,6 @@ run sudo -n "$systemctl_bin" stop "$service"
 phase='backing up and applying database migrations'
 # Images share the same stopped-write backup boundary as their database references.
 if [[ -n ${OCLR_MEDIA_DIR-} ]]; then
-  [[ "$OCLR_MEDIA_DIR" == /* && "$OCLR_MEDIA_DIR" != *"/releases/"* && "$OCLR_MEDIA_DIR" != */releases && ! -L "$OCLR_MEDIA_DIR" ]] || fail 'Media storage must be a durable absolute directory outside releases.'
   if [[ -d "$OCLR_MEDIA_DIR" ]]; then
     tar -cf "$backup_dir/team-media.tar" -C "$OCLR_MEDIA_DIR" .
     tar -tf "$backup_dir/team-media.tar" >/dev/null

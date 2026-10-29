@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
@@ -49,7 +49,9 @@ describe("bounded persistent team image storage", () => {
     });
   });
   it("retains the same opaque reference across release changes and safely removes replaced files", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "oclr-team-media-test-"));
+    const directory = await realpath(
+      await mkdtemp(join(tmpdir(), "oclr-team-media-test-")),
+    );
     vi.stubEnv("OCLR_MEDIA_DIR", directory);
     try {
       const bytes = await sharp({
