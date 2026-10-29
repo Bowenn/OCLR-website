@@ -28,6 +28,24 @@ function fact(overrides: Partial<PublishedPlayer> = {}): PublishedPlayer {
   };
 }
 describe("dashboard historical participation", () => {
+  it("shows recorded tiers and literal source roles without inventing a missing tier", () => {
+    const records = playerHistoryModel(
+      uid,
+      [
+        fact({ tier: 4 }),
+        fact({ username: "Vice", sourceRole: "VICE", tier: null }),
+        fact({ username: "Unknown", tier: null }),
+        fact({ username: "Captain", role: "captain", tier: 0 }),
+      ],
+      tournaments,
+    );
+    const html = renderToStaticMarkup(<PlayerHistory history={records} />);
+    expect(html).toContain("Tier 4");
+    expect(html).toContain("VICE");
+    expect(html).toContain("Player");
+    expect(html).not.toContain("Tier 0");
+    expect(html).not.toContain("Tier null");
+  });
   it("sorts by saved season, puts unknown seasons last and does not match names", () => {
     const records = playerHistoryModel(
       uid,
