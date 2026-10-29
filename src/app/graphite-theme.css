@@ -200,7 +200,7 @@ html[data-appearance="graphite-arena"]
 html[data-appearance="graphite-arena"]
   .themed-site
   .archive-overview-summary.has-visual {
-  align-items: stretch;
+  align-items: center;
   gap: 24px;
 }
 html[data-appearance="graphite-arena"]

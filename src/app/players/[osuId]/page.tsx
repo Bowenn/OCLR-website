@@ -183,16 +183,19 @@ async function ProfileContent({
                 <span className="badge">
                   {p.participation === "historical"
                     ? p.role === "captain"
-                      ? tr("Captain")
+                      ? "Captain"
                       : p.role === "coach"
                         ? tr("Coach")
                         : p.role === "free_agent"
                           ? tr("Free agent")
-                          : tr("Player")
+                          : (p.sourceRole ??
+                            (p.tier != null && p.tier > 0
+                              ? `Tier ${p.tier}`
+                              : tr("Player")))
                     : p.participation === "coach"
                       ? tr("Coach")
                       : p.captain
-                        ? tr("Captain")
+                        ? "Captain"
                         : p.participation === "finalized_roster"
                           ? tr("Finalized roster player")
                           : tr("Accepted player")}
@@ -227,9 +230,6 @@ async function ProfileContent({
                   <span className="muted small">
                     {tr("Recorded placing")}: {p.placing}
                   </span>
-                )}
-                {p.sourceReference && (
-                  <span className="muted small">{p.sourceReference}</span>
                 )}
               </div>
             </li>

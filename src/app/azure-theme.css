@@ -148,7 +148,7 @@ html[data-appearance="azure-brush"] .themed-site .page-heading::after {
 html[data-appearance="azure-brush"]
   .themed-site
   .archive-overview-summary.has-visual {
-  align-items: stretch;
+  align-items: center;
   gap: 24px;
 }
 html[data-appearance="azure-brush"] .themed-site .archive-key-visual {

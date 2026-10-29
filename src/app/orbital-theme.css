@@ -170,7 +170,7 @@ html[data-appearance="orbital-pulse"]
 html[data-appearance="orbital-pulse"]
   .themed-site
   .archive-overview-summary.has-visual {
-  align-items: stretch;
+  align-items: center;
   gap: 24px;
 }
 html[data-appearance="orbital-pulse"] .themed-site .archive-key-visual {

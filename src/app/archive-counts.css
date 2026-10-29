@@ -273,3 +273,22 @@ html[data-appearance="glassmorphism"]
     min-height: 3rem;
   }
 }
+
+/* Season metrics share the compact S8–S10 geometry and square corners. */
+html:is(
+    [data-appearance="chromatic-origins"],
+    [data-appearance="verdant-prelude"],
+    [data-appearance="frost-waltz"],
+    [data-appearance="azure-brush"],
+    [data-appearance="prism-overture"],
+    [data-appearance="orbital-pulse"],
+    [data-appearance="graphite-arena"],
+    [data-appearance="sakura-circuit"],
+    [data-appearance="glacier-blue"],
+    [data-appearance="skyline-pop"]
+  )
+.themed-site
+.archive-overview-summary
+.archive-counts {
+  --archive-bar-radius: 0;
+}

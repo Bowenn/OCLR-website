@@ -1,4 +1,5 @@
 import { completeS5Paths, isS5Source, s5KnockoutOrder } from "./s5-bracket";
+import { completeS3Paths, isS3Source, s3KnockoutOrder } from "./s3-bracket";
 import { completeS2Paths } from "./s2-bracket";
 import {
   archiveWinner,
@@ -14,6 +15,7 @@ export function archiveBracket(
   detailsHref: (id: string) => string,
 ): ResolvedBracket | null {
   const s5Source = isS5Source(archive.sourceUrl);
+  const s3Source = isS3Source(archive.sourceUrl);
   const s2Source =
     /^https:\/\/docs\.google\.com\/spreadsheets\/d\/1lQrHwsbPb5nC-MDPbHSNkL2RFD1eEcS-LbGonEr10QY(?:\/edit)?$/.test(
       archive.sourceUrl,
@@ -57,7 +59,8 @@ export function archiveBracket(
       (s5Source &&
         /^a(?:[1-9]|1[0-9]|2[0-4])$/.test(m.id) &&
         /^前四[輪轮]/.test(m.stage)) ||
-      ((isS1Archive(archive) || s2Source) && /^小组赛 [AB]组$/.test(m.stage)) ||
+      ((isS1Archive(archive) || s2Source || s3Source) &&
+        /^小组赛 [AB]组$/.test(m.stage)) ||
       // S4 records four group-stage rounds without reliable group standings.
       // Keep those source rounds, without inventing groups or advancement.
       (s4Source && /^小组赛第[1-4]轮$/.test(m.stage)) ||
@@ -129,15 +132,24 @@ export function archiveBracket(
       r.matches.every((m) => s2Row(m) !== null),
     );
   if (s2Source) completeS2Paths([...rounds.values()].flatMap((r) => r.matches));
+  const s3Matches = [...rounds.values()].flatMap((r) => r.matches);
+  if (s3Source && completeS3Paths(s3Matches)) {
+    rounds.clear();
+    for (const [column, id] of s3KnockoutOrder.entries()) {
+      const label = archive.matches.find((m) => m.id === id)!.stage;
+      const round = rounds.get(label) ?? { column, label, matches: [] };
+      round.matches.push(s3Matches.find((m) => m.id === id)!);
+      rounds.set(label, round);
+    }
+  }
   const s5Matches = [...rounds.values()].flatMap((r) => r.matches);
   if (s5Source && completeS5Paths(s5Matches)) {
     rounds.clear();
     for (const [column, id] of s5KnockoutOrder.entries()) {
-      const match = s5Matches.find((m) => m.id === id)!;
       rounds.set(id, {
         column,
         label: archive.matches.find((m) => m.id === id)!.stage,
-        matches: [match],
+        matches: [s5Matches.find((m) => m.id === id)!],
       });
     }
   }

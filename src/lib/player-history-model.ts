@@ -11,6 +11,8 @@ export type ParticipationExperience = {
   username: string;
   role: NonNullable<PublishedPlayer["role"]> | null;
   team: PublishedPlayer["team"];
+  tier?: number | null;
+  sourceRole?: "VICE";
 };
 export type ParticipationHistory = {
   editionSlug: string;
@@ -36,7 +38,13 @@ export function playerHistoryModel(
         : [];
     const experiences = new Map<string, ParticipationExperience>();
     function add(value: ParticipationExperience) {
-      const key = JSON.stringify([value.username, value.role, value.team?.id]);
+      const key = JSON.stringify([
+        value.username,
+        value.role,
+        value.team?.id,
+        value.tier,
+        value.sourceRole,
+      ]);
       if (!experiences.has(key)) experiences.set(key, value);
     }
     for (const p of visible) {
@@ -52,6 +60,8 @@ export function playerHistoryModel(
                 ? "player"
                 : null),
         team: p.team,
+        tier: p.tier,
+        sourceRole: p.sourceRole,
       });
       for (const team of p.coachedTeams ?? [])
         add({ username: p.username, role: "coach", team });

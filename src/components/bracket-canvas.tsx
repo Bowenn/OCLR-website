@@ -31,19 +31,23 @@ export function BracketCanvas({
   group,
   editionSlug,
   teamUrls,
-  showAppearanceLinks,
 }: {
   group: ResolvedBracket["groups"][number];
   editionSlug: string;
   teamUrls?: Record<string, string>;
-  showAppearanceLinks: boolean;
 }) {
   const tr = useAppTranslations();
-  const data = useMemo(() => doubleBracketMatches(group), [group]);
+  // Recorded appearances are not a conventional double-elimination tree.
+  // The library can accept these graphs but omit disconnected branches and
+  // cross-bracket links. Render every recorded match in chronological columns.
   const historical = group.rounds.some((r) =>
     r.matches.some((m) =>
       m.slots.some((s) => s.kind === "team" && s.sourceMatchId),
     ),
+  );
+  const data = useMemo(
+    () => (historical ? null : doubleBracketMatches(group)),
+    [group, historical],
   );
   const sources = group.rounds.flatMap((round) =>
     round.matches.flatMap((match) =>
@@ -75,11 +79,13 @@ export function BracketCanvas({
   if (!data)
     return (
       <div className={historical ? "bracket-library-references" : undefined}>
-        <p className="muted small">
-          {tr(
-            "Some bracket sources are missing. Recorded matches are shown without invented advancement links.",
-          )}
-        </p>
+        {!historical && (
+          <p className="muted small">
+            {tr(
+              "Some bracket sources are missing. Recorded matches are shown without invented advancement links.",
+            )}
+          </p>
+        )}
         {historical && (
           <p className="muted small">
             {tr("Recorded appearance only (unconfirmed progression)")}
@@ -92,25 +98,7 @@ export function BracketCanvas({
             formatLabel: "Historical archive",
             updatedAt: "2026-01-01T00:00:00Z",
             source: { label: "Source", url: null },
-            groups: [
-              {
-                ...group,
-                layout: group.layout,
-                rounds: group.rounds.map((r) => ({
-                  ...r,
-                  matches: r.matches.map((m) => ({
-                    ...m,
-                    slots: m.slots.map((s) => ({
-                      ...s,
-                      sourceMatchId:
-                        s.kind === "team" && !showAppearanceLinks
-                          ? null
-                          : s.sourceMatchId,
-                    })) as typeof m.slots,
-                  })),
-                })),
-              },
-            ],
+            groups: [group],
           }}
           teamUrls={teamUrls}
           hideGroupTabs
@@ -202,7 +190,7 @@ export function BracketCanvas({
     <>
       <h2 className="sr-only">{group.label}</h2>
       <div
-        className={`bracket-library-scroll${historical ? " bracket-library-references" : ""}${historical && !showAppearanceLinks ? " bracket-library-no-lines" : ""}`}
+        className={`bracket-library-scroll${historical ? " bracket-library-references" : ""}`}
         role="region"
         aria-label={tr("{value0} bracket; scroll horizontally", {
           value0: group.label,
@@ -227,38 +215,6 @@ export function BracketCanvas({
           }}
         />
       </div>
-      <details className="bracket-source-details">
-        <summary>{tr("Connection sources")}</summary>
-        <ul>
-          {data.edges.map((edge) => {
-            const source = [...data.upper, ...data.lower].find(
-                (m) => m.id === edge.sourceId,
-              )!,
-              target = [...data.upper, ...data.lower].find(
-                (m) => m.id === edge.targetId,
-              )!;
-            return (
-              <li key={edge.id}>
-                {source.original.label} → {target.original.label} ·{" "}
-                {target.original.slots[edge.targetSlot].label}
-                {edge.kind === "appearance" && (
-                  <span className="match-source">
-                    {tr("Recorded appearance only (unconfirmed progression)")}
-                  </span>
-                )}
-              </li>
-            );
-          })}
-          {[...data.upper, ...data.lower]
-            .filter((match) => match.original.note)
-            .map((match) => (
-              <li key={`note-${match.id}`}>
-                {match.original.label}
-                <p>{match.original.note}</p>
-              </li>
-            ))}
-        </ul>
-      </details>
     </>
   );
 }
