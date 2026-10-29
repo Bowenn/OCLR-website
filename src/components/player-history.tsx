@@ -49,18 +49,23 @@ export function PlayerHistory({
                       experience.username,
                       experience.role,
                       experience.team?.id,
+                      experience.tier,
+                      experience.sourceRole,
                     ])}
                   >
                     <span className={styles.name}>{experience.username}</span>
                     <span className="badge">
                       {experience.role === "captain"
-                        ? tr("Captain")
+                        ? "Captain"
                         : experience.role === "coach"
                           ? tr("Coach")
                           : experience.role === "free_agent"
                             ? tr("Free agent")
                             : experience.role === "player"
-                              ? tr("Player")
+                              ? (experience.sourceRole ??
+                                (experience.tier != null && experience.tier > 0
+                                  ? `Tier ${experience.tier}`
+                                  : tr("Player")))
                               : tr("Role not recorded")}
                     </span>
                     {experience.team ? (

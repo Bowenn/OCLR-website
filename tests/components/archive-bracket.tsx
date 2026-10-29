@@ -15,7 +15,6 @@ createRoot(document.getElementById("root")!).render(
     <BracketCanvas
       group={bracket.groups[0]}
       editionSlug="s8"
-      showAppearanceLinks
     />
   </NextIntlClientProvider>,
 );

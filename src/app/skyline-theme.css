@@ -140,6 +140,13 @@ html[data-appearance="skyline-pop"] .themed-site .archive-counts dd {
 }
 html[data-appearance="skyline-pop"]
   .themed-site
+  .archive-overview-summary
+  .archive-counts
+  > div {
+  border-inline-end: 1px solid var(--site-border);
+}
+html[data-appearance="skyline-pop"]
+  .themed-site
   .archive-counts
   > div:last-child {
   border-bottom: 0;

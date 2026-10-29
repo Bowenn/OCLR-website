@@ -15814,6 +15814,7 @@
                   "type": "string",
                   "enum": ["captain", "player", "coach", "free_agent"]
                 },
+                "sourceRole": { "type": "string", "const": "VICE" },
                 "sourceReference": { "type": "string" },
                 "placing": {
                   "anyOf": [
