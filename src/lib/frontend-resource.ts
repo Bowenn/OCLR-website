@@ -19,9 +19,20 @@ export async function frontendResource<T>(
     osuId: input.playerId ?? input.osuId,
     id: input.id ?? input.fixtureId ?? input.entryId,
   };
-  const path = resource.path.replace(/\{(\w+)\}/g, (_, key) =>
-    String(values[key]),
-  );
+  const path = resource.path.replace(/\{(\w+)\}/g, (_, key: string) => {
+    const value = values[key];
+    if (
+      (typeof value !== "string" && typeof value !== "number") ||
+      (typeof value === "number" && !Number.isFinite(value)) ||
+      String(value).trim() === "" ||
+      ["undefined", "null"].includes(String(value))
+    ) {
+      const error = new RemoteDataError("INVALID_REQUEST", 400);
+      error.message = `Missing or invalid path parameter "${key}" for remote resource "${id}".`;
+      throw error;
+    }
+    return encodeURIComponent(String(value));
+  });
   const query = new URLSearchParams();
   const filters =
     input.input && typeof input.input === "object"
