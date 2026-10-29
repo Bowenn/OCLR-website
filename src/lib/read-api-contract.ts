@@ -440,6 +440,7 @@ export const oclrParticipationSchema = z
       .array(z.object({ id: text, name: text }).strict())
       .optional(),
     role: z.enum(["captain", "player", "coach", "free_agent"]).optional(),
+    sourceRole: z.literal("VICE").optional(),
     sourceReference: text.optional(),
     placing: z.number().int().positive().nullable().optional(),
   })

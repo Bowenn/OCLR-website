@@ -37,6 +37,7 @@ export type PublishedPlayer = {
     "accepted" | "captain" | "finalized_roster" | "coach" | "historical";
   coachedTeams?: { id: string; name: string }[];
   role?: "captain" | "player" | "coach" | "free_agent";
+  sourceRole?: "VICE";
   sourceReference?: string;
   placing?: number | null;
 } & Partial<
@@ -271,6 +272,7 @@ async function databasePublicPlayer(osuId: number, edition?: string) {
             teamId: r.teamId,
             role: "player" as const,
             tier: r.tier,
+            sourceRole: undefined,
           })),
       ),
     ];
@@ -298,6 +300,7 @@ async function databasePublicPlayer(osuId: number, edition?: string) {
           capturedOn: e.archive.capturedOn,
         },
         tier: person.tier,
+        sourceRole: person.sourceRole,
         sourceReference: person.source,
         placing:
           e.archive.standings.find((s) => s.teamId === person.teamId)?.rank ??
