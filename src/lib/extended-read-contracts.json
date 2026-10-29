@@ -108,17 +108,6 @@
       "required": ["id", "name", "source", "maps"],
       "additionalProperties": false
     },
-    "Read07a83bd4629a": {
-      "anyOf": [
-        { "type": "string", "const": "referee" },
-        { "type": "string", "const": "streamer" },
-        { "type": "string", "const": "admin" },
-        { "type": "string", "const": "mappooler" },
-        { "type": "string", "const": "developer" },
-        { "type": "string", "const": "tester" },
-        { "type": "string", "const": "replayer" }
-      ]
-    },
     "Read09b48386dce6": {
       "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/Read005c87721144" }]
     },
@@ -2763,6 +2752,18 @@
     "Reade8cf348ea76c": {
       "type": "array",
       "items": { "$ref": "#/$defs/Readf94df1533cb3" }
+    },
+    "Readeb08c8daa7ee": {
+      "anyOf": [
+        { "type": "string", "const": "referee" },
+        { "type": "string", "const": "streamer" },
+        { "type": "string", "const": "admin" },
+        { "type": "string", "const": "mappooler" },
+        { "type": "string", "const": "developer" },
+        { "type": "string", "const": "tester" },
+        { "type": "string", "const": "replayer" },
+        { "type": "string", "const": "designer" }
+      ]
     },
     "Readed79fffe39ce": {
       "type": "object",
@@ -6044,7 +6045,7 @@
                   "editionSlug": {
                     "anyOf": [{ "type": "null" }, { "type": "string" }]
                   },
-                  "role": { "$ref": "#/$defs/Read07a83bd4629a" },
+                  "role": { "$ref": "#/$defs/Readeb08c8daa7ee" },
                   "grantedBy": { "type": "number" },
                   "grantedAt": {
                     "type": "string",
@@ -6419,7 +6420,7 @@
       "items": {
         "type": "object",
         "properties": {
-          "role": { "$ref": "#/$defs/Read07a83bd4629a" },
+          "role": { "$ref": "#/$defs/Readeb08c8daa7ee" },
           "editionSlug": { "anyOf": [{ "type": "null" }, { "type": "string" }] }
         },
         "required": ["role", "editionSlug"],

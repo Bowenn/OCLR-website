@@ -2904,6 +2904,10 @@
     "m5deb5bf381db": "Edit latest message with this draft",
     "mcb30147eec19": "Discard draft",
     "m8a7525b1492f": "Notes",
+    "m8b6d8e40753a": "Designer",
+    "me71d5db1b82b": "Configure durable private media storage outside application releases and public roots.",
+    "mdd59ed97cc50": "Private media storage is unavailable.",
+    "designer": "Designer",
     "m9efeec7da2b8": "Competition times and milestones",
     "mf06d757a3e31": "Registration dates are maintained in Registration settings.",
     "m8707e7b94171": "Phase type",
@@ -2913,8 +2917,6 @@
     "mbabe9dda8503": "Start time",
     "m2e46006a5eeb": "End time",
     "m561d7790adea": "End time must not precede start time",
-    "mf7bd60bb5186": "TBA",
-    "me71d5db1b82b": "Configure durable private media storage outside application releases and public roots.",
-    "mdd59ed97cc50": "Private media storage is unavailable."
+    "mf7bd60bb5186": "TBA"
   }
 }
