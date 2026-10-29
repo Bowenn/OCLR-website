@@ -49,6 +49,7 @@ function failure(error: unknown, id: string, headers: Headers, head: boolean) {
     403: "FORBIDDEN",
     404: "NOT_FOUND",
     413: "RESOURCE_TOO_LARGE",
+    429: "RATE_LIMITED",
     503: "API_UNAVAILABLE",
   };
   const code =
