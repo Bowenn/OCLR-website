@@ -49,7 +49,7 @@ function Navigation({
   const legacyLinks = [
     ["", "Overview"],
     ["schedule", archived ? "Matches & results" : "Schedule"],
-    ["mappools", "Mappools"],
+    ["mappools", "Pools"],
     ["teams", "Teams"],
     ...(!archived ? [["results", "Results"]] : []),
     ["bracket", "Bracket"],
@@ -68,7 +68,7 @@ function Navigation({
         ["teams", "Teams"],
         ["draft", "Draft results"],
         ["schedule", "Schedule"],
-        ["mappools", "Mappools"],
+        ["mappools", "Pools"],
         ...(!archived || supportsArchiveStatistics(slug)
           ? [["statistics", "Statistics"]]
           : []),
