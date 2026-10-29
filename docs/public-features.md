@@ -64,3 +64,9 @@ Global Admins manage the About contributor list at `/admin/contributors` indepen
 The server checks global authorization and the saved revision, rejects duplicate identities, and saves the directory and its audit event in one transaction. A conflict keeps the saved list intact and asks the operator to refresh. Developer access is read-only; edition Admin grants do not authorize global edits. The central audit browser includes contributor changes under the site module. Public rendering projects only the published name and osu! ID.
 
 Migration `0043_contributor_directory` initializes the two formerly hardcoded, already-public contributors in their existing order. Repeated migrations/initialization do not duplicate or restore entries deliberately removed later. Apply it before serving this version. It does not create accounts or grant/revoke any role. New Chinese management copy awaits organizer review.
+
+Statistics map placements use competition ranking, matching group standings:
+equal best scores share a rank and the next rank skips the tied entries
+(1, 1, 3; or 1, 1, 1, 4). Average placement uses these shared ranks. Recorded
+zero scores remain valid; missing map results remain unknown. Team display
+filters retain the full comparison population within the selected round/map (#438).
