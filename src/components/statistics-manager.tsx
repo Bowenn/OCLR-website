@@ -340,8 +340,10 @@ export function StatisticsManager({
   initial: StatisticsWorkspace;
 }) {
   const tr = useAppTranslations();
-  const [data, setData] = useState(initial),
-    [fixtureId, setFixture] = useState("");
+  // Selection and loaded reviews commit together; a failed switch keeps the
+  // previous complete context, including its title, draft and write targets.
+  const [selection, setSelection] = useState({ data: initial, fixtureId: "" });
+  const { data, fixtureId } = selection;
   const [busy, setBusy] = useState(false),
     [message, setMessage] = useState(""),
     [errors, setErrors] = useState<string[]>([]);
@@ -352,7 +354,7 @@ export function StatisticsManager({
     const response = await fetch(url + "?fixture=" + encodeURIComponent(id));
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
-    setData(result);
+    setSelection({ data: result, fixtureId: id });
     return result as StatisticsWorkspace;
   }
   async function post(body: Record<string, unknown>) {
@@ -363,7 +365,7 @@ export function StatisticsManager({
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
-    setData(result);
+    setSelection((current) => ({ ...current, data: result }));
     return result as StatisticsWorkspace;
   }
   async function save(body: Record<string, unknown>) {
@@ -483,7 +485,6 @@ export function StatisticsManager({
           disabled={busy}
           onChange={(e) => {
             const id = e.target.value;
-            setFixture(id);
             setErrors([]);
             setMessage("");
             setActiveAction("load");
