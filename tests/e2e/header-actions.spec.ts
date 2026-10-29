@@ -255,7 +255,7 @@ test.describe("role-aware header actions and compact tournament context", () => 
     ]);
     await expect(
       publicNav.getByRole("link", { name: "Information page", exact: true }),
-    ).toHaveAttribute("href", /^\/tournaments(?:\/[^/]+)?$/);
+    ).toHaveAttribute("href", "/tournaments");
     await expect(
       publicNav.getByRole("link", { name: "OCLR Wiki", exact: true }),
     ).toHaveAttribute("href", "/wiki");
