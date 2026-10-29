@@ -26,13 +26,21 @@ export function PlayerMessageBoard({
   const [editText, setEditText] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PlayerMessage | null>(null);
+  const [recovery, setRecovery] = useState<{
+    draft: string;
+    latest: PlayerMessage | null;
+  } | null>(null);
+  const [editConflict, setEditConflict] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reloading, setReloading] = useState(false);
+  const pending = busy || reloading;
   const region = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const requestId = useRef<string | null>(null);
+  const readGeneration = useRef(0);
   const endpoint = `/api/tournaments/${edition}/players/${playerId}/messages`;
   const loadError = tr(
     "Messages could not be loaded. Please refresh to try again.",
@@ -47,12 +55,24 @@ export function PlayerMessageBoard({
     setLoaded(true);
   }, []);
   const load = useCallback(
-    async (signal?: AbortSignal): Promise<PlayerMessage[]> => {
-      const response = await fetch(endpoint, { signal });
-      if (!response.ok) throw new Error();
-      return response.json();
+    async (signal?: AbortSignal): Promise<PlayerMessage[] | null> => {
+      const generation = ++readGeneration.current;
+      try {
+        const response = await fetch(endpoint, { signal });
+        if (!response.ok) throw new Error();
+        const rows: PlayerMessage[] = await response.json();
+        if (signal?.aborted || generation !== readGeneration.current)
+          return null;
+        receive(rows);
+        return rows;
+      } catch {
+        if (signal?.aborted || generation !== readGeneration.current)
+          return null;
+        setError(loadError);
+        return null;
+      }
     },
-    [endpoint],
+    [endpoint, receive, loadError],
   );
   useEffect(() => {
     const controller = new AbortController();
@@ -63,11 +83,7 @@ export function PlayerMessageBoard({
       (entries) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;
         observer.disconnect();
-        load(controller.signal)
-          .then(receive)
-          .catch((error) => {
-            if (error.name !== "AbortError") setError(loadError);
-          });
+        void load(controller.signal);
       },
       { rootMargin: "200px" },
     );
@@ -88,11 +104,15 @@ export function PlayerMessageBoard({
   function close() {
     setOpen(false);
     setEditing(null);
+    setEditConflict(false);
     setDeleting(false);
     setError("");
     requestAnimationFrame(() => trigger.current?.focus());
   }
   function showMessage(message: PlayerMessage) {
+    // A confirmed write supersedes every list read already in flight.
+    readGeneration.current++;
+    setLoaded(true);
     setMessages((rows) =>
       rows.some((m) => m.id === message.id)
         ? rows.map((m) => (m.id === message.id ? message : m))
@@ -102,7 +122,7 @@ export function PlayerMessageBoard({
   }
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (busy) return;
+    if (pending || editConflict) return;
     setBusy(true);
     setError("");
     requestId.current ??= crypto.randomUUID();
@@ -122,6 +142,8 @@ export function PlayerMessageBoard({
       const result = await response.json();
       if (!response.ok) {
         setError(result.error);
+        if (editing && (response.status === 409 || response.status === 404))
+          setEditConflict(true);
         return;
       }
       showMessage(result);
@@ -137,7 +159,7 @@ export function PlayerMessageBoard({
     }
   }
   async function remove() {
-    if (busy || !current) return;
+    if (pending || !current) return;
     setBusy(true);
     setError("");
     try {
@@ -151,6 +173,8 @@ export function PlayerMessageBoard({
         setError(result.error);
         return;
       }
+      readGeneration.current++;
+      setLoaded(true);
       const remaining = messages.filter((m) => m.id !== current.id);
       setMessages(remaining);
       setCurrentId(
@@ -161,6 +185,34 @@ export function PlayerMessageBoard({
       setError(tr("This request could not be completed. Please try again."));
     } finally {
       setBusy(false);
+    }
+  }
+  async function reload() {
+    if (pending) return;
+    setReloading(true);
+    try {
+      const rows = await load();
+      if (!rows) return;
+      if (editing) {
+        const latest =
+          rows.find(
+            (message) =>
+              message.id === editing.id && message.authorId === viewerId,
+          ) ?? null;
+        // End the old edit session. A new version is only used after the user
+        // explicitly reviews the latest message and chooses to edit it.
+        setRecovery({ draft: editText, latest });
+        setEditing(null);
+        setEditConflict(false);
+        setOpen(false);
+        if (latest) setCurrentId(latest.id);
+      }
+      setDeleting(false);
+      setError("");
+    } catch {
+      setError(loadError);
+    } finally {
+      setReloading(false);
     }
   }
   return (
@@ -196,7 +248,7 @@ export function PlayerMessageBoard({
           >
             <button
               type="button"
-              disabled={busy || open || deleting}
+              disabled={pending || open || deleting}
               aria-label={tr("Previous message")}
               onClick={() =>
                 setCurrentId(
@@ -214,7 +266,7 @@ export function PlayerMessageBoard({
             </span>
             <button
               type="button"
-              disabled={busy || open || deleting}
+              disabled={pending || open || deleting}
               aria-label={tr("Next message")}
               onClick={() =>
                 setCurrentId(messages[(index + 1) % messages.length].id)
@@ -231,9 +283,10 @@ export function PlayerMessageBoard({
             className="secondary"
             aria-expanded={open}
             aria-controls={`${id}-form`}
-            disabled={busy || deleting}
+            disabled={pending || deleting}
             onClick={() => {
               setEditing(null);
+              setEditConflict(false);
               setOpen(true);
               setError("");
             }}
@@ -255,9 +308,10 @@ export function PlayerMessageBoard({
                 type="button"
                 className="secondary"
                 aria-label={tr("Edit message")}
-                disabled={busy}
+                disabled={pending}
                 onClick={() => {
                   setEditing(current);
+                  setEditConflict(false);
                   setEditText(current.text);
                   setOpen(true);
                   setError("");
@@ -269,7 +323,7 @@ export function PlayerMessageBoard({
                 type="button"
                 className="secondary"
                 aria-label={tr("Delete message")}
-                disabled={busy}
+                disabled={pending}
                 onClick={() => {
                   setDeleting(true);
                   setError("");
@@ -291,7 +345,7 @@ export function PlayerMessageBoard({
           <div className="player-message-controls">
             <button
               type="button"
-              disabled={busy}
+              disabled={pending}
               aria-busy={busy}
               onClick={remove}
             >
@@ -300,7 +354,7 @@ export function PlayerMessageBoard({
             <button
               type="button"
               className="secondary"
-              disabled={busy}
+              disabled={pending}
               onClick={close}
             >
               {tr("Cancel")}
@@ -333,10 +387,14 @@ export function PlayerMessageBoard({
             maxLength={1000}
             rows={2}
             required
-            disabled={busy}
+            disabled={pending}
           />
           <div className="player-message-controls">
-            <button disabled={busy || !(editing ? editText : text).trim()}>
+            <button
+              disabled={
+                pending || editConflict || !(editing ? editText : text).trim()
+              }
+            >
               {busy
                 ? tr("Saving…")
                 : editing
@@ -346,7 +404,7 @@ export function PlayerMessageBoard({
             <button
               type="button"
               className="secondary"
-              disabled={busy}
+              disabled={pending}
               onClick={close}
             >
               {tr("Cancel")}
@@ -354,21 +412,68 @@ export function PlayerMessageBoard({
           </div>
         </form>
       )}
+      {recovery && (
+        <div className="player-message-form" role="status">
+          <p>
+            {recovery.latest
+              ? tr(
+                  "Review the latest message before applying your saved draft.",
+                )
+              : tr(
+                  "This message is no longer available. Your unsaved draft is kept below for you to copy.",
+                )}
+          </p>
+          {recovery.latest && (
+            <div>
+              <strong>{tr("Latest message")}</strong>
+              <p className="preserve-lines">{recovery.latest.text}</p>
+            </div>
+          )}
+          <label htmlFor={`${id}-draft`}>{tr("Your unsaved draft")}</label>
+          <textarea
+            id={`${id}-draft`}
+            readOnly
+            value={recovery.draft}
+            rows={2}
+          />
+          <div className="player-message-controls">
+            {recovery.latest && (
+              <button
+                type="button"
+                disabled={pending || open || deleting}
+                onClick={() => {
+                  setEditing(recovery.latest);
+                  setEditText(recovery.draft);
+                  setEditConflict(false);
+                  setOpen(true);
+                  setRecovery(null);
+                  setError("");
+                }}
+              >
+                {tr("Edit latest message with this draft")}
+              </button>
+            )}
+            <button
+              type="button"
+              className="secondary"
+              disabled={pending}
+              onClick={() => setRecovery(null)}
+            >
+              {tr("Discard draft")}
+            </button>
+          </div>
+        </div>
+      )}
       {error && (
         <div role="alert" className="small error-text">
           <p>{tr(error)}</p>
           <button
             type="button"
             className="secondary"
-            disabled={busy}
-            onClick={() => {
-              setError("");
-              load()
-                .then(receive)
-                .catch(() => setError(loadError));
-            }}
+            disabled={pending}
+            onClick={reload}
           >
-            {tr("Reload messages")}
+            {reloading ? tr("Loading…") : tr("Reload messages")}
           </button>
         </div>
       )}
