@@ -1,5 +1,6 @@
+"use client";
+
 import { InfoNote } from "./info-note";
-("use client");
 
 import { TeamAvatar } from "./team-avatar";
 import { useAppTranslations } from "@/i18n/shared";
