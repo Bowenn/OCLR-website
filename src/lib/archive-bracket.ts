@@ -1,3 +1,4 @@
+import { completeS5Paths, isS5Source, s5KnockoutOrder } from "./s5-bracket";
 import { completeS3Paths, isS3Source, s3KnockoutOrder } from "./s3-bracket";
 import { completeS2Paths } from "./s2-bracket";
 import {
@@ -13,6 +14,7 @@ export function archiveBracket(
   archive: HistoricalArchive,
   detailsHref: (id: string) => string,
 ): ResolvedBracket | null {
+  const s5Source = isS5Source(archive.sourceUrl);
   const s3Source = isS3Source(archive.sourceUrl);
   const s2Source =
     /^https:\/\/docs\.google\.com\/spreadsheets\/d\/1lQrHwsbPb5nC-MDPbHSNkL2RFD1eEcS-LbGonEr10QY(?:\/edit)?$/.test(
@@ -54,6 +56,9 @@ export function archiveBracket(
     // S1/S2 store overall final ranks in standings; original stage labels
     // retain their round-robin groups independently of those final ranks.
     const sourceGroup =
+      (s5Source &&
+        /^a(?:[1-9]|1[0-9]|2[0-4])$/.test(m.id) &&
+        /^前四[輪轮]/.test(m.stage)) ||
       ((isS1Archive(archive) || s2Source || s3Source) &&
         /^小组赛 [AB]组$/.test(m.stage)) ||
       // S4 records four group-stage rounds without reliable group standings.
@@ -135,6 +140,17 @@ export function archiveBracket(
       const round = rounds.get(label) ?? { column, label, matches: [] };
       round.matches.push(s3Matches.find((m) => m.id === id)!);
       rounds.set(label, round);
+    }
+  }
+  const s5Matches = [...rounds.values()].flatMap((r) => r.matches);
+  if (s5Source && completeS5Paths(s5Matches)) {
+    rounds.clear();
+    for (const [column, id] of s5KnockoutOrder.entries()) {
+      rounds.set(id, {
+        column,
+        label: archive.matches.find((m) => m.id === id)!.stage,
+        matches: [s5Matches.find((m) => m.id === id)!],
+      });
     }
   }
   return {
