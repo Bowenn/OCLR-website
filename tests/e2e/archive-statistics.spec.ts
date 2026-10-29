@@ -411,7 +411,7 @@ test.describe("historical statistics review and public exploration", () => {
     ).toBeVisible();
     await page
       .getByRole("combobox", { name: "Team", exact: true })
-      .selectOption("Synthetic Alpha");
+      .selectOption({ label: "Synthetic Alpha" });
     await expect(page.locator(".event-table tbody tr")).toHaveCount(2);
     await page
       .getByRole("combobox", { name: "Rounds", exact: true })

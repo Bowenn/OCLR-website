@@ -6,6 +6,8 @@ import type { PublicArchiveStatistics } from "@/lib/archive-statistics";
 import { eventMappoolRows } from "@/lib/archive-mappool-statistics";
 import type { EventScore } from "@/lib/event-statistics";
 import {
+  eventGameKey,
+  eventTeamGames,
   eventMapKey,
   eventPlacementRows,
   groupEventMaps,
@@ -36,7 +38,7 @@ export function EventStatistics({
   const eligible = scores.filter(
     (s) => (!round || s.round === round) && (!slot || eventMapKey(s) === slot),
   );
-  const plays = eligible.filter((s) => !team || s.team === team);
+  const plays = eligible.filter((s) => !team || s.teamId === team);
   const coverageFixtures = coverage?.fixtures.filter(
     (f) => !round || f.stage === round,
   );
@@ -54,7 +56,7 @@ export function EventStatistics({
   let rows: Row[] = [];
   const keys = [
     ...new Set(
-      plays.map((s) => (view === 3 || view === 4 ? s.team : s.player)),
+      plays.map((s) => (view === 3 || view === 4 ? s.teamId : s.osuId)),
     ),
   ];
   const poolFixtures = coverage?.poolFixtures;
@@ -87,23 +89,31 @@ export function EventStatistics({
       "Mods",
       "Match",
     ];
-    rows = keys.map((name) => {
-      const p = plays.filter((s) => s.player === name);
-      const best = [...p].sort((a, b) => b.score - a.score)[0];
+    rows = keys.map((id) => {
+      const p = plays.filter((s) => s.osuId === id);
+      const best = [...p].sort(
+        (a, b) =>
+          b.score - a.score ||
+          a.osuId - b.osuId ||
+          eventGameKey(a).localeCompare(eventGameKey(b)),
+      )[0];
       return {
-        Player: name,
+        _osuId: best.osuId,
+        Player: best.player,
         Team: best.team,
         MC: p[0].mc ?? null,
         Played: p.length,
         "Participation rate":
           p.length /
           new Set(
-            eligible.filter((s) => s.team === best.team).map((s) => s.game),
+            eligible.filter((s) => s.teamId === best.teamId).map(eventGameKey),
           ).size,
         MVPs: p.filter(
           (s) =>
             !eligible.some(
-              (other) => other.game === s.game && other.score > s.score,
+              (other) =>
+                eventGameKey(other) === eventGameKey(s) &&
+                other.score > s.score,
             ),
         ).length,
         "Average score": avg(p, "score"),
@@ -142,21 +152,18 @@ export function EventStatistics({
     ];
     rows = eventMappoolRows(scores, poolFixtures, round, team, slot).map(
       ({ map, plays: p, ...stats }) => {
-        const best = [...p].sort((a, b) => b.score - a.score)[0];
-        const teams = [...new Set(p.map((s) => s.game + ":" + s.team))]
-          .map((g) => {
-            const a = p.filter((s) => s.game + ":" + s.team === g);
-            return {
-              name: a[0].team,
-              total: a.reduce((n, s) => n + s.score, 0),
-              mp: a[0].mp,
-            };
-          })
-          .sort((a, b) => b.total - a.total);
+        const best = [...p].sort(
+          (a, b) =>
+            b.score - a.score ||
+            a.osuId - b.osuId ||
+            eventGameKey(a).localeCompare(eventGameKey(b)),
+        )[0];
+        const teams = eventTeamGames(p);
         return {
           Map: `${map.round} · ${map.slot}`,
           Beatmap: map.title,
           "Map ID": map.mapId,
+          _bestOsuId: best?.osuId ?? null,
           "Best player": best?.player ?? null,
           Score: best?.score ?? null,
           Accuracy: best?.accuracy ?? null,
@@ -206,6 +213,7 @@ export function EventStatistics({
             "Match",
           ];
     rows = plays.map((s) => ({
+      _osuId: s.osuId,
       Map: s.slot,
       Beatmap: s.title,
       Player: s.player,
@@ -216,7 +224,9 @@ export function EventStatistics({
       Mods: s.mods,
       Match: s.mp,
       "Team score": plays
-        .filter((p) => p.game === s.game && p.team === s.team)
+        .filter(
+          (p) => eventGameKey(p) === eventGameKey(s) && p.teamId === s.teamId,
+        )
         .reduce((n, p) => n + p.score, 0),
     }));
   } else {
@@ -229,11 +239,12 @@ export function EventStatistics({
     rows = eventPlacementRows(eligible, view === 4 ? "team" : "player", team);
   }
   rows = rows.filter((row) =>
-    Object.values(row).some((value) =>
-      String(value ?? "")
+    columns.some((column) => {
+      const value = row[column];
+      return String(value ?? "")
         .toLowerCase()
-        .includes(query.toLowerCase()),
-    ),
+        .includes(query.toLowerCase());
+    }),
   );
   rows.sort((a, b) => {
     const x = a[sort],
@@ -247,15 +258,13 @@ export function EventStatistics({
         : String(x).localeCompare(String(y))) * (descending ? -1 : 1)
     );
   });
-  function cell(key: string, value: Cell) {
+  function cell(key: string, value: Cell, row: Row) {
     if (value === null || value === undefined) return "—";
     if ((key === "Player" || key === "Best player") && coverage) {
-      const players = coverage.players.filter((p) => p.username === value);
-      if (players.length === 1)
+      const osuId = row[key === "Best player" ? "_bestOsuId" : "_osuId"];
+      if (typeof osuId === "number")
         return (
-          <Link
-            href={`/tournaments/${coverage.slug}/players/${players[0].osuId}`}
-          >
+          <Link href={`/tournaments/${coverage.slug}/players/${osuId}`}>
             {value}
           </Link>
         );
@@ -292,11 +301,11 @@ export function EventStatistics({
               <span>{tr("Reviewed matches")}</span>
             </div>
             <div>
-              <strong>{new Set(plays.map((p) => p.game)).size}</strong>
+              <strong>{new Set(plays.map(eventGameKey)).size}</strong>
               <span>{tr("Scoring games")}</span>
             </div>
             <div>
-              <strong>{new Set(plays.map((p) => p.player)).size}</strong>
+              <strong>{new Set(plays.map((p) => p.osuId)).size}</strong>
               <span>{tr("Players with data")}</span>
             </div>
           </div>
@@ -383,14 +392,17 @@ export function EventStatistics({
             label: "Team",
             value: team,
             set: setTeam,
-            options: (
-              coverage?.teams.map((t) => t.name) ?? [
-                ...new Set(scores.map((s) => s.team)),
-              ]
-            ).map((value) => ({
-              value,
-              label: value,
-            })),
+            options: coverage?.teams.map((t) => ({
+              value: t.id,
+              label: t.name,
+            })) ?? [
+              ...new Map(
+                scores.map((s) => [
+                  s.teamId,
+                  { value: s.teamId, label: s.team },
+                ]),
+              ).values(),
+            ],
           },
           {
             label: "Map",
@@ -473,7 +485,7 @@ export function EventStatistics({
               <tr key={i}>
                 <td>{i + 1}</td>
                 {columns.map((c) => (
-                  <td key={c}>{cell(c, r[c])}</td>
+                  <td key={c}>{cell(c, r[c], r)}</td>
                 ))}
               </tr>
             ))}

@@ -70,3 +70,11 @@ equal best scores share a rank and the next rank skips the tied entries
 (1, 1, 3; or 1, 1, 1, 4). Average placement uses these shared ranks. Recorded
 zero scores remain valid; missing map results remain unknown. Team display
 filters retain the full comparison population within the selected round/map (#438).
+
+Statistics keep player osu! IDs and edition-scoped team IDs from public source to
+rendering. Names remain literal labels/search text, never grouping or filter keys;
+profile links use the row's UID directly. Same-name identities stay separate and
+name changes do not split one identity. Pool fixture projections add optional
+`teamIds` and ban-side `teamId` fields for identity-safe filtering. Older remote
+backends without those fields retain unfiltered pool coverage; selecting a team
+leaves its pool coverage unknown rather than matching ambiguous names (#439).

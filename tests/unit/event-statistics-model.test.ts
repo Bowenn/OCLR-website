@@ -3,9 +3,12 @@ import {
   eventMapKey,
   eventPlacementRows,
   groupEventMaps,
+  eventTeamGames,
 } from "../../src/lib/event-statistics-model";
 import type { EventScore } from "../../src/lib/event-statistics";
 const score: EventScore = {
+  osuId: 1,
+  teamId: "synthetic",
   player: "Synthetic Player",
   team: "Synthetic Team",
   round: "gs1",
@@ -87,7 +90,11 @@ describe("event placement display filters (#342)", () => {
       game: "3",
       score: 0,
     },
-  ];
+  ].map((s) => ({
+    ...s,
+    osuId: s.player.charCodeAt(0) * 100 + s.player.charCodeAt(1),
+    teamId: s.team,
+  }));
   const nm = eventMapKey(plays[0]);
   const hd = eventMapKey(plays[4]);
   const hr = eventMapKey(plays[7]);
@@ -114,6 +121,8 @@ describe("event placement display filters (#342)", () => {
   it("keeps team placements against opponents and missing maps unrecorded", () => {
     expect(eventPlacementRows(plays, "team", "A")).toEqual([
       {
+        _identity: "A",
+        _teamId: "A",
         Team: "A",
         "Average placement": 1.5,
         "Average score": 160,
@@ -211,7 +220,7 @@ describe("competition placement ties (#438)", () => {
           mapId: 1002,
           game: "other",
         },
-      ];
+      ].map((s) => ({ ...s, osuId: s.player.charCodeAt(0), teamId: s.team }));
       const key = eventMapKey(score),
         other = eventMapKey(scores.at(-1)!);
       const column = by === "player" ? "Player" : "Team";
@@ -242,4 +251,62 @@ describe("competition placement ties (#438)", () => {
       );
     },
   );
+});
+
+describe("statistics identity (#439)", () => {
+  const same = [
+    {
+      ...score,
+      osuId: 11,
+      teamId: "X",
+      player: "Same",
+      team: "Same team",
+      score: 100,
+    },
+    {
+      ...score,
+      osuId: 22,
+      teamId: "Y",
+      player: "Same",
+      team: "Same team",
+      score: 50,
+    },
+    {
+      ...score,
+      osuId: 11,
+      teamId: "X",
+      player: "Old name",
+      team: "Old team name",
+      score: 80,
+      game: "2",
+    },
+  ];
+  it("keeps same-name people and teams separate, while aliases retain one identity", () => {
+    const players = eventPlacementRows(same, "player");
+    expect(players).toHaveLength(2);
+    expect(players.find((r) => r._osuId === 11)).toMatchObject({
+      "Average score": 90,
+      "Average placement": 1,
+    });
+    expect(players.find((r) => r._osuId === 22)).toMatchObject({
+      "Average score": 50,
+      "Average placement": 2,
+    });
+    const teams = eventPlacementRows(same, "team");
+    expect(teams).toHaveLength(2);
+    expect(teams.find((r) => r._teamId === "X")).toMatchObject({
+      "Average score": 90,
+    });
+    expect(eventPlacementRows(same, "player", "Y")).toEqual(
+      players.filter((r) => r._osuId === 22),
+    );
+    expect(eventPlacementRows([...same].reverse(), "player")).toEqual(players);
+  });
+  it("uses fixture/game and team IDs for team totals", () => {
+    const teams = eventTeamGames(same);
+    expect(teams.map((t) => t.total)).toEqual([100, 80, 50]);
+    expect(
+      eventTeamGames([...same, { ...same[0], fixture: "different" }]),
+    ).toHaveLength(4);
+  });
 });

@@ -4,7 +4,10 @@ import { createServer } from "node:http";
 import { basename } from "node:path";
 
 const bundle = await build({
-  entryPoints: ["tests/components/player-message-board.tsx"],
+  entryPoints: [
+    "tests/components/player-message-board.tsx",
+    "tests/components/event-statistics.tsx",
+  ],
   bundle: true,
   write: false,
   outdir: "component-bundle",
@@ -25,8 +28,11 @@ createServer((request, response) => {
     response.writeHead(404).end();
   } else {
     response.setHeader("Content-Type", "text/html");
+    const entry = request.url?.startsWith("/event-statistics")
+      ? "event-statistics"
+      : "player-message-board";
     response.end(
-      `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/player-message-board.css"></head><body><div id="root"></div><script src="/player-message-board.js"></script></body></html>`,
+      `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/${entry}.css"></head><body><div id="root"></div><script src="/${entry}.js"></script></body></html>`,
     );
   }
 }).listen(31449, "127.0.0.1");

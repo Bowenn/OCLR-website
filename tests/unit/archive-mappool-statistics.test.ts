@@ -186,7 +186,7 @@ describe("historical pool eligibility and bans (#405, #406)", () => {
     const fixtures = archivePoolFixtures(a, [
       { fixtureId: "one", snapshot: snapshot("final", [10001, 10001]) },
     ]);
-    const team = a.teams.find((t) => t.id === a.matches[0].teamA)!.name;
+    const team = a.matches[0].teamA;
     const rows = eventMappoolRows([], fixtures, "", team);
     expect(rows.find((r) => r.map.slot === "NM1")).toMatchObject({
       picks: 1,
@@ -204,4 +204,23 @@ describe("historical pool eligibility and bans (#405, #406)", () => {
     eventMappoolRows([], archivePoolFixtures(archive, published));
     expect(JSON.stringify([archive, published])).toBe(before);
   });
+});
+
+it("filters same-name pool sides by ID and leaves legacy filtered coverage unknown (#439)", () => {
+  const a = structuredClone(statisticsArchive);
+  for (const team of a.teams) team.name = "Same team";
+  Object.assign(a.matches[0], { bansA: "NM1", bansB: "NM2" });
+  const fixtures = archivePoolFixtures(a, [
+    { fixtureId: "one", snapshot: snapshot() },
+  ]);
+  const teamId = a.matches[0].teamB;
+  const selected = eventMappoolRows([], fixtures, "", teamId);
+  expect(selected.find((r) => r.map.slot === "NM2")).toMatchObject({ bans: 1 });
+  expect(selected.find((r) => r.map.slot === "NM1")).toMatchObject({ bans: 0 });
+  const legacy = fixtures.map((f) => ({
+    ...f,
+    teamIds: undefined,
+    bans: f.bans.map((b) => ({ ...b, teamId: undefined })),
+  }));
+  expect(eventMappoolRows([], legacy, "", teamId)).toEqual([]);
 });
