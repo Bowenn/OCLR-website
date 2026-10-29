@@ -224,9 +224,9 @@ export function Header({
 
   const links = [
     { href: "/", label: tr("navigation_home") },
-    { href: "/tournaments", label: tr("Information page") },
-    { href: "/news", label: tr("Tournament news") },
-    { href: "/wiki", label: tr("OCLR Wiki") },
+    { href: "/tournaments", label: tr("Tournaments") },
+    { href: "/news", label: tr("Announcements") },
+    { href: "/wiki", label: tr("Handbook") },
     { href: "/games/ocl-chess", label: tr("OCL Chess") },
     { href: "/about", label: tr("Organizers") },
   ];
