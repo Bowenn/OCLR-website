@@ -20,7 +20,8 @@ export function TeamEditor({
 }) {
   const tr = useAppTranslations(),
     { refreshing, refresh } = usePendingRefresh(),
-    dialog = useRef<HTMLDialogElement>(null);
+    dialog = useRef<HTMLDialogElement>(null),
+    imageInput = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<File | null>(null),
     [preview, setPreview] = useState<string | null>(null),
     [remove, setRemove] = useState(false),
@@ -35,6 +36,7 @@ export function TeamEditor({
     [preview],
   );
   function chooseImage(value: File | null) {
+    if (!value && imageInput.current) imageInput.current.value = "";
     setImage(value);
     setPreview(value ? URL.createObjectURL(value) : null);
   }
@@ -90,6 +92,10 @@ export function TeamEditor({
         ref={dialog}
         className="team-editor-dialog"
         aria-label={tr("Edit team")}
+        onClose={() => {
+          chooseImage(null);
+          setRemove(false);
+        }}
         onCancel={(e) => {
           if (pending) e.preventDefault();
         }}
@@ -144,6 +150,7 @@ export function TeamEditor({
               <span>{tr("Team avatar")}</span>
               <input
                 disabled={pending}
+                ref={imageInput}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => {

@@ -206,6 +206,17 @@ test.describe("focused workflow improvements", () => {
       buffer: bytes,
     });
     await expect(dialog.getByAltText("Pending team image")).toBeVisible();
+    await expect(dialog.getByAltText("Pending team image")).toHaveJSProperty(
+      "complete",
+      true,
+    );
+    await expect
+      .poll(() =>
+        dialog
+          .getByAltText("Pending team image")
+          .evaluate((image: HTMLImageElement) => image.naturalWidth),
+      )
+      .toBeGreaterThan(0);
     await dialog
       .getByRole("button", { name: "Save team", exact: true })
       .click();

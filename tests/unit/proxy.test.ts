@@ -47,3 +47,20 @@ it("rejects invalid canonical URLs without exposing userinfo or issuing a redire
   expect(response.status).toBe(503);
   expect(response.headers.get("location")).toBeNull();
 });
+
+it("allows object URLs only as images, retaining script/connect/object restrictions (#440)", () => {
+  const response = proxy(
+    new NextRequest("http://localhost:3000/", {
+      headers: { host: "localhost:3000" },
+    }),
+  );
+  const directives = response.headers
+    .get("content-security-policy")!
+    .split("; ");
+  expect(directives.find((d) => d.startsWith("img-src "))).toContain("blob:");
+  expect(
+    directives.filter((d) => !d.startsWith("img-src ")).join("; "),
+  ).not.toContain("blob:");
+  expect(directives).toContain("object-src 'none'");
+  expect(directives).toContain("connect-src 'self'");
+});
