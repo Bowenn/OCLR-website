@@ -34,7 +34,7 @@ it("keeps authenticated ciphertext in entries, revalidates with the credential a
     expect(remoteRead).toHaveBeenLastCalledWith("/me", undefined, token);
     const sealed = stored.sealedToken!;
     disconnectRemote(id);
-    expect(sealed.every((byte) => byte === 0)).toBe(true);
+    expect(sealed.every((byte: number) => byte === 0)).toBe(true);
     expect(() => remoteConnection(id)).toThrow();
   } finally {
     disconnectRemote(id);
