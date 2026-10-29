@@ -94,10 +94,12 @@ independent of this credential.
 
 ## Resource limits and verification
 
-The single Node process enforces 600 v1 requests/minute (including preflight and
-invalid requests), 120 reads/minute per token fingerprint, and 5 issuance
+The single Node process enforces a separate 600 anonymous reads/minute budget,
+120 reads/minute per authenticated token fingerprint, and 5 issuance
 attempts/minute per user. Fixed windows use a process-local, 4096-entry bounded
-map that fails closed when full; restart clears windows. The database quota of 10
+map that fails closed when full; restart clears windows. Anonymous traffic cannot
+consume authenticated quotas. Preflight and rejected credentials do not consume
+the anonymous or authenticated read budgets. The database quota of 10
 active tokens remains authoritative across processes. Multiple Node processes
 need an ingress/shared aggregate request limit; the application does not claim
 distributed rate limiting. Do not trust arbitrary forwarded IP headers as identity.
