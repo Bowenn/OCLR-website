@@ -1,5 +1,7 @@
 import { eventPreview } from "./event-preview";
 export type EventScore = {
+  osuId: number;
+  teamId: string;
   player: string;
   team: string;
   round: string;
@@ -53,6 +55,8 @@ export function previewScores(slug: string): EventScore[] | null {
               const winner = j < match.score![0] ? 0 : 1;
               return [
                 {
+                  osuId: player.id,
+                  teamId: `preview:${slug}:team:${p.teams.indexOf(team)}`,
                   player: player.name,
                   team,
                   round: match.round,

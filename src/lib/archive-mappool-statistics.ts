@@ -11,9 +11,10 @@ export type EventPoolFixture = {
   id: string;
   round: string;
   teams: string[];
+  teamIds?: string[];
   maps: EventMapIdentity[] | null;
   picks: string[] | null;
-  bans: { team: string; maps: string[] | null }[];
+  bans: { team: string; teamId?: string; maps: string[] | null }[];
 };
 
 // Only call with validated public snapshots. Draft pool selections never establish
@@ -92,10 +93,12 @@ export function archivePoolFixtures(
       id: fixture.id,
       round: fixture.stage,
       teams,
+      teamIds: [fixture.teamA, fixture.teamB],
       maps,
       picks: picks && [...new Set(picks)],
       bans: [fixture.bansA, fixture.bansB].map((raw, i) => ({
         team: teams[i],
+        teamId: [fixture.teamA, fixture.teamB][i],
         maps: bans(raw),
       })),
     };
@@ -109,12 +112,20 @@ export function eventMappoolRows(
   team = "",
   slot = "",
 ) {
+  // Older read backends lack side IDs. Filtered coverage must remain unknown
+  // rather than guessing identity from names (which need not be unique).
+  if (
+    team &&
+    fixtures?.some((f) => !f.teamIds || f.bans.some((b) => !b.teamId))
+  )
+    fixtures = undefined;
   const scope = fixtures?.filter(
-    (f) => (!round || f.round === round) && (!team || f.teams.includes(team)),
+    (f) =>
+      (!round || f.round === round) && (!team || f.teamIds?.includes(team)),
   );
   const identities = new Map<string, EventMapIdentity>();
   for (const s of scores)
-    if ((!round || s.round === round) && (!team || s.team === team))
+    if ((!round || s.round === round) && (!team || s.teamId === team))
       identities.set(eventMapKey(s), s);
   for (const f of scope ?? [])
     for (const m of f.maps ?? []) identities.set(eventMapKey(m), m);
@@ -122,7 +133,7 @@ export function eventMappoolRows(
     .filter(([key]) => !slot || key === slot)
     .map(([key, map]) => {
       const p = scores.filter(
-        (s) => eventMapKey(s) === key && (!team || s.team === team),
+        (s) => eventMapKey(s) === key && (!team || s.teamId === team),
       );
       const applicable =
         scope?.filter((f) => f.maps?.some((m) => eventMapKey(m) === key)) ?? [];
@@ -131,7 +142,7 @@ export function eventMappoolRows(
         0;
       const picked = applicable.filter((f) => f.picks !== null);
       const banSides = (f: EventPoolFixture) =>
-        f.bans.filter((b) => !team || b.team === team);
+        f.bans.filter((b) => !team || b.teamId === team);
       const banned = applicable.filter((f) =>
         banSides(f).every((b) => b.maps !== null),
       );

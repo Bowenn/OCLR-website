@@ -3940,6 +3940,12 @@
                   "id": { "type": "string" },
                   "round": { "type": "string" },
                   "teams": { "type": "array", "items": { "type": "string" } },
+                  "teamIds": {
+                    "anyOf": [
+                      { "type": "null", "x-oclr-undefined": true },
+                      { "type": "array", "items": { "type": "string" } }
+                    ]
+                  },
                   "maps": {
                     "anyOf": [
                       { "type": "null" },
@@ -3976,6 +3982,12 @@
                       "type": "object",
                       "properties": {
                         "team": { "type": "string" },
+                        "teamId": {
+                          "anyOf": [
+                            { "type": "null", "x-oclr-undefined": true },
+                            { "type": "string" }
+                          ]
+                        },
                         "maps": {
                           "anyOf": [
                             { "type": "null" },

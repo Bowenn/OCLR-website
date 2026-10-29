@@ -119,7 +119,7 @@ test("pool denominators, ban-only maps, sorting and team filters", async ({
     await expect(await value("Score")).toHaveText("—");
     await page
       .getByRole("combobox", { name: /^Team/ })
-      .selectOption("Synthetic Beta");
+      .selectOption({ label: "Synthetic Beta" });
     await expect(await value("Bans")).toHaveText("0");
     await page.getByRole("combobox", { name: /^Team/ }).selectOption("");
     await mapFilter.selectOption("");
