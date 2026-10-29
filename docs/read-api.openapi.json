@@ -23644,6 +23644,12 @@
                 { "type": "string", "const": "free_agent" }
               ]
             },
+            "sourceRole": {
+              "anyOf": [
+                { "type": "null", "x-oclr-undefined": true },
+                { "type": "string", "const": "VICE" }
+              ]
+            },
             "sourceReference": {
               "anyOf": [
                 { "type": "null", "x-oclr-undefined": true },

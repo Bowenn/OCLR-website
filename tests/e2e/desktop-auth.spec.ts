@@ -77,7 +77,7 @@ test.describe("desktop browser authorization", () => {
       baseURL,
       storageState: { cookies: [], origins: [] },
     });
-    const deviceName = `${info.project.name} Browser relay test`;
+    const deviceName = `${info.project.name} Browser relay ${randomUUID()}`;
     const input = authorizationInput(deviceName);
     const created = await desktop.post("/api/desktop/v1/auth/requests", {
       data: input.body,
@@ -180,6 +180,105 @@ test.describe("desktop browser authorization", () => {
     const panelBody = await panel.json();
     expect(panelBody.data.viewer.osuId).toBe(refereeTestUser.osuId);
     expect(panelBody.data.workspace.fixture.id).toBe(fixture.fixtureId);
+    const relayPath = `/api/referee/v1/fixtures/${fixture.fixtureId}/relay`;
+    const browserIrcPath = `/api/admin/tournaments/test-cup/matches/${fixture.fixtureId}/referee/irc`;
+    const roomId = 912345;
+    const bound = await desktop.post(relayPath, {
+      headers,
+      data: {
+        action: "bind",
+        roomId,
+        ircUsername: refereeTestUser.username.replace(/ /g, "_"),
+      },
+    });
+    expect(bound.status()).toBe(200);
+    expect(bound.headers()["x-oclr-referee-contract"]).toBe("1.1.0");
+    const connectionId = (await bound.json()).data.connectionId;
+    const sync = {
+      action: "sync",
+      connectionId,
+      sequence: 1,
+      projection: { status: "connected", messages: [] },
+      receipts: [],
+    };
+    expect(
+      (await desktop.post(relayPath, { headers, data: sync })).status(),
+    ).toBe(200);
+    const requestKey = randomUUID();
+    const queued = await context.request.post(browserIrcPath, {
+      headers: { Origin: baseURL! },
+      data: { action: "queue", requestKey, text: "!mp aborttimer" },
+    });
+    expect(queued.status()).toBe(200);
+    const queuedView = await queued.json();
+    expect(queuedView.connection).toMatchObject({
+      id: connectionId,
+      roomId,
+      connected: true,
+    });
+    expect(queuedView.commands).toEqual([
+      expect.objectContaining({ requestKey, status: "queued" }),
+    ]);
+    const dispatched = await desktop.post(relayPath, {
+      headers,
+      data: { ...sync, sequence: 2 },
+    });
+    expect(dispatched.status()).toBe(200);
+    const command = (await dispatched.json()).data.command;
+    expect(command).toMatchObject({
+      text: "!mp aborttimer",
+      target: `#mp_${roomId}`,
+    });
+    expect(
+      (
+        await desktop.post(relayPath, {
+          headers,
+          data: {
+            ...sync,
+            sequence: 3,
+            receipts: [{ commandId: command.id, status: "sent" }],
+          },
+        })
+      ).status(),
+    ).toBe(200);
+    const sent = await context.request.get(browserIrcPath);
+    expect(sent.status()).toBe(200);
+    expect((await sent.json()).commands).toEqual([
+      expect.objectContaining({ id: command.id, status: "sent" }),
+    ]);
+    // Exercise the real HTTP relay with synthetic evidence, without an IRC socket.
+    const evidence = {
+      sender: "BanchoBot",
+      target: command.target,
+      text: "Countdown aborted.",
+    };
+    const message = {
+      id: randomUUID(),
+      sender: evidence.sender,
+      text: evidence.text,
+      at: new Date().toISOString(),
+    };
+    const confirmed = await desktop.post(relayPath, {
+      headers,
+      data: {
+        ...sync,
+        sequence: 4,
+        projection: { status: "connected", messages: [message] },
+        receipts: [{ commandId: command.id, status: "confirmed", evidence }],
+      },
+    });
+    expect(confirmed.status()).toBe(200);
+    expect((await confirmed.json()).data.command).toBeNull();
+    const projected = await context.request.get(browserIrcPath);
+    expect(projected.status()).toBe(200);
+    const projection = await projected.json();
+    expect(projection.messages).toEqual([message]);
+    expect(projection.commands).toEqual([
+      expect.objectContaining({ id: command.id, status: "confirmed" }),
+    ]);
+    expect(projection.workspace.projection.activeSelections).toEqual(
+      panelBody.data.workspace.projection.activeSelections,
+    );
     // The consumed request no longer offers an approval form.
     await page.goto(authPath);
     await expect(
@@ -210,6 +309,14 @@ test.describe("desktop browser authorization", () => {
           `/api/referee/v1/fixtures/${fixture.fixtureId}/panel`,
           { headers },
         )
+      ).status(),
+    ).toBe(401);
+    expect(
+      (
+        await desktop.post(relayPath, {
+          headers,
+          data: { ...sync, sequence: 5 },
+        })
       ).status(),
     ).toBe(401);
     await desktop.dispose();
