@@ -28,6 +28,8 @@
     "/admin/tournaments/new",
     "/admin/tournaments",
     "/dashboard",
+    "/desktop/authorize",
+    "/desktop/sessions",
     "/developer",
     "/games/ocl-chess",
     "/login",

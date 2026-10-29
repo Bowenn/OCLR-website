@@ -1009,9 +1009,42 @@ export function RefereePanel({
       </div>
       <RefereeIrc
         key={simulationEpoch}
+        endpoint={`${endpoint}/irc`}
+        selection={
+          ircSelection && !dirtyOrder && ircDraft === ircSelection.text
+            ? {
+                entryId: ircSelection.entryId,
+                expectedRevision: data.session?.revision ?? 0,
+                dependencyFingerprint: data.dependencyFingerprint,
+              }
+            : null
+        }
+        onWorkspace={(next) => {
+          const incomingRevision = next.session?.revision ?? 0;
+          const currentRevision = data.session?.revision ?? 0;
+          if (
+            incomingRevision >= currentRevision &&
+            (incomingRevision !== currentRevision ||
+              next.dependencyFingerprint !== data.dependencyFingerprint ||
+              next.policyRevision !== data.policyRevision)
+          )
+            accept(next);
+        }}
+        onConfirmed={(commands) =>
+          setSentCommands((current) =>
+            current.length === commands.length &&
+            current.every((text, index) => text === commands[index])
+              ? current
+              : commands,
+          )
+        }
+        onQueued={() => {
+          setIrcDraft("");
+          setIrcSelection(null);
+        }}
         draft={ircDraft}
         simulation={simulation}
-        disabled={disabled || stale}
+        disabled={disabled || stale || (!!ircSelection && dirtyOrder)}
         startSeconds={commandDraft.startSeconds ?? 5}
         selectedMods={
           refereeCommands({

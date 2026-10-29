@@ -1,8 +1,48 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
+import type { RefereeWorkspace } from "@/lib/referee";
 import styles from "./referee-panel.module.css";
 
+type Selection = {
+  entryId: string;
+  expectedRevision: number;
+  dependencyFingerprint: string;
+};
+type RelayView = {
+  connection: null | {
+    id: string;
+    roomId: number;
+    ircUsername: string;
+    status: "connected" | "disconnected" | "revoked";
+    lastSeenAt: string | null;
+    connected: boolean;
+  };
+  messages: { id: string; sender: string; text: string; at: string }[];
+  commands: {
+    id: string;
+    requestKey: string;
+    text: string;
+    target: string;
+    status:
+      | "queued"
+      | "sending"
+      | "sent"
+      | "confirmed"
+      | "failed"
+      | "unknown"
+      | "record_failed";
+    recordError: string | null;
+    createdAt: string;
+  }[];
+  workspace: RefereeWorkspace;
+};
+type QueueRequest = {
+  action: "queue";
+  requestKey: string;
+  text: string;
+  selection?: Selection;
+};
 export function RefereeIrc({
   draft,
   simulation,
@@ -13,6 +53,11 @@ export function RefereeIrc({
   onChange,
   onPrepare,
   onConfirm,
+  endpoint,
+  selection,
+  onWorkspace,
+  onQueued,
+  onConfirmed,
 }: {
   draft: string;
   simulation: boolean;
@@ -23,88 +68,274 @@ export function RefereeIrc({
   onChange: (text: string) => void;
   onPrepare: (text: string) => void;
   onConfirm: () => Promise<boolean>;
+  endpoint: string;
+  selection: Selection | null;
+  onWorkspace: (workspace: RefereeWorkspace) => void;
+  onQueued: () => void;
+  onConfirmed: (commands: string[]) => void;
 }) {
   const tr = useAppTranslations();
   const [history, setHistory] = useState<
     { text: string; time: string; selection: string | null }[]
   >([]);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState(false);
-  const inFlight = useRef(false);
-  const log = useRef<HTMLDivElement>(null);
+  const [relay, setRelay] = useState<RelayView | null>(null),
+    [sending, setSending] = useState(false),
+    [error, setError] = useState<"load" | "send" | "uncertain" | null>(null);
+  const [retry, setRetry] = useState<QueueRequest | null>(null);
+  const inFlight = useRef(false),
+    log = useRef<HTMLDivElement>(null);
+  const callbacks = useRef({ onWorkspace, onConfirmed });
+  useEffect(() => {
+    callbacks.current = { onWorkspace, onConfirmed };
+  }, [onWorkspace, onConfirmed]);
+  function applyView(view: RelayView) {
+    setRelay(view);
+    callbacks.current.onWorkspace(view.workspace);
+    callbacks.current.onConfirmed(
+      view.commands.filter((c) => c.status === "confirmed").map((c) => c.text),
+    );
+  }
+  useEffect(() => {
+    if (simulation) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function poll() {
+      try {
+        const response = await fetch(endpoint, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) throw Error();
+        const view = (await response.json()) as RelayView;
+        if (controller.signal.aborted) return;
+        setRelay(view);
+        callbacks.current.onWorkspace(view.workspace);
+        callbacks.current.onConfirmed(
+          view.commands
+            .filter((c) => c.status === "confirmed")
+            .map((c) => c.text),
+        );
+        setError((value) => (value === "load" ? null : value));
+      } catch {
+        if (!controller.signal.aborted) {
+          setRelay(null);
+          setError((value) => value ?? "load");
+        }
+      } finally {
+        if (!controller.signal.aborted)
+          timer = setTimeout(() => void poll(), document.hidden ? 10000 : 2000);
+      }
+    }
+    void poll();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [endpoint, simulation]);
+  const connected = !!relay?.connection?.connected;
+  const statusLabels = {
+    queued: tr("Queued for local IRC"),
+    sending: tr("Sending to IRC"),
+    sent: tr("Sent; awaiting room confirmation"),
+    confirmed: tr("Confirmed by IRC"),
+    failed: tr("Command failed"),
+    unknown: tr("Outcome unknown; check the room"),
+    record_failed: tr("IRC confirmed; referee record needs review"),
+  };
   async function submit() {
     if (
       inFlight.current ||
       disabled ||
-      !simulation ||
       !draft.trim() ||
-      /[\r\n\u0000]/.test(draft)
+      /[\r\n\u0000]/.test(draft) ||
+      (!simulation && !connected && !retry)
     )
       return;
     inFlight.current = true;
     setSending(true);
-    setError(false);
-    const text = draft,
-      selection = selectionLabel;
+    setError(null);
     try {
-      if (!(await onConfirm())) {
-        setError(true);
-        return;
+      if (simulation) {
+        const text = draft,
+          label = selectionLabel;
+        if (!(await onConfirm())) {
+          setError("send");
+          return;
+        }
+        setHistory((items) => [
+          ...items,
+          { text, selection: label, time: new Date().toLocaleTimeString() },
+        ]);
+      } else {
+        const request = retry ?? {
+          action: "queue" as const,
+          requestKey: crypto.randomUUID(),
+          text: draft,
+          ...(selection ? { selection } : {}),
+        };
+        setRetry(request);
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+        });
+        if (!response.ok) {
+          if (response.status < 500) {
+            setRetry(null);
+            setError("send");
+          } else setError("uncertain");
+          return;
+        }
+        applyView(await response.json());
+        setRetry(null);
+        onQueued();
       }
-      setHistory((items) => [
-        ...items,
-        {
-          text,
-          selection,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-        },
-      ]);
       requestAnimationFrame(() =>
         log.current?.scrollTo({ top: log.current.scrollHeight }),
       );
     } catch {
-      setError(true);
+      setError(simulation ? "send" : "uncertain");
     } finally {
       inFlight.current = false;
       setSending(false);
     }
   }
+  async function disconnect() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSending(true);
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "disconnect" }),
+      });
+      if (!response.ok) throw Error();
+      applyView(await response.json());
+      setRetry(null);
+    } catch {
+      setError("send");
+    } finally {
+      inFlight.current = false;
+      setSending(false);
+    }
+  }
+  const locked = disabled || sending || !!retry;
   return (
     <aside className={`panel ${styles.irc}`} aria-label={tr("IRC console")}>
       <header>
         <h2>{"IRC"}</h2>
         <span className="badge">
-          {simulation ? tr("Simulation only") : tr("IRC not connected")}
+          {simulation
+            ? tr("Simulation only")
+            : connected
+              ? tr("IRC connected")
+              : tr("IRC not connected")}
         </span>
       </header>
-      <p className="small muted">
-        {tr("No real IRC connection. Simulated sends do not reach osu!.")}
-      </p>
+      {simulation ? (
+        <p className="small muted">
+          {tr("No real IRC connection. Simulated sends do not reach osu!.")}
+        </p>
+      ) : (
+        <>
+          {relay?.connection ? (
+            <div className={styles.ircConnection}>
+              <span className="small">
+                {relay.connection.ircUsername} ·{" "}
+                {`#mp_${relay.connection.roomId}`}
+              </span>
+              <button
+                type="button"
+                className="secondary"
+                disabled={disabled || sending}
+                onClick={() => void disconnect()}
+              >
+                {tr("Disconnect relay")}
+              </button>
+            </div>
+          ) : (
+            <p className="small muted">
+              {tr(
+                "Open oclr-irc, authorize OCLR, then create or join a room and sync this match from the desktop app.",
+              )}
+            </p>
+          )}
+          <details className={styles.ircHelp}>
+            <summary>{tr("Connection setup")}</summary>
+            <ol>
+              <li>{tr("Open oclr-irc and sign in to osu! IRC locally.")}</li>
+              <li>
+                {tr(
+                  "Authorize OCLR in the browser and select this assigned match.",
+                )}
+              </li>
+              <li>
+                {tr(
+                  "Create or join the match room locally, then enable synchronization.",
+                )}
+              </li>
+            </ol>
+            <p>
+              {tr(
+                "Room creation stays in the desktop app. IRC credentials never enter this page.",
+              )}
+            </p>
+            <a href="/desktop/sessions">{tr("Manage desktop sessions")}</a>
+          </details>
+        </>
+      )}
       <div
         className={styles.ircLog}
         role="log"
-        aria-label={tr("Simulated IRC history")}
+        aria-label={
+          simulation ? tr("Simulated IRC history") : tr("IRC room projection")
+        }
         ref={log}
       >
-        {!history.length && (
+        {simulation ? (
+          history.map((line, index) => (
+            <div className={styles.ircMessage} key={index}>
+              <time>{line.time}</time>
+              <code>{line.text}</code>
+              <small>
+                {tr("Simulation confirmed")}
+                {line.selection ? ` · ${line.selection}` : ""}
+              </small>
+            </div>
+          ))
+        ) : (
+          <>
+            {relay?.messages.map((line) => (
+              <div className={styles.ircMessage} key={line.id}>
+                <small>
+                  {line.sender} ·{" "}
+                  <time dateTime={line.at}>
+                    {new Date(line.at).toLocaleTimeString()}
+                  </time>
+                </small>
+                <code>{line.text}</code>
+              </div>
+            ))}
+            {relay?.commands.length ? (
+              <details open className={styles.ircReceipts}>
+                <summary>{tr("Command status")}</summary>
+                {relay.commands.map((command) => (
+                  <div className={styles.ircMessage} key={command.id}>
+                    <code>{command.text}</code>
+                    <small>{statusLabels[command.status]}</small>
+                  </div>
+                ))}
+              </details>
+            ) : null}
+          </>
+        )}
+        {((!simulation && !relay?.messages.length && !relay?.commands.length) ||
+          (simulation && !history.length)) && (
           <p className="muted">
             {tr("Choose a command or pool map on the left.")}
           </p>
         )}
-        {history.map((line, index) => (
-          <div className={styles.ircMessage} key={index}>
-            <time>{line.time}</time>
-            <code>{line.text}</code>
-            <small>
-              {tr("Simulation confirmed")}
-              {line.selection ? ` · ${line.selection}` : ""}
-            </small>
-          </div>
-        ))}
       </div>
       <form
         onSubmit={(event) => {
@@ -124,20 +355,45 @@ export function RefereeIrc({
           autoComplete="off"
           spellCheck={false}
           value={draft}
-          disabled={disabled || sending}
+          disabled={locked}
           onChange={(event) => onChange(event.target.value)}
         />
         <button
           type="submit"
-          disabled={disabled || sending || !simulation || !draft.trim()}
+          disabled={
+            disabled ||
+            sending ||
+            !draft.trim() ||
+            (!simulation && !connected && !retry) ||
+            (!simulation && /^!mp make(?:\s|$)/i.test(draft))
+          }
         >
-          {sending ? tr("Sending…") : tr("Simulate send")}
+          {sending
+            ? tr("Sending…")
+            : retry
+              ? tr("Retry same command")
+              : simulation
+                ? tr("Simulate send")
+                : tr("Send to local IRC")}
         </button>
+        {!simulation && /^!mp make(?:\s|$)/i.test(draft) && (
+          <p className="small muted">
+            {tr("Create and join the room in oclr-irc first.")}
+          </p>
+        )}
         {error && (
           <p role="alert">
-            {tr(
-              "Command not confirmed. Check the current BP step and try again.",
-            )}
+            {error === "load"
+              ? tr(
+                  "IRC projection is unavailable. Sending is paused until it reconnects.",
+                )
+              : error === "uncertain"
+                ? tr(
+                    "The queue response was lost. Retry the same request; do not resend it as a new command.",
+                  )
+                : tr(
+                    "Command not confirmed. Check the current BP step and try again.",
+                  )}
           </p>
         )}
       </form>
@@ -147,46 +403,28 @@ export function RefereeIrc({
             key={seconds}
             type="button"
             className="secondary"
-            disabled={disabled || sending}
+            disabled={locked}
             onClick={() => onPrepare(`!mp timer ${seconds}`)}
           >
             {seconds}s
           </button>
         ))}
-        <button
-          type="button"
-          className="secondary"
-          disabled={disabled || sending}
-          onClick={() => onPrepare(`!mp start ${startSeconds}`)}
-        >
-          {`!mp start ${startSeconds}`}
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          disabled={disabled || sending}
-          onClick={() => onPrepare("!mp aborttimer")}
-        >
-          {"!mp aborttimer"}
-        </button>
-        {selectedMods && (
+        {[
+          `!mp start ${startSeconds}`,
+          "!mp aborttimer",
+          ...(selectedMods ? [selectedMods] : []),
+          "!mp abort",
+        ].map((text) => (
           <button
+            key={text}
             type="button"
             className="secondary"
-            disabled={disabled || sending}
-            onClick={() => onPrepare(selectedMods)}
+            disabled={locked}
+            onClick={() => onPrepare(text)}
           >
-            {selectedMods}
+            {text}
           </button>
-        )}
-        <button
-          type="button"
-          className="secondary"
-          disabled={disabled || sending}
-          onClick={() => onPrepare("!mp abort")}
-        >
-          {"!mp abort"}
-        </button>
+        ))}
       </footer>
     </aside>
   );

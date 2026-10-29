@@ -151,9 +151,12 @@ active edition role and the fixture assignment. Explicit Developer access adds
 saved reads only, including through the remote frontend. Other roles do not
 implicitly gain access. Every read/write rechecks current grants and assignments.
 
-The workspace is a command-copy assistant with a persistent private officiating
-record. It neither listens to IRC/BanchoBot nor sends commands to osu!, and copying
-a command does not start a timer, record a pick, create a room, or publish a result.
+The workspace prepares commands and maintains a private officiating record.
+OCLR-ref-tools (oclr-irc) owns the local IRC socket and credentials; the website
+projects its bound room and queues commands for that local client. Preparing or
+copying a command never sends it or advances BP. Socket delivery alone is not
+confirmation. A matching post-send BanchoBot map confirmation can finalize the
+queued BP intent through the server’s versioned referee service.
 The official result pipeline remains MP import → Referee review → Admin approval
 and publication.
 
@@ -181,10 +184,12 @@ control characters or injected extra command lines.
 
 ### During play
 
-Selecting a map prepares an IRC command without recording a selection. The current
-local simulation records a step only after explicit simulated confirmation, checked
-against the finite sequence. See the simulation limitations below. The underlying
-persistent referee API remains separate and is not called by simulated sends. The ledger
+Selecting a map prepares an IRC command without recording a selection. The browser
+queues it with the intended pool entry, expected revision and dependency fingerprint.
+The server validates intent before queueing and again when applying a matching IRC
+confirmation. Queued, sending, sent, failed and unknown statuses never advance BP;
+record_failed means IRC confirmation arrived but the authoritative ledger rejected
+the stale or conflicting intent. Review the current state before further action. The ledger
 separates picking team from winner. Each pick has its own numbered attempts;
 replays preserve prior attempts and consume no new pick. An optional round
 `maxReplaysPerMap` caps additional attempts (two replays allow three attempts in
@@ -195,7 +200,8 @@ attempt contributes to provisional scoring. Ties follow the configured round
 policy; aborted/unresolved/withdrawn attempts never fabricate a winning point.
 Persistent corrections retain append-only history; later steps must be withdrawn before an
 earlier pick can be corrected. Refresh or a legitimate referee handoff resumes persisted
-state; temporary IRC simulation events are deliberately discarded on refresh.
+state and reloads the current room projection. The normal development and production
+page both use the real relay contract; development mode no longer silently enables a mock.
 
 ### After play
 
@@ -242,12 +248,19 @@ loopback review database on port 55436, and refuses recorded play. It does not
 truncate tables or alter production data. The authored names and beatmap metadata
 are UI fixtures, not provider snapshots or approved tournament selections.
 
-### IRC 操作入口（本地模拟审核）
+### 本地 IRC 与网站同步
 
-本轮审核版将右侧 IRC 控制台固定，左侧命令点击后填入输入框。邀请命令使用保存的选手用户名（空格转下划线），包括两队全部成员与替补。先 Ban／先 Pick 在界面上自动选择相反队伍；底层历史契约仍可读取旧独立先手记录。
+右侧固定 IRC 控制台显示本地 oclr-irc（仓库 OCLR-dev/OCLR-ref-tools）投影的房间消息与指令状态。osu! IRC 专用密码和 socket 始终留在 Electron Main；网站 osu! OAuth 只用于 OCLR 身份授权，不能代替 IRC 登录。真实网络接口已实现，仍需用户本人授权并实测 Bancho 房间，合成测试不代表这一步通过。
 
-图池按 Mod 分组逐行展示，两队各有 Ban／Pick 操作，当前流程不允许的操作禁用。Ban 和 Pick 都准备 `!mp map`；填入、复制不推进步骤，确认后才记录。常用 30／60／120 秒计时、start 与取消计时位于控制台底部。
+1. 启动网站开发预览，再按桌面项目说明启动 oclr-irc。开发时使用 `OCLR_SERVER_ORIGIN=http://localhost:3001 npm run dev`，网站 `APP_URL` 必须使用完全相同的 origin；不读取或复制已有运行凭据。
+2. 在桌面端使用自己的 IRC 专用密码登录、创建或加入 MP 房间，读取房间设置和裁判名单。网页不会远程开房，`!mp make` 留在桌面端。
+3. 桌面端发起 OCLR 授权，在系统浏览器登录 osu!，核对校验码并明确同意三个读取 scope 和 `referee:relay`。授权使用单次 code、S256 和固定本地回调；access/refresh token 只交给桌面 Main，不进入页面、URL 或持久化浏览器存储。
+4. 在桌面端选择本人获派的场次，将当前房间投影到网站。IRC 用户名必须匹配授权身份；Admin 的桌面范围同样限定本人获派场次。
+5. 网页显示“IRC 已连接”后，可排队发送切图、Mods、计时、开赛等允许的命令。每次绑定仅有一个在途命令；发送、已发出、已确认和未知结果分别显示。地图 Bancho 回执经服务端再次核对，才幂等地记录 Ban/Pick。页面重试丢失的排队响应使用同一 requestKey，不创建第二条指令。
+6. 在桌面端停止投影或网页“断开同步”会停用该连接；在 `/desktop/sessions` 可撤销自己的桌面授权。网站退出登录不会自动撤销独立桌面会话。断线/过期命令不会自动重送，需检查房间实际状态。
 
-**尚未连接真实 osu! IRC。** `next dev` 预览明确显示“模拟模式”，模拟确认使用现有流程校验器在页面内生成临时记录，刷新即清除，不请求业务写入 API、不生成持久化执裁事件或发布结果。生产构建入口显示“IRC 未连接”，发送禁用。真实连接、身份认证、目标房间绑定、服务端回执及持久化幂等确认均尚未实现，不能将模拟成功视为 osu! 命令执行成功。
+服务端 endpoint：浏览器同源 cookie 的 `GET/POST /api/admin/tournaments/{edition}/matches/{fixture}/referee/irc`；桌面 Bearer 的 `POST /api/referee/v1/fixtures/{fixture}/relay`。绑定与同步始终复查授权、本人指派和 edition；投影仅含绑定房间的有界消息。新增 `0060_desktop_irc_relay` 保存短期桌面授权、会话、哈希 token、房间绑定及指令状态；不存 IRC 密码或上游 osu! token。
+
+目前仅匹配的后续 Bancho 地图回执和明确的中止/取消计时回执会自动确认；其他真实回覆仍显示，但不从 socket 写入推断成功。未知结果及执裁记录冲突必须人工检查。正式结果仍走既有 MP 审核发布流程。
 
 审核布局进一步收敛：赛前准备仅保留开房、规则、人员邀请与房间设置；切图通过 BP 图池，Mods、中止与计时/开赛使用 IRC 控制台。图池每行四个队伍操作横排，手机缩小按钮。执裁摘要最大固定宽度 48rem（小屏不超过容器），滚动至其位置后吸附在页头下方，只显示比分、BP 过程、重赛记录及胜局状态；长记录在各行内横向滚动。原有赛况录入和纠正功能保留在图池后的“记录与修正赛况”折叠区，不进入吸顶摘要。

@@ -508,3 +508,28 @@
     min-height: 1.75rem;
   }
 }
+.ircConnection {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ircConnection button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+.ircHelp {
+  font-size: 0.75rem;
+}
+.ircHelp[open] {
+  max-height: 9rem;
+  overflow: auto;
+}
+.ircHelp ol {
+  padding-left: 1.25rem;
+  margin-block: 0.5rem;
+}
+.ircReceipts > summary {
+  font-size: 0.75rem;
+}

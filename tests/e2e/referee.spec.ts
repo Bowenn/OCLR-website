@@ -50,7 +50,7 @@ async function seed() {
 test.describe("referee command workspace", () => {
   test.skip(!process.env.TEST_DATABASE_URL, "Requires isolated PostgreSQL");
   test.afterAll(async () => closeDb());
-  test("keeps mock IRC disconnected in production and preserves authorized saved records", async ({
+  test("keeps unpaired IRC disconnected and preserves authorized saved records", async ({
     page,
     context,
     browser,
@@ -118,7 +118,7 @@ test.describe("referee command workspace", () => {
       page.getByLabel("IRC command", { exact: true }),
     ).not.toHaveValue("");
     await expect(
-      page.getByRole("button", { name: "Simulate send", exact: true }),
+      page.getByRole("button", { name: "Send to local IRC", exact: true }),
     ).toBeDisabled();
     expect((await read()).events).toHaveLength(beforePrepare);
     // The independent saved-record API is still authorized and persistent; the
@@ -195,6 +195,119 @@ test.describe("referee command workspace", () => {
     const deniedPage = await guest.newPage();
     expect((await deniedPage.goto(path))?.status()).toBe(404);
     await guest.close();
+  });
+  test("advances BP only after the relay confirms an authoritative record", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const seeded = await seed();
+    await context.addCookies([seeded.cookie]);
+    const api = `/api/admin/tournaments/test-cup/matches/${seeded.fixtureId}/referee`;
+    const commands: {
+      id: string;
+      requestKey: string;
+      text: string;
+      target: string;
+      status: string;
+      recordError: null;
+      createdAt: string;
+    }[] = [];
+    let selection:
+      | {
+          entryId: string;
+          expectedRevision: number;
+          dependencyFingerprint: string;
+        }
+      | undefined;
+    await page.route(`**${api}/irc`, async (route) => {
+      const request = route.request();
+      if (request.method() === "POST") {
+        const body = request.postDataJSON();
+        expect(body.action).toBe("queue");
+        selection = body.selection;
+        commands.push({
+          id: crypto.randomUUID(),
+          requestKey: body.requestKey,
+          text: body.text,
+          target: "#mp_12345",
+          status: "queued",
+          recordError: null,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      const workspace = await (await context.request.get(api)).json();
+      await route.fulfill({
+        json: {
+          connection: {
+            id: crypto.randomUUID(),
+            roomId: 12345,
+            ircUsername: "TestRef",
+            status: "connected",
+            lastSeenAt: new Date().toISOString(),
+            connected: true,
+          },
+          messages: [],
+          commands,
+          workspace,
+        },
+      });
+    });
+    await page.goto(
+      `/admin/tournaments/test-cup/matches/${seeded.fixtureId}/referee`,
+    );
+    await expect(
+      page.getByText("IRC connected", { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByLabel("First Ban team", { exact: true })
+      .selectOption(seeded.workspace.teams[0].id);
+    await page
+      .getByRole("button", { name: "Apply order", exact: true })
+      .click();
+    await expect(
+      page.getByText("Showing applied order", { exact: true }),
+    ).toBeVisible();
+    const pool = page.getByRole("region", {
+      name: "Round mappool",
+      exact: true,
+    });
+    await pool
+      .getByRole("button", { name: "Blue team BAN", exact: true })
+      .first()
+      .click();
+    await page
+      .getByRole("button", { name: "Send to local IRC", exact: true })
+      .click();
+    await expect(
+      page.getByText("Queued for local IRC", { exact: true }),
+    ).toBeVisible();
+    expect(commands).toHaveLength(1);
+    expect(selection).toBeDefined();
+    const summary = page.getByRole("region", {
+      name: "Referee records",
+      exact: true,
+    });
+    await expect(summary).not.toContainText("BAN NM1");
+    commands[0].status = "sent";
+    await expect(
+      page.getByText("Sent; awaiting room confirmation", { exact: true }),
+    ).toBeVisible();
+    await expect(summary).not.toContainText("BAN NM1");
+    const response = await context.request.patch(api, {
+      headers: { Origin: baseURL! },
+      data: {
+        action: "record_selection",
+        ...selection,
+        requestKey: crypto.randomUUID(),
+      },
+    });
+    expect(response.status()).toBe(200);
+    commands[0].status = "confirmed";
+    await expect(
+      page.getByText("Confirmed by IRC", { exact: true }),
+    ).toBeVisible();
+    await expect(summary).toContainText("BAN NM1");
   });
   test("keeps every appearance usable in light/dark and all locales", async ({
     page,
