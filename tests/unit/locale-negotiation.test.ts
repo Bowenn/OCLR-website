@@ -118,7 +118,7 @@ describe("browser language negotiation", () => {
         messages: config.messages!,
       });
       expect(tr("ui.navigation_home")).toBe(
-        expected === "en" ? "Home" : expected === "zh-Hant" ? "首頁" : "首页",
+        expected === "en" ? "Home" : expected === "zh-Hant" ? "主頁" : "主页",
       );
       expect(config.timeZone).toBe("UTC");
     }

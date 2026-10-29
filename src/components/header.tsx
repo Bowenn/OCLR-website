@@ -205,7 +205,6 @@ function AccountControl({
 }
 export function Header({
   remote = false,
-  informationHref = "/tournaments",
   user,
   themePreference,
   systemTheme,
@@ -214,7 +213,6 @@ export function Header({
   appearancePreference,
 }: {
   remote?: boolean;
-  informationHref?: string;
   user: Account | null;
   themePreference: ThemePreference;
   systemTheme: Theme;
@@ -226,9 +224,9 @@ export function Header({
 
   const links = [
     { href: "/", label: tr("navigation_home") },
-    { href: informationHref, label: tr("Information page") },
-    { href: "/news", label: tr("Tournament news") },
-    { href: "/wiki", label: tr("OCLR Wiki") },
+    { href: "/tournaments", label: tr("Tournaments") },
+    { href: "/news", label: tr("Announcements") },
+    { href: "/wiki", label: tr("Handbook") },
     { href: "/games/ocl-chess", label: tr("OCL Chess") },
     { href: "/about", label: tr("Organizers") },
   ];

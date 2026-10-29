@@ -9,7 +9,6 @@ import { RemoteDataError } from "@/lib/remote-errors";
 import { RemoteBoundary } from "@/components/remote-development";
 import type { AppearanceScope } from "@/lib/appearance-scope";
 import type { Appearance } from "@/lib/preferences";
-import { getPublicEditions } from "@/lib/content";
 import { getAppTranslations } from "@/i18n/server";
 import type { Metadata } from "next";
 import { isStaff } from "@/lib/auth/staff";
@@ -135,7 +134,6 @@ export default async function RootLayout({
   let staff = false;
   let developer = false;
   let scopes: AppearanceScope[] = [];
-  let editions: { slug: string; status: string }[] = [];
   if (remote) {
     try {
       const connection = await frontendConnection();
@@ -145,7 +143,6 @@ export default async function RootLayout({
         frontendTournaments(),
       ]);
       defaultAppearance = readSiteAppearance(site.defaultAppearance);
-      editions = summaries;
       scopes = summaries.map((e) => ({
         slug: e.slug,
         published: true,
@@ -179,17 +176,8 @@ export default async function RootLayout({
     } catch {
       authUnavailable = true;
     }
-    [scopes, editions] = await Promise.all([
-      tournamentAppearanceScopes(user),
-      getPublicEditions().catch(() => []),
-    ]);
+    scopes = await tournamentAppearanceScopes(user);
   }
-  const featured =
-    editions.find((edition) => edition.status === "live") ??
-    editions.find((edition) => edition.status === "upcoming");
-  const informationHref = featured
-    ? `/tournaments/${featured.slug}`
-    : "/tournaments";
   const inherited = inheritedAppearance(
     route.get("x-oclr-pathname") ?? "/",
     new URLSearchParams(route.get("x-oclr-search") ?? ""),
@@ -229,7 +217,6 @@ export default async function RootLayout({
               </a>
               <Header
                 remote={remote}
-                informationHref={informationHref}
                 themePreference={themePreference}
                 systemTheme={systemTheme}
                 appearance={appearance}

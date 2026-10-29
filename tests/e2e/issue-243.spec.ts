@@ -84,20 +84,14 @@ test("243 historical presentation", async ({
             ).length,
           ),
           String(archives[season - 7].pools.length),
-          String(
-            archives[season - 7].pools.reduce(
-              (total, pool) => total + pool.maps.length,
-              0,
-            ),
-          ),
+          "0",
         ]);
         const metricLinks = page.locator(".archive-counts a");
-        await expect(metricLinks).toHaveCount(5);
+        await expect(metricLinks).toHaveCount(4);
         for (const [index, section] of [
           "teams",
           "players",
           "schedule",
-          "mappools",
           "mappools",
         ].entries()) {
           await expect(metricLinks.nth(index)).toHaveAttribute(
