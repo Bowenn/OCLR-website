@@ -6,6 +6,7 @@ afterEach(() => {
       oclrAnonymousReadWindows?: Map<string, unknown>;
     }
   ).oclrAnonymousReadWindows?.clear();
+  vi.restoreAllMocks();
   vi.unstubAllEnvs();
 });
 
@@ -62,4 +63,19 @@ it("anonymous exhaustion cannot consume authenticated quotas", async () => {
     () => ({ data: null }),
   );
   expect(invalid.status).toBe(401);
+  const auth = await import("../../src/lib/developer-api");
+  vi.spyOn(auth, "authenticateDeveloperRead").mockResolvedValue({
+    kind: "developer-read",
+    subject: { osuId: 1, username: "Synthetic" },
+    scopes: ["identity:read"],
+    expiresAt: new Date(Date.now() + 60000).toISOString(),
+  });
+  const authorized = await readDataResponse(
+    new Request("https://oclr.example/api/v1/me", {
+      headers: { authorization: "Bearer synthetic" },
+    }),
+    "identity:read",
+    () => ({ data: null }),
+  );
+  expect(authorized.status).toBe(200);
 });
