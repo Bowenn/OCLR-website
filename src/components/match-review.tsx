@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import {
   ReadOnlyFields,
   StaffReadOnlyContext,
@@ -324,11 +327,13 @@ function SourceReview({
                         {p.osuId}
                         {tr(": substitution evidence")}
                       </legend>
-                      <p className="muted">
-                        {tr(
-                          "Requires a configured substitution policy. This does not change the official roster.",
-                        )}
-                      </p>
+                      <InfoNote>
+                        <p className="muted">
+                          {tr(
+                            "Requires a configured substitution policy. This does not change the official roster.",
+                          )}
+                        </p>
+                      </InfoNote>
                       <label className="field">
                         <span>
                           {tr("Confirmed team for osu! ID ")}

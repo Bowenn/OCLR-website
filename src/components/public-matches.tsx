@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { TeamAvatar } from "./team-avatar";
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -309,11 +311,13 @@ export function GroupStandings({
       <div>
         <p className="eyebrow">{tr("GROUP STAGE")}</p>
         <h2 id="standings-heading">{tr("Standings")}</h2>
-        <p className="muted">
-          {tr(
-            "Only approved, published match results count. Equal ranks remain tied until the configured criteria resolve them.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted">
+            {tr(
+              "Only approved, published match results count. Equal ranks remain tied until the configured criteria resolve them.",
+            )}
+          </p>
+        </InfoNote>
       </div>
       {!groups.length && (
         <p className="notice">

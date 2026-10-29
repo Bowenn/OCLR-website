@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useState } from "react";
@@ -103,11 +105,13 @@ export function BeatmapPreview({
       {result?.snapshot && (
         <>
           <BeatmapDetails {...result.snapshot} />
-          <p className="muted small">
-            {tr(
-              "Base ratings and any explicitly configured official attributes are labeled separately. BPM and duration describe the base map.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="muted small">
+              {tr(
+                "Base ratings and any explicitly configured official attributes are labeled separately. BPM and duration describe the base map.",
+              )}
+            </p>
+          </InfoNote>
           <button
             type="button"
             className="secondary"

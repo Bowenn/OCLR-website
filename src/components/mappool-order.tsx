@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { useAppTranslations } from "@/i18n/shared";
 
 import {
@@ -198,16 +200,20 @@ export function MappoolOrder({
       {busy && <LoadingRegion />}
       {editable && (
         <div className="mappool-order-toolbar">
-          <p id={helpId} className="sr-only">
-            {tr(
-              "Drag to a drop indicator, or use Arrow Up / Down, Home / End on a handle. Move buttons and the position picker also change the preview.",
-            )}
-          </p>
-          <p className="muted small">
-            {tr(
-              "Drag a handle, use Move up / down, or choose a position. Save once to apply the order.",
-            )}
-          </p>
+          <InfoNote>
+            <p id={helpId} className="sr-only">
+              {tr(
+                "Drag to a drop indicator, or use Arrow Up / Down, Home / End on a handle. Move buttons and the position picker also change the preview.",
+              )}
+            </p>
+          </InfoNote>
+          <InfoNote>
+            <p className="muted small">
+              {tr(
+                "Drag a handle, use Move up / down, or choose a position. Save once to apply the order.",
+              )}
+            </p>
+          </InfoNote>
           <div className="actions">
             <button
               type="button"

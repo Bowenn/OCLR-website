@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { useId } from "react";
 import styles from "./award-policy.module.css";
 import { useAppTranslations } from "@/i18n/shared";
@@ -40,15 +43,17 @@ export function AwardPolicy({
       <p className={styles.shared}>
         {tr("Awards are independent; ties remain tied.")}
       </p>
-      <p className="muted small">
-        {policy === "yumu-mra-v1"
-          ? tr(
-              "MRA is rounded to 9 decimal places. MIP uses the absolute MRA gain between adjacent weeks. Different comparison groups can affect relative ratings. Only reviewed and published awards are public.",
-            )
-          : tr(
-              "Ratios and weekly means are rounded half up to 9 decimal places. Unverified games require review. Only reviewed and published awards are public.",
-            )}
-      </p>
+      <InfoNote>
+        <p className="muted small">
+          {policy === "yumu-mra-v1"
+            ? tr(
+                "MRA is rounded to 9 decimal places. MIP uses the absolute MRA gain between adjacent weeks. Different comparison groups can affect relative ratings. Only reviewed and published awards are public.",
+              )
+            : tr(
+                "Ratios and weekly means are rounded half up to 9 decimal places. Unverified games require review. Only reviewed and published awards are public.",
+              )}
+        </p>
+      </InfoNote>
     </section>
   );
 }

@@ -18,10 +18,10 @@ test("shared navigation works at desktop and mobile widths", async ({
     await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page
     .getByRole("navigation", { name: "Main navigation" })
-    .getByRole("link", { name: "Information page" })
+    .getByRole("link", { name: "Tournaments" })
     .click();
-  await expect(page).toHaveURL(/\/tournaments\/[^/]+$/);
-  await expect(page.locator("#information-title")).toHaveText(/\S/);
+  await expect(page).toHaveURL(/\/tournaments$/);
+  await expect(page.locator("#main h1")).toHaveText(/\S/);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

@@ -352,6 +352,10 @@ html[data-theme="dark"] .themed-site {
     overflow: hidden;
     min-width: 0;
     line-height: 1.4;
+    /* The clamp drops inline-flex, so center the text in the 44px target;
+       otherwise it sticks to the top while the sibling crumb is centered. */
+    align-content: center;
+    padding-block: 0;
   }
   .tournament-navigation {
     flex: 0 0 auto;

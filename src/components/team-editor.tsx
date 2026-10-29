@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { ReadOnlyFields, MutationButton } from "./staff-read-only";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
@@ -159,9 +162,11 @@ export function TeamEditor({
                 }}
               />
             </label>
-            <p className="small muted">
-              {tr("JPEG, PNG or WebP · up to 5 MB · saved as a square image")}
-            </p>
+            <InfoNote>
+              <p className="small muted">
+                {tr("JPEG, PNG or WebP · up to 5 MB · saved as a square image")}
+              </p>
+            </InfoNote>
           </ReadOnlyFields>
           <div className="actions">
             <MutationButton

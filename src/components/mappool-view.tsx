@@ -1,3 +1,4 @@
+import { InfoNote } from "@/components/info-note";
 import { useAppTranslations } from "@/i18n/shared";
 import type { publicMappools } from "@/lib/mappools";
 import {
@@ -213,13 +214,15 @@ export function MappoolView({
           ))}
         </nav>
       )}
-      <p id={`${prefix}-values`} className="mappool-values muted small">
-        {populated.every((category) => category === "NM")
-          ? tr("NM uses Base SR and unmodified map stats.")
-          : tr(
-              "Base stats are unmodified. Mod SR is calculated for the shown mods.",
-            )}
-      </p>
+      <InfoNote>
+        <p id={`${prefix}-values`} className="mappool-values muted small">
+          {populated.every((category) => category === "NM")
+            ? tr("NM uses Base SR and unmodified map stats.")
+            : tr(
+                "Base stats are unmodified. Mod SR is calculated for the shown mods.",
+              )}
+        </p>
+      </InfoNote>
       {populated.map((category) => {
         const entries = pool.entries.filter(
           (entry) => entry.category === category,

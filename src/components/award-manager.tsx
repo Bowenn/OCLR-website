@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { LoadingRegion } from "./loading-region";
 import {
   ReadOnlyFields,
@@ -157,11 +160,13 @@ export function AwardManager({ initial }: { initial: Data }) {
               {tr("Remove last week")}
             </MutationButton>
           </div>
-          <p className="muted small">
-            {tr(
-              "Captains display as Captain (internal Tier 0). Other players receive Tiers from valid draft rounds.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="muted small">
+              {tr(
+                "Captains display as Captain (internal Tier 0). Other players receive Tiers from valid draft rounds.",
+              )}
+            </p>
+          </InfoNote>
           <label className="field">
             {tr("Search players")}
             <input value={query} onChange={(e) => setQuery(e.target.value)} />

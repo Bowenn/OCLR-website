@@ -3,6 +3,7 @@
 import { Children, useId, type ReactNode } from "react";
 import { useAppTranslations } from "@/i18n/shared";
 import styles from "./page-notes.module.css";
+import { InfoNote } from "./info-note";
 
 /** Page-local public explanations, rendered after the content they qualify. */
 export function PageNotes({ children }: { children?: ReactNode }) {
@@ -11,9 +12,11 @@ export function PageNotes({ children }: { children?: ReactNode }) {
   const notes = Children.toArray(children).filter((note) => note !== "");
   if (!notes.length) return null;
   return (
-    <section className={`page-notes ${styles.notes}`} aria-labelledby={title}>
-      <h2 id={title}>{tr("Notes")}</h2>
-      {notes}
-    </section>
+    <InfoNote>
+      <section className={`page-notes ${styles.notes}`} aria-labelledby={title}>
+        <h2 id={title}>{tr("Notes")}</h2>
+        {notes}
+      </section>
+    </InfoNote>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { useId, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppTranslations } from "@/i18n/shared";
@@ -275,11 +277,13 @@ export function PlayerDirectoryTools({
                   </div>
                 </fieldset>
               )}
-              <p className="muted small">
-                {tr(
-                  "Ranges include both endpoints. A smaller global rank number is better.",
-                )}
-              </p>
+              <InfoNote>
+                <p className="muted small">
+                  {tr(
+                    "Ranges include both endpoints. A smaller global rank number is better.",
+                  )}
+                </p>
+              </InfoNote>
             </div>
           </details>
         )}

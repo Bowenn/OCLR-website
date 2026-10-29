@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { useAppTranslations } from "@/i18n/shared";
 
 import Link from "next/link";
@@ -322,11 +324,13 @@ export function MappoolBrowser({
         />
       ) : (
         <>
-          <p className="map-values-note muted small">
-            {tr(
-              "Base stars, BPM and length · Official mod SR shown separately.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="map-values-note muted small">
+              {tr(
+                "Base stars, BPM and length · Official mod SR shown separately.",
+              )}
+            </p>
+          </InfoNote>
           {pool.entries.some((e) => e.category === "FM") && (
             <p className="map-values-note muted small">
               {fmPolicyName(pool.fmMode) ?? tr("FM policy not configured")}
@@ -365,9 +369,7 @@ export function MappoolBrowser({
                   onOpen={() => setSelected(e.id)}
                   chips={
                     e.metadata.attributes ? (
-                      <span className="map-mod-rating">
-                        {tr(modRating(e))}
-                      </span>
+                      <span className="map-mod-rating">{tr(modRating(e))}</span>
                     ) : e.category === "FM" ? undefined : (
                       <span className="map-mod-note">{tr(modRating(e))}</span>
                     )

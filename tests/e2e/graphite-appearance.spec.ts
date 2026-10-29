@@ -434,17 +434,13 @@ test.describe("S7 Graphite Arena appearance", () => {
           "default",
         );
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-        // The featured link can point to another edition. Configure that edition
-        // explicitly before checking season-specific header styles there.
-        const informationHref = await page
-          .locator('.main-nav > a[href^="/tournaments"]')
-          .getAttribute("href");
-        expect(informationHref).toMatch(/^\/tournaments\/[^/?#]+$/);
-        await setEditionAppearance(
-          informationHref!.split("/")[2],
-          "graphite-arena",
-        );
-        await page.goto(informationHref!);
+        // The header's tournament link always opens the edition directory, so
+        // check the season header styles on the configured edition itself.
+        await expect(
+          page.locator('.main-nav > a[href="/tournaments"]'),
+        ).toHaveCount(1);
+        await setEditionAppearance("s7", "graphite-arena");
+        await page.goto("/tournaments/s7");
         await page.waitForLoadState("networkidle");
         if (isMobile) await page.locator(".menu-toggle").click();
         const currentNavigation = page.locator(".main-nav > a[aria-current]");

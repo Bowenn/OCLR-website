@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { useAppTranslations } from "@/i18n/shared";
 
 import { useEffect, useId, useState } from "react";
@@ -186,11 +188,13 @@ export function ZonedDateInput({
       {value &&
         (new Date(value).getUTCSeconds() !== 0 ||
           new Date(value).getUTCMilliseconds() !== 0) && (
-          <p className="muted small">
-            {tr(
-              "Saved seconds are preserved. Changing the date or time sets seconds to zero.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="muted small">
+              {tr(
+                "Saved seconds are preserved. Changing the date or time sets seconds to zero.",
+              )}
+            </p>
+          </InfoNote>
         )}
     </fieldset>
   );

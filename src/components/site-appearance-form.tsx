@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { ReadOnlyFields } from "./staff-read-only";
 import { appearanceLabel } from "@/i18n/appearance";
 import { useState, type FormEvent } from "react";
@@ -64,16 +67,20 @@ export function SiteAppearanceForm({
       <form className="form-stack" onSubmit={save} aria-busy={busy}>
         <fieldset className="settings-card form-stack" disabled={busy}>
           <legend>{tr("Default website appearance")}</legend>
-          <p className="muted" id="site-appearance-description">
-            {tr(
-              "Used when no tournament default is configured. Explicit visitor appearance and light/dark preferences remain independent.",
-            )}
-          </p>
-          <p className="muted small">
-            {tr(
-              "Season themes can only be configured for individual tournaments.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="muted" id="site-appearance-description">
+              {tr(
+                "Used when no tournament default is configured. Explicit visitor appearance and light/dark preferences remain independent.",
+              )}
+            </p>
+          </InfoNote>
+          <InfoNote>
+            <p className="muted small">
+              {tr(
+                "Season themes can only be configured for individual tournaments.",
+              )}
+            </p>
+          </InfoNote>
           <label className="field">
             <span>{tr("Design")}</span>
             <select
