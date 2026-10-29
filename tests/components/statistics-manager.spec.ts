@@ -96,4 +96,20 @@ test("failed match switches retain the complete prior context and its draft, the
     .click();
   await expect.poll(() => writes.length).toBe(2);
   expect(writes[1]).toMatchObject({ mpId: 202 });
+  // Importing a different match must not replace the selected match's review
+  // if the final reload fails.
+  fail = true;
+  await page
+    .getByRole("row")
+    .filter({ hasText: "Match A" })
+    .getByRole("button", { name: "Import MP", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("Connection interrupted");
+  await expect(select).toHaveValue("B");
+  await expect(
+    page.getByRole("heading", { name: "MP 202", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "MP 101", exact: true }),
+  ).toHaveCount(0);
 });
