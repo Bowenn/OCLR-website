@@ -148,7 +148,7 @@ html[data-appearance="prism-overture"] .themed-site .page-heading::after {
 html[data-appearance="prism-overture"]
   .themed-site
   .archive-overview-summary.has-visual {
-  align-items: stretch;
+  align-items: center;
   gap: 24px;
 }
 html[data-appearance="prism-overture"] .themed-site .archive-key-visual {
