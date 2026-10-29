@@ -217,9 +217,10 @@ it("filters same-name pool sides by ID and leaves legacy filtered coverage unkno
   const selected = eventMappoolRows([], fixtures, "", teamId);
   expect(selected.find((r) => r.map.slot === "NM2")).toMatchObject({ bans: 1 });
   expect(selected.find((r) => r.map.slot === "NM1")).toMatchObject({ bans: 0 });
-  const legacy = fixtures.map(({ teamIds: _ids, ...f }) => ({
+  const legacy = fixtures.map((f) => ({
     ...f,
-    bans: f.bans.map(({ teamId: _id, ...b }) => b),
+    teamIds: undefined,
+    bans: f.bans.map((b) => ({ ...b, teamId: undefined })),
   }));
   expect(eventMappoolRows([], legacy, "", teamId)).toEqual([]);
 });
