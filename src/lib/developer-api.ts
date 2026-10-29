@@ -309,7 +309,6 @@ export async function authenticateDeveloperRead(
       "A valid developer API token is required.",
     );
   const fingerprint = hashToken(match[1]);
-  developerApiLimiter.take(`read:${fingerprint}`, 120);
   return db().transaction(
     async (tx) => {
       await tx.execute(sql`SET LOCAL statement_timeout = '5s'`);
@@ -357,6 +356,7 @@ export async function authenticateDeveloperRead(
           "INSUFFICIENT_SCOPE",
           "This token does not include the required read scope.",
         );
+      developerApiLimiter.take(`read:${fingerprint}`, 120);
       return {
         kind: "developer-read",
         subject: { osuId: row.access.userId, username: row.username },

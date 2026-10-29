@@ -5,7 +5,7 @@ import { z } from "zod";
 import {
   authenticateDeveloperRead,
   DeveloperApiError,
-  developerApiLimiter,
+  DeveloperApiLimiter,
   developerOrigins,
   type DeveloperReadPrincipal,
 } from "./developer-api";
@@ -16,6 +16,14 @@ import { withReadChannel } from "./read-channel";
 import type { ReadMedia } from "./read-media";
 import { mediaDisposition } from "./read-media";
 
+// Anonymous traffic has an independent budget and cannot consume token quotas.
+const anonymousLimiter = new DeveloperApiLimiter(
+  ((
+    globalThis as typeof globalThis & {
+      oclrAnonymousReadWindows?: Map<string, { count: number; until: number }>;
+    }
+  ).oclrAnonymousReadWindows ??= new Map()),
+);
 function responseHeaders(request: Request, id: string) {
   const headers = new Headers({
     "Cache-Control": "no-store",
@@ -90,7 +98,6 @@ export async function readDataResponse<T>(
   try {
     headers = responseHeaders(request, id);
     appUrl();
-    developerApiLimiter.take("all-reads", 600);
     const origin = request.headers.get("origin");
     if (origin !== null && !developerOrigins().includes(origin))
       throw new DeveloperApiError(
@@ -143,6 +150,7 @@ export async function readDataResponse<T>(
       !options.anonymous || request.headers.has("authorization")
         ? await authenticateDeveloperRead(request, scope)
         : null;
+    if (!principal) anonymousLimiter.take("anonymous-reads", 600);
     const query = new URL(request.url).searchParams;
     if (
       [...query.keys()].some(
