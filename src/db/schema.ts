@@ -147,6 +147,7 @@ export const oauthStates = pgTable(
   "oauth_states",
   {
     stateHash: text("state_hash").primaryKey(),
+    desktopRequestId: uuid("desktop_request_id"),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   },
   (table) => [index("oauth_states_expiry_idx").on(table.expiresAt)],
@@ -1234,6 +1235,110 @@ export const contributorEvents = pgTable(
   (t) => [check("contributor_events_revision", sql`${t.revision} > 0`)],
 );
 
+// Private referee work records are deliberately separate from official results.
+export const refereeRoundPolicies = pgTable(
+  "referee_round_policies",
+  {
+    roundId: uuid("round_id").primaryKey(),
+    editionSlug: text("edition_slug").notNull(),
+    revision: integer("revision").notNull(),
+    policy: jsonb("policy")
+      .$type<import("../lib/referee-model").RefereePolicy>()
+      .notNull(),
+    updatedBy: bigint("updated_by", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.roundId, t.editionSlug],
+      foreignColumns: [tournamentRounds.id, tournamentRounds.editionSlug],
+    }),
+    check("referee_policy_revision_positive", sql`${t.revision} > 0`),
+  ],
+);
+export const refereeSessions = pgTable(
+  "referee_sessions",
+  {
+    fixtureId: uuid("fixture_id").primaryKey(),
+    editionSlug: text("edition_slug").notNull(),
+    revision: integer("revision").notNull().default(0),
+    firstBanTeamId: uuid("first_ban_team_id"),
+    firstPickTeamId: uuid("first_pick_team_id"),
+    settings: jsonb("settings")
+      .$type<import("../lib/referee-commands").RefereeSettings>()
+      .notNull(),
+    dependencyFingerprint: text("dependency_fingerprint").notNull(),
+    basis: jsonb("basis")
+      .$type<import("../lib/referee").RefereeBasis>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      columns: [t.fixtureId, t.editionSlug],
+      foreignColumns: [fixtures.id, fixtures.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.firstBanTeamId, t.editionSlug],
+      foreignColumns: [teams.id, teams.editionSlug],
+    }),
+    foreignKey({
+      columns: [t.firstPickTeamId, t.editionSlug],
+      foreignColumns: [teams.id, teams.editionSlug],
+    }),
+    check("referee_session_revision_nonnegative", sql`${t.revision} >= 0`),
+    check(
+      "referee_session_fingerprint",
+      sql`${t.dependencyFingerprint} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+);
+export const refereeEvents = pgTable(
+  "referee_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    fixtureId: uuid("fixture_id")
+      .notNull()
+      .references(() => refereeSessions.fixtureId),
+    ordinal: integer("ordinal").notNull(),
+    actorId: bigint("actor_id", { mode: "number" })
+      .notNull()
+      .references(() => users.osuId),
+    requestKey: uuid("request_key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    payload: jsonb("payload")
+      .$type<import("../lib/referee-model").RefereeEventPayload>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("referee_event_ordinal_unique").on(t.fixtureId, t.ordinal),
+    unique("referee_event_request_unique").on(
+      t.fixtureId,
+      t.actorId,
+      t.requestKey,
+    ),
+    check("referee_event_ordinal_positive", sql`${t.ordinal} > 0`),
+    check("referee_event_hash", sql`${t.requestHash} ~ '^[a-f0-9]{64}$'`),
+    check(
+      "referee_event_payload_object",
+      sql`jsonb_typeof(${t.payload}) = 'object'`,
+    ),
+  ],
+);
+
+export { refereeReconciliations } from "./referee-reconciliation-schema";
 // One bounded canvas serializes accepted pixel and moderation writes.
 export const chessBoards = pgTable(
   "chess_boards",
@@ -1268,3 +1373,15 @@ export const chessEvents = pgTable("chess_events", {
     .notNull()
     .defaultNow(),
 });
+
+export {
+  refereeIrcConnections,
+  refereeIrcCommands,
+} from "./referee-irc-schema";
+
+export {
+  desktopAuthorizations,
+  desktopSessions,
+  desktopTokens,
+  desktopSecurityEvents,
+} from "./desktop-auth-schema";

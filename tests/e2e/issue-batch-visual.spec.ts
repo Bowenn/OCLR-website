@@ -205,7 +205,8 @@ test.describe("#106–#115 shared presentation", () => {
         "Local Firefox cannot open its temporary profile; #108 requires Linux CI verification.",
       );
       {
-        const browser = await engine.launch();
+        // A Chromium project channel must not leak into explicitly selected engines.
+        const browser = await engine.launch({ channel: undefined });
         try {
           for (const theme of ["light", "dark"]) {
             const context = await browser.newContext({

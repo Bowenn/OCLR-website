@@ -904,6 +904,12 @@ export function FixtureManager({
         <div className="actions fixture-actions">
           <Link
             className="button"
+            href={`/admin/tournaments/${slug}/matches/${f.id}/referee`}
+          >
+            {tr("Referee panel")}
+          </Link>
+          <Link
+            className="button"
             href={`/admin/tournaments/${slug}/matches/${f.id}`}
           >
             {tr("Open match")}

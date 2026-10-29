@@ -140,3 +140,127 @@ The same workbook identity supplies `/archive/s4/key-visual.avif` at its origina
 1728×1080 size for public overview/directory fallbacks; explicit branding still
 takes priority. Admins can also select this asset in the existing branding fields.
 Neither source supplement changes results, publication, or source-appendix privacy.
+
+## Referee workspace (#312–#317)
+
+The private **Referee panel** opens from a fixture card in **Fixtures & results**
+(Admin) or **My assigned matches** (Referee), and from the existing match review
+page. Its route is `/admin/tournaments/[edition]/matches/[fixtureId]/referee`.
+An edition Admin can supervise fixtures in that edition; a Referee needs both an
+active edition role and the fixture assignment. Explicit Developer access adds
+saved reads only, including through the remote frontend. Other roles do not
+implicitly gain access. Every read/write rechecks current grants and assignments.
+
+The workspace prepares commands and maintains a private officiating record.
+OCLR-ref-tools (oclr-irc) owns the local IRC socket and credentials; the website
+projects its bound room and queues commands for that local client. Preparing or
+copying a command never sends it or advances BP. Socket delivery alone is not
+confirmation. A matching post-send BanchoBot map confirmation can finalize the
+queued BP intent through the server’s versioned referee service.
+The official result pipeline remains MP import → Referee review → Admin approval
+and publication.
+
+### Before play
+
+An Admin explicitly configures the round's finite Ban/Pick/TB steps, permitted
+categories/entries, repeated-category restrictions, and TB score conditions.
+The first Ban and first Pick remain separate stored fields for historical compatibility.
+The current UI links them: selecting either team chooses its opponent for the other. The preview is unsaved until **Apply order** succeeds.
+Conflicting recorded steps must be withdrawn in reverse order before changing
+an already-used order. Missing teams, rules, pool, policy, or stale dependencies
+are shown as missing configuration, never replaced with assumed tournament rules.
+
+The command assistant supports `!mp make`, `!mp set`, `!mp addref`, `!mp invite`,
+`!mp timer`, `!mp map`, `!mp mods`, `!mp start`, and `!mp abort`.
+Room capacity and players-per-team are distinct. The map mode comes from the
+round's scoring rules; Mods/NF/Freemod and timer defaults require explicit policy.
+`make` creates a new room through BanchoBot; `name` renames an existing room.
+`addref` requires the osu! room creator and grants room control, not a website role.
+Player invites include every member of both saved playing rosters, including
+captains and substitutes, resolving roster membership through saved UID relationships and
+using saved usernames (spaces converted to underscores) in invitation text. Each command
+can be prepared in the IRC console; pool actions also attempt a clipboard copy. Names cannot contain
+control characters or injected extra command lines.
+
+### During play
+
+Selecting a map prepares an IRC command without recording a selection. The browser
+queues it with the intended pool entry, expected revision and dependency fingerprint.
+The server validates intent before queueing and again when applying a matching IRC
+confirmation. Queued, sending, sent, failed and unknown statuses never advance BP;
+record_failed means IRC confirmation arrived but the authoritative ledger rejected
+the stale or conflicting intent. Review the current state before further action. The ledger
+separates picking team from winner. Each pick has its own numbered attempts;
+replays preserve prior attempts and consume no new pick. An optional round
+`maxReplaysPerMap` caps additional attempts (two replays allow three attempts in
+total); the server rejects further replays without advancing the revision or
+appending an event. Older policies without this field retain their existing
+behavior. Only the latest valid
+attempt contributes to provisional scoring. Ties follow the configured round
+policy; aborted/unresolved/withdrawn attempts never fabricate a winning point.
+Persistent corrections retain append-only history; later steps must be withdrawn before an
+earlier pick can be corrected. Refresh or a legitimate referee handoff resumes persisted
+state and reloads the current room projection. The normal development and production
+page both use the real relay contract; development mode no longer silently enables a mock.
+
+### After play
+
+**Post-match reconciliation** reads already saved MP imports; it does not refresh
+provider data on GET. Each attempt is explicitly linked to an exact import/game
+identity and fingerprint. Equal beatmap IDs are not an automatic match: warmups
+and multiple replays can use the same map. One game cannot be linked to multiple
+active attempts. Source refresh or ledger/dependency changes mark old confirmations
+stale. Link changes retain their history and the exact referee revision reviewed.
+Incomplete sources, unresolved winners and disagreements remain visible.
+
+Use **Open MP review** to perform the existing include/exclude, substitution,
+compliance and official submission workflow. A manual ledger winner never creates
+MP player scores, Rating credit, a result revision or an approval. Published and
+approved revisions remain immutable; changing a referee record does not change
+public standings, bracket advancement, or OBS output.
+
+### Persistence and recovery
+
+Migrations `0058_referee_workspace` and `0059_referee_reconciliation` add private
+round policy, fixture session, append-only event and reconciliation receipt tables.
+Each session stores its dependency snapshot, revision, independent first teams and
+command settings. Service DTOs reuse fixture/team/pool identities without copying
+registration answers or credentials. GET does not create sessions. Commands use
+actor-scoped UUID request keys, payload hashes, expected revisions, transactional
+locks and audit history. Retrying the same payload returns the original receipt;
+a different payload with the same key or a stale revision returns a conflict.
+
+If a save's network outcome is unknown, retry the same request before editing.
+If another operator changed state, refresh and review the new state. Changed
+fixture/round/pool/roster dependencies require explicit rechecking; prior steps
+are never silently interpreted using new data. Workspaces with saved history
+cannot be erased by deleting their fixture.
+
+All demonstration policies, identities and games are synthetic. The S9 reference
+sheet does not establish defaults for another edition. First-version Chinese
+labels and the complete operator flow remain subject to organizer review.
+
+For the dedicated local referee review database, `scripts/referee-preview.ts`
+updates an existing, unplayed preview fixture with short fictional names, two
+six-player teams, 3v3 BO9 rules, a 5/2/2/3/2/1 NM/HD/HR/DT/FM/TB pool and a
+two-replay cap per map. It accepts the existing fixture UUID, requires the exact
+loopback review database on port 55436, and refuses recorded play. It does not
+truncate tables or alter production data. The authored names and beatmap metadata
+are UI fixtures, not provider snapshots or approved tournament selections.
+
+### 本地 IRC 与网站同步
+
+右侧固定 IRC 控制台显示本地 oclr-irc（仓库 OCLR-dev/OCLR-ref-tools）投影的房间消息与指令状态。osu! IRC 专用密码和 socket 始终留在 Electron Main；网站 osu! OAuth 只用于 OCLR 身份授权，不能代替 IRC 登录。真实网络接口已实现，仍需用户本人授权并实测 Bancho 房间，合成测试不代表这一步通过。
+
+1. 启动网站开发预览，再按桌面项目说明启动 oclr-irc。开发时使用 `OCLR_SERVER_ORIGIN=http://localhost:3001 npm run dev`，网站 `APP_URL` 必须使用完全相同的 origin；不读取或复制已有运行凭据。
+2. 在桌面端使用自己的 IRC 专用密码登录、创建或加入 MP 房间，读取房间设置和裁判名单。网页不会远程开房，`!mp make` 留在桌面端。
+3. 桌面端发起 OCLR 授权，在系统浏览器登录 osu!，核对校验码并明确同意三个读取 scope 和 `referee:relay`。授权使用单次 code、S256 和固定本地回调；access/refresh token 只交给桌面 Main，不进入页面、URL 或持久化浏览器存储。
+4. 在桌面端选择本人获派的场次，将当前房间投影到网站。IRC 用户名必须匹配授权身份；Admin 的桌面范围同样限定本人获派场次。
+5. 网页显示“IRC 已连接”后，可排队发送切图、Mods、计时、开赛等允许的命令。每次绑定仅有一个在途命令；发送、已发出、已确认和未知结果分别显示。地图 Bancho 回执经服务端再次核对，才幂等地记录 Ban/Pick。页面重试丢失的排队响应使用同一 requestKey，不创建第二条指令。
+6. 在桌面端停止投影或网页“断开同步”会停用该连接；在 `/desktop/sessions` 可撤销自己的桌面授权。网站退出登录不会自动撤销独立桌面会话。断线/过期命令不会自动重送，需检查房间实际状态。
+
+服务端 endpoint：浏览器同源 cookie 的 `GET/POST /api/admin/tournaments/{edition}/matches/{fixture}/referee/irc`；桌面 Bearer 的 `POST /api/referee/v1/fixtures/{fixture}/relay`。绑定与同步始终复查授权、本人指派和 edition；投影仅含绑定房间的有界消息。新增 `0060_desktop_irc_relay` 保存短期桌面授权、会话、哈希 token、房间绑定及指令状态；不存 IRC 密码或上游 osu! token。
+
+目前仅匹配的后续 Bancho 地图回执和明确的中止/取消计时回执会自动确认；其他真实回覆仍显示，但不从 socket 写入推断成功。未知结果及执裁记录冲突必须人工检查。正式结果仍走既有 MP 审核发布流程。
+
+审核布局进一步收敛：赛前准备仅保留开房、规则、人员邀请与房间设置；切图通过 BP 图池，Mods、中止与计时/开赛使用 IRC 控制台。图池每行四个队伍操作横排，手机缩小按钮。执裁摘要最大固定宽度 48rem（小屏不超过容器），滚动至其位置后吸附在页头下方，只显示比分、BP 过程、重赛记录及胜局状态；长记录在各行内横向滚动。原有赛况录入和纠正功能保留在图池后的“记录与修正赛况”折叠区，不进入吸顶摘要。

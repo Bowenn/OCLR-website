@@ -1,0 +1,535 @@
+.workspace {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  align-items: start;
+  gap: 2rem;
+  min-width: 0;
+}
+.topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.orders {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.commands {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.ledger {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+}
+.pool {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+}
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+.maplist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem;
+}
+.map {
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: grid;
+  gap: 0.25rem;
+}
+.map[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.record {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
+}
+.record:first-child {
+  padding-top: 0;
+}
+.record:last-child {
+  border-bottom: 0;
+}
+.history {
+  max-height: 24rem;
+  overflow: auto;
+}
+@media (max-width: 800px) {
+  .columns {
+    display: flex;
+    flex-direction: column;
+  }
+  .commands,
+  .ledger,
+  .pool {
+    width: 100%;
+  }
+  .commands {
+    order: 0;
+  }
+  .ledger {
+    order: 1;
+  }
+  .pool {
+    order: 2;
+  }
+}
+@media (max-width: 480px) {
+  .orders {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stageNav {
+  position: sticky;
+  top: 7rem;
+  display: grid;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+.stageNav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.75rem;
+  border-inline-start: 3px solid transparent;
+  border-radius: 0.5rem;
+  color: var(--site-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+.stageNav a:hover {
+  background: var(--site-tint);
+  color: var(--site-foreground);
+}
+.stageNav a[aria-current="location"] {
+  border-color: var(--site-accent);
+  color: var(--site-accent-strong);
+  background: var(--site-tint);
+}
+.stageNav a:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 3px;
+}
+.navNumber {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.stageContent {
+  display: grid;
+  gap: 2rem;
+  min-width: 0;
+}
+.stage {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  scroll-margin-top: 9rem;
+}
+.stage + .stage {
+  border-top: 1px solid var(--site-border);
+  padding-top: 2rem;
+}
+.stageHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.stageHeading h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.stageNumber {
+  color: var(--site-muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  .stageNav {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+  .stageNav a {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    border-inline-start: 0;
+    border-bottom: 3px solid transparent;
+  }
+  .stageContent {
+    gap: 1.5rem;
+  }
+}
+
+/* The console has its own scroll area; only the left workflow scrolls. */
+.workspace {
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-right: min(34vw, 28rem);
+}
+.irc {
+  position: fixed;
+  right: 1rem;
+  top: 7rem;
+  bottom: 1rem;
+  width: min(32vw, 26rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 20;
+  background: var(--site-background);
+  min-width: 0;
+}
+.irc header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.irc h2,
+.irc p {
+  margin: 0;
+}
+.ircLog {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-block: 1px solid var(--site-border);
+  padding-block: 0.75rem;
+}
+.ircMessage {
+  display: grid;
+  gap: 0.25rem;
+  padding-block: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.ircMessage time,
+.ircMessage small {
+  font-size: 0.75rem;
+  color: var(--site-muted);
+}
+.ircMessage code {
+  white-space: pre-wrap;
+}
+.ircComposer {
+  display: grid;
+  gap: 0.5rem;
+}
+.ircComposer input {
+  width: 100%;
+  min-width: 0;
+  font-family: monospace;
+}
+.ircQuick {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--site-border);
+  padding-top: 0.75rem;
+}
+.ircQuick button {
+  padding: 0.5rem;
+  min-height: 2.75rem;
+  font-size: 0.8125rem;
+}
+.columns {
+  display: flex;
+  flex-direction: column;
+}
+.ledger,
+.pool {
+  width: 100%;
+}
+.poolGroup {
+  margin-block: 1.25rem;
+}
+.poolGroup h3 {
+  font-size: 0.875rem;
+  color: var(--site-muted);
+  border-bottom: 1px solid var(--site-border);
+  padding-bottom: 0.5rem;
+}
+.poolRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-block: 0.625rem;
+  border-bottom: 1px solid var(--site-border);
+}
+.poolRow > div:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.poolRow small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--site-muted);
+}
+.poolRow[data-selected="true"] {
+  background: var(--site-tint);
+}
+.poolActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+.poolActions button {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.5rem;
+  min-height: 2.5rem;
+}
+.poolActions button[data-team="blue"] {
+  color: #2563eb;
+}
+.poolActions button[data-team="red"] {
+  color: #dc2626;
+}
+:global(html[data-theme="dark"]) .poolActions button[data-team="blue"] {
+  color: #93c5fd;
+}
+:global(html[data-theme="dark"]) .poolActions button[data-team="red"] {
+  color: #fca5a5;
+}
+@media (max-width: 1400px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stageNav {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .stageNav a {
+    padding: 0.5rem;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+  }
+}
+@media (max-width: 700px) {
+  .workspace {
+    padding-right: 0;
+    padding-bottom: 22rem;
+  }
+  .irc {
+    top: auto;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: auto;
+    height: 20rem;
+    padding: 0.75rem;
+    gap: 0.375rem;
+  }
+  .irc > p {
+    font-size: 0.75rem;
+  }
+  .ircComposer {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .ircComposer label,
+  .ircComposer p {
+    grid-column: 1 / -1;
+  }
+  .ircQuick {
+    padding-top: 0.375rem;
+  }
+  .stageNav a {
+    flex-direction: column;
+  }
+  .poolRow {
+    align-items: start;
+  }
+}
+
+.pinnedSummary {
+  position: sticky;
+  top: 5.5rem;
+  z-index: 15;
+  align-self: flex-start;
+  width: min(100%, 48rem);
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  background: var(--site-surface);
+  box-shadow: 0 4px 16px #0000000d;
+}
+.summaryScore {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+.summaryScore > strong {
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+.summaryRows {
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+}
+.summaryRows > div {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 0.5rem;
+}
+.summaryRows dt {
+  color: var(--site-muted);
+}
+.summaryRows dd {
+  margin: 0;
+  display: flex;
+  gap: 0.375rem 0.75rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 0.125rem;
+}
+.recordControls {
+  width: 100%;
+}
+.recordControls > summary {
+  font-size: 0.875rem;
+}
+.workspace .poolGroup {
+  margin-block: 0.75rem;
+}
+.workspace .poolGroup h3 {
+  margin: 0;
+  padding-bottom: 0.375rem;
+}
+.workspace .poolRow {
+  padding-block: 0.375rem;
+  gap: 0.5rem;
+  min-height: 3rem;
+}
+.workspace .poolRow > div:first-child {
+  font-size: 0.8125rem;
+}
+.workspace .poolRow small {
+  font-size: 0.6875rem;
+}
+.workspace .poolActions {
+  grid-template-columns: repeat(4, auto);
+  gap: 0.25rem;
+}
+.workspace .pool .poolActions button {
+  padding: 0.25rem 0.375rem;
+  min-height: 2rem;
+  font-size: 0.6875rem;
+  border-radius: 0.375rem;
+  white-space: nowrap;
+}
+.workspace .pool .poolActions button[data-team="blue"] {
+  color: #2563eb;
+}
+.workspace .pool .poolActions button[data-team="red"] {
+  color: #dc2626;
+}
+:global(html[data-theme="dark"])
+  .workspace
+  .pool
+  .poolActions
+  button[data-team="blue"] {
+  color: #93c5fd;
+}
+:global(html[data-theme="dark"])
+  .workspace
+  .pool
+  .poolActions
+  button[data-team="red"] {
+  color: #fca5a5;
+}
+@media (max-width: 700px) {
+  .pinnedSummary {
+    top: 7.25rem;
+    padding: 0.5rem 0.625rem;
+  }
+  .summaryScore {
+    font-size: 0.75rem;
+    gap: 0.5rem;
+  }
+  .summaryScore > strong {
+    font-size: 0.875rem;
+  }
+  .summaryRows {
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+  }
+  .summaryRows > div {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+  .workspace .poolRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+  .workspace .poolActions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .workspace .pool .poolActions button {
+    padding-inline: 0.125rem;
+    font-size: 0.625rem;
+    min-height: 1.75rem;
+  }
+}
+.ircConnection {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ircConnection button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+.ircHelp {
+  font-size: 0.75rem;
+}
+.ircHelp[open] {
+  max-height: 9rem;
+  overflow: auto;
+}
+.ircHelp ol {
+  padding-left: 1.25rem;
+  margin-block: 0.5rem;
+}
+.ircReceipts > summary {
+  font-size: 0.75rem;
+}

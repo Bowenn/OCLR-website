@@ -10,6 +10,7 @@ import {
   mappools,
   matchResults,
   memberships,
+  refereeSessions,
   resultAuditEvents,
   resultRevisions,
   staffRoles,
@@ -903,6 +904,15 @@ export async function fixtureCommand(
           throw new HttpError(
             409,
             "Cancel the streaming task before deleting this fixture.",
+          );
+        const [refereeRecord] = await tx
+          .select({ id: refereeSessions.fixtureId })
+          .from(refereeSessions)
+          .where(eq(refereeSessions.fixtureId, before!.id));
+        if (refereeRecord)
+          throw new HttpError(
+            409,
+            "This fixture has saved referee records and cannot be deleted.",
           );
         const protectedRows = await tx.execute(
           sql`SELECT 1 FROM match_imports WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM match_results WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM result_revisions WHERE fixture_id = ${before!.id} UNION ALL SELECT 1 FROM result_game_claims WHERE fixture_id = ${before!.id} LIMIT 1`,

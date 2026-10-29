@@ -9,11 +9,13 @@ import { appUrl } from "@/lib/http";
 import { isDevelopmentNetworkRequest } from "@/lib/site-origin";
 import { localeCookie, readLocale } from "@/i18n/config";
 export function proxy(request: NextRequest) {
-  // Non-v1 endpoints keep their session/anonymous transport. In particular a
-  // token cannot reach a legacy public GET that refreshes provider caches.
+  // Only versioned APIs accept token transport; their handlers validate the
+  // token family and scopes. Legacy endpoints keep session/anonymous transport.
   if (
     request.headers.has("authorization") &&
-    !request.nextUrl.pathname.startsWith("/api/v1/")
+    !["/api/v1/", "/api/desktop/v1/", "/api/referee/v1/"].some((prefix) =>
+      request.nextUrl.pathname.startsWith(prefix),
+    )
   )
     return NextResponse.json(
       { error: "Use a browser session for this operation." },
@@ -91,7 +93,11 @@ export function proxy(request: NextRequest) {
     "connect-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    // Chromium checks the native approval form's redirect as well as its
+    // same-origin action. The auth service validates the exact loopback URI.
+    request.nextUrl.pathname === "/desktop/authorize"
+      ? "form-action 'self' http://127.0.0.1:*/oclr/callback"
+      : "form-action 'self'",
     "frame-ancestors 'none'",
     ...(canonical?.protocol === "https:" ? ["upgrade-insecure-requests"] : []),
   ].join("; ");

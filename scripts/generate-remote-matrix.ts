@@ -148,7 +148,12 @@ const rows = files.map((file) => {
     operations.add("publicEnrollmentState");
   }
   if (file.includes("/captains/page")) operations.add("captainIdentities");
+  const desktopLiveOnly =
+    /\/desktop\/|\/api\/referee\/v1\/|\/referee\/irc\/route\.ts$|\/components\/(?:desktop-sessions|referee-irc)\.tsx$/.test(
+      file,
+    );
   const denied =
+    desktopLiveOnly ||
     /\/api\/games\/|\/auth\/|\/api\/health\/|\/api\/developer\/|\/registrations\/export\//.test(
       file,
     );

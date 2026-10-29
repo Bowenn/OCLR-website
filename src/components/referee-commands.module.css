@@ -1,0 +1,213 @@
+.assistant {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.assistant p,
+.assistant h3 {
+  margin-block: 0;
+}
+.assistant h3 + p {
+  margin-top: 0.4rem;
+}
+.stack {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+details > .stack {
+  margin-top: 0.75rem;
+}
+.field,
+.commandField {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.timers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.presets,
+.timerHint {
+  grid-column: 1 / -1;
+}
+.command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+.commandText {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.75rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+.copyAction {
+  display: contents;
+}
+.copyAction button {
+  min-height: 2.75rem;
+  white-space: normal;
+}
+.copyStatus {
+  grid-column: 1 / -1;
+}
+.copyStatus:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+@media (max-width: 480px) {
+  .command {
+    column-gap: 0.5rem;
+  }
+  .copyAction button {
+    max-width: 6.5rem;
+  }
+  .commandText {
+    min-height: 4rem;
+  }
+}
+@media (forced-colors: active) {
+  .command {
+    border-color: CanvasText;
+  }
+}
+
+.commandList {
+  display: grid;
+  min-width: 0;
+}
+.compactCommand {
+  align-items: center;
+  gap: 0.25rem 1rem;
+  padding-block: 0.375rem;
+}
+.compactCommand:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.compactCommand .commandField {
+  gap: 0.125rem;
+  font-weight: 400;
+}
+.compactCommand .commandField > span:first-child {
+  font-size: 0.75rem;
+  color: var(--site-muted);
+}
+.inlineCommand {
+  font-size: 0.875rem;
+  font-family: monospace;
+  line-height: 1.5;
+  color: var(--site-foreground);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.compactCommand .iconCopy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: var(--site-tint);
+  color: var(--site-accent-strong);
+  box-shadow: none;
+}
+.compactCommand .iconCopy[data-copied="true"] {
+  background: transparent;
+  color: #71717a;
+}
+.compactCommand .iconCopy:hover {
+  border-color: currentColor;
+}
+.compactCommand .iconCopy:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.compactCommand .iconCopy:disabled {
+  opacity: 0.45;
+}
+.setupSettings {
+  border-top: 1px solid var(--site-border);
+  padding-top: 0.75rem;
+}
+.setupSettings > summary {
+  color: var(--site-muted);
+  font-size: 0.875rem;
+}
+.setupSettings > div {
+  margin-top: 1rem;
+}
+
+:global(html[data-theme="dark"]) .compactCommand .iconCopy[data-copied="true"] {
+  color: #a1a1aa;
+}
+
+.modules {
+  display: grid;
+  gap: 1.5rem;
+}
+.commandModule {
+  min-width: 0;
+}
+.commandModule h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+}
+.moduleColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.commandHint {
+  display: grid;
+  gap: 1rem;
+  padding-inline-start: 1.5rem;
+  border-inline-start: 1px solid var(--site-border);
+  color: var(--site-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .moduleColumns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+  .commandHint {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+}
+.compactCommand .commandField {
+  grid-template-columns: minmax(4rem, 0.8fr) minmax(0, 1.6fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+.moduleColumns {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+.commandHint {
+  border: 0;
+  padding: 0;
+}

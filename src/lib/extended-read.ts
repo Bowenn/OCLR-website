@@ -105,6 +105,14 @@ export async function extendedRead(
         slug,
         target,
       );
+    case "refereeWorkspace":
+      return (await import("./referee")).refereeWorkspace(actor!, slug, target);
+    case "refereeReconciliation":
+      return (await import("./referee-reconciliation")).refereeReconciliation(
+        actor!,
+        slug,
+        target,
+      );
     case "matchReview":
       return (await import("./results")).matchReview(actor!, slug, target);
     case "replayList":
