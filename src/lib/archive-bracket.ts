@@ -1,3 +1,4 @@
+import { completeS3Paths, isS3Source, s3KnockoutOrder } from "./s3-bracket";
 import { completeS2Paths } from "./s2-bracket";
 import {
   archiveWinner,
@@ -12,6 +13,7 @@ export function archiveBracket(
   archive: HistoricalArchive,
   detailsHref: (id: string) => string,
 ): ResolvedBracket | null {
+  const s3Source = isS3Source(archive.sourceUrl);
   const s2Source =
     /^https:\/\/docs\.google\.com\/spreadsheets\/d\/1lQrHwsbPb5nC-MDPbHSNkL2RFD1eEcS-LbGonEr10QY(?:\/edit)?$/.test(
       archive.sourceUrl,
@@ -52,7 +54,8 @@ export function archiveBracket(
     // S1/S2 store overall final ranks in standings; original stage labels
     // retain their round-robin groups independently of those final ranks.
     const sourceGroup =
-      ((isS1Archive(archive) || s2Source) && /^小组赛 [AB]组$/.test(m.stage)) ||
+      ((isS1Archive(archive) || s2Source || s3Source) &&
+        /^小组赛 [AB]组$/.test(m.stage)) ||
       // S4 records four group-stage rounds without reliable group standings.
       // Keep those source rounds, without inventing groups or advancement.
       (s4Source && /^小组赛第[1-4]轮$/.test(m.stage)) ||
@@ -124,6 +127,16 @@ export function archiveBracket(
       r.matches.every((m) => s2Row(m) !== null),
     );
   if (s2Source) completeS2Paths([...rounds.values()].flatMap((r) => r.matches));
+  const s3Matches = [...rounds.values()].flatMap((r) => r.matches);
+  if (s3Source && completeS3Paths(s3Matches)) {
+    rounds.clear();
+    for (const [column, id] of s3KnockoutOrder.entries()) {
+      const label = archive.matches.find((m) => m.id === id)!.stage;
+      const round = rounds.get(label) ?? { column, label, matches: [] };
+      round.matches.push(s3Matches.find((m) => m.id === id)!);
+      rounds.set(label, round);
+    }
+  }
   return {
     editionSlug: archive.editionSlug,
     published: true,
