@@ -175,25 +175,17 @@ html[data-appearance="chromatic-origins"]
   position: relative;
   max-width: none;
   border: 1px solid var(--site-border);
-  border-top-color: var(--chromatic-violet);
+  border-top-color: transparent;
   border-radius: 12px;
-  background: var(--site-surface);
-}
-html[data-appearance="chromatic-origins"]
-  .themed-site
-  .archive-overview-summary
-  .archive-counts::before {
-  content: "";
-  position: absolute;
-  inset: -1px -1px auto;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--chromatic-cyan),
-    var(--chromatic-violet) 58%,
-    var(--chromatic-peach)
-  );
-  pointer-events: none;
+  background:
+    linear-gradient(
+        90deg,
+        var(--chromatic-cyan),
+        var(--chromatic-violet) 58%,
+        var(--chromatic-peach)
+      )
+      top / 100% 2px no-repeat border-box,
+    var(--site-surface);
 }
 html[data-appearance="chromatic-origins"] .themed-site .archive-counts > div {
   min-width: 0;
@@ -444,11 +436,15 @@ html[data-appearance="chromatic-origins"]
     box-shadow: none;
   }
   html[data-appearance="chromatic-origins"] .themed-site .page-heading::before,
-  html[data-appearance="chromatic-origins"] .themed-site .page-heading::after,
+  html[data-appearance="chromatic-origins"] .themed-site .page-heading::after {
+    display: none;
+  }
   html[data-appearance="chromatic-origins"]
     .themed-site
-    .archive-counts::before {
-    display: none;
+    .archive-overview-summary
+    .archive-counts {
+    background-image: none;
+    border-top-color: CanvasText;
   }
   html[data-appearance="chromatic-origins"]
     .themed-site
