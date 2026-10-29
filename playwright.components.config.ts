@@ -1,9 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const componentPort = process.env.COMPONENT_TEST_PORT ?? "31449";
+
 export default defineConfig({
   testDir: "./tests/components",
   fullyParallel: true,
-  use: { baseURL: "http://127.0.0.1:31449", trace: "retain-on-failure" },
+  use: {
+    baseURL: `http://127.0.0.1:${componentPort}`,
+    trace: "retain-on-failure",
+  },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     {
@@ -13,7 +18,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "node --import tsx tests/components/server.ts",
-    url: "http://127.0.0.1:31449",
+    url: `http://127.0.0.1:${componentPort}`,
     reuseExistingServer: false,
   },
 });

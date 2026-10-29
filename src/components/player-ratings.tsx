@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { PlayerClassBadge } from "./player-class-badge";
 import Link from "./pending-link";
 import { useAppTranslations } from "@/i18n/shared";
@@ -23,11 +26,13 @@ export function PlayerRatings({
       {!compact && (
         <>
           <h2>{tr("YumuRating")}</h2>
-          <p className="muted small">
-            {tr(
-              "MRA combines 70% ERA and 30% DRA. Higher is better. No star weighting is applied.",
-            )}
-          </p>
+          <InfoNote>
+            <p className="muted small">
+              {tr(
+                "MRA combines 70% ERA and 30% DRA. Higher is better. No star weighting is applied.",
+              )}
+            </p>
+          </InfoNote>
         </>
       )}
       <p className="muted small">
@@ -38,11 +43,13 @@ export function PlayerRatings({
         })}
       </p>
       {!compact && (
-        <p className="muted small">
-          {tr(
-            "Player evaluations describe this comparison group only; they do not change draft Tiers or award eligibility.",
-          )}
-        </p>
+        <InfoNote>
+          <p className="muted small">
+            {tr(
+              "Player evaluations describe this comparison group only; they do not change draft Tiers or award eligibility.",
+            )}
+          </p>
+        </InfoNote>
       )}
       {report.issues.length ? (
         <p role="status" className="notice">

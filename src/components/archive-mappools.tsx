@@ -1,5 +1,7 @@
 "use client";
 
+import { InfoNote } from "@/components/info-note";
+
 import { BeatmapActions } from "./beatmap-actions";
 import { BeatmapCover } from "./beatmap-cover";
 import Link from "next/link";
@@ -170,34 +172,36 @@ export function ArchiveMappools({
   const activeArtwork = active ? artwork(active) : null;
   const supplemented = (m: MapEntry) =>
     !!m.supplemented?.length && (
-      <p className="muted small">
-        {tr(
-          "Missing archive fields supplemented with current osu! base metadata (no mods): {fields}.",
-          {
-            fields: m.supplemented
-              .map(
-                (field) =>
-                  ({
-                    title: tr("Song title"),
-                    mapper: tr("Mapper"),
-                    stars: tr("SR"),
-                    bpm: tr("BPM"),
-                    drainSeconds: tr("Length"),
-                    cs: tr("CS"),
-                    ar: tr("AR"),
-                    od: tr("OD"),
-                  })[field],
-              )
-              .join(", "),
-          },
-        )}{" "}
-        <a href={m.metadataSource} target="_blank" rel="noreferrer">
-          {tr("Source")}
-        </a>{" "}
-        <time dateTime={m.metadataFetchedAt}>
-          {m.metadataFetchedAt?.slice(0, 10)}
-        </time>
-      </p>
+      <InfoNote>
+        <p className="muted small">
+          {tr(
+            "Missing archive fields supplemented with current osu! base metadata (no mods): {fields}.",
+            {
+              fields: m.supplemented
+                .map(
+                  (field) =>
+                    ({
+                      title: tr("Song title"),
+                      mapper: tr("Mapper"),
+                      stars: tr("SR"),
+                      bpm: tr("BPM"),
+                      drainSeconds: tr("Length"),
+                      cs: tr("CS"),
+                      ar: tr("AR"),
+                      od: tr("OD"),
+                    })[field],
+                )
+                .join(", "),
+            },
+          )}{" "}
+          <a href={m.metadataSource} target="_blank" rel="noreferrer">
+            {tr("Source")}
+          </a>{" "}
+          <time dateTime={m.metadataFetchedAt}>
+            {m.metadataFetchedAt?.slice(0, 10)}
+          </time>
+        </p>
+      </InfoNote>
     );
   const stats = (m: MapEntry) => (
     <>

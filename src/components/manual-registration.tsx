@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { EligibilitySummary } from "./eligibility-summary";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -292,11 +295,13 @@ export function ManualRegistration({
             </>
           )}
           {inputType === "username" && (
-            <p className="small muted">
-              {tr(
-                "Use the current official username. Previous names are not accepted; use the numeric ID if the name changed.",
-              )}
-            </p>
+            <InfoNote>
+              <p className="small muted">
+                {tr(
+                  "Use the current official username. Previous names are not accepted; use the numeric ID if the name changed.",
+                )}
+              </p>
+            </InfoNote>
           )}
           {error && (
             <p role="alert" className="notice error-text">

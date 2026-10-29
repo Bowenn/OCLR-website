@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { ReadOnlyFields } from "./staff-read-only";
 import { useAppTranslations } from "@/i18n/shared";
 
@@ -104,11 +107,13 @@ export function MappoolBatch({
         {mode === "import" && (
           <div className="form-stack">
             <h3>{tr("Import multiple beatmaps")}</h3>
-            <p className="muted small">
-              {tr(
-                "Paste up to 50 IDs or difficulty URLs. Slots append automatically; existing maps stay unchanged.",
-              )}
-            </p>
+            <InfoNote>
+              <p className="muted small">
+                {tr(
+                  "Paste up to 50 IDs or difficulty URLs. Slots append automatically; existing maps stay unchanged.",
+                )}
+              </p>
+            </InfoNote>
             <label className="field">
               <span>{tr("Import category")}</span>
               <select
@@ -129,11 +134,13 @@ export function MappoolBatch({
             </label>
             <details>
               <summary>{tr("Import format help")}</summary>
-              <p className="muted small">
-                {tr(
-                  "Optional: prefix a row with NM1, HD1 or another explicit slot. Plain rows skip reserved slots.",
-                )}
-              </p>
+              <InfoNote>
+                <p className="muted small">
+                  {tr(
+                    "Optional: prefix a row with NM1, HD1 or another explicit slot. Plain rows skip reserved slots.",
+                  )}
+                </p>
+              </InfoNote>
             </details>
             <label className="field">
               <span>{tr("Map rows")}</span>
@@ -294,11 +301,13 @@ export function MappoolBatch({
           (entries.length > 0 ? (
             <div className="form-stack">
               <h3>{tr("Manage multiple map slots")}</h3>
-              <p className="muted small">
-                {tr(
-                  "Select up to 50 maps. Insert them at a position in the destination category; remaining maps shift and that category is renumbered.",
-                )}
-              </p>
+              <InfoNote>
+                <p className="muted small">
+                  {tr(
+                    "Select up to 50 maps. Insert them at a position in the destination category; remaining maps shift and that category is renumbered.",
+                  )}
+                </p>
+              </InfoNote>
               <div className="table-scroll">
                 <table>
                   <caption>{tr("Saved map selection")}</caption>

@@ -1,3 +1,4 @@
+import "../../src/app/globals.css";
 import { createRoot } from "react-dom/client";
 import { NextIntlClientProvider } from "next-intl";
 import { StatisticsExplorer } from "../../src/components/statistics-explorer";

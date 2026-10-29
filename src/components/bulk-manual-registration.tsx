@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { useId, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAppTranslations } from "@/i18n/shared";
@@ -222,22 +225,26 @@ export function BulkManualRegistration({
               }}
             />
           </label>
-          <p id={`${id}-help`} className="small muted">
-            {tr(
-              "Up to 20 non-empty lines and 8192 characters. Spaces stay within usernames. Use name: for usernames (including numeric names), id: for IDs, or a canonical HTTPS profile URL. Lookups run sequentially; wait before retrying a rate limit.",
-            )}
-            <br />
-            <code>
-              {
-                "name: Example Player\nid: 12345\nhttps://osu.ppy.sh/users/67890"
-              }
-            </code>
-          </p>
-          <p className="small muted">
-            {tr(
-              "Use the current official username. Previous names are not accepted; use the numeric ID if the name changed.",
-            )}
-          </p>
+          <InfoNote>
+            <p id={`${id}-help`} className="small muted">
+              {tr(
+                "Up to 20 non-empty lines and 8192 characters. Spaces stay within usernames. Use name: for usernames (including numeric names), id: for IDs, or a canonical HTTPS profile URL. Lookups run sequentially; wait before retrying a rate limit.",
+              )}
+              <br />
+              <code>
+                {
+                  "name: Example Player\nid: 12345\nhttps://osu.ppy.sh/users/67890"
+                }
+              </code>
+            </p>
+          </InfoNote>
+          <InfoNote>
+            <p className="small muted">
+              {tr(
+                "Use the current official username. Previous names are not accepted; use the numeric ID if the name changed.",
+              )}
+            </p>
+          </InfoNote>
           <div className="actions">
             <button
               type="button"

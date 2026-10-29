@@ -1,4 +1,7 @@
 "use client";
+
+import { InfoNote } from "@/components/info-note";
+
 import { ReadOnlyFields } from "./staff-read-only";
 import { useEffect, useRef, useState } from "react";
 import { useAppTranslations } from "@/i18n/shared";
@@ -157,9 +160,11 @@ export function MatchSourceCompletion({
                 </dd>
               </div>
             </dl>
-            <p className="muted small">
-              {tr("Actual match times do not overwrite the scheduled time.")}
-            </p>
+            <InfoNote>
+              <p className="muted small">
+                {tr("Actual match times do not overwrite the scheduled time.")}
+              </p>
+            </InfoNote>
             {data.source.warnings.map((warning, i) => (
               <p className="notice small" key={i}>
                 {warning}
