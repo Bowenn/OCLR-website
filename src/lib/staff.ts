@@ -171,7 +171,7 @@ async function exportApplicationSnapshot(actor: User, input: unknown) {
             eq(editionRevisions.version, revision.version),
           ),
         ),
-      ),
+      ) ?? sql`false`,
     );
   const byRevision = new Map(
     revisions.map((row) => [
