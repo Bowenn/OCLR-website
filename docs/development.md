@@ -209,3 +209,9 @@ disposable target such as `oclr_test`. Existing environment files are preserved:
 the seed alone can still accept their legacy matching preview `TEST_DATABASE_URL`,
 but automated tests reject that target before connecting. No preview database is
 renamed, recreated or cleared by this change.
+
+Registration CSV exports use one read-only repeatable-read snapshot for staff
+scope, list/count, saved profile batches, answers and fixed submitted question
+revisions (#452). The concurrency regression pauses real PostgreSQL reads at both
+list-to-answer and answer-to-revision boundaries, commits a normal reapplication
+on a separate connection, then checks complete old/new attempts without mixing.
