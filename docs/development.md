@@ -191,3 +191,11 @@ S1 Chromatic Origins (`chromatic-origins`, #417) uses the approved ink-diffusion
 ### S3 Frost Waltz appearance (#343)
 
 S3 Frost Waltz (`frost-waltz`) uses snow-white/blue-grey surfaces and the approved crystalline snowflake waltz banner. `src/app/frost-theme.css` is scoped to ordinary `.themed-site` pages; original 995×621 artwork and OBS/presenter isolation are preserved. The two static SVG textures are bundled under `/themes/frost-waltz/`. Migration `0055_frost_waltz_appearance` only expands site-setting/audit constraints. This historical migration preserves site/audit compatibility; #445 permits new S3 choices only in tournament settings. Existing defaults and audit history remain unchanged. Before intentionally rolling back to older code, select defaults supported by that version; never down-migrate live data. See [S3 design and verification](design/season-themes/s3/DESIGN.md).
+
+The DB-free component browser host also covers all six statistics views with
+same-name player/team identities (#439), and the actual TeamEditor under the
+application proxy's CSP (#440). Avatar checks assert successful image decoding
+and object URL release on replacement, removal, cancel/Escape and unmount. The
+host supplies only synthetic data and a minimal router context; these checks do
+not replace authenticated application E2E, backend permissions or storage tests.
+The fixed daily core browser allowlist is unchanged.

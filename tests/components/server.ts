@@ -1,13 +1,17 @@
 // DB-free browser host for actual client components. Only HTTP is mocked by tests.
+import { NextRequest } from "next/server";
+import { proxy } from "../../src/proxy";
 import { build } from "esbuild";
 import { createServer } from "node:http";
-import { basename } from "node:path";
+import { basename, resolve } from "node:path";
 
 const bundle = await build({
   entryPoints: [
     "tests/components/player-message-board.tsx",
     "tests/components/event-statistics.tsx",
+    "tests/components/team-editor.tsx",
   ],
+  alias: { "next/image": resolve("tests/components/next-image.ts") },
   bundle: true,
   write: false,
   outdir: "component-bundle",
@@ -28,11 +32,23 @@ createServer((request, response) => {
     response.writeHead(404).end();
   } else {
     response.setHeader("Content-Type", "text/html");
-    const entry = request.url?.startsWith("/event-statistics")
-      ? "event-statistics"
-      : "player-message-board";
+    let nonce = "";
+    if (request.url?.startsWith("/team-editor")) {
+      const policy = proxy(
+        new NextRequest("http://127.0.0.1:31449/team-editor", {
+          headers: { host: "127.0.0.1:31449" },
+        }),
+      ).headers.get("content-security-policy")!;
+      response.setHeader("Content-Security-Policy", policy);
+      nonce = /'nonce-([^']+)'/.exec(policy)![1];
+    }
+    const entry = request.url?.startsWith("/team-editor")
+      ? "team-editor"
+      : request.url?.startsWith("/event-statistics")
+        ? "event-statistics"
+        : "player-message-board";
     response.end(
-      `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/${entry}.css"></head><body><div id="root"></div><script src="/${entry}.js"></script></body></html>`,
+      `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/${entry}.css"></head><body><div id="root"></div><script nonce="${nonce}" src="/${entry}.js"></script></body></html>`,
     );
   }
 }).listen(31449, "127.0.0.1");
