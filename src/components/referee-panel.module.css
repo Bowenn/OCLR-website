@@ -377,9 +377,8 @@
 }
 
 .pinnedSummary {
-  position: sticky;
-  top: 5.5rem;
-  z-index: 15;
+  /* Keep the summary in flow so it cannot cover BP controls while scrolling. */
+  position: static;
   align-self: flex-start;
   width: min(100%, 48rem);
   flex-shrink: 0;
@@ -476,7 +475,6 @@
 }
 @media (max-width: 700px) {
   .pinnedSummary {
-    top: 7.25rem;
     padding: 0.5rem 0.625rem;
   }
   .summaryScore {
