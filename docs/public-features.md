@@ -1,5 +1,14 @@
 # Public pages and player profiles
 
+Historical Staff presentation groups the explicit equivalents 裁判 / Referee,
+直播 / Streamer and 解说 / 解說 / Commentator. Explicit combinations appear in
+each applicable group. The source umbrella “裁判 / 直播 / 解说（Staff原文统称）”
+does not imply three duties: it is shown as unspecified Staff when there is no
+explicit duty. Unknown role names retain their literal text. Within a group,
+confirmed UIDs are deduplicated while retaining all historical name variants;
+unresolved identities are not merged merely because their names match. Original
+role/source evidence remains saved and is not turned into live role grants.
+
 Published news, tournament participant information, edition-scoped player listings, osu! profile snapshots, the public competition center and standings. Refer to [tournament administration](tournament-management.md) for registration and publication policies.
 
 ## News, About and public participants
@@ -12,7 +21,21 @@ About lists only active persistent staff grants explicitly marked **Show on Abou
 
 ## Public player directory
 
-`/tournaments/[edition]/players` and `/api/tournaments/[edition]/players` list every accepted registration in that published edition, with search and bounded pagination. Username, osu! ID and accepted participation are automatically public, as explained before submission and in Privacy. Application answers, contact fields and staff notes are never queried. Captain/team/roster details retain separate publication checks. Pending/rejected/withdrawn registrations and unpublished editions stay private. Legacy `/players?edition=...` redirects into the edition; `/players` redirects to Tournaments. The legacy directory API requires one edition and cannot return a cross-edition list. `/dashboard` remains private.
+`/tournaments/[edition]/players` and `/api/tournaments/[edition]/players` list every accepted registration in that published edition. The page displays the complete matching collection without pagination or a load-more control (#245). Username, osu! ID and accepted participation are automatically public, as explained before submission and in Privacy. Application answers, contact fields and staff notes are never queried. Captain/team/roster details retain separate publication checks. Pending/rejected/withdrawn registrations and unpublished editions stay private. Legacy `/players?edition=...` redirects into the edition; `/players` redirects to Tournaments. The legacy directory API requires one edition and cannot return a cross-edition list. `/dashboard` remains private.
+
+Current and historical player pages share search, public-team and role filters, stable sorting, applied-condition chips, result/season counts and reset (#425). Search includes literal names, UIDs, visible name evidence and published team names. Only reliably available season data produces filter options; unknown teams do not become free agents. Current accepted Captain/coach combinations can match several roles while appearing once per UID. Historical names, roles and absent statistics remain historical; current caches never supply invented historical rank, PP or Tier.
+
+Page URL state uses `q`, `team`, `role`, `sort`, `group`, `rankMin`, `rankMax`, `ppMin` and `ppMax`. `sort` accepts `default`, `name-asc`, `name-desc`, `rank-asc`, `rank-desc`, `pp-asc` and `pp-desc`; `group` accepts `list` or `team`. Team values are published team IDs; `free_agent` is available only for explicitly recorded free agents. Ranges include both endpoints, reject invalid/reversed bounds and exclude missing values. Rank uses positive integer placement (smaller is better); PP zero is valid. Both sort directions put missing metrics last and break ties by ascending UID. Group mode sorts inside each original team group. Reset restores the full season, source order and default grouping. Tier filtering is deferred.
+
+The removed `ranked` and `hasPp` presence filters are ignored in old links and cleared on the next filter update. Advanced rank/PP ranges are grouped in a shared collapsible panel.
+
+These extended query parameters belong to the page UI, not new API filters. The page loads the full publication-checked read model once (completing remote collection pages when needed) and changes URL state through native browser history. Filter changes do not reload the page or fetch provider statistics; message boards retain their keyed identity across sorting/group changes. Mobile keeps search and sorting visible and can collapse other controls. Existing directory API contracts and background statistics refresh/revalidation remain in place.
+
+## Dashboard participation history (#361)
+
+The private `/dashboard` shows the signed-in UID's saved participation in published historical archives and completed native tournaments, newest numeric season first (unknown seasons last). It includes history-only players without a native registration, preserves historical names and distinct roles/teams, and keeps registration actions in their existing section. Missing fields remain unrecorded; a failed history read offers a retry instead of an empty-history message.
+
+The list reuses `publicPlayer`, public tournament summaries and their existing remote resources. Archive facts take precedence over duplicate native/imported registrations; multiple confirmed roster/replacement facts in one edition remain separate. Names never match identities. Unpublished editions, unresolved UIDs, application answers and source appendices do not appear. The updated backend supplies all same-edition facts using the existing response shape; an older backend can only supply the facts its saved-read implementation already exposes. No migration or new Developer scope is required.
 
 ## osu! player profile snapshots
 
@@ -41,3 +64,17 @@ Global Admins manage the About contributor list at `/admin/contributors` indepen
 The server checks global authorization and the saved revision, rejects duplicate identities, and saves the directory and its audit event in one transaction. A conflict keeps the saved list intact and asks the operator to refresh. Developer access is read-only; edition Admin grants do not authorize global edits. The central audit browser includes contributor changes under the site module. Public rendering projects only the published name and osu! ID.
 
 Migration `0043_contributor_directory` initializes the two formerly hardcoded, already-public contributors in their existing order. Repeated migrations/initialization do not duplicate or restore entries deliberately removed later. Apply it before serving this version. It does not create accounts or grant/revoke any role. New Chinese management copy awaits organizer review.
+
+Statistics map placements use competition ranking, matching group standings:
+equal best scores share a rank and the next rank skips the tied entries
+(1, 1, 3; or 1, 1, 1, 4). Average placement uses these shared ranks. Recorded
+zero scores remain valid; missing map results remain unknown. Team display
+filters retain the full comparison population within the selected round/map (#438).
+
+Statistics keep player osu! IDs and edition-scoped team IDs from public source to
+rendering. Names remain literal labels/search text, never grouping or filter keys;
+profile links use the row's UID directly. Same-name identities stay separate and
+name changes do not split one identity. Pool fixture projections add optional
+`teamIds` and ban-side `teamId` fields for identity-safe filtering. Older remote
+backends without those fields retain unfiltered pool coverage; selecting a team
+leaves its pool coverage unknown rather than matching ambiguous names (#439).

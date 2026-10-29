@@ -9,6 +9,7 @@ import {
 } from "../../src/db/schema";
 import { assertTestDatabase } from "../database";
 import { seedSession } from "./session";
+import { publicAppearances } from "../../src/lib/preferences";
 const origin = "http://127.0.0.1:3100";
 const headers = { Origin: origin };
 
@@ -130,10 +131,6 @@ test.describe("Admin default and visitor appearance overrides", () => {
       );
       // Repeated saves exercise the form's refreshed revision, without a redeploy.
       for (const value of [
-        "skyline-pop",
-        "glacier-blue",
-        "sakura-circuit",
-        "graphite-arena",
         "frutiger-aero",
         "retro-arcade",
         "manga-halftone",
@@ -210,8 +207,12 @@ test.describe("Admin default and visitor appearance overrides", () => {
     } finally {
       await guest.close();
     }
-    expect(await db().select().from(siteSettingEvents)).toHaveLength(15);
-    expect((await db().select().from(siteSettings))[0].revision).toBe(15);
+    expect(await db().select().from(siteSettingEvents)).toHaveLength(
+      publicAppearances.length + 2,
+    );
+    expect((await db().select().from(siteSettings))[0].revision).toBe(
+      publicAppearances.length + 2,
+    );
     expect(errors).toEqual([]);
   });
   test("enforces global Admin authorization, origin and concurrency through the API", async ({

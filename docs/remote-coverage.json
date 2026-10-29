@@ -971,6 +971,22 @@
       "requiredVerification": "403 without database/provider access"
     },
     {
+      "file": "src/app/api/games/ocl-chess/route.ts",
+      "kind": "read-route",
+      "authority": "denied",
+      "operations": ["getApiIdentity"],
+      "commands": "Denied in remote mode; connection management and preference cookies remain separate",
+      "metadata": "Inherited or static",
+      "services": [
+        "src/lib/public-read-models.ts / frontend-data.ts (getApiIdentity)"
+      ],
+      "test": "remote-e2e/full-site.spec.ts + integration/extended-read.test.ts",
+      "authorization": "Denied in remote mode",
+      "adapter": "proxy rejection",
+      "media": "Existing public assets",
+      "requiredVerification": "403 without database/provider access"
+    },
+    {
       "file": "src/app/api/health/route.ts",
       "kind": "read-route",
       "authority": "denied",
@@ -1367,6 +1383,20 @@
       "test": "remote-e2e/full-site.spec.ts + integration/extended-read.test.ts",
       "authorization": "Existing publication/subject boundaries",
       "adapter": "bounded in-memory connection",
+      "media": "Existing public assets",
+      "requiredVerification": "Desktop/mobile direct load, reload/navigation; authorized denial where applicable"
+    },
+    {
+      "file": "src/app/games/ocl-chess/page.tsx",
+      "kind": "page",
+      "authority": "static-or-local-interaction",
+      "operations": [],
+      "commands": "Denied in remote mode; connection management and preference cookies remain separate",
+      "metadata": "Inherited or static",
+      "services": [],
+      "test": "remote-e2e/full-site.spec.ts + integration/extended-read.test.ts",
+      "authorization": "Existing publication/subject boundaries",
+      "adapter": "no database; repository content/navigation/preferences",
       "media": "Existing public assets",
       "requiredVerification": "Desktop/mobile direct load, reload/navigation; authorized denial where applicable"
     },
@@ -1986,6 +2016,20 @@
     },
     {
       "file": "src/components/application-form.tsx",
+      "kind": "client",
+      "authority": "command-disabled",
+      "operations": [],
+      "commands": "Denied in remote mode; connection management and preference cookies remain separate",
+      "metadata": "Inherited or static",
+      "services": [],
+      "test": "remote-e2e/interactions.spec.ts + existing e2e interaction tests",
+      "authorization": "Existing publication/subject boundaries",
+      "adapter": "no database; repository content/navigation/preferences",
+      "media": "Existing public assets",
+      "requiredVerification": "Browser interaction/polling + API snapshot immutability"
+    },
+    {
+      "file": "src/components/archive-staff-resolver.tsx",
       "kind": "client",
       "authority": "command-disabled",
       "operations": [],

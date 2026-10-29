@@ -1,3 +1,4 @@
+import { PageNotes } from "./page-notes";
 import { MatchDetailsView } from "./match-details";
 import {
   publicArchiveStatistics,
@@ -6,10 +7,11 @@ import {
 import { supportsArchiveStatistics } from "@/lib/archive-statistics-model";
 import { getAppTranslations } from "@/i18n/server";
 import { archivePoolMetadata } from "@/lib/archive-map-metadata";
-import { archiveArtworkSetIds } from "@/lib/archive-artwork";
+import { archiveArtworkLookup } from "@/lib/archive-artwork";
 import { archiveBracket } from "@/lib/archive-bracket";
 import { archiveEventMatches } from "@/lib/archive-event-matches";
 import { archiveStaff } from "@/lib/archive-staff";
+import { groupArchiveStaff } from "@/lib/archive-staff-groups";
 import { remoteMode } from "@/lib/data-source";
 import { formatDate, type Edition } from "@/lib/editions";
 import {
@@ -28,6 +30,7 @@ import {
   publicEditionContext,
 } from "@/lib/public-read-models";
 import type { PublicPlayer } from "@/lib/read-api-contract";
+import { publicDirectoryPlayer } from "@/lib/player-directory";
 import { deriveS8Standings } from "@/lib/s8-standings";
 import { hasS1FinalStandings } from "@/lib/s1-archive";
 import Image from "next/image";
@@ -284,7 +287,14 @@ export async function HistoricalArchiveView({
   );
   function rulesContent() {
     const rules = historicalRulebook(a, edition.rules);
-    if (!rules && a.sourceFacts?.some((f) => f.category === "rules"))
+    if (!rules && a.sourceFacts?.some((f) => f.category === "rules")) {
+      notes = a.sourceFacts
+        .filter((f) => f.category === "rules")
+        .map((f, i) => (
+          <p key={i}>
+            {f.label} · {f.source}
+          </p>
+        ));
       return (
         <div className="stack">
           {a.sourceFacts
@@ -293,11 +303,11 @@ export async function HistoricalArchiveView({
               <section key={i}>
                 <h3>{f.label}</h3>
                 <p>{f.text}</p>
-                <p className="muted small">{f.source}</p>
               </section>
             ))}
         </div>
       );
+    }
     return rules ? (
       <>
         <p className="rules-version muted small">
@@ -344,17 +354,26 @@ export async function HistoricalArchiveView({
             )
               match.note = tr("Forfeit");
       }
+    notes = [
+      derived && (
+        <p key="standings">
+          {tr(
+            "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
+          )}
+        </p>
+      ),
+      bracket?.groups.some((g) => g.layout !== "grid") && (
+        <p key="appearances">
+          {tr(
+            "Recorded appearances are reference links, not confirmed advancement.",
+          )}
+        </p>
+      ),
+    ];
     const finalRanks = hasS1FinalStandings(a);
     const standingsContent = standings.length ? (
       <>
         <h2>{finalRanks ? tr("Final standings") : tr("Group standings")}</h2>
-        {derived && (
-          <p className="muted small">
-            {tr(
-              "Calculated from recorded group results: wins, then map difference. This is a derived order, not an official archived ranking. Equal values share a rank; incomplete or ambiguous groups await review.",
-            )}
-          </p>
-        )}
         <div
           className="table-scroll"
           tabIndex={0}
@@ -417,6 +436,7 @@ export async function HistoricalArchiveView({
       />
     );
   }
+  let notes: React.ReactNode;
   let content;
   let title = edition.name;
   if (section === "overview") {
@@ -424,6 +444,38 @@ export async function HistoricalArchiveView({
       edition,
       a,
     );
+    const metrics = [
+      {
+        key: "teams",
+        label: tr("Teams"),
+        count: counts.teams,
+        href: href("teams"),
+      },
+      {
+        key: "players",
+        label: tr("Players & coaches"),
+        count: counts.players,
+        href: href("players"),
+      },
+      {
+        key: "matches",
+        label: tr("Recorded results"),
+        count: counts.results,
+        href: href("schedule"),
+      },
+      {
+        key: "mappools",
+        label: tr("Mappools"),
+        count: counts.pools,
+        href: href("mappools"),
+      },
+      {
+        key: "maps",
+        label: tr("Maps"),
+        count: counts.maps,
+        href: href("mappools"),
+      },
+    ];
     content = (
       <>
         <div
@@ -441,16 +493,22 @@ export async function HistoricalArchiveView({
             </div>
           )}
           <dl className="archive-counts">
-            {[
-              [tr("Teams"), counts.teams],
-              [tr("Players & coaches"), counts.players],
-              [tr("Recorded results"), counts.results],
-              [tr("Mappools"), counts.pools],
-              [tr("Maps"), counts.maps],
-            ].map(([label, count]) => (
-              <div key={label}>
+            {metrics.map(({ key, label, count, href: to }) => (
+              <div
+                key={key}
+                className="archive-count"
+                data-link={to ? "" : undefined}
+              >
                 <dt>{label}</dt>
-                <dd>{count}</dd>
+                <dd>
+                  {to ? (
+                    <Link href={to} aria-label={`${label} ${count}`}>
+                      {count}
+                    </Link>
+                  ) : (
+                    count
+                  )}
+                </dd>
               </div>
             ))}
           </dl>
@@ -479,33 +537,27 @@ export async function HistoricalArchiveView({
     );
   } else if (section === "staff") {
     title = tr("Staff");
-    const groups = new Map<string, HistoricalArchive["staff"]>();
-    for (const person of archiveStaff(a)) {
-      const members = groups.get(person.position) ?? [];
-      members.push(person);
-      groups.set(person.position, members);
-    }
-    content = groups.size ? (
+    const groups = groupArchiveStaff(archiveStaff(a));
+    const roleTitles: Record<string, string> = {
+      referee: tr("Referee"),
+      streamer: tr("Streamer"),
+      designer: tr("Designer"),
+      commentator: tr("Commentator"),
+      unspecified: tr("Staff (unspecified)"),
+    };
+    content = groups.length ? (
       <div className="archive-staff stack">
-        {Array.from(groups, ([position, members]) => (
-          <section key={position}>
-            <h2>
-              {position === "Referee"
-                ? tr("Referee")
-                : position === "Streamer"
-                  ? tr("Streamer")
-                  : position === "Commentators"
-                    ? tr("Commentators")
-                    : position}
-            </h2>
+        {groups.map(({ key, members }) => (
+          <section key={key}>
+            <h2>{Object.hasOwn(roleTitles, key) ? roleTitles[key] : key}</h2>
             <ul className="public-staff-list">
               {members.map((person, index) => (
                 <li key={`${person.osuId}-${index}`}>
                   {person.osuId ? (
-                    <Avatar osuId={person.osuId} username={person.username} />
+                    <Avatar osuId={person.osuId} username={person.names[0]} />
                   ) : (
                     <div className="avatar" aria-hidden="true">
-                      <span>{person.username.slice(0, 2)}</span>
+                      <span>{person.names[0].slice(0, 2)}</span>
                     </div>
                   )}
                   <div>
@@ -516,10 +568,10 @@ export async function HistoricalArchiveView({
                           href={`https://osu.ppy.sh/users/${person.osuId}`}
                           rel="noreferrer"
                         >
-                          {person.username}
+                          {person.names.join(" · ")}
                         </a>
                       ) : (
-                        person.username
+                        person.names.join(" · ")
                       )}
                     </h3>
                   </div>
@@ -566,7 +618,7 @@ export async function HistoricalArchiveView({
       section === "player"
         ? allPlayers.filter((p) => String(p.osuId) === id)
         : allPlayers;
-    if (!players.length) notFound();
+    if (!players.length && section === "player") notFound();
     const aliases = preview
       ? []
       : remoteMode()
@@ -589,15 +641,12 @@ export async function HistoricalArchiveView({
         {section === "players" ? (
           <ArchivePlayerSearch
             players={players.map((p) => ({
-              id: p.osuId,
-              searchText: [
-                p.username,
-                p.osuId,
-                p.team?.name ?? "",
-                ...aliases
+              ...publicDirectoryPlayer(
+                p,
+                aliases
                   .filter((n) => n.osuId === p.osuId)
                   .map((n) => n.username),
-              ].join(" "),
+              ),
               card: rosterCard(p),
             }))}
           />
@@ -612,7 +661,6 @@ export async function HistoricalArchiveView({
             >
               {tr("OCLR profile")} →
             </Link>
-            {" · "}
             <a
               href={`https://osu.ppy.sh/users/${players[0].osuId}`}
               rel="noreferrer"
@@ -697,20 +745,22 @@ export async function HistoricalArchiveView({
       section === "pool" ? a.pools.find((p) => p.id === id) : a.pools[0];
     if (section === "pool" && !pool) notFound();
     const display = pool ? archivePoolMetadata(pool, a.editionSlug) : null;
+    const artwork =
+      pool && display
+        ? await archiveArtworkLookup(
+            pool.maps
+              .flatMap((m) => [m.beatmapId, m.originalId ?? null])
+              .filter((id) => id !== null && !display.setIds[id]),
+          )
+        : null;
     title = tr("Mappools");
     content =
       pool && display ? (
         <ArchiveMappools
           key={pool.id}
           pool={display.pool}
-          artworkSetIds={{
-            ...(await archiveArtworkSetIds(
-              pool.maps
-                .map((m) => m.beatmapId)
-                .filter((id) => id !== null && !display.setIds[id]),
-            )),
-            ...display.setIds,
-          }}
+          artworkSetIds={{ ...artwork?.setIds, ...display.setIds }}
+          missingBeatmapIds={artwork?.missingBeatmapIds}
           stages={a.pools.map((p) => ({
             id: p.id,
             name: p.name,
@@ -726,12 +776,13 @@ export async function HistoricalArchiveView({
     content = competition();
   } else if (section === "draft") {
     title = tr("Draft results");
+    if (a.draftMode === "final-tiers")
+      notes = (
+        <p>{tr("Final Tier allocations; selection order was not recorded.")}</p>
+      );
     content =
       a.draftMode === "final-tiers" ? (
         <div className="archive-draft">
-          <p className="muted">
-            {tr("Final Tier allocations; selection order was not recorded.")}
-          </p>
           {[
             ...new Set(
               a.players
@@ -811,6 +862,7 @@ export async function HistoricalArchiveView({
         </Link>
       )}
       {content}
+      <PageNotes>{notes}</PageNotes>
     </div>
   );
 }

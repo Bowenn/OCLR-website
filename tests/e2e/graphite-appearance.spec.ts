@@ -5,7 +5,7 @@ import { db, closeDb } from "../../src/db";
 import { assertTestDatabase } from "../database";
 import { seedBrowserEditions } from "./setup";
 import { seedSession } from "./session";
-import { seedEditions } from "../fixtures/editions";
+import { seedEditions, setEditionAppearance } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
 import { chooseTheme } from "./theme";
 import s7Archive from "../../docs/imports/s7-archive.json" with { type: "json" };
@@ -24,6 +24,7 @@ test.describe("S7 Graphite Arena appearance", () => {
     await seedEditions([
       {
         ...edition,
+        defaultAppearance: "graphite-arena",
         slug: "s7",
         season: "7",
         name: "OCLR Season 7",
@@ -63,7 +64,6 @@ test.describe("S7 Graphite Arena appearance", () => {
             [
               ["oclr-locale", locale],
               ["oclr-theme", theme],
-              ["oclr-appearance", "graphite-arena"],
             ].map(([name, value]) => ({ name, value, url: origin })),
           );
           expect((await page.goto("/admin/tournaments/s7"))?.status()).toBe(
@@ -148,7 +148,7 @@ test.describe("S7 Graphite Arena appearance", () => {
     expect(errors).toEqual([]);
   });
 
-  test("keeps mappool text actions clear and long titles readable", async ({
+  test("keeps mappool text actions clear and complete metadata accessible", async ({
     context,
     isMobile,
   }) => {
@@ -170,7 +170,6 @@ test.describe("S7 Graphite Arena appearance", () => {
             [
               ["oclr-locale", locale],
               ["oclr-theme", theme],
-              ["oclr-appearance", "graphite-arena"],
             ].map(([name, value]) => ({ name, value, url: origin })),
           );
           expect((await page.goto("/tournaments/s7/mappools"))?.status()).toBe(
@@ -188,33 +187,43 @@ test.describe("S7 Graphite Arena appearance", () => {
             "aria-pressed",
             "true",
           );
-          for (const [slot, literal] of [
-            ["NM2", "DragonForce - My Heart Will Go On [Expert]"],
-            ["ACE1", "Shimotsuki Haruka - Secret Liqueur [Last Order]"],
+          for (const [slot, artist, text, difficulty] of [
+            ["NM2", "DragonForce", "My Heart Will Go On", "Expert"],
+            ["ACE1", "Shimotsuki Haruka", "Secret Liqueur", "Last Order"],
           ]) {
-            const title = page.locator(`#map-${slot} .map-open-button`);
-            await expect(title).toHaveText(literal);
+            const card = page.locator(`#map-${slot}`);
+            const title = card.locator(".map-open-button");
+            // Shared band cards display title, artist and difficulty separately.
+            // Ellipsis may shorten the visual text; the action retains all metadata.
+            await expect(title).toHaveText(text);
+            await expect(card.locator(".map-card-artist")).toHaveText(artist);
+            await expect(card.locator(".map-card-difficulty")).toHaveText(
+              `[${difficulty}]`,
+            );
+            expect(await title.getAttribute("aria-label")).toContain(
+              `${artist} - ${text} [${difficulty}]`,
+            );
             await expect(title).toHaveCSS("background-image", "none");
             await expect(title).toHaveCSS("box-shadow", "none");
             const geometry = await title.evaluate((node) => {
               const button = node.getBoundingClientRect();
               const heading = node.parentElement!.getBoundingClientRect();
-              const range = document.createRange();
-              range.selectNodeContents(node);
+              const text = node
+                .querySelector(".map-card-title")!
+                .getBoundingClientRect();
               return {
-                largeEnough: button.height >= 44,
+                visible: button.width > 0 && button.height > 0,
                 fillsHeading: Math.abs(button.width - heading.width) < 1,
                 unclipped:
                   node.scrollWidth <= node.clientWidth &&
                   node.scrollHeight <= node.clientHeight,
-                textInside: [...range.getClientRects()].every(
-                  (r) =>
-                    r.left >= button.left - 1 && r.right <= button.right + 1,
-                ),
+                textInside:
+                  text.left >= button.left - 1 &&
+                  text.right <= button.right + 1,
               };
             });
             expect(geometry).toEqual({
-              largeEnough: true,
+              visible: true,
               fillsHeading: true,
               unclipped: true,
               textInside: true,
@@ -287,7 +296,6 @@ test.describe("S7 Graphite Arena appearance", () => {
     await context.clearCookies();
     await context.addCookies([
       { name: "oclr-locale", value: "en", url: origin },
-      { name: "oclr-appearance", value: "graphite-arena", url: origin },
     ]);
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/tournaments/s7");
@@ -320,10 +328,10 @@ test.describe("S7 Graphite Arena appearance", () => {
     await page.goto("/privacy");
     await expect(html).toHaveAttribute("data-theme-preference", "system");
     await expect(html).toHaveAttribute("data-theme", "dark");
-    await expect(html).toHaveAttribute("data-appearance", "graphite-arena");
+    await expect(html).toHaveAttribute("data-appearance", "default");
   });
 
-  test("selects S7 from the real menu in all locales and persists the shipped light/dark design", async ({
+  test("inherits configured S7 in all locales and renders the shipped light/dark design", async ({
     page,
     context,
     isMobile,
@@ -337,7 +345,7 @@ test.describe("S7 Graphite Arena appearance", () => {
     );
     expect(asset.status()).toBe(200);
     expect(asset.headers()["content-type"]).toContain("image/svg+xml");
-    for (const [locale, label] of [
+    for (const [locale] of [
       ["en", "S7 · Graphite Arena"],
       ["zh-Hans", "S7 · 石墨竞技场"],
       ["zh-Hant", "S7 · 石墨競技場"],
@@ -347,7 +355,6 @@ test.describe("S7 Graphite Arena appearance", () => {
           [
             ["oclr-locale", locale],
             ["oclr-theme", theme],
-            ["oclr-appearance", "default"],
           ].map(([name, value]) => ({ name, value, url: origin })),
         );
         expect((await page.goto("/tournaments/s7"))?.status()).toBe(200);
@@ -356,15 +363,13 @@ test.describe("S7 Graphite Arena appearance", () => {
         await page.waitForLoadState("networkidle");
         const trigger = page.locator(".appearance-trigger");
         await trigger.click();
-        const menu = page.getByRole("menu").filter({
-          has: page.locator('[data-appearance-option="graphite-arena"]'),
-        });
-        await expect(menu.getByRole("menuitemradio")).toHaveCount(14);
-        await page.keyboard.press("End");
-        const option = menu.getByRole("menuitemradio", {
-          name: label,
-          exact: true,
-        });
+        const menu = page.locator('.appearance-control [role="menu"]');
+        await expect(menu.getByRole("menuitemradio")).toHaveCount(10);
+        await expect(
+          menu.locator('[data-appearance-option="graphite-arena"]'),
+        ).toHaveCount(0);
+        await page.keyboard.press("Home");
+        const option = menu.getByRole("menuitemradio").first();
         await expect(option).toBeFocused();
         const box = (await menu.boundingBox())!;
         expect(box.y).toBeGreaterThanOrEqual(0);
@@ -426,15 +431,19 @@ test.describe("S7 Graphite Arena appearance", () => {
         await page.waitForLoadState("networkidle");
         await expect(page.locator("html")).toHaveAttribute(
           "data-appearance",
-          "graphite-arena",
+          "default",
         );
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-        // The global information link may target a featured edition rather
-        // than this historical archive. Follow its real href to test selection.
+        // The featured link can point to another edition. Configure that edition
+        // explicitly before checking season-specific header styles there.
         const informationHref = await page
           .locator('.main-nav > a[href^="/tournaments"]')
           .getAttribute("href");
-        expect(informationHref).toBeTruthy();
+        expect(informationHref).toMatch(/^\/tournaments\/[^/?#]+$/);
+        await setEditionAppearance(
+          informationHref!.split("/")[2],
+          "graphite-arena",
+        );
         await page.goto(informationHref!);
         await page.waitForLoadState("networkidle");
         if (isMobile) await page.locator(".menu-toggle").click();

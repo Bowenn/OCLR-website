@@ -2,7 +2,8 @@
 import { ReadOnlyFields, MutationButton } from "./staff-read-only";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePendingRefresh } from "./use-pending-refresh";
+import { LoadingRegion } from "./loading-region";
 import { useAppTranslations } from "@/i18n/shared";
 import type { staffTeams } from "@/lib/teams";
 import { TeamAvatar } from "./team-avatar";
@@ -18,14 +19,16 @@ export function TeamEditor({
   locked: boolean;
 }) {
   const tr = useAppTranslations(),
-    router = useRouter(),
-    dialog = useRef<HTMLDialogElement>(null);
+    { refreshing, refresh } = usePendingRefresh(),
+    dialog = useRef<HTMLDialogElement>(null),
+    imageInput = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<File | null>(null),
     [preview, setPreview] = useState<string | null>(null),
     [remove, setRemove] = useState(false),
-    [pending, setPending] = useState(false),
+    [requestPending, setPending] = useState(false),
     [error, setError] = useState(""),
     [opened, setOpened] = useState(0);
+  const pending = requestPending || refreshing;
   useEffect(
     () => () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -33,11 +36,13 @@ export function TeamEditor({
     [preview],
   );
   function chooseImage(value: File | null) {
+    if (!value && imageInput.current) imageInput.current.value = "";
     setImage(value);
     setPreview(value ? URL.createObjectURL(value) : null);
   }
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
     setPending(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -52,11 +57,11 @@ export function TeamEditor({
       const data = await r.json();
       if (!r.ok) {
         // Load the current team so the form is not resubmitted with stale data.
-        router.refresh();
+        refresh();
         throw new Error(data.error);
       }
       dialog.current?.close();
-      router.refresh();
+      refresh();
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "The action could not be completed.",
@@ -67,7 +72,10 @@ export function TeamEditor({
   }
   return (
     <>
+      {refreshing && !error && <LoadingRegion />}
       <button
+        disabled={pending}
+        aria-busy={pending}
         type="button"
         className="secondary"
         onClick={() => {
@@ -84,10 +92,15 @@ export function TeamEditor({
         ref={dialog}
         className="team-editor-dialog"
         aria-label={tr("Edit team")}
+        onClose={() => {
+          chooseImage(null);
+          setRemove(false);
+        }}
         onCancel={(e) => {
           if (pending) e.preventDefault();
         }}
       >
+        {(requestPending || (refreshing && !!error)) && <LoadingRegion />}
         {/* Remount so inputs show the latest saved team, not earlier typing. */}
         <form
           key={`${opened}:${version}`}
@@ -137,6 +150,7 @@ export function TeamEditor({
               <span>{tr("Team avatar")}</span>
               <input
                 disabled={pending}
+                ref={imageInput}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => {
@@ -161,7 +175,11 @@ export function TeamEditor({
             >
               {tr("Remove avatar")}
             </MutationButton>
-            <MutationButton disabled={pending} type="submit">
+            <MutationButton
+              disabled={pending}
+              aria-busy={pending}
+              type="submit"
+            >
               {tr("Save team")}
             </MutationButton>
             <button

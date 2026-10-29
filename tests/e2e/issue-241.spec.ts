@@ -42,11 +42,14 @@ test("241 historical presentation", async ({ page, context }, info) => {
         await expect(page.locator(".bracket-group-grid")).toHaveCount(0);
         const canvas = page.locator(".bracket-library-scroll");
         await expect(canvas).toBeVisible();
+        await expect(
+          page.locator(".archive-competition input[type=checkbox]"),
+        ).toHaveCount(0);
         await expect(canvas.locator(".match-card")).toHaveCount(
           season === 8 ? 14 : 10,
         );
         await expect(canvas.locator("svg path").first()).toBeVisible();
-        await expect(page.locator(".archive-competition")).toContainText(
+        await expect(page.locator(".page-notes")).toContainText(
           "Recorded appearances are reference links, not confirmed advancement.",
         );
         await page.getByText("Connection sources", { exact: true }).click();

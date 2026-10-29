@@ -1,3 +1,4 @@
+import { setEditionAppearance } from "../fixtures/editions";
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { seedEditions } from "../fixtures/editions";
@@ -378,6 +379,12 @@ test.describe("tournament overview alignment (#265, #323)", () => {
       "glacier-blue",
       "sakura-circuit",
       "graphite-arena",
+      "orbital-pulse",
+      "prism-overture",
+      "azure-brush",
+      "verdant-prelude",
+      "chromatic-origins",
+      "frost-waltz",
     ]) {
       for (const theme of ["light", "dark"]) {
         await context.addCookies([
@@ -388,6 +395,7 @@ test.describe("tournament overview alignment (#265, #323)", () => {
           },
           { name: "oclr-theme", value: theme, url: "http://127.0.0.1:3100" },
         ]);
+        await setEditionAppearance(slug, appearance);
         await page.goto(`/tournaments/${slug}`);
         await expect(tournamentBar).toBeVisible();
         await expectOverviewContents(page, isMobile);

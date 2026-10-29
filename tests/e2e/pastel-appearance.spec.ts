@@ -10,9 +10,12 @@ import { prepareDraft } from "../fixtures/draft";
 import { seedBrowserEditions } from "./setup";
 import { readTournament } from "../../src/lib/tournaments";
 import { seedEditions } from "../fixtures/editions";
-import { appearances } from "../../src/lib/preferences";
+import {
+  publicAppearances as appearances,
+  isPublicAppearance,
+} from "../../src/lib/preferences";
 import { chooseTheme } from "./theme";
-const origin = "http://127.0.0.1:3100",
+const origin = process.env.OCLR_E2E_ORIGIN ?? "http://127.0.0.1:3100",
   base = "/tournaments/test-cup";
 async function preferences(
   context: BrowserContext,
@@ -58,6 +61,36 @@ async function accessible(page: Page) {
   ).toEqual([]);
 }
 const optional = {
+  "chromatic-origins": {
+    label: "S1 · Chromatic Origins",
+    lightBackground: "rgb(246, 244, 247)",
+    darkBackground: "rgb(33, 28, 41)",
+  },
+  "frost-waltz": {
+    label: "S3 · Frost Waltz",
+    lightBackground: "rgb(242, 250, 255)",
+    darkBackground: "rgb(16, 30, 42)",
+  },
+  "verdant-prelude": {
+    label: "S2 · Verdant Prelude",
+    lightBackground: "rgb(245, 250, 247)",
+    darkBackground: "rgb(18, 35, 31)",
+  },
+  "azure-brush": {
+    label: "S4 · Azure Brush",
+    lightBackground: "rgb(242, 248, 250)",
+    darkBackground: "rgb(15, 33, 50)",
+  },
+  "prism-overture": {
+    label: "S5 · Prism Overture",
+    lightBackground: "rgb(247, 245, 252)",
+    darkBackground: "rgb(27, 23, 48)",
+  },
+  "orbital-pulse": {
+    label: "S6 · Orbital Pulse",
+    lightBackground: "rgb(244, 246, 252)",
+    darkBackground: "rgb(12, 20, 40)",
+  },
   "graphite-arena": {
     label: "S7 · Graphite Arena",
     lightBackground: "rgb(243, 244, 242)",
@@ -120,6 +153,7 @@ const optional = {
   },
 } as const;
 for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
+  if (!isPublicAppearance(appearance)) continue;
   const { label, lightBackground, darkBackground } = optional[appearance];
   const setPreferences = (
     context: BrowserContext,
@@ -175,7 +209,7 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
         // ArrowUp opens on the last option; step up to this appearance.
         await page.keyboard.press("ArrowUp");
         for (
-          let step = appearances.indexOf(appearance);
+          let step = appearances.findIndex((value) => value === appearance);
           step < appearances.length - 1;
           step++
         )
@@ -343,6 +377,9 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
               ].includes(path)
             )
               await accessible(page);
+            // Let RSC prefetches finish before navigation or cookie changes;
+            // WebKit reports cancelled in-flight reads as access-control errors.
+            await page.waitForLoadState("networkidle");
           }
           await page.locator(".appearance-trigger").click();
           await expect(
@@ -350,6 +387,7 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
           ).toHaveAttribute("data-appearance-option", appearance);
           await accessible(page);
           await page.keyboard.press("Escape");
+          await page.waitForLoadState("networkidle");
         }
       await setPreferences(context, "en", "light");
       for (const width of isMobile ? [320, 390] : [768, 1024, 1600]) {
@@ -362,6 +400,7 @@ for (const appearance of Object.keys(optional) as (keyof typeof optional)[]) {
         await expect(
           page.locator(".appearance-control [role=menu]"),
         ).toHaveCount(0);
+        await page.waitForLoadState("networkidle");
       }
       expect(errors).toEqual([]);
     });

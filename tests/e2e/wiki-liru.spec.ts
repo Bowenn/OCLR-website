@@ -1,3 +1,4 @@
+import { publicAppearances as appearances } from "../../src/lib/preferences";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -9,21 +10,7 @@ const labels = {
     credits: "Credits and licence",
   },
 };
-const appearances = [
-  "default",
-  "cute-pastel",
-  "swiss-minimal",
-  "claymorphism",
-  "manga-halftone",
-  "glassmorphism",
-  "esports-broadcast",
-  "retro-arcade",
-  "frutiger-aero",
-  "skyline-pop",
-  "glacier-blue",
-  "sakura-circuit",
-  "graphite-arena",
-];
+
 // Every appearance in the default locale, plus the other locales in the default appearance.
 const cases = [
   ...appearances.map((appearance) => ["zh-Hans", appearance] as const),
@@ -63,7 +50,7 @@ for (const [locale, appearance] of cases)
           page.locator(".wiki-articles a[aria-current='page']"),
         ).toHaveAttribute("href", "/wiki/liru");
         const figures = page.locator(".wiki-figure");
-        await expect(figures).toHaveCount(3);
+        await expect(figures).toHaveCount(4);
         for (const img of await figures.locator("img").all()) {
           await img.scrollIntoViewIfNeeded();
           await expect(img).toHaveAttribute("alt", /.{10,}/);

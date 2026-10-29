@@ -91,6 +91,37 @@ test("243 historical presentation", async ({
             ),
           ),
         ]);
+        const metricLinks = page.locator(".archive-counts a");
+        await expect(metricLinks).toHaveCount(5);
+        for (const [index, section] of [
+          "teams",
+          "players",
+          "schedule",
+          "mappools",
+          "mappools",
+        ].entries()) {
+          await expect(metricLinks.nth(index)).toHaveAttribute(
+            "href",
+            `/tournaments/issue-243-s${season}/${section}`,
+          );
+        }
+        await page
+          .locator(".archive-counts dt")
+          .first()
+          .scrollIntoViewIfNeeded();
+        // Clicking the label side must hit the row link, not just its number.
+        expect(
+          await page
+            .locator(".archive-counts dt")
+            .first()
+            .evaluate((label) => {
+              const rect = label.getBoundingClientRect();
+              return document
+                .elementFromPoint(rect.x + 2, rect.y + 2)
+                ?.closest("a")
+                ?.getAttribute("href");
+            }),
+        ).toBe(`/tournaments/issue-243-s${season}/teams`);
         expect(box!.height).toBeLessThanOrEqual(
           page.viewportSize()!.height / 2 + 1,
         );

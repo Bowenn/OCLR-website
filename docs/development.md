@@ -11,6 +11,25 @@ Use Node.js 24 LTS (minimum 22.13) and npm. Run `npm ci`. For database-backed fe
 
 One Next.js App Router application uses strict TypeScript, React and Tailwind CSS. Shared tokens and responsive patterns live in `src/app/globals.css`. Static tournament information works without external services; authentication, registration, teams and live draft data require PostgreSQL. Empty production content stays unpublished until approved by organizers.
 
+## Phone and LAN preview
+
+`next dev` serves responsive layouts to another device on the same network, but only for an origin the application accepts. Set `APP_URL` to this machine's private IPv4 origin, then restart the dev server (environment and `next.config.ts` changes need a restart):
+
+```sh
+# macOS: ipconfig getifaddr en0 | Linux: hostname -I
+APP_URL=http://192.168.100.31:3000 npm run dev
+```
+
+Open the same address on the phone. Three development-only rules make that work, and none of them changes a production server:
+
+- `appUrl()` in `src/lib/http.ts` accepts plain HTTP on a private IPv4 origin, while `NODE_ENV` is `development`. Loopback stays allowed everywhere; `next build` and `next start` keep the HTTPS-only rule, so a private HTTP `APP_URL` fails closed there.
+- `next.config.ts` derives `allowedDevOrigins` from that `APP_URL` hostname, which is the allowlist Next needs before it answers dev assets and HMR requests from a hostname other than its startup host.
+- `src/proxy.ts` skips the canonical-host redirect for a private-network request while developing. Next relativizes redirects against the dev server's own startup origin, so that redirect would otherwise return the same URL forever (`ERR_TOO_MANY_REDIRECTS`). Pages load even when `APP_URL` is still loopback, but write requests then fail the same-origin check, so point `APP_URL` at the LAN origin for a full preview.
+
+Sign-in needs the osu! callback registered as `APP_URL/auth/osu/callback` for that exact origin; without it, preview public pages only. Remote read mode (`OCLR_DATA_SOURCE=remote`) still requires a loopback `APP_URL` and rejects other hosts by design.
+
+While the dev server listens on the network, any device that can reach it also reaches unminified source, dev error overlays and unpublished demo data. Use this on a trusted network only, and return `APP_URL` to `http://localhost:3000` afterwards.
+
 ## Local frontend database and demo content
 
 For frontend work without an organizer database, use the existing Docker installation:
@@ -26,7 +45,7 @@ npm run dev
 
 Database files live in the Docker volume `oclr-frontend-postgres-data`, outside the repository. `.env.local` is ignored by Git. Never commit database dumps, storage files, local configuration or credentials. Stop this database with `docker stop oclr-frontend-postgres`; restart it with `npm run db:local`. This does not change any other database or running demo/production container.
 
-The explicit `db:seed:dev` command accepts only this loopback port and database name, requires matching `DATABASE_URL` and `TEST_DATABASE_URL`, and refuses production mode. It inserts data transactionally and preserves existing demo edits on subsequent runs. It creates two clearly labeled synthetic editions, 28 identities (24 accepted, four pending), four teams, 12 mappool entries, three fixtures and one synthetic published result. Visit `/tournaments/dev-s11` for the populated edition and `/tournaments/dev-archive` for the completed-edition layout. The seed never runs automatically when serving pages and does not modify the real `s11` bootstrap edition. Dates are relative to the first seed run. Profile snapshots are synthetic; no osu! API credentials or real participant records are copied.
+The explicit `db:seed:dev` command accepts only this loopback port and database name, requires matching `DATABASE_URL` and `OCLR_DEVELOPMENT_DATABASE_URL`, and refuses production mode. It inserts data transactionally and preserves existing demo edits on subsequent runs. It creates two clearly labeled synthetic editions, 28 identities (24 accepted, four pending), four teams, 12 mappool entries, three fixtures and one synthetic published result. Visit `/tournaments/dev-s11` for the populated edition and `/tournaments/dev-archive` for the completed-edition layout. The seed never runs automatically when serving pages and does not modify the real `s11` bootstrap edition. Dates are relative to the first seed run. Profile snapshots are synthetic; no osu! API credentials or real participant records are copied.
 
 The local database is for UI preview. Database-backed automated tests may truncate their target; use a different isolated test database for the full suite. OAuth, account access and real registration still require the organizer-approved configuration described below. No development authentication bypass is added.
 
@@ -57,13 +76,21 @@ Check the issues for commit-specific local results, actual CI and organizer revi
 
 `npm run check` runs ESLint, generated route types and TypeScript. `npm run build` creates the production build; `npm start` serves it on a conventional Node.js host. CI runs the same checks. No Vercel services are required.
 
+`npm run test:components` runs the player-message board's desktop/mobile browser
+regressions without PostgreSQL or a Next.js build. Install the configured
+Playwright Chromium first (`npx playwright install chromium`). The loopback-only
+test host bundles actual client components and translations; tests intercept HTTP
+with synthetic responses to control request completion order. This checks client
+state recovery, not backend authorization or full application E2E. It is a
+separate local command and does not expand the fixed core CI browser allowlist.
+
 ## Design and content
 
 The committed `docs/design/oclr-website-concept.webp` is a visual reference only. Its dates, statistics, format, identities and expanded tournament name are placeholders. The correct name is **osu! Chinese League Rookie**. Registration is individual; teams are formed through the staff-appointed captain draft.
 
 Public tournament editions now follow the organizer-supplied [MainSheet Light reference](design/mainsheet-light/README.md): lavender surfaces, horizontal section navigation, artwork-led overview, match card/compact views, visual mappools with map details, team browsing and an indexed rules handbook. Admin, private Player/Captain tools and OBS retain their existing layouts. Reference sample teams, dates, scores and rules are never production tournament content. Localization is tracked separately in [#72](https://github.com/PhoenixEmik/OCLR-website/issues/72).
 
-Global Admins set the site default at `/admin/settings`. Visitors can follow that default or select the original, cute-pastel, swiss-minimal, claymorphism, manga-halftone, glassmorphism, esports-broadcast, retro-arcade, Frutiger Aero, S10 Skyline Pop, S9 Glacier Blue or S8 Sakura Circuit appearance in the header, independently of light/dark. Explicit personal choices take priority; “Use site default” clears the override. Settings are stored in the singleton `site_settings` row with optimistic revisions; transactional `site_setting_events` appear in the central audit browser, visible only to global Admins. The next server request reads the saved default without redeployment; a database outage falls back to the original design for public rendering. A whitelisted `oclr-appearance` cookie restores the choice during server rendering across public and private pages; OBS remains isolated. The pastel palette, local Quicksand font and selected presentation styles are adapted from `style/cute-pastel-ui` (9d95608). Tournament defaults follow the current edition as described in docs/deployment.md; no automatic preference cookies, stage-completion inference or mappool workflow changes are introduced.
+Global Admins set the site default at `/admin/settings`. Visitors can follow that default or select the original, cute-pastel, swiss-minimal, claymorphism, manga-halftone, glassmorphism, esports-broadcast, retro-arcade, Frutiger Aero appearance in the header, independently of light/dark. Explicit personal choices take priority; “Use site default” clears the override. Settings are stored in the singleton `site_settings` row with optimistic revisions; transactional `site_setting_events` appear in the central audit browser, visible only to global Admins. The next server request reads the saved default without redeployment; a database outage falls back to the original design for public rendering. A whitelisted `oclr-appearance` cookie restores the choice during server rendering across public and private pages; OBS remains isolated. The pastel palette, local Quicksand font and selected presentation styles are adapted from `style/cute-pastel-ui` (9d95608). Tournament defaults follow the current edition as described in docs/deployment.md; no automatic preference cookies, stage-completion inference or mappool workflow changes are introduced.
 
 The optional Swiss minimal design adapts style B (Swiss / Editorial) from the organizer-provided osu! Cup preview: black/white materials, thin rules, square controls, large headings and a red accent. `src/app/swiss-theme.css` scopes the design to `.themed-site`, including both brightness modes; broadcast output is isolated. It uses the existing local sans stack without third-party font requests. Migration `0027_swiss_minimal_appearance` expands only the site setting/audit appearance check constraints; existing defaults and history remain valid. Apply migrations before selecting Swiss as a site default. An older application does not understand the new value: select a supported site/tournament default before a deliberate rollback; do not delete audit history or down-migrate a live database.
 
@@ -79,7 +106,7 @@ The optional Retro arcade design (#236) adapts style D from the organizer's firs
 
 The optional Frutiger Aero design (#239) adapts style G from the organizer's second osu! Cup preview batch as a cross-season material language: a fixed sky-blue-to-mint gradient behind the page, a glossy bright header, 20px panels, capsule controls at least 44px tall, and short map slot codes in blue circles. The primary action is a glossy pink capsule with dark text; the progress bar is a mint capsule rendered explicitly rather than through `accent-color`. Tables and rules stay flat and readable: only panels, the header, the edition heading and the primary action carry a highlight, and repeated data cards and every table row use a plain surface. There is no blur and no floating bubble layer: the only background decoration is a fixed `pointer-events: none` gradient, and the edition heading highlight is a background gradient so it never covers text, the artwork or the focus ring. Text tokens were checked at ≥4.5:1 and control/focus edges at ≥3:1 in both modes, including the blue selected chip's dark label and the pink action. The dark variant is a deep sea-blue with the same pink action and mint progress; forced colours remove the sky, gradients and shadows, and reduced motion removes transitions. Rounded geometry carries the reference style without a new typeface: the system sans stack is reused and no remote font is requested, because the source Varela Round's licence and Chinese coverage were not verified for bundling. `src/app/frutiger-theme.css` scopes the design to `.themed-site`, including the homepage header when the design is selected. Migration `0044_frutiger_aero_appearance` expands only the site setting/audit appearance check constraints, with the same rollback guidance as Swiss.
 
-The S10 Skyline Pop design (#195) is registered as `skyline-pop`, labelled **S10 · Skyline Pop** (晴空未来城／晴空未來城) in the header and both settings forms. It uses the approved vivid coastal illustration with cream/sky-blue/pink MainSheet surfaces and an independent night-blue variant. `src/app/skyline-theme.css` and the public `/themes/skyline-pop/coast.webp` asset ship with the application. Migration `0045_skyline_pop_appearance` expands the site setting/audit constraints without changing existing defaults or tournament data. Apply it through the normal reviewed update workflow; rollback requires selecting older supported defaults first, without deleting history or down-migrating. The offline S10 gallery records the earlier design review and does not control the application menu.
+The S10 Skyline Pop design (#195) is registered as `skyline-pop`, labelled **S10 · Skyline Pop** (晴空未来城／晴空未來城) in edition Admin settings. It uses the approved vivid coastal illustration with cream/sky-blue/pink MainSheet surfaces and an independent night-blue variant. `src/app/skyline-theme.css` and the public `/themes/skyline-pop/coast.webp` asset ship with the application. Migration `0045_skyline_pop_appearance` expands the site setting/audit constraints without changing existing defaults or tournament data. Apply it through the normal reviewed update workflow; rollback requires selecting older supported defaults first, without deleting history or down-migrating. The offline S10 gallery records the earlier design review and does not control the application menu.
 
 ## osu! authentication and PostgreSQL
 
@@ -150,8 +177,59 @@ DATABASE_URL="$TEST_DATABASE_URL" npm run test:e2e -- --shard=1/4
 Run shards sequentially locally, or give each concurrent run a separate database,
 server port and storage paths. The default full local command is unchanged.
 
-S9 Glacier Blue (`glacier-blue`, #196) uses the approved Cirno ice-fairy illustration and crystal materials in `src/app/glacier-theme.css`. The footer displays localized Touhou fan-art attribution only with this appearance, including after client-side switching. Migration `0046_glacier_blue_appearance` expands site-setting/audit constraints without changing defaults or history. Apply it before saving S9 as a site default; select a supported default before rolling back to an older application.
+S9 Glacier Blue (`glacier-blue`, #196) uses the approved Cirno ice-fairy illustration and crystal materials in `src/app/glacier-theme.css`. The footer displays localized Touhou fan-art attribution only with this appearance, including after client-side switching. Migration `0046_glacier_blue_appearance` expands site-setting/audit constraints without changing defaults or history. This historical migration preserves existing site/audit values; #445 permits new S9 choices only in tournament settings; select a supported default before rolling back to an older application.
 
-S8 Sakura Circuit (`sakura-circuit`, #197) ships the approved half portrait, refined sakura illustration and user-supplied RULES banner under `/themes/sakura-circuit/`. `src/app/sakura-theme.css` scopes the design to ordinary `.themed-site` pages; the banner uses the existing rulebook cover position. Migration `0047_sakura_circuit_appearance` expands site-setting/audit constraints without changing any defaults or history. Apply it before saving S8 as a site default; choose a supported site/tournament default before an intentional older-version rollback.
+S8 Sakura Circuit (`sakura-circuit`, #197) ships the approved half portrait, refined sakura illustration and user-supplied RULES banner under `/themes/sakura-circuit/`. `src/app/sakura-theme.css` scopes the design to ordinary `.themed-site` pages; the banner uses the existing rulebook cover position. Migration `0047_sakura_circuit_appearance` expands site-setting/audit constraints without changing any defaults or history. This historical migration preserves existing site/audit values; #445 permits new S8 choices only in tournament settings; choose a supported site/tournament default before an intentional older-version rollback.
 
-S7 Graphite Arena (`graphite-arena`, #198) extends the season design with silver/graphite surfaces, fine hexagonal linework and competition-yellow accents. `src/app/graphite-theme.css` is scoped to ordinary `.themed-site` pages; complete original artwork and OBS/presenter isolation are preserved. Migration `0048_graphite_arena_appearance` expands only site-setting/audit appearance constraints. Apply it before saving S7 as a site default through the normal reviewed update workflow. Existing defaults, tournament configuration and audit history are unchanged. Before an intentional older-version rollback, choose a supported site/tournament default; never delete history or down-migrate a live database.
+S7 Graphite Arena (`graphite-arena`, #198) extends the season design with silver/graphite surfaces, fine hexagonal linework and competition-yellow accents. `src/app/graphite-theme.css` is scoped to ordinary `.themed-site` pages; complete original artwork and OBS/presenter isolation are preserved. Migration `0048_graphite_arena_appearance` expands only site-setting/audit appearance constraints. This historical migration preserves existing site/audit values; #445 permits new S7 choices only in tournament settings through the normal reviewed update workflow. Existing defaults, tournament configuration and audit history are unchanged. Before an intentional older-version rollback, choose a supported site/tournament default; never delete history or down-migrate a live database.
+
+### S6 Orbital Pulse appearance (#346)
+
+S6 Orbital Pulse (`orbital-pulse`) adds red/blue surfaces and a static horizontal segmented spectrum, derived from an attributed public music sample. `src/app/orbital-theme.css` is scoped to ordinary `.themed-site` pages; the complete original S6 artwork and OBS/presenter isolation are preserved. Migration `0050_orbital_pulse_appearance` expands only the site-setting/audit appearance constraints. This historical migration preserves site/audit compatibility; #445 permits new S6 choices only in tournament settings. It does not select a new site/tournament default, change publication or rewrite audit history. Before an intentional older-version rollback, choose a supported default; never down-migrate a live database or delete history. See [S6 design and verification](design/season-themes/s6/DESIGN.md).
+
+### S5 Prism Overture appearance (#345)
+
+S5 Prism Overture (`prism-overture`) uses lavender/ink surfaces, 110 irregular prismatic facets and an outlined EB Garamond Italic β embedded in the banner texture. `src/app/prism-theme.css` is scoped to ordinary `.themed-site` pages; the complete original OCLR β artwork and OBS/presenter isolation are preserved. The two static SVG textures and SIL OFL licence are bundled under `/themes/prism-overture/`; no font is loaded at runtime. Migration `0051_prism_overture_appearance` expands only the site-setting/audit appearance constraints. This historical migration preserves site/audit compatibility; #445 permits new S5 choices only in tournament settings. Existing site/tournament defaults, pending archive results and audit history are unchanged. Before an intentional older-version rollback, select a supported site/tournament default; never down-migrate a live database or delete history. See [S5 design and verification](design/season-themes/s5/DESIGN.md).
+
+### S4 Azure Brush appearance (#344)
+
+S4 Azure Brush (`azure-brush`) uses paper-white/ink-blue surfaces, 2–4px geometry and original azure Chinese ink-wash brushwork in the banner. `src/app/azure-theme.css` is scoped to ordinary `.themed-site` pages. The complete original 1728×1080 S4 AVIF and OBS/presenter isolation are preserved. The generated alpha-preserving WebP is bundled under `/themes/azure-brush/`; prompt and provenance are documented with the design. Migration `0052_azure_brush_appearance` expands only site-setting/audit appearance constraints, without changing existing defaults, archive review/publication or audit history. This historical migration preserves site/audit compatibility; #445 permits new S4 choices only in tournament settings. Before an intentional older-version rollback, select supported site/tournament defaults; never down-migrate a live database or delete history. See [S4 design and verification](design/season-themes/s4/DESIGN.md).
+
+## Season theme selection policy (#445)
+
+Season themes are available only in edition Admin settings. Header choices and
+site-wide defaults accept only `publicAppearances`; valid public visitor choices
+still override edition defaults. Old season cookies are ignored and expired;
+legacy season-valued site settings render as `default` without rewriting data or
+audit history. No migration is needed. See the [selection and compatibility
+policy](localization.md#season-theme-selection-policy-445) for route inheritance,
+explicit repair of old global values, remote reads and broadcast isolation.
+
+S1 Chromatic Origins (`chromatic-origins`, #417) uses the approved ink-diffusion banner and independent light/dark MainSheet tokens. Migration `0054_chromatic_origins_appearance` expands only site-setting/audit constraints. Existing defaults and tournament data remain unchanged; select an older supported default before reverting application code. See [S1 design](design/season-themes/s1/DESIGN.md).
+
+### S3 Frost Waltz appearance (#343)
+
+S3 Frost Waltz (`frost-waltz`) uses snow-white/blue-grey surfaces and the approved crystalline snowflake waltz banner. `src/app/frost-theme.css` is scoped to ordinary `.themed-site` pages; original 995×621 artwork and OBS/presenter isolation are preserved. The two static SVG textures are bundled under `/themes/frost-waltz/`. Migration `0055_frost_waltz_appearance` only expands site-setting/audit constraints. This historical migration preserves site/audit compatibility; #445 permits new S3 choices only in tournament settings. Existing defaults and audit history remain unchanged. Before intentionally rolling back to older code, select defaults supported by that version; never down-migrate live data. See [S3 design and verification](design/season-themes/s3/DESIGN.md).
+
+The DB-free component browser host also covers all six statistics views with
+same-name player/team identities (#439), and the actual TeamEditor under the
+application proxy's CSP (#440). Avatar checks assert successful image decoding
+and object URL release on replacement, removal, cancel/Escape and unmount. The
+host supplies only synthetic data and a minimal router context; these checks do
+not replace authenticated application E2E, backend permissions or storage tests.
+The fixed daily core browser allowlist is unchanged.
+
+The persistent `oclr_frontend_test` preview is explicitly rejected by the shared
+destructive-test guard, regardless of host alias or encoded database name (#454).
+New `db:local` configurations write `OCLR_DEVELOPMENT_DATABASE_URL` as the seed
+confirmation, never `TEST_DATABASE_URL`. Set `TEST_DATABASE_URL` only for a separate
+disposable target such as `oclr_test`. Existing environment files are preserved:
+the seed alone can still accept their legacy matching preview `TEST_DATABASE_URL`,
+but automated tests reject that target before connecting. No preview database is
+renamed, recreated or cleared by this change.
+
+Registration CSV exports use one read-only repeatable-read snapshot for staff
+scope, list/count, saved profile batches, answers and fixed submitted question
+revisions (#452). The concurrency regression pauses real PostgreSQL reads at both
+list-to-answer and answer-to-revision boundaries, commits a normal reapplication
+on a separate connection, then checks complete old/new attempts without mixing.

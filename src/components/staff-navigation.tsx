@@ -2,10 +2,11 @@
 
 import { useAppTranslations } from "@/i18n/shared";
 
+import { LoadingOverlay } from "./loading-overlay";
 import { StaffReadOnlyContext } from "./staff-read-only";
-import Link from "next/link";
+import Link from "./pending-link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import {
   activeAdminLink,
   adminBreadcrumbs,
@@ -36,9 +37,10 @@ export function StaffNavigation({
   const tr = useAppTranslations();
 
   const pathname = usePathname();
-  const router = useRouter();
   const refereeWorkspace =
     /^\/admin\/tournaments\/[^/]+\/matches\/[^/]+\/referee\/?$/.test(pathname);
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const readOnly =
     developer &&
     !writablePaths.some(
@@ -64,6 +66,7 @@ export function StaffNavigation({
             : undefined
         }
       >
+        {pending && <LoadingOverlay />}
         {!refereeWorkspace && (
           <aside className="sidebar">
             {!selected && <p className="eyebrow">{tr("ADMINISTRATION")}</p>}
@@ -81,13 +84,18 @@ export function StaffNavigation({
                   <span className="sr-only">{tr("Selected tournament")}</span>
                   <select
                     aria-label={tr("Selected tournament")}
+                    disabled={pending}
+                    aria-busy={pending}
                     value={selected.slug}
                     onChange={(event) => {
                       setOpenPath(null);
                       const next = editions.find(
                         (edition) => edition.slug === event.target.value,
                       );
-                      if (next) router.push(`/admin/tournaments/${next.slug}`);
+                      if (next)
+                        startTransition(() =>
+                          router.push(`/admin/tournaments/${next.slug}`),
+                        );
                     }}
                   >
                     {editions.map((e) => (

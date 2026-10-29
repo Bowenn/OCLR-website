@@ -32,6 +32,13 @@ import "./skyline-theme.css";
 import "./glacier-theme.css";
 import "./sakura-theme.css";
 import "./graphite-theme.css";
+import "./orbital-theme.css";
+import "./prism-theme.css";
+import "./azure-theme.css";
+import "./verdant-theme.css";
+import "./chromatic-theme.css";
+import "./frost-theme.css";
+import "./archive-counts.css";
 import { AppearanceProvider } from "@/components/appearance-provider";
 import { inheritedAppearance } from "@/lib/appearance-scope";
 import { tournamentAppearanceScopes } from "@/lib/tournaments";
@@ -43,9 +50,10 @@ import {
   themeCookie,
   systemThemeCookie,
   themeScript,
-  readAppearance,
+  readVisitorAppearance,
+  readSiteAppearance,
   appearanceCookie,
-  isAppearance,
+  isPublicAppearance,
 } from "@/lib/preferences";
 import { defaultSiteAppearance } from "@/lib/site-settings";
 import { NextIntlClientProvider } from "next-intl";
@@ -118,7 +126,7 @@ export default async function RootLayout({
   let defaultAppearance: Appearance = "default";
   if (!remote) defaultAppearance = await defaultSiteAppearance();
   const appearanceValue = preferences.get(appearanceCookie)?.value;
-  const appearancePreference = isAppearance(appearanceValue)
+  const appearancePreference = isPublicAppearance(appearanceValue)
     ? appearanceValue
     : undefined;
   const locale = await getLocale();
@@ -136,7 +144,7 @@ export default async function RootLayout({
         frontendSite(),
         frontendTournaments(),
       ]);
-      defaultAppearance = site.defaultAppearance;
+      defaultAppearance = readSiteAppearance(site.defaultAppearance);
       editions = summaries;
       scopes = summaries.map((e) => ({
         slug: e.slug,
@@ -188,7 +196,10 @@ export default async function RootLayout({
     scopes,
     defaultAppearance,
   );
-  const appearance = readAppearance(appearanceValue, inherited.appearance);
+  const appearance = readVisitorAppearance(
+    appearanceValue,
+    inherited.appearance,
+  );
   return (
     // The head script may correct data-theme from the visitor's system before paint.
     <html

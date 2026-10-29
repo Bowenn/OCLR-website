@@ -3,9 +3,10 @@
 import { useStaffReadOnly } from "./staff-read-only";
 import { useAppTranslations } from "@/i18n/shared";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePendingRefresh } from "./use-pending-refresh";
+import { LoadingRegion } from "./loading-region";
 export function ConfirmMutation({
   label,
   className = "secondary",
@@ -26,7 +27,7 @@ export function ConfirmMutation({
   description?: string;
   url: string;
   payload: Record<string, unknown>;
-  onSuccess?: () => void;
+  onSuccess?: () => void | Promise<void>;
   onError?: (message: string) => void;
   requireConfirmation?: boolean;
   canConfirm?: boolean;
@@ -38,11 +39,15 @@ export function ConfirmMutation({
 
   const dialog = useRef<HTMLDialogElement>(null);
   const id = useId();
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const { refreshing, refresh } = usePendingRefresh();
+  const [requestPending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const pending = requestPending || refreshing;
+  useEffect(() => {
+    if (readOnly || disabled) dialog.current?.close();
+  }, [readOnly, disabled]);
   async function confirm() {
-    if (readOnly) return;
+    if (readOnly || disabled || pending || !canConfirm) return;
     setPending(true);
     setError("");
     try {
@@ -56,12 +61,12 @@ export function ConfirmMutation({
         const message = result.error ?? "The action could not be completed.";
         setError(message);
         onError?.(message);
-        router.refresh();
+        refresh();
         return;
       }
+      await onSuccess?.();
       dialog.current?.close();
-      onSuccess?.();
-      router.refresh();
+      refresh();
     } catch {
       const message =
         "Connection interrupted. Refresh to check the saved state before retrying.";
@@ -73,8 +78,12 @@ export function ConfirmMutation({
   }
   return (
     <>
+      {pending && (!requireConfirmation || (refreshing && !error)) && (
+        <LoadingRegion />
+      )}
       <button
         type="button"
+        aria-busy={pending}
         className={className}
         disabled={
           readOnly ||
@@ -88,7 +97,7 @@ export function ConfirmMutation({
           else void confirm();
         }}
       >
-        {pending ? tr("Saving…") : tr(label)}
+        {tr(label)}
       </button>
       {!requireConfirmation && error && (
         <p role="alert" className="notice error-text">
@@ -104,6 +113,7 @@ export function ConfirmMutation({
             if (pending) event.preventDefault();
           }}
         >
+          {(requestPending || (refreshing && !!error)) && <LoadingRegion />}
           <h2 id={`${id}-title`}>{tr(title)}</h2>
           {description && (
             <p id={`${id}-description`} className="muted">
@@ -118,10 +128,11 @@ export function ConfirmMutation({
           )}
           <div className="actions">
             <button
-              disabled={readOnly || pending || !canConfirm}
+              aria-busy={pending}
+              disabled={readOnly || disabled || pending || !canConfirm}
               onClick={confirm}
             >
-              {pending ? tr("Saving…") : tr("Confirm")}
+              {tr("Confirm")}
             </button>
             <button
               className="secondary"

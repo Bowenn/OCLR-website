@@ -1,17 +1,15 @@
+import { mediaDirectory } from "../src/lib/media-directory";
 /** Run with site writes stopped; only abandoned files older than one day. */
 import { readdir, lstat, unlink } from "node:fs/promises";
-import { resolve, join } from "node:path";
+import { join } from "node:path";
 import { db, closeDb } from "../src/db";
 import { cleanupReplayFiles } from "../src/lib/replay-storage";
 import { teams, mappoolReplays } from "../src/db/schema";
-const root = process.env.OCLR_MEDIA_DIR;
 try {
-  if (!root?.startsWith("/") || /\/releases(?:\/|$)/.test(resolve(root)))
-    throw new Error("Configure the durable OCLR_MEDIA_DIR first.");
+  const directory = await mediaDirectory("teams", false);
   const active = new Set(
     (await db().select({ key: teams.avatarKey }).from(teams)).map((t) => t.key),
   );
-  const directory = join(root, "teams");
   let removed = 0;
   for (const name of await readdir(directory).catch(
     (error: NodeJS.ErrnoException) => {

@@ -6,6 +6,7 @@ import {
   remoteApiSupported,
 } from "@/lib/data-source";
 import { appUrl } from "@/lib/http";
+import { isDevelopmentNetworkRequest } from "@/lib/site-origin";
 import { localeCookie, readLocale } from "@/i18n/config";
 export function proxy(request: NextRequest) {
   // Non-v1 endpoints keep their session/anonymous transport. In particular a
@@ -23,9 +24,18 @@ export function proxy(request: NextRequest) {
     remote = remoteMode();
     if (remote) {
       const { local } = remoteConfiguration();
+      // External links may navigate to the frontend, but cannot fetch its
+      // data, embed it, or submit commands across origins.
+      const pageNavigation =
+        request.method === "GET" &&
+        request.headers.get("sec-fetch-mode") === "navigate" &&
+        request.headers.get("sec-fetch-dest") === "document" &&
+        !request.nextUrl.pathname.startsWith("/api/") &&
+        !request.nextUrl.pathname.startsWith("/auth/");
       if (
         request.headers.get("host") !== new URL(local).host ||
-        request.headers.get("sec-fetch-site") === "cross-site"
+        (request.headers.get("sec-fetch-site") === "cross-site" &&
+          !pageNavigation)
       )
         return NextResponse.json(
           { error: { code: "REMOTE_FORBIDDEN" } },
@@ -64,6 +74,7 @@ export function proxy(request: NextRequest) {
   if (
     canonical &&
     request.headers.get("host") !== canonical.host &&
+    !isDevelopmentNetworkRequest(request.headers.get("host")) &&
     ["GET", "HEAD"].includes(request.method)
   ) {
     canonical.pathname = request.nextUrl.pathname;
@@ -75,7 +86,7 @@ export function proxy(request: NextRequest) {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' https://a.ppy.sh https://assets.ppy.sh data:",
+    "img-src 'self' https://a.ppy.sh https://assets.ppy.sh data: blob:",
     "font-src 'self'",
     "connect-src 'self'",
     "object-src 'none'",
@@ -95,7 +106,7 @@ export function proxy(request: NextRequest) {
     remote &&
     !path.startsWith("/api/") &&
     !path.startsWith("/_next/") &&
-    !/^\/(?:branding\/|archive\/|fonts\/|mascot\/|[^/]+\.(?:svg|png|jpg|jpeg|webp|ico)$)/.test(
+    !/^\/(?:branding\/|archive\/|fonts\/|mascot\/|themes\/|[^/]+\.(?:svg|png|jpg|jpeg|webp|ico)$)/.test(
       path,
     ) &&
     !remotePageSupported(path)

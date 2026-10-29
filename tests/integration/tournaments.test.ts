@@ -36,6 +36,7 @@ import { collectionPage } from "../../src/lib/read-api";
 import { getPublicEdition } from "../../src/lib/content";
 import { seedEditions } from "../fixtures/editions";
 import { edition } from "../fixtures/edition";
+import { seasonAppearances } from "../../src/lib/preferences";
 const url = process.env.TEST_DATABASE_URL;
 const admin = { osuId: 330001, username: "Synthetic Tournament Admin" };
 const mapper = { osuId: 330002, username: "Synthetic Mappooler" };
@@ -143,6 +144,39 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     );
     expect(second.data.map((row) => row.season)).toEqual(["10", "9"]);
   });
+  it("persists competition intervals with revision, authorization and transactional audit", async () => {
+    await create();
+    const schedule = [
+      {
+        label: "Synthetic group",
+        kind: "group",
+        at: "2026-10-29T00:00:00Z",
+        endAt: "2026-10-30T00:00:00Z",
+      },
+      { label: "Synthetic final", kind: "knockout", at: null, endAt: null },
+      { label: "Legacy event", at: null },
+    ];
+    const before = await readTournament("s12");
+    const saved = await change(0, "schedule", { schedule });
+    expect((await readTournament("s12"))?.edition.schedule).toEqual(schedule);
+    expect(saved.edition.registration).toEqual(before?.edition.registration);
+    await expect(change(0, "schedule", { schedule: [] })).rejects.toThrow();
+    await expect(
+      tournamentCommand(mapper, "s12", {
+        action: "schedule",
+        expectedRevision: saved.revision,
+        confirmed: true,
+        schedule: [],
+      }),
+    ).rejects.toThrow();
+    await expect(
+      change(saved.revision, "schedule", {
+        schedule: [{ ...schedule[0], endAt: "2026-10-28T00:00:00Z" }],
+      }),
+    ).rejects.toThrow();
+    expect((await readTournament("s12"))?.edition.schedule).toEqual(schedule);
+    expect(await auditEvents()).toHaveLength(2);
+  });
   it("stores optional appearance defaults with scoped authorization, revisions and audit", async () => {
     const created = await create();
     expect(created.edition.defaultAppearance).toBeUndefined();
@@ -202,30 +236,33 @@ describe.skipIf(!url)("authoritative tournament edition storage", () => {
     });
     expect((await readTournament("s12"))?.edition.defaultAppearance).toBeNull();
   });
-  it("allows a scoped Admin to change only their tournament default", async () => {
-    await create();
-    await db().insert(staffRoles).values({
-      userId: player.osuId,
-      role: "admin",
-      editionSlug: "s12",
-      grantedBy: admin.osuId,
-    });
-    const command = {
-      ...fields,
-      action: "general",
-      status: "upcoming",
-      expectedRevision: 0,
-      confirmed: true,
-      defaultAppearance: "cute-pastel",
-    };
-    await tournamentCommand(player, "s12", command);
-    await expect(
-      tournamentCommand(player, "test-cup", command),
-    ).rejects.toMatchObject({ status: 403 });
-    const scopes = await tournamentAppearanceScopes(player);
-    expect(scopes.some((s) => s.slug === "s12" && s.staff)).toBe(true);
-    expect(scopes.some((s) => s.slug === "private-test-cup")).toBe(false);
-  });
+  it.each(seasonAppearances)(
+    "allows a scoped Admin to change only their tournament default to %s",
+    async (theme) => {
+      await create();
+      await db().insert(staffRoles).values({
+        userId: player.osuId,
+        role: "admin",
+        editionSlug: "s12",
+        grantedBy: admin.osuId,
+      });
+      const command = {
+        ...fields,
+        action: "general",
+        status: "upcoming",
+        expectedRevision: 0,
+        confirmed: true,
+        defaultAppearance: theme,
+      };
+      await tournamentCommand(player, "s12", command);
+      await expect(
+        tournamentCommand(player, "test-cup", command),
+      ).rejects.toMatchObject({ status: 403 });
+      const scopes = await tournamentAppearanceScopes(player);
+      expect(scopes.some((s) => s.slug === "s12" && s.staff)).toBe(true);
+      expect(scopes.some((s) => s.slug === "private-test-cup")).toBe(false);
+    },
+  );
   it("filters unpublished configurations in the database and ignores legacy state without inventing content", async () => {
     await db().execute(
       sql`INSERT INTO edition_state (slug) VALUES ('legacy-unknown')`,

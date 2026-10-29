@@ -30,6 +30,18 @@ export function appearanceLabel(
       return tr("S8 · Sakura Circuit");
     case "graphite-arena":
       return tr("S7 · Graphite Arena");
+    case "orbital-pulse":
+      return tr("S6 · Orbital Pulse");
+    case "prism-overture":
+      return tr("S5 · Prism Overture");
+    case "azure-brush":
+      return tr("S4 · Azure Brush");
+    case "verdant-prelude":
+      return tr("S2 · Verdant Prelude");
+    case "chromatic-origins":
+      return tr("S1 · Chromatic Origins");
+    case "frost-waltz":
+      return tr("S3 · Frost Waltz");
     default:
       return tr("Original design");
   }

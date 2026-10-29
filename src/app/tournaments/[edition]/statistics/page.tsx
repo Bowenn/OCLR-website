@@ -23,6 +23,8 @@ async function Issue271Page({
     const data = await publicArchiveStatistics(slug);
     coverage = data;
     scores = data.plays.map((p) => ({
+      osuId: p.osuId,
+      teamId: p.teamId,
       player:
         data.players.find((u) => u.osuId === p.osuId)?.username ??
         String(p.osuId),

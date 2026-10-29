@@ -1,6 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import Link from "next/link";
+import Link from "./pending-link";
 import {
   DoubleEliminationBracket,
   createTheme,
@@ -31,19 +31,23 @@ export function BracketCanvas({
   group,
   editionSlug,
   teamUrls,
-  showAppearanceLinks,
 }: {
   group: ResolvedBracket["groups"][number];
   editionSlug: string;
   teamUrls?: Record<string, string>;
-  showAppearanceLinks: boolean;
 }) {
   const tr = useAppTranslations();
-  const data = useMemo(() => doubleBracketMatches(group), [group]);
+  // Recorded appearances are not a conventional double-elimination tree.
+  // The library can accept these graphs but omit disconnected branches and
+  // cross-bracket links. Render every recorded match in chronological columns.
   const historical = group.rounds.some((r) =>
     r.matches.some((m) =>
       m.slots.some((s) => s.kind === "team" && s.sourceMatchId),
     ),
+  );
+  const data = useMemo(
+    () => (historical ? null : doubleBracketMatches(group)),
+    [group, historical],
   );
   const sources = group.rounds.flatMap((round) =>
     round.matches.flatMap((match) =>
@@ -52,7 +56,7 @@ export function BracketCanvas({
   );
   // A valid bracket need not fit the double-elimination library. Keep explicit
   // winner/loser routes in the existing column renderer; historical appearance
-  // references still use the conservative, connection-free fallback below.
+  // references retain their partial paths in the fallback below.
   if (
     !data &&
     sources.length > 0 &&
@@ -74,12 +78,19 @@ export function BracketCanvas({
     );
   if (!data)
     return (
-      <>
-        <p className="muted small">
-          {tr(
-            "Some bracket sources are missing. Recorded matches are shown without invented advancement links.",
-          )}
-        </p>
+      <div className={historical ? "bracket-library-references" : undefined}>
+        {!historical && (
+          <p className="muted small">
+            {tr(
+              "Some bracket sources are missing. Recorded matches are shown without invented advancement links.",
+            )}
+          </p>
+        )}
+        {historical && (
+          <p className="muted small">
+            {tr("Recorded appearance only (unconfirmed progression)")}
+          </p>
+        )}
         <BracketColumns
           bracket={{
             editionSlug,
@@ -87,27 +98,12 @@ export function BracketCanvas({
             formatLabel: "Historical archive",
             updatedAt: "2026-01-01T00:00:00Z",
             source: { label: "Source", url: null },
-            groups: [
-              {
-                ...group,
-                layout: "grid",
-                rounds: group.rounds.map((r) => ({
-                  ...r,
-                  matches: r.matches.map((m) => ({
-                    ...m,
-                    slots: m.slots.map((s) => ({
-                      ...s,
-                      sourceMatchId: null,
-                    })) as typeof m.slots,
-                  })),
-                })),
-              },
-            ],
+            groups: [group],
           }}
           teamUrls={teamUrls}
           hideGroupTabs
         />
-      </>
+      </div>
     );
   function MatchCard({
     match: value,
@@ -194,7 +190,7 @@ export function BracketCanvas({
     <>
       <h2 className="sr-only">{group.label}</h2>
       <div
-        className={`bracket-library-scroll${historical ? " bracket-library-references" : ""}${historical && !showAppearanceLinks ? " bracket-library-no-lines" : ""}`}
+        className={`bracket-library-scroll${historical ? " bracket-library-references" : ""}`}
         role="region"
         aria-label={tr("{value0} bracket; scroll horizontally", {
           value0: group.label,

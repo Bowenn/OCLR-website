@@ -1,6 +1,6 @@
 {
-  "id": "6db15008-10a4-404a-907d-c54d44aaa16a",
-  "prevId": "82763f01-4d55-4fe4-8891-3d5e23c223d2",
+  "id": "d94a445f-11a4-4bf1-a086-6daddab338ac",
+  "prevId": "5cdd4e92-65cd-488e-8c9e-6a5cbf775b68",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -56,8 +56,12 @@
           "name": "award_settings_edition_slug_edition_state_slug_fk",
           "tableFrom": "award_settings",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -134,8 +138,14 @@
           "name": "badge_reviews_edition_slug_user_id_registrations_edition_slug_user_id_fk",
           "tableFrom": "badge_reviews",
           "tableTo": "registrations",
-          "columnsFrom": ["edition_slug", "user_id"],
-          "columnsTo": ["edition_slug", "user_id"],
+          "columnsFrom": [
+            "edition_slug",
+            "user_id"
+          ],
+          "columnsTo": [
+            "edition_slug",
+            "user_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -143,7 +153,11 @@
       "compositePrimaryKeys": {
         "badge_reviews_edition_slug_user_id_mode_pk": {
           "name": "badge_reviews_edition_slug_user_id_mode_pk",
-          "columns": ["edition_slug", "user_id", "mode"]
+          "columns": [
+            "edition_slug",
+            "user_id",
+            "mode"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -200,8 +214,12 @@
           "name": "captains_edition_slug_edition_state_slug_fk",
           "tableFrom": "captains",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -209,8 +227,12 @@
           "name": "captains_user_id_users_osu_id_fk",
           "tableFrom": "captains",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -218,14 +240,20 @@
       "compositePrimaryKeys": {
         "captains_edition_slug_user_id_pk": {
           "name": "captains_edition_slug_user_id_pk",
-          "columns": ["edition_slug", "user_id"]
+          "columns": [
+            "edition_slug",
+            "user_id"
+          ]
         }
       },
       "uniqueConstraints": {
         "captains_edition_position_unique": {
           "name": "captains_edition_position_unique",
           "nullsNotDistinct": false,
-          "columns": ["edition_slug", "position"]
+          "columns": [
+            "edition_slug",
+            "position"
+          ]
         }
       },
       "policies": {},
@@ -328,8 +356,12 @@
           "name": "contributor_events_actor_id_users_osu_id_fk",
           "tableFrom": "contributor_events",
           "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -339,7 +371,9 @@
         "contributor_events_revision_unique": {
           "name": "contributor_events_revision_unique",
           "nullsNotDistinct": false,
-          "columns": ["revision"]
+          "columns": [
+            "revision"
+          ]
         }
       },
       "policies": {},
@@ -400,8 +434,12 @@
           "name": "developer_api_events_actor_id_users_osu_id_fk",
           "tableFrom": "developer_api_events",
           "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -515,8 +553,12 @@
           "name": "developer_api_tokens_session_hash_sessions_token_hash_fk",
           "tableFrom": "developer_api_tokens",
           "tableTo": "sessions",
-          "columnsFrom": ["session_hash"],
-          "columnsTo": ["token_hash"],
+          "columnsFrom": [
+            "session_hash"
+          ],
+          "columnsTo": [
+            "token_hash"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -524,8 +566,12 @@
           "name": "developer_api_tokens_user_id_users_osu_id_fk",
           "tableFrom": "developer_api_tokens",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -535,7 +581,9 @@
         "developer_api_tokens_token_hash_unique": {
           "name": "developer_api_tokens_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": ["token_hash"]
+          "columns": [
+            "token_hash"
+          ]
         }
       },
       "policies": {},
@@ -691,8 +739,12 @@
           "name": "draft_picks_session_id_draft_sessions_id_fk",
           "tableFrom": "draft_picks",
           "tableTo": "draft_sessions",
-          "columnsFrom": ["session_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -700,8 +752,12 @@
           "name": "draft_picks_team_id_teams_id_fk",
           "tableFrom": "draft_picks",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -709,8 +765,12 @@
           "name": "draft_picks_captain_id_users_osu_id_fk",
           "tableFrom": "draft_picks",
           "tableTo": "users",
-          "columnsFrom": ["captain_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "captain_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -718,8 +778,12 @@
           "name": "draft_picks_player_id_users_osu_id_fk",
           "tableFrom": "draft_picks",
           "tableTo": "users",
-          "columnsFrom": ["player_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -727,8 +791,12 @@
           "name": "draft_picks_actor_id_users_osu_id_fk",
           "tableFrom": "draft_picks",
           "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -738,7 +806,11 @@
         "draft_actor_request_unique": {
           "name": "draft_actor_request_unique",
           "nullsNotDistinct": false,
-          "columns": ["session_id", "actor_id", "request_key"]
+          "columns": [
+            "session_id",
+            "actor_id",
+            "request_key"
+          ]
         }
       },
       "policies": {},
@@ -831,8 +903,12 @@
           "name": "draft_sessions_edition_slug_edition_state_slug_fk",
           "tableFrom": "draft_sessions",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -842,7 +918,9 @@
         "draft_sessions_edition_slug_unique": {
           "name": "draft_sessions_edition_slug_unique",
           "nullsNotDistinct": false,
-          "columns": ["edition_slug"]
+          "columns": [
+            "edition_slug"
+          ]
         }
       },
       "policies": {},
@@ -920,8 +998,12 @@
           "name": "edition_events_edition_slug_edition_state_slug_fk",
           "tableFrom": "edition_events",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -929,8 +1011,12 @@
           "name": "edition_events_actor_id_users_osu_id_fk",
           "tableFrom": "edition_events",
           "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -977,8 +1063,12 @@
           "name": "edition_revisions_edition_slug_edition_state_slug_fk",
           "tableFrom": "edition_revisions",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -986,7 +1076,10 @@
       "compositePrimaryKeys": {
         "edition_revisions_edition_slug_version_pk": {
           "name": "edition_revisions_edition_slug_version_pk",
-          "columns": ["edition_slug", "version"]
+          "columns": [
+            "edition_slug",
+            "version"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -1118,8 +1211,12 @@
           "name": "fixture_referees_fixture_id_fixtures_id_fk",
           "tableFrom": "fixture_referees",
           "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1127,8 +1224,12 @@
           "name": "fixture_referees_user_id_users_osu_id_fk",
           "tableFrom": "fixture_referees",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1136,7 +1237,10 @@
       "compositePrimaryKeys": {
         "fixture_referees_fixture_id_user_id_pk": {
           "name": "fixture_referees_fixture_id_user_id_pk",
-          "columns": ["fixture_id", "user_id"]
+          "columns": [
+            "fixture_id",
+            "user_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -1214,8 +1318,12 @@
           "name": "fixture_streams_fixture_id_fixtures_id_fk",
           "tableFrom": "fixture_streams",
           "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1223,8 +1331,12 @@
           "name": "fixture_streams_user_id_users_osu_id_fk",
           "tableFrom": "fixture_streams",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1232,8 +1344,12 @@
           "name": "fixture_streams_assigned_by_users_osu_id_fk",
           "tableFrom": "fixture_streams",
           "tableTo": "users",
-          "columnsFrom": ["assigned_by"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "assigned_by"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1415,8 +1531,14 @@
           "name": "fixtures_round_id_edition_slug_tournament_rounds_id_edition_slug_fk",
           "tableFrom": "fixtures",
           "tableTo": "tournament_rounds",
-          "columnsFrom": ["round_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "round_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1424,8 +1546,14 @@
           "name": "fixtures_home_team_id_edition_slug_teams_id_edition_slug_fk",
           "tableFrom": "fixtures",
           "tableTo": "teams",
-          "columnsFrom": ["home_team_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "home_team_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1433,8 +1561,14 @@
           "name": "fixtures_away_team_id_edition_slug_teams_id_edition_slug_fk",
           "tableFrom": "fixtures",
           "tableTo": "teams",
-          "columnsFrom": ["away_team_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "away_team_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1442,8 +1576,16 @@
           "name": "fixtures_mappool_id_round_id_edition_slug_mappools_id_round_id_edition_slug_fk",
           "tableFrom": "fixtures",
           "tableTo": "mappools",
-          "columnsFrom": ["mappool_id", "round_id", "edition_slug"],
-          "columnsTo": ["id", "round_id", "edition_slug"],
+          "columnsFrom": [
+            "mappool_id",
+            "round_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "round_id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1451,8 +1593,14 @@
           "name": "fixtures_home_source_id_edition_slug_fixtures_id_edition_slug_fk",
           "tableFrom": "fixtures",
           "tableTo": "fixtures",
-          "columnsFrom": ["home_source_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "home_source_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1460,8 +1608,14 @@
           "name": "fixtures_away_source_id_edition_slug_fixtures_id_edition_slug_fk",
           "tableFrom": "fixtures",
           "tableTo": "fixtures",
-          "columnsFrom": ["away_source_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "away_source_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1471,12 +1625,18 @@
         "fixture_id_edition_unique": {
           "name": "fixture_id_edition_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "edition_slug"]
+          "columns": [
+            "id",
+            "edition_slug"
+          ]
         },
         "fixture_round_position_unique": {
           "name": "fixture_round_position_unique",
           "nullsNotDistinct": false,
-          "columns": ["round_id", "position"]
+          "columns": [
+            "round_id",
+            "position"
+          ]
         }
       },
       "policies": {},
@@ -1561,8 +1721,12 @@
           "name": "historical_statistics_edition_slug_edition_state_slug_fk",
           "tableFrom": "historical_statistics",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1570,7 +1734,10 @@
       "compositePrimaryKeys": {
         "historical_statistics_edition_slug_mp_id_pk": {
           "name": "historical_statistics_edition_slug_mp_id_pk",
-          "columns": ["edition_slug", "mp_id"]
+          "columns": [
+            "edition_slug",
+            "mp_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -1655,8 +1822,12 @@
           "name": "mappool_entries_pool_id_mappools_id_fk",
           "tableFrom": "mappool_entries",
           "tableTo": "mappools",
-          "columnsFrom": ["pool_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "pool_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1666,7 +1837,11 @@
         "pool_slot_unique": {
           "name": "pool_slot_unique",
           "nullsNotDistinct": false,
-          "columns": ["pool_id", "category", "position"]
+          "columns": [
+            "pool_id",
+            "category",
+            "position"
+          ]
         }
       },
       "policies": {},
@@ -1756,8 +1931,12 @@
           "name": "mappool_events_edition_slug_edition_state_slug_fk",
           "tableFrom": "mappool_events",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1765,8 +1944,12 @@
           "name": "mappool_events_pool_id_mappools_id_fk",
           "tableFrom": "mappool_events",
           "tableTo": "mappools",
-          "columnsFrom": ["pool_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "pool_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1851,8 +2034,12 @@
           "name": "mappool_replays_entry_id_mappool_entries_id_fk",
           "tableFrom": "mappool_replays",
           "tableTo": "mappool_entries",
-          "columnsFrom": ["entry_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "entry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1862,7 +2049,10 @@
         "replay_entry_sha_unique": {
           "name": "replay_entry_sha_unique",
           "nullsNotDistinct": false,
-          "columns": ["entry_id", "sha256"]
+          "columns": [
+            "entry_id",
+            "sha256"
+          ]
         }
       },
       "policies": {},
@@ -1979,8 +2169,14 @@
           "name": "mappools_round_id_edition_slug_tournament_rounds_id_edition_slug_fk",
           "tableFrom": "mappools",
           "tableTo": "tournament_rounds",
-          "columnsFrom": ["round_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "round_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1990,17 +2186,27 @@
         "pool_round_name_unique": {
           "name": "pool_round_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["round_id", "name"]
+          "columns": [
+            "round_id",
+            "name"
+          ]
         },
         "pool_id_edition_unique": {
           "name": "pool_id_edition_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "edition_slug"]
+          "columns": [
+            "id",
+            "edition_slug"
+          ]
         },
         "pool_id_round_edition_unique": {
           "name": "pool_id_round_edition_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "round_id", "edition_slug"]
+          "columns": [
+            "id",
+            "round_id",
+            "edition_slug"
+          ]
         }
       },
       "policies": {},
@@ -2049,8 +2255,12 @@
           "name": "match_games_import_id_match_imports_id_fk",
           "tableFrom": "match_games",
           "tableTo": "match_imports",
-          "columnsFrom": ["import_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "import_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2060,7 +2270,10 @@
         "match_import_game_unique": {
           "name": "match_import_game_unique",
           "nullsNotDistinct": false,
-          "columns": ["import_id", "external_game_id"]
+          "columns": [
+            "import_id",
+            "external_game_id"
+          ]
         }
       },
       "policies": {},
@@ -2122,8 +2335,12 @@
           "name": "match_imports_fixture_id_fixtures_id_fk",
           "tableFrom": "match_imports",
           "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2133,12 +2350,19 @@
         "import_id_fixture_unique": {
           "name": "import_id_fixture_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "fixture_id"]
+          "columns": [
+            "id",
+            "fixture_id"
+          ]
         },
         "match_import_revision_unique": {
           "name": "match_import_revision_unique",
           "nullsNotDistinct": false,
-          "columns": ["fixture_id", "external_match_id", "fingerprint"]
+          "columns": [
+            "fixture_id",
+            "external_match_id",
+            "fingerprint"
+          ]
         }
       },
       "policies": {},
@@ -2202,8 +2426,12 @@
           "name": "match_results_fixture_id_fixtures_id_fk",
           "tableFrom": "match_results",
           "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2211,8 +2439,14 @@
           "name": "match_results_latest_import_id_fixture_id_match_imports_id_fixture_id_fk",
           "tableFrom": "match_results",
           "tableTo": "match_imports",
-          "columnsFrom": ["latest_import_id", "fixture_id"],
-          "columnsTo": ["id", "fixture_id"],
+          "columnsFrom": [
+            "latest_import_id",
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id",
+            "fixture_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2316,8 +2550,12 @@
           "name": "memberships_user_id_users_osu_id_fk",
           "tableFrom": "memberships",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2325,8 +2563,14 @@
           "name": "memberships_team_id_edition_slug_teams_id_edition_slug_fk",
           "tableFrom": "memberships",
           "tableTo": "teams",
-          "columnsFrom": ["team_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "team_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2482,8 +2726,12 @@
           "name": "player_messages_edition_slug_edition_state_slug_fk",
           "tableFrom": "player_messages",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2491,8 +2739,12 @@
           "name": "player_messages_player_id_users_osu_id_fk",
           "tableFrom": "player_messages",
           "tableTo": "users",
-          "columnsFrom": ["player_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2500,8 +2752,12 @@
           "name": "player_messages_author_id_users_osu_id_fk",
           "tableFrom": "player_messages",
           "tableTo": "users",
-          "columnsFrom": ["author_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "author_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2511,7 +2767,10 @@
         "player_messages_author_request_unique": {
           "name": "player_messages_author_request_unique",
           "nullsNotDistinct": false,
-          "columns": ["author_id", "request_id"]
+          "columns": [
+            "author_id",
+            "request_id"
+          ]
         }
       },
       "policies": {},
@@ -2681,8 +2940,12 @@
           "name": "registration_attempts_registration_id_registrations_id_fk",
           "tableFrom": "registration_attempts",
           "tableTo": "registrations",
-          "columnsFrom": ["registration_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "registration_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2690,8 +2953,12 @@
           "name": "registration_attempts_edition_slug_edition_state_slug_fk",
           "tableFrom": "registration_attempts",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2699,8 +2966,12 @@
           "name": "registration_attempts_archived_by_users_osu_id_fk",
           "tableFrom": "registration_attempts",
           "tableTo": "users",
-          "columnsFrom": ["archived_by"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "archived_by"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2708,8 +2979,14 @@
           "name": "registration_attempts_configuration_fk",
           "tableFrom": "registration_attempts",
           "tableTo": "edition_revisions",
-          "columnsFrom": ["edition_slug", "configuration_version"],
-          "columnsTo": ["edition_slug", "version"],
+          "columnsFrom": [
+            "edition_slug",
+            "configuration_version"
+          ],
+          "columnsTo": [
+            "edition_slug",
+            "version"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2717,7 +2994,10 @@
       "compositePrimaryKeys": {
         "registration_attempts_registration_id_attempt_pk": {
           "name": "registration_attempts_registration_id_attempt_pk",
-          "columns": ["registration_id", "attempt"]
+          "columns": [
+            "registration_id",
+            "attempt"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -2816,8 +3096,12 @@
           "name": "registration_events_registration_id_registrations_id_fk",
           "tableFrom": "registration_events",
           "tableTo": "registrations",
-          "columnsFrom": ["registration_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "registration_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2825,8 +3109,12 @@
           "name": "registration_events_actor_id_users_osu_id_fk",
           "tableFrom": "registration_events",
           "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2976,8 +3264,12 @@
           "name": "registrations_edition_slug_edition_state_slug_fk",
           "tableFrom": "registrations",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2985,8 +3277,12 @@
           "name": "registrations_user_id_users_osu_id_fk",
           "tableFrom": "registrations",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2994,8 +3290,14 @@
           "name": "registrations_configuration_fk",
           "tableFrom": "registrations",
           "tableTo": "edition_revisions",
-          "columnsFrom": ["edition_slug", "configuration_version"],
-          "columnsTo": ["edition_slug", "version"],
+          "columnsFrom": [
+            "edition_slug",
+            "configuration_version"
+          ],
+          "columnsTo": [
+            "edition_slug",
+            "version"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3005,7 +3307,10 @@
         "registrations_edition_user_unique": {
           "name": "registrations_edition_user_unique",
           "nullsNotDistinct": false,
-          "columns": ["edition_slug", "user_id"]
+          "columns": [
+            "edition_slug",
+            "user_id"
+          ]
         }
       },
       "policies": {},
@@ -3136,8 +3441,12 @@
           "name": "result_audit_events_fixture_id_fixtures_id_fk",
           "tableFrom": "result_audit_events",
           "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3177,8 +3486,14 @@
           "name": "result_game_claims_fixture_id_edition_slug_fixtures_id_edition_slug_fk",
           "tableFrom": "result_game_claims",
           "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "fixture_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3186,7 +3501,10 @@
       "compositePrimaryKeys": {
         "result_game_claims_edition_slug_external_game_id_pk": {
           "name": "result_game_claims_edition_slug_external_game_id_pk",
-          "columns": ["edition_slug", "external_game_id"]
+          "columns": [
+            "edition_slug",
+            "external_game_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -3260,8 +3578,12 @@
           "name": "result_revisions_fixture_id_match_results_fixture_id_fk",
           "tableFrom": "result_revisions",
           "tableTo": "match_results",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["fixture_id"],
+          "columnsFrom": [
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "fixture_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3269,8 +3591,14 @@
           "name": "result_revisions_import_id_fixture_id_match_imports_id_fixture_id_fk",
           "tableFrom": "result_revisions",
           "tableTo": "match_imports",
-          "columnsFrom": ["import_id", "fixture_id"],
-          "columnsTo": ["id", "fixture_id"],
+          "columnsFrom": [
+            "import_id",
+            "fixture_id"
+          ],
+          "columnsTo": [
+            "id",
+            "fixture_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3278,7 +3606,10 @@
       "compositePrimaryKeys": {
         "result_revisions_fixture_id_revision_pk": {
           "name": "result_revisions_fixture_id_revision_pk",
-          "columns": ["fixture_id", "revision"]
+          "columns": [
+            "fixture_id",
+            "revision"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -3355,8 +3686,12 @@
           "name": "sessions_user_id_users_osu_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3416,8 +3751,12 @@
           "name": "site_setting_events_actor_id_users_osu_id_fk",
           "tableFrom": "site_setting_events",
           "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3427,7 +3766,9 @@
         "site_setting_events_revision_unique": {
           "name": "site_setting_events_revision_unique",
           "nullsNotDistinct": false,
-          "columns": ["revision"]
+          "columns": [
+            "revision"
+          ]
         }
       },
       "policies": {},
@@ -3438,7 +3779,7 @@
         },
         "site_setting_events_appearances": {
           "name": "site_setting_events_appearances",
-          "value": "\"site_setting_events\".\"before_appearance\" IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena') AND \"site_setting_events\".\"after_appearance\" IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena') AND \"site_setting_events\".\"before_appearance\" <> \"site_setting_events\".\"after_appearance\""
+          "value": "\"site_setting_events\".\"before_appearance\" IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena', 'orbital-pulse', 'prism-overture') AND \"site_setting_events\".\"after_appearance\" IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena', 'orbital-pulse', 'prism-overture') AND \"site_setting_events\".\"before_appearance\" <> \"site_setting_events\".\"after_appearance\""
         }
       },
       "isRLSEnabled": false
@@ -3492,7 +3833,7 @@
         },
         "site_settings_appearance": {
           "name": "site_settings_appearance",
-          "value": "\"site_settings\".\"default_appearance\" IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena')"
+          "value": "\"site_settings\".\"default_appearance\" IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena', 'orbital-pulse', 'prism-overture')"
         }
       },
       "isRLSEnabled": false
@@ -3593,8 +3934,12 @@
           "name": "staff_role_events_grant_id_staff_roles_id_fk",
           "tableFrom": "staff_role_events",
           "tableTo": "staff_roles",
-          "columnsFrom": ["grant_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "grant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3734,8 +4079,12 @@
           "name": "staff_roles_user_id_users_osu_id_fk",
           "tableFrom": "staff_roles",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3743,8 +4092,12 @@
           "name": "staff_roles_edition_slug_edition_state_slug_fk",
           "tableFrom": "staff_roles",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3789,8 +4142,12 @@
           "name": "team_coaches_user_id_users_osu_id_fk",
           "tableFrom": "team_coaches",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3798,8 +4155,14 @@
           "name": "team_coaches_team_id_edition_slug_teams_id_edition_slug_fk",
           "tableFrom": "team_coaches",
           "tableTo": "teams",
-          "columnsFrom": ["team_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "team_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3807,7 +4170,10 @@
       "compositePrimaryKeys": {
         "team_coaches_team_id_user_id_pk": {
           "name": "team_coaches_team_id_user_id_pk",
-          "columns": ["team_id", "user_id"]
+          "columns": [
+            "team_id",
+            "user_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -3912,8 +4278,12 @@
           "name": "teams_edition_slug_edition_state_slug_fk",
           "tableFrom": "teams",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3921,8 +4291,12 @@
           "name": "teams_captain_id_users_osu_id_fk",
           "tableFrom": "teams",
           "tableTo": "users",
-          "columnsFrom": ["captain_id"],
-          "columnsTo": ["osu_id"],
+          "columnsFrom": [
+            "captain_id"
+          ],
+          "columnsTo": [
+            "osu_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3932,7 +4306,10 @@
         "teams_id_edition_unique": {
           "name": "teams_id_edition_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "edition_slug"]
+          "columns": [
+            "id",
+            "edition_slug"
+          ]
         }
       },
       "policies": {},
@@ -4000,8 +4377,14 @@
           "name": "tournament_rounds_stage_id_edition_slug_tournament_stages_id_edition_slug_fk",
           "tableFrom": "tournament_rounds",
           "tableTo": "tournament_stages",
-          "columnsFrom": ["stage_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
+          "columnsFrom": [
+            "stage_id",
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "id",
+            "edition_slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4011,12 +4394,18 @@
         "round_stage_position_unique": {
           "name": "round_stage_position_unique",
           "nullsNotDistinct": false,
-          "columns": ["stage_id", "position"]
+          "columns": [
+            "stage_id",
+            "position"
+          ]
         },
         "round_id_edition_unique": {
           "name": "round_id_edition_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "edition_slug"]
+          "columns": [
+            "id",
+            "edition_slug"
+          ]
         }
       },
       "policies": {},
@@ -4073,8 +4462,12 @@
           "name": "tournament_stages_edition_slug_edition_state_slug_fk",
           "tableFrom": "tournament_stages",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4084,12 +4477,18 @@
         "stage_edition_kind_unique": {
           "name": "stage_edition_kind_unique",
           "nullsNotDistinct": false,
-          "columns": ["edition_slug", "kind"]
+          "columns": [
+            "edition_slug",
+            "kind"
+          ]
         },
         "stage_id_edition_unique": {
           "name": "stage_id_edition_unique",
           "nullsNotDistinct": false,
-          "columns": ["id", "edition_slug"]
+          "columns": [
+            "id",
+            "edition_slug"
+          ]
         }
       },
       "policies": {},
@@ -4164,7 +4563,10 @@
       "compositePrimaryKeys": {
         "user_profile_cache_osu_id_mode_pk": {
           "name": "user_profile_cache_osu_id_mode_pk",
-          "columns": ["osu_id", "mode"]
+          "columns": [
+            "osu_id",
+            "mode"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -4304,8 +4706,12 @@
           "name": "weekly_award_releases_edition_slug_edition_state_slug_fk",
           "tableFrom": "weekly_award_releases",
           "tableTo": "edition_state",
-          "columnsFrom": ["edition_slug"],
-          "columnsTo": ["slug"],
+          "columnsFrom": [
+            "edition_slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -4315,7 +4721,11 @@
         "weekly_award_revision": {
           "name": "weekly_award_revision",
           "nullsNotDistinct": false,
-          "columns": ["edition_slug", "week", "revision"]
+          "columns": [
+            "edition_slug",
+            "week",
+            "revision"
+          ]
         }
       },
       "policies": {},
@@ -4325,475 +4735,6 @@
           "value": "\"weekly_award_releases\".\"week\" > 0 AND \"weekly_award_releases\".\"revision\" > 0"
         }
       },
-      "isRLSEnabled": false
-    },
-    "public.referee_events": {
-      "name": "referee_events",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "fixture_id": {
-          "name": "fixture_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ordinal": {
-          "name": "ordinal",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actor_id": {
-          "name": "actor_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "request_key": {
-          "name": "request_key",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "request_hash": {
-          "name": "request_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "payload": {
-          "name": "payload",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "referee_events_fixture_id_referee_sessions_fixture_id_fk": {
-          "name": "referee_events_fixture_id_referee_sessions_fixture_id_fk",
-          "tableFrom": "referee_events",
-          "tableTo": "referee_sessions",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["fixture_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "referee_events_actor_id_users_osu_id_fk": {
-          "name": "referee_events_actor_id_users_osu_id_fk",
-          "tableFrom": "referee_events",
-          "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "referee_event_ordinal_unique": {
-          "name": "referee_event_ordinal_unique",
-          "nullsNotDistinct": false,
-          "columns": ["fixture_id", "ordinal"]
-        },
-        "referee_event_request_unique": {
-          "name": "referee_event_request_unique",
-          "nullsNotDistinct": false,
-          "columns": ["fixture_id", "actor_id", "request_key"]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "referee_event_ordinal_positive": {
-          "name": "referee_event_ordinal_positive",
-          "value": "\"referee_events\".\"ordinal\" > 0"
-        },
-        "referee_event_hash": {
-          "name": "referee_event_hash",
-          "value": "\"referee_events\".\"request_hash\" ~ '^[a-f0-9]{64}$'"
-        },
-        "referee_event_payload_object": {
-          "name": "referee_event_payload_object",
-          "value": "jsonb_typeof(\"referee_events\".\"payload\") = 'object'"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.referee_round_policies": {
-      "name": "referee_round_policies",
-      "schema": "",
-      "columns": {
-        "round_id": {
-          "name": "round_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "edition_slug": {
-          "name": "edition_slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "policy": {
-          "name": "policy",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_by": {
-          "name": "updated_by",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "referee_round_policies_updated_by_users_osu_id_fk": {
-          "name": "referee_round_policies_updated_by_users_osu_id_fk",
-          "tableFrom": "referee_round_policies",
-          "tableTo": "users",
-          "columnsFrom": ["updated_by"],
-          "columnsTo": ["osu_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "referee_round_policies_round_id_edition_slug_tournament_rounds_id_edition_slug_fk": {
-          "name": "referee_round_policies_round_id_edition_slug_tournament_rounds_id_edition_slug_fk",
-          "tableFrom": "referee_round_policies",
-          "tableTo": "tournament_rounds",
-          "columnsFrom": ["round_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "referee_policy_revision_positive": {
-          "name": "referee_policy_revision_positive",
-          "value": "\"referee_round_policies\".\"revision\" > 0"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.referee_sessions": {
-      "name": "referee_sessions",
-      "schema": "",
-      "columns": {
-        "fixture_id": {
-          "name": "fixture_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "edition_slug": {
-          "name": "edition_slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "first_ban_team_id": {
-          "name": "first_ban_team_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "first_pick_team_id": {
-          "name": "first_pick_team_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "settings": {
-          "name": "settings",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dependency_fingerprint": {
-          "name": "dependency_fingerprint",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "basis": {
-          "name": "basis",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "referee_sessions_fixture_id_edition_slug_fixtures_id_edition_slug_fk": {
-          "name": "referee_sessions_fixture_id_edition_slug_fixtures_id_edition_slug_fk",
-          "tableFrom": "referee_sessions",
-          "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "referee_sessions_first_ban_team_id_edition_slug_teams_id_edition_slug_fk": {
-          "name": "referee_sessions_first_ban_team_id_edition_slug_teams_id_edition_slug_fk",
-          "tableFrom": "referee_sessions",
-          "tableTo": "teams",
-          "columnsFrom": ["first_ban_team_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "referee_sessions_first_pick_team_id_edition_slug_teams_id_edition_slug_fk": {
-          "name": "referee_sessions_first_pick_team_id_edition_slug_teams_id_edition_slug_fk",
-          "tableFrom": "referee_sessions",
-          "tableTo": "teams",
-          "columnsFrom": ["first_pick_team_id", "edition_slug"],
-          "columnsTo": ["id", "edition_slug"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "referee_session_revision_nonnegative": {
-          "name": "referee_session_revision_nonnegative",
-          "value": "\"referee_sessions\".\"revision\" >= 0"
-        },
-        "referee_session_fingerprint": {
-          "name": "referee_session_fingerprint",
-          "value": "\"referee_sessions\".\"dependency_fingerprint\" ~ '^[a-f0-9]{64}$'"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.referee_reconciliations": {
-      "name": "referee_reconciliations",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "fixture_id": {
-          "name": "fixture_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actor_id": {
-          "name": "actor_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "request_key": {
-          "name": "request_key",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "payload_hash": {
-          "name": "payload_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "session_revision": {
-          "name": "session_revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dependency_fingerprint": {
-          "name": "dependency_fingerprint",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "attempt_id": {
-          "name": "attempt_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "import_id": {
-          "name": "import_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "source_fingerprint": {
-          "name": "source_fingerprint",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "game_id": {
-          "name": "game_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "referee_reconciliation_request": {
-          "name": "referee_reconciliation_request",
-          "columns": [
-            {
-              "expression": "fixture_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "actor_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "request_key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "referee_reconciliation_revision": {
-          "name": "referee_reconciliation_revision",
-          "columns": [
-            {
-              "expression": "fixture_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "revision",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "referee_reconciliation_fixture": {
-          "name": "referee_reconciliation_fixture",
-          "columns": [
-            {
-              "expression": "fixture_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "referee_reconciliations_fixture_id_fixtures_id_fk": {
-          "name": "referee_reconciliations_fixture_id_fixtures_id_fk",
-          "tableFrom": "referee_reconciliations",
-          "tableTo": "fixtures",
-          "columnsFrom": ["fixture_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "referee_reconciliations_actor_id_users_osu_id_fk": {
-          "name": "referee_reconciliations_actor_id_users_osu_id_fk",
-          "tableFrom": "referee_reconciliations",
-          "tableTo": "users",
-          "columnsFrom": ["actor_id"],
-          "columnsTo": ["osu_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     }
   },
@@ -4814,27 +4755,51 @@
     "public.fixture_status": {
       "name": "fixture_status",
       "schema": "public",
-      "values": ["scheduled", "in_progress", "cancelled"]
+      "values": [
+        "scheduled",
+        "in_progress",
+        "cancelled"
+      ]
     },
     "public.fm_mode": {
       "name": "fm_mode",
       "schema": "public",
-      "values": ["free_mod", "force_mod"]
+      "values": [
+        "free_mod",
+        "force_mod"
+      ]
     },
     "public.mappool_category": {
       "name": "mappool_category",
       "schema": "public",
-      "values": ["NM", "HD", "DT", "HR", "FM", "TB"]
+      "values": [
+        "NM",
+        "HD",
+        "DT",
+        "HR",
+        "FM",
+        "TB"
+      ]
     },
     "public.registration_status": {
       "name": "registration_status",
       "schema": "public",
-      "values": ["pending", "deferred", "accepted", "rejected", "withdrawn"]
+      "values": [
+        "pending",
+        "deferred",
+        "accepted",
+        "rejected",
+        "withdrawn"
+      ]
     },
     "public.result_state": {
       "name": "result_state",
       "schema": "public",
-      "values": ["draft", "submitted", "approved"]
+      "values": [
+        "draft",
+        "submitted",
+        "approved"
+      ]
     },
     "public.staff_role": {
       "name": "staff_role",
@@ -4852,7 +4817,10 @@
     "public.stage_kind": {
       "name": "stage_kind",
       "schema": "public",
-      "values": ["group", "knockout"]
+      "values": [
+        "group",
+        "knockout"
+      ]
     }
   },
   "schemas": {},

@@ -97,6 +97,14 @@ POST/DELETE is local credential management, not a business write. Use the backen
 site for real login/logout and credential management. None of these mechanisms
 bypass edition appointments or publication boundaries.
 
+Bundled public assets under `/branding/`, `/archive/`, `/fonts/`, `/mascot/` and
+`/themes/` are served by the local frontend in remote mode. The four registered
+season designs use their shipped `/themes/` images without a backend read or a
+Developer connection. Asset requests still pass the exact-host, cross-site,
+read-only method and credential checks; unknown page/API routes retain their
+existing restrictions. Regression tests derive the season image inventory from
+the four production stylesheets and check GET/HEAD against the actual files.
+
 ## Request and credential lifecycle
 
 The BFF stores the credential only in a bounded process-memory map behind a random
@@ -207,3 +215,20 @@ Commit-specific local results and actual CI status are recorded on #271/#272.
 Synthetic local evidence does not establish a real OAuth login, real grant,
 external backend deployment or organizer acceptance of new Chinese wording. The
 previous organizer-attested #10 rehearsal remains completed independently.
+
+## Remote credential retention (#465)
+
+The frontend must present the original Bearer credential for every backend read;
+`/me` revalidation cannot replace that credential. Connection entries retain only
+AES-256-GCM ciphertext, with a random process-only key held separately in a closure.
+Plaintext is reconstructed for the active request and is never written to disk,
+logs, browser storage or the session cookie. This reduces accidental connection-map
+dump exposure; a complete heap dump or arbitrary code execution can still recover
+credentials and must be treated as a compromise.
+
+Connections expire at the earlier of token expiry or 15 minutes after connection
+(without sliding renewal). A minute timer removes expired entries even while idle;
+disconnect, replacement and backend 401/403 clear the cache and overwrite the sealed
+credential buffer. JavaScript cannot guarantee erasure of transient plaintext
+strings. Restarting the frontend discards connections and the process key. Connect
+again after expiry; backend revocation and scopes continue to be checked via `/me`.

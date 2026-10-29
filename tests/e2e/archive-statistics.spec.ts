@@ -187,7 +187,9 @@ test.describe("historical statistics review and public exploration", () => {
     await page
       .getByRole("button", { name: /Import missing MP histories/ })
       .click();
-    await expect(page.getByRole("status")).toContainText("Import complete", {
+    await expect(
+      page.locator(".statistics-workspace > p[role=status]"),
+    ).toContainText("Import complete", {
       timeout: 30000,
     });
     await page.getByLabel("Match", { exact: true }).selectOption("one");
@@ -257,9 +259,9 @@ test.describe("historical statistics review and public exploration", () => {
     await page
       .getByRole("button", { name: "Save statistics review", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText(
-      "Statistics draft saved.",
-    );
+    await expect(
+      page.locator(".statistics-workspace > p[role=status]"),
+    ).toContainText("Statistics draft saved.");
     await expect(
       page.getByRole("button", {
         name: "Approve & publish statistics",
@@ -411,7 +413,7 @@ test.describe("historical statistics review and public exploration", () => {
     ).toBeVisible();
     await page
       .getByRole("combobox", { name: "Team", exact: true })
-      .selectOption("Synthetic Alpha");
+      .selectOption({ label: "Synthetic Alpha" });
     await expect(page.locator(".event-table tbody tr")).toHaveCount(2);
     await page
       .getByRole("combobox", { name: "Rounds", exact: true })

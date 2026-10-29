@@ -74,7 +74,7 @@ export const siteSettings = pgTable(
     check("site_settings_revision", sql`${t.revision} >= 0`),
     check(
       "site_settings_appearance",
-      sql`${t.defaultAppearance} IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena')`,
+      sql`${t.defaultAppearance} IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena', 'orbital-pulse', 'prism-overture', 'azure-brush', 'verdant-prelude', 'chromatic-origins', 'frost-waltz')`,
     ),
   ],
 );
@@ -97,7 +97,7 @@ export const siteSettingEvents = pgTable(
     check("site_setting_events_revision", sql`${t.revision} > 0`),
     check(
       "site_setting_events_appearances",
-      sql`${t.before} IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena') AND ${t.after} IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena') AND ${t.before} <> ${t.after}`,
+      sql`${t.before} IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena', 'orbital-pulse', 'prism-overture', 'azure-brush', 'verdant-prelude', 'chromatic-origins', 'frost-waltz') AND ${t.after} IN ('default', 'cute-pastel', 'swiss-minimal', 'claymorphism', 'manga-halftone', 'glassmorphism', 'esports-broadcast', 'retro-arcade', 'frutiger-aero', 'skyline-pop', 'glacier-blue', 'sakura-circuit', 'graphite-arena', 'orbital-pulse', 'prism-overture', 'azure-brush', 'verdant-prelude', 'chromatic-origins', 'frost-waltz') AND ${t.before} <> ${t.after}`,
     ),
   ],
 );
@@ -614,6 +614,7 @@ export const staffRole = pgEnum("staff_role", [
   "streamer",
   "tester",
   "replayer",
+  "designer",
 ]);
 export const staffRoles = pgTable(
   "staff_roles",
@@ -1337,3 +1338,37 @@ export const refereeEvents = pgTable(
 );
 
 export { refereeReconciliations } from "./referee-reconciliation-schema";
+// One bounded canvas serializes accepted pixel and moderation writes.
+export const chessBoards = pgTable(
+  "chess_boards",
+  {
+    id: integer("id").primaryKey(),
+    pixels: text("pixels").notNull(),
+    revision: integer("revision").notNull().default(0),
+    enabled: boolean("enabled").notNull().default(false),
+  },
+  (t) => [
+    check("chess_board_singleton", sql`${t.id} = 1`),
+    check(
+      "chess_pixels_valid",
+      sql`length(${t.pixels}) = 16384 AND ${t.pixels} ~ '^[0-9a-f]+$'`,
+    ),
+  ],
+);
+export const chessPlayers = pgTable("chess_players", {
+  userId: bigint("user_id", { mode: "number" })
+    .primaryKey()
+    .references(() => users.osuId),
+  nextAt: timestamp("next_at", { withTimezone: true }).notNull(),
+});
+export const chessEvents = pgTable("chess_events", {
+  requestId: uuid("request_id").primaryKey(),
+  actorId: bigint("actor_id", { mode: "number" })
+    .notNull()
+    .references(() => users.osuId),
+  command: jsonb("command").notNull(),
+  revision: integer("revision").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

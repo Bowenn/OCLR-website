@@ -1,3 +1,4 @@
+import { setEditionAppearance } from "../fixtures/editions";
 import { expect, test } from "@playwright/test";
 import { eq, sql } from "drizzle-orm";
 import { readFileSync } from "node:fs";
@@ -21,6 +22,7 @@ import { historicalArchive } from "../fixtures/historical-archive";
 import { profileResponse } from "../fixtures/osu-profile";
 import { seedPublicDirectory } from "../fixtures/players";
 import { waitForRemoteRateWindow } from "../fixtures/remote-rate-window";
+import { bundledSeasonThemes } from "../fixtures/theme-assets";
 const backend = "http://127.0.0.1:3100",
   local = "http://127.0.0.1:31470";
 test.afterAll(async () => {
@@ -39,6 +41,22 @@ test("uses real remote grants for core SSR/navigation without local DB or OAuth,
 }, info) => {
   assertTestDatabase(process.env.TEST_DATABASE_URL);
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+  // Always exercise the shipped asset inventory, including the core smoke lane.
+  for (const { assets } of bundledSeasonThemes)
+    for (const asset of assets)
+      for (const method of ["GET", "HEAD"]) {
+        const response = await context.request.fetch(asset, {
+          method,
+          maxRedirects: 0,
+        });
+        expect(response.status(), `${method} ${asset}`).toBe(200);
+        expect(response.headers()["content-type"], asset).toMatch(/^image\//);
+        expect(await response.body(), `${method} ${asset}`).toEqual(
+          method === "HEAD"
+            ? Buffer.alloc(0)
+            : readFileSync(new URL(`../../public${asset}`, import.meta.url)),
+        );
+      }
   await db().execute(
     sql`TRUNCATE edition_state,users,user_profile_cache,site_settings CASCADE`,
   );
@@ -151,18 +169,26 @@ test("uses real remote grants for core SSR/navigation without local DB or OAuth,
   expect(issued.status()).toBe(201);
   const credential = await issued.json();
   async function renewConnection(returnTo?: string) {
-    const renewed = await backendContext.request.post("/api/developer/tokens", {
-      headers: { Origin: backend },
-      data: {
-        origin: local,
-        scopes: [
-          "identity:read",
-          "tournaments:read",
-          "tournaments:private:read",
-          "profiles:read",
-        ],
-      },
-    });
+    const issue = () =>
+      backendContext.request.post("/api/developer/tokens", {
+        headers: { Origin: backend },
+        data: {
+          origin: local,
+          scopes: [
+            "identity:read",
+            "tournaments:read",
+            "tournaments:private:read",
+            "profiles:read",
+          ],
+        },
+      });
+    let renewed = await issue();
+    if (renewed.status() === 429) {
+      // The full appearance workload can reach the real issuance quota.
+      const retryAfter = Number(renewed.headers()["retry-after"] ?? "60");
+      await page.waitForTimeout(retryAfter * 1000);
+      renewed = await issue();
+    }
     expect(renewed.status()).toBe(201);
     credential.token = (await renewed.json()).token;
     await page.goto("/remote");
@@ -452,12 +478,49 @@ test("uses real remote grants for core SSR/navigation without local DB or OAuth,
     await context.addCookies([
       { name: "oclr-appearance", value: appearance, url: local },
     ]);
+    await setEditionAppearance("test-cup", appearance);
+    await renewConnection();
     await page.goto("/tournaments/test-cup/players");
     await expect(page.locator(".event-player-row")).toHaveCount(108);
     await expect(page.locator("html")).toHaveAttribute(
       "data-appearance",
       appearance,
     );
+    const theme = bundledSeasonThemes.find(
+      (theme) => theme.appearance === appearance,
+    );
+    if (theme) {
+      const decoded = await page.evaluate(async (assets) => {
+        return Promise.all(
+          assets.map(async (src) => {
+            const image = new Image();
+            image.src = src;
+            await image.decode();
+            return {
+              src,
+              width: image.naturalWidth,
+              height: image.naturalHeight,
+            };
+          }),
+        );
+      }, theme.assets);
+      for (const image of decoded) {
+        expect(image.width, image.src).toBeGreaterThan(0);
+        expect(image.height, image.src).toBeGreaterThan(0);
+      }
+      const background = await page
+        .locator(".page-heading")
+        .evaluate(
+          (heading) => getComputedStyle(heading, "::before").backgroundImage,
+        );
+      expect(theme.assets.some((asset) => background.includes(asset))).toBe(
+        true,
+      );
+      await page.screenshot({
+        path: info.outputPath(`remote-${appearance}.png`),
+        animations: "disabled",
+      });
+    }
     if (isMobile) await page.setViewportSize({ width: 320, height: 844 });
     expect(
       await page.evaluate(
@@ -483,12 +546,36 @@ test("uses real remote grants for core SSR/navigation without local DB or OAuth,
     .update(staffRoles)
     .set({ revokedAt: new Date() })
     .where(eq(staffRoles.userId, owner));
+  const deniedBackend = await backendContext.request.get("/api/v1/me", {
+    headers: { Origin: local, Authorization: `Bearer ${credential.token}` },
+  });
+  expect(deniedBackend.status()).toBe(403);
+  expect(await deniedBackend.json()).toMatchObject({
+    error: { code: "DEVELOPER_REQUIRED" },
+  });
   await page.reload();
+  // SSR observes the backend denial and invalidates the local connection.
+  const denied = await context.request.get("/api/remote/connection");
+  expect(denied.status()).toBe(401);
+  expect(await denied.json()).toMatchObject({
+    state: "unavailable",
+    code: "REMOTE_EXPIRED",
+  });
+  const deniedPrivateRead = await context.request.get(
+    "/api/remote/read/staff/tournaments/private-test-cup",
+  );
+  expect(deniedPrivateRead.status()).toBe(401);
+  expect(await deniedPrivateRead.json()).not.toHaveProperty("data");
   await expect(
     page
-      .getByText(
-        "This remote token does not permit this read. Check its scopes and Developer grant.",
-      )
+      .getByRole("status")
+      .filter({
+        has: page.getByRole("heading", {
+          name: "Remote frontend development",
+          exact: true,
+        }),
+      })
+      .getByText("Developer access is required.", { exact: true })
       .first(),
   ).toBeVisible();
   await expect(

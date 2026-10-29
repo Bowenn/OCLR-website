@@ -154,7 +154,15 @@ async function ProfileContent({
           }
         >
           {data.participation.map((p) => (
-            <li className={styles.record} key={p.editionSlug}>
+            <li
+              className={styles.record}
+              key={JSON.stringify([
+                p.editionSlug,
+                p.username,
+                p.role,
+                p.team?.id,
+              ])}
+            >
               <div className={styles.edition}>
                 <h3>
                   <Link
@@ -219,9 +227,6 @@ async function ProfileContent({
                   <span className="muted small">
                     {tr("Recorded placing")}: {p.placing}
                   </span>
-                )}
-                {p.sourceReference && (
-                  <span className="muted small">{p.sourceReference}</span>
                 )}
               </div>
             </li>
