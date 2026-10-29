@@ -142,7 +142,7 @@ html[data-appearance="frost-waltz"] .themed-site .page-heading::after {
 html[data-appearance="frost-waltz"]
   .themed-site
   .archive-overview-summary.has-visual {
-  align-items: stretch;
+  align-items: center;
   gap: 24px;
 }
 html[data-appearance="frost-waltz"] .themed-site .archive-key-visual {

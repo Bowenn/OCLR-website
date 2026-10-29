@@ -151,7 +151,7 @@ html[data-appearance="verdant-prelude"] .themed-site .page-heading::after {
 html[data-appearance="verdant-prelude"]
   .themed-site
   .archive-overview-summary.has-visual {
-  align-items: stretch;
+  align-items: center;
   gap: 24px;
 }
 html[data-appearance="verdant-prelude"] .themed-site .archive-key-visual {
