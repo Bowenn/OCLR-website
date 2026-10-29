@@ -112,3 +112,56 @@ it("allows object URLs only as images, retaining script/connect/object restricti
   expect(directives).toContain("object-src 'none'");
   expect(directives).toContain("connect-src 'self'");
 });
+
+it("allows token transport only to owned versioned API namespaces", () => {
+  vi.stubEnv("APP_URL", "https://oclr.example.test");
+  for (const [path, status] of [
+    ["/api/v1/me", 200],
+    ["/api/desktop/v1/me", 200],
+    ["/api/referee/v1/me/fixtures", 200],
+    ["/api/referee/v1/fixtures/example/relay", 200],
+    ["/api/me", 403],
+    ["/api/admin/tournaments/example", 403],
+    ["/api/desktop/v10/me", 403],
+    ["/api/referee/v1-untrusted/me", 403],
+    ["/desktop/authorize", 403],
+  ] as const) {
+    const response = proxy(
+      new NextRequest(`https://oclr.example.test${path}`, {
+        headers: {
+          host: "oclr.example.test",
+          authorization: "Bearer synthetic-token",
+        },
+      }),
+    );
+    expect(response.status, path).toBe(status);
+  }
+});
+
+it("permits the validated native loopback callback only on the consent document", () => {
+  vi.stubEnv("APP_URL", "https://oclr.example.test");
+  for (const path of [
+    "/desktop/authorize",
+    "/desktop/authorize/untrusted",
+    "/desktop/sessions",
+    "/api/desktop/v1/auth/decision",
+    "/admin",
+  ]) {
+    const response = proxy(
+      new NextRequest(`https://oclr.example.test${path}`, {
+        headers: { host: "oclr.example.test" },
+      }),
+    );
+    const directives = response.headers
+      .get("content-security-policy")!
+      .split("; ");
+    expect(directives.find((item) => item.startsWith("form-action "))).toBe(
+      path === "/desktop/authorize"
+        ? "form-action 'self' http://127.0.0.1:*/oclr/callback"
+        : "form-action 'self'",
+    );
+    expect(directives).toContain("connect-src 'self'");
+    expect(directives).toContain("object-src 'none'");
+    expect(directives).toContain("upgrade-insecure-requests");
+  }
+});

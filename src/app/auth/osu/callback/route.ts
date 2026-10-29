@@ -41,7 +41,10 @@ export async function GET(request: NextRequest) {
       await observeLoginNames(identity.id, identity.previous_usernames ?? []);
       const session = await createSession(identity.id);
       await revokeSession(request.cookies.get(sessionCookie())?.value);
-      response = NextResponse.redirect(`${origin}/dashboard`, 303);
+      response = NextResponse.redirect(
+        `${origin}${consumed.desktopRequestId ? `/desktop/authorize?request_id=${consumed.desktopRequestId}` : "/dashboard"}`,
+        303,
+      );
       response.cookies.set(sessionCookie(), session.token, {
         ...cookieOptions(),
         expires: session.expiresAt,

@@ -405,6 +405,9 @@ export async function refereeCommand(
   slug: string,
   fixtureId: string,
   input: unknown,
+  transaction?: Parameters<
+    Parameters<ReturnType<typeof db>["transaction"]>[0]
+  >[0],
 ) {
   await assertCapability(actor, "record_results", slug);
   const parsed = refereeCommandSchema.safeParse(input);
@@ -416,7 +419,9 @@ export async function refereeCommand(
   const command = parsed.data;
   if (!z.uuid().safeParse(fixtureId).success)
     throw new HttpError(404, "Fixture not found.");
-  return db().transaction(async (tx) => {
+  const execute = async (
+    tx: Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0],
+  ) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(17301)`);
     await tx
       .select()
@@ -695,5 +700,6 @@ export async function refereeCommand(
       },
       workspace: await readRefereeWorkspace(tx, actor, slug, fixtureId),
     };
-  });
+  };
+  return transaction ? execute(transaction) : db().transaction(execute);
 }

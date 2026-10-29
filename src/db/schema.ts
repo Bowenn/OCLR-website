@@ -147,6 +147,7 @@ export const oauthStates = pgTable(
   "oauth_states",
   {
     stateHash: text("state_hash").primaryKey(),
+    desktopRequestId: uuid("desktop_request_id"),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   },
   (table) => [index("oauth_states_expiry_idx").on(table.expiresAt)],
@@ -1372,3 +1373,15 @@ export const chessEvents = pgTable("chess_events", {
     .notNull()
     .defaultNow(),
 });
+
+export {
+  refereeIrcConnections,
+  refereeIrcCommands,
+} from "./referee-irc-schema";
+
+export {
+  desktopAuthorizations,
+  desktopSessions,
+  desktopTokens,
+  desktopSecurityEvents,
+} from "./desktop-auth-schema";
