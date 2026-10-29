@@ -52,7 +52,7 @@ export function BracketCanvas({
   );
   // A valid bracket need not fit the double-elimination library. Keep explicit
   // winner/loser routes in the existing column renderer; historical appearance
-  // references still use the conservative, connection-free fallback below.
+  // references retain their partial paths in the fallback below.
   if (
     !data &&
     sources.length > 0 &&
@@ -74,12 +74,17 @@ export function BracketCanvas({
     );
   if (!data)
     return (
-      <>
+      <div className={historical ? "bracket-library-references" : undefined}>
         <p className="muted small">
           {tr(
             "Some bracket sources are missing. Recorded matches are shown without invented advancement links.",
           )}
         </p>
+        {historical && (
+          <p className="muted small">
+            {tr("Recorded appearance only (unconfirmed progression)")}
+          </p>
+        )}
         <BracketColumns
           bracket={{
             editionSlug,
@@ -90,14 +95,17 @@ export function BracketCanvas({
             groups: [
               {
                 ...group,
-                layout: "grid",
+                layout: group.layout,
                 rounds: group.rounds.map((r) => ({
                   ...r,
                   matches: r.matches.map((m) => ({
                     ...m,
                     slots: m.slots.map((s) => ({
                       ...s,
-                      sourceMatchId: null,
+                      sourceMatchId:
+                        s.kind === "team" && !showAppearanceLinks
+                          ? null
+                          : s.sourceMatchId,
                     })) as typeof m.slots,
                   })),
                 })),
@@ -107,7 +115,7 @@ export function BracketCanvas({
           teamUrls={teamUrls}
           hideGroupTabs
         />
-      </>
+      </div>
     );
   function MatchCard({
     match: value,
