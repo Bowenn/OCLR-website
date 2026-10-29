@@ -18,8 +18,8 @@ it.each([undefined, null, "undefined", "null", "", "  ", NaN, {}])(
       playerId: value,
     }).catch((error) => error);
     expect(error).toMatchObject({ status: 400, code: "INVALID_REQUEST" });
-    expect(error.message).toContain(resource.id);
-    expect(error.message).toContain("osuId");
+    expect((error as Error).message).toContain(resource.id);
+    expect((error as Error).message).toContain("osuId");
     expect(frontendRemoteRead).not.toHaveBeenCalled();
   },
 );
