@@ -357,7 +357,7 @@ export function StatisticsManager({
     setSelection({ data: result, fixtureId: id });
     return result as StatisticsWorkspace;
   }
-  async function post(body: Record<string, unknown>) {
+  async function post(body: Record<string, unknown>, commit = true) {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -365,7 +365,7 @@ export function StatisticsManager({
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
-    setSelection((current) => ({ ...current, data: result }));
+    if (commit) setSelection((current) => ({ ...current, data: result }));
     return result as StatisticsWorkspace;
   }
   async function save(body: Record<string, unknown>) {
@@ -404,12 +404,15 @@ export function StatisticsManager({
             ids.length,
         );
         try {
-          current = await post({
-            action: "import",
-            mpId,
-            expectedVersion:
-              current.summaries.find((s) => s.mpId === mpId)?.version ?? 0,
-          });
+          current = await post(
+            {
+              action: "import",
+              mpId,
+              expectedVersion:
+                current.summaries.find((s) => s.mpId === mpId)?.version ?? 0,
+            },
+            false,
+          );
         } catch (e) {
           failures.push("MP " + mpId + ": " + tr((e as Error).message));
         }
@@ -419,7 +422,7 @@ export function StatisticsManager({
           ? tr("Import stopped. Saved progress is retained.")
           : tr("Import complete. Review each match before publishing."),
       );
-      if (fixtureId) await load(fixtureId);
+      await load(fixtureId);
     } catch {
       failures.push(tr("Connection interrupted. Reload before retrying."));
     } finally {
