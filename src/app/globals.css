@@ -5764,3 +5764,57 @@ button.staff-role-save {
     grid-template-columns: minmax(0, 1fr) 11rem;
   }
 }
+
+.bws-summary {
+  position: relative;
+  padding-inline-end: 3.5rem;
+}
+.bws-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+.bws-metrics h3,
+.bws-metrics p {
+  margin: 0 0 0.5rem;
+}
+.profile-info-trigger {
+  position: absolute;
+  inset-block-start: 0.75rem;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+.profile-info-trigger:hover {
+  color: var(--color-foreground);
+  background: var(--color-raised);
+}
+.profile-info-trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+.profile-info-popover {
+  position: fixed;
+  margin: 0;
+  width: min(22.5rem, calc(100vw - 1.5rem));
+  max-height: min(26.25rem, calc(100dvh - 1.5rem));
+  overflow: auto;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  box-shadow: 0 12px 32px #0003;
+  overflow-wrap: anywhere;
+}
+.profile-info-popover p:first-child {
+  margin-top: 0;
+}

@@ -228,9 +228,6 @@ async function ProfileContent({
                     {tr("Recorded placing")}: {p.placing}
                   </span>
                 )}
-                {p.sourceReference && (
-                  <span className="muted small">{p.sourceReference}</span>
-                )}
               </div>
             </li>
           ))}
