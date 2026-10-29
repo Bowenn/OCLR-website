@@ -27,6 +27,7 @@ const appearances = [
   "prism-overture",
   "azure-brush",
   "verdant-prelude",
+  "chromatic-origins",
 ];
 // Every appearance in the default locale, plus the other locales in the default appearance.
 const cases = [
