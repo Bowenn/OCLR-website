@@ -227,7 +227,7 @@ export function Header({
     { href: "/tournaments", label: tr("Tournaments") },
     { href: "/news", label: tr("Announcements") },
     { href: "/wiki", label: tr("Handbook") },
-    { href: "/games/ocl-chess", label: tr("OCL Chess") },
+    { href: "/games/ocl-chess", label: tr("Chess") },
     { href: "/about", label: tr("Organizers") },
   ];
   const [open, setOpen] = useState(false);
