@@ -1,3 +1,4 @@
+import { developerTokenMisses } from "./developer-token-misses";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
@@ -309,6 +310,8 @@ export async function authenticateDeveloperRead(
       "A valid developer API token is required.",
     );
   const fingerprint = hashToken(match[1]);
+  if (developerTokenMisses.has(fingerprint))
+    throw new DeveloperApiError(401, "INVALID_TOKEN", "A valid developer API token is required.");
   return db().transaction(
     async (tx) => {
       await tx.execute(sql`SET LOCAL statement_timeout = '5s'`);
@@ -336,12 +339,14 @@ export async function authenticateDeveloperRead(
           ),
         )
         .limit(1);
-      if (!row)
+      if (!row) {
+        developerTokenMisses.remember(fingerprint);
         throw new DeveloperApiError(
           401,
           "INVALID_TOKEN",
           "A valid developer API token is required.",
         );
+      }
       await assertDeveloper(row.access.userId, tx);
       const origin = request.headers.get("origin");
       if (origin !== null && origin !== row.access.origin)
