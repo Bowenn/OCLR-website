@@ -1,3 +1,4 @@
+import { completeS2Paths } from "./s2-bracket";
 import {
   archiveWinner,
   recordedArchiveMatch,
@@ -122,6 +123,7 @@ export function archiveBracket(
     [...rounds.values()].every((r) =>
       r.matches.every((m) => s2Row(m) !== null),
     );
+  if (s2Source) completeS2Paths([...rounds.values()].flatMap((r) => r.matches));
   return {
     editionSlug: archive.editionSlug,
     published: true,
