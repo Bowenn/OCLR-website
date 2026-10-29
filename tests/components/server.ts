@@ -9,6 +9,7 @@ const bundle = await build({
   entryPoints: [
     "tests/components/player-message-board.tsx",
     "tests/components/event-statistics.tsx",
+    "tests/components/statistics-explorer.tsx",
     "tests/components/team-editor.tsx",
     "tests/components/statistics-manager.tsx",
   ],
@@ -49,7 +50,9 @@ createServer((request, response) => {
         ? "team-editor"
         : request.url?.startsWith("/event-statistics")
           ? "event-statistics"
-          : "player-message-board";
+          : request.url?.startsWith("/statistics-explorer")
+            ? "statistics-explorer"
+            : "player-message-board";
     response.end(
       `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/${entry}.css"></head><body><div id="root"></div><script nonce="${nonce}" src="/${entry}.js"></script></body></html>`,
     );
