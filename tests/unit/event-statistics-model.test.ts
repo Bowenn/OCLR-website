@@ -187,3 +187,59 @@ describe("event placement display filters (#342)", () => {
     );
   });
 });
+
+describe("competition placement ties (#438)", () => {
+  it.each(["player", "team"] as const)(
+    "keeps %s ties, zeros, missing maps and best replays independent of input order",
+    (by) => {
+      const scores = [
+        ...["A", "B", "C"].map((name) => ({
+          ...score,
+          player: name,
+          team: name,
+          score: 100,
+        })),
+        { ...score, player: "D", team: "D", score: 0 },
+        { ...score, player: "E", team: "E", score: 0 },
+        { ...score, player: "A", team: "A", score: 50, game: "replay" },
+        {
+          ...score,
+          player: "B",
+          team: "B",
+          score: 0,
+          slot: "HD1",
+          mapId: 1002,
+          game: "other",
+        },
+      ];
+      const key = eventMapKey(score),
+        other = eventMapKey(scores.at(-1)!);
+      const column = by === "player" ? "Player" : "Team";
+      const expected = eventPlacementRows(scores, by);
+      for (const shuffled of [
+        [...scores].reverse(),
+        [...scores.slice(3), ...scores.slice(0, 3)],
+      ]) {
+        const actual = eventPlacementRows(shuffled, by);
+        for (const row of expected)
+          expect(actual.find((r) => r[column] === row[column])).toEqual(row);
+      }
+      for (const name of ["A", "B", "C"])
+        expect(expected.find((r) => r[column] === name)).toMatchObject({
+          [`${key}:rank`]: 1,
+          [`${key}:score`]: 100,
+          "Average placement": 1,
+        });
+      for (const name of ["D", "E"])
+        expect(expected.find((r) => r[column] === name)).toMatchObject({
+          [`${key}:rank`]: 4,
+          [`${key}:score`]: 0,
+          [`${other}:rank`]: null,
+          "Average placement": 4,
+        });
+      expect(eventPlacementRows(scores, by, "B")).toEqual(
+        expected.filter((r) => r[column] === "B"),
+      );
+    },
+  );
+});

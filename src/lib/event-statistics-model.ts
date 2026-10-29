@@ -79,9 +79,16 @@ export function eventPlacementRows(
           .filter((value) => value.value !== null)
           .sort((a, b) => b.value! - a.value!);
         const index = values.findIndex((value) => value.name === name);
-        row[`${map.key}:rank`] = index < 0 ? null : index + 1;
+        // Competition ranking, matching standings: equal scores share a rank
+        // and the next rank skips tied competitors (1, 1, 3).
+        const rank =
+          index < 0
+            ? null
+            : values.findIndex((value) => value.value === values[index].value) +
+              1;
+        row[`${map.key}:rank`] = rank;
         row[`${map.key}:score`] = index < 0 ? null : values[index].value;
-        if (index >= 0) ranks.push(index + 1);
+        if (rank !== null) ranks.push(rank);
       }
       row["Average placement"] = ranks.length
         ? ranks.reduce((total, rank) => total + rank, 0) / ranks.length
